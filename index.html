@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CARE-TECH: An anti-bullying narrative RPG set in Harmonia School. Build empathy, protect friends, and raise the Harmony Index." />
+  <title>CARE-TECH: Harmonia School</title>
+  <style>
+    /* ── Reset & full-bleed canvas ── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0f0e17;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* ── Pre-game loading screen (hidden once Phaser starts) ── */
+    #preloader {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #0f0e17;
+      z-index: 9999;
+      transition: opacity 0.6s ease;
+    }
+    #preloader.hidden { opacity: 0; pointer-events: none; }
+    #preloader h1 {
+      font-size: 2rem; color: #fffffe; letter-spacing: 0.15em;
+      margin-bottom: 0.25rem;
+    }
+    #preloader h1 span { color: #7f5af0; }
+    #preloader p {
+      color: #94a1b2; font-size: 0.85rem; margin-bottom: 1.5rem;
+    }
+    .loader-bar-track {
+      width: 240px; height: 6px; border-radius: 3px;
+      background: #242629; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%; border-radius: 3px;
+      background: linear-gradient(90deg, #7f5af0, #2cb67d);
+      animation: loadPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes loadPulse {
+      0%   { width: 0%; }
+      50%  { width: 70%; }
+      100% { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pre-loader shown while scripts download -->
+  <div id="preloader">
+    <h1>CARE<span>-</span>TECH</h1>
+    <p>Harmonia School — Loading…</p>
+    <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+  </div>
+
+  <!-- Phaser 3 engine (pinned version for reproducibility) -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+
+  <!-- Game modules — loaded in strict dependency order -->
+  <script src="js/data/dialogues.js"></script>
+  <script src="js/systems/RelationshipManager.js"></script>
+  <script src="js/systems/DialogueManager.js"></script>
+  <script src="js/systems/ScheduleManager.js"></script>
+  <script src="js/entities/Player.js"></script>
+  <script src="js/entities/NPC.js"></script>
+  <script src="js/scenes/BootScene.js"></script>
+  <script src="js/scenes/WorldScene.js"></script>
+  <script src="js/scenes/UIScene.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
