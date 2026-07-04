@@ -56,6 +56,9 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Proximity prompt tracking ── */
     this.nearestInteractable = null;
+
+    /* ── Debug Grid (Row, Col) ── */
+    this._drawDebugGrid();
   }
 
   update() {
@@ -64,6 +67,22 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Check proximity for interaction prompt ── */
     this._updateProximity();
+  }
+
+  /* ────── Debug Grid ────── */
+  _drawDebugGrid() {
+    const W = 20, H = 15;
+    for (let r = 0; r < H; r++) {
+      for (let c = 0; c < W; c++) {
+        this.add.text(c * TILE + TILE / 2, r * TILE + TILE / 2, `${r},${c}`, {
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          color: '#ffffff',
+          stroke: '#000000',
+          strokeThickness: 2
+        }).setOrigin(0.5).setDepth(1000).setAlpha(0.6);
+      }
+    }
   }
 
   /* ────── Proximity indicator updates ────── */
@@ -97,210 +116,176 @@ class WorldScene extends Phaser.Scene {
     }
   }
 
-  /* ────── Map builder (procedural) ────── */
+  /* ────── Map builder (Dynamic 2D Arrays) ────── */
   _buildMap(mapKey) {
-    const mapData = this._getMapData(mapKey);
-    const H = mapData.length;
-    const W = mapData[0].length;
+    const W = 20, H = 15;
+    
+    // Create an empty tilemap
+    const map = this.make.tilemap({ tileWidth: TILE, tileHeight: TILE, width: W, height: H });
+    const tileset = map.addTilesetImage('tileset', 'tileset');
 
+    // Create blank layers
+    const groundLayer = map.createBlankLayer('Ground', tileset);
+    const objectLayer = map.createBlankLayer('Objects', tileset);
+    
+    groundLayer.setDepth(0);
+    objectLayer.setDepth(1);
+
+    // Dictionary mapping string names to Tiled tileset IDs (1-based index)
+    const TILE_IDS = {
+      'grass': 1, 'grass2': 2, 'path': 3, 'path2': 4,
+      'wall': 5, 'wall_top': 6, 'floor': 7, 'floor2': 8,
+      'door': 9, 'bench': 10, 'desk': 11, 'board': 12,
+      'chair': 13, 'table': 14, 'stage': 15, 'flower': 16,
+      'tree': 17, 'water': 18, 'bookshelf': 19,
+      'path_1_3': 20, 'path_1_4': 21, 'path_2_2': 22, 'path_2_0': 23,
+      'path_2_4': 24, 'path_2_3': 25, 'path_3_1': 26, 'path_1_1': 27,
+      'path_3_2': 28, 'path_1_2': 29
+    };
+    
+    const solidTiles = ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'water', 'bookshelf'];
+
+    const mapData = this._getMapData(mapKey);
+
+    // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
-        const tileKey = mapData[r][c];
-        const x = c * TILE + TILE / 2;
-        const y = r * TILE + TILE / 2;
-
-        if (tileKey === 'wall' || tileKey === 'wall_top') {
-          // Walls are solid
-          const wall = this.walls.create(x, y, tileKey);
-          wall.setDepth(1);
-        } else if (tileKey === 'door') {
-          // Doors are walkable (transitions handled by interaction)
-          this.add.image(x, y, 'door').setDepth(1);
-        } else if (tileKey === 'bench' || tileKey === 'desk' || tileKey === 'board' ||
-                   tileKey === 'table' || tileKey === 'chair' || tileKey === 'bookshelf') {
-          // Solid interactable objects
-          const obj = this.walls.create(x, y, tileKey);
-          obj.setDepth(2);
-        } else if (tileKey === 'tree') {
-          // Trees are solid
-          const tree = this.walls.create(x, y, tileKey);
-          tree.setDepth(2);
-        } else if (tileKey === 'water') {
-          // Water is solid (can't walk on it)
-          const water = this.walls.create(x, y, tileKey);
-          water.setDepth(0);
+        const tileName = mapData[r][c];
+        const tileId = TILE_IDS[tileName] || 0;
+        
+        if (solidTiles.includes(tileName) || tileName === 'door') {
+          // Put interactive/solid objects on Object layer, put default floor beneath it
+          const floorId = (mapKey === 'garden') ? TILE_IDS['grass'] : TILE_IDS['floor'];
+          groundLayer.putTileAt(floorId, c, r);
+          objectLayer.putTileAt(tileId, c, r);
         } else {
-          // Floor tiles are non-solid
-          this.add.image(x, y, tileKey).setDepth(0);
+          // Just normal ground
+          groundLayer.putTileAt(tileId, c, r);
         }
       }
     }
+
+    // Set collision on the Objects layer. (Tile ID 9 is door, we exclude it so player can walk into it)
+    objectLayer.setCollisionByExclusion([-1, 9]);
+
+    // Set this.walls to the objectLayer so physics colliders work
+    this.walls = objectLayer;
   }
 
-  /* ────── Map data for each area ────── */
+  /* ────── Map data for each area (Human Readable 2D Arrays) ────── */
   _getMapData(key) {
     const W = 20, H = 15;
 
     if (key === 'garden') {
-      // School Garden — grass, paths, trees, flowers, benches
       const m = Array.from({ length: H }, (_, r) =>
-        Array.from({ length: W }, (_, c) => {
-          // Random grass variety
-          return (r + c) % 7 === 0 ? 'grass2' : 'grass';
-        })
+        Array.from({ length: W }, (_, c) => ((r + c) % 7 === 0 ? 'grass2' : 'grass'))
       );
-      // Border walls (school building edge)
       for (let c = 0; c < W; c++) { m[0][c] = 'wall'; m[H - 1][c] = 'wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      // Main path (horizontal)
-      for (let c = 2; c < 18; c++) m[7][c] = 'path';
-      // Side path (vertical) to door
-      for (let r = 1; r < 7; r++) m[r][10] = 'path';
-      // Flower patches
+      for (let c = 2; c < 18; c++) { m[7][c] = 'path'; m[8][c] = 'path'; }
+      for (let r = 1; r < 7; r++) { m[r][10] = 'path'; m[r][11] = 'path'; }
+      m[7][2] = 'path_1_3';
+      m[8][2] = 'path_1_4';
+      for (let c = 3; c <= 9; c++) { m[7][c] = 'path_2_2'; }
+      for (let c = 3; c <= 16; c++) { m[8][c] = 'path_2_0'; }
+      
+      m[8][18] = 'path_2_4';
+      m[7][17] = 'path_2_3';
+      for (let c = 12; c <= 16; c++) { m[7][c] = 'path_2_2'; }
+      for (let r = 1; r <= 6; r++) { m[r][10] = 'path_3_1'; }
+      for (let r = 1; r <= 6; r++) { m[r][11] = 'path_1_1'; }
+      m[7][10] = 'path_3_2';
+      m[7][11] = 'path_1_2';
       m[3][3] = 'flower'; m[3][4] = 'flower'; m[4][3] = 'flower';
       m[11][15] = 'flower'; m[11][16] = 'flower'; m[12][16] = 'flower';
-      // Trees
       m[2][2] = 'tree'; m[2][17] = 'tree'; m[12][2] = 'tree';
       m[4][15] = 'tree'; m[10][5] = 'tree';
-      // Water feature (small pond)
       m[10][13] = 'water'; m[10][14] = 'water';
       m[11][13] = 'water'; m[11][14] = 'water';
-      // Benches along the path
-      m[6][5] = 'bench'; m[6][14] = 'bench';
-      m[8][8] = 'bench';
-      // Key bench — where Nabula sits
-      m[5][10] = 'bench';
-      // Door to corridor (top center)
-      m[0][10] = 'door';
+      m[6][5] = 'bench'; m[6][14] = 'bench'; m[9][8] = 'bench'; // moved bench to not overlap 2-tile path
+      m[5][9] = 'bench'; // moved bench to left of the 2-tile path
+      m[0][10] = 'door'; m[0][11] = 'door';
       return m;
     }
 
     if (key === 'corridor') {
-      // School Corridor — floor, lockers (walls), doors to other areas
       const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      // Outer walls
       for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      // Corridor walls (creating a hallway shape)
-      for (let c = 1; c < W - 1; c++) {
-        m[1][c] = 'wall_top';  // top inner wall
-        m[5][c] = 'wall';      // partition wall
-      }
-      // Opening in partition for passage
-      m[5][5] = 'floor'; m[5][6] = 'floor';
-      m[5][14] = 'floor'; m[5][15] = 'floor';
-      // Floor variety
+      for (let c = 1; c < W - 1; c++) { m[1][c] = 'wall_top'; m[5][c] = 'wall'; }
+      m[5][5] = 'floor'; m[5][6] = 'floor'; m[5][14] = 'floor'; m[5][15] = 'floor';
       for (let r = 2; r < 5; r++) {
-        for (let c = 1; c < W - 1; c++) {
-          m[r][c] = (c % 3 === 0) ? 'floor2' : 'floor';
-        }
+        for (let c = 1; c < W - 1; c++) if (c % 3 === 0) m[r][c] = 'floor2';
       }
-      // Bookshelves in library area (bottom section)
       m[8][2] = 'bookshelf'; m[8][3] = 'bookshelf'; m[8][4] = 'bookshelf';
       m[10][2] = 'bookshelf'; m[10][3] = 'bookshelf';
       m[12][2] = 'bookshelf'; m[12][3] = 'bookshelf';
-      // Board on wall
       m[1][10] = 'board';
-      // Doors
-      m[H - 1][10] = 'door'; // back to garden
-      m[0][5]  = 'door';     // to classroom
-      m[0][15] = 'door';     // to auditorium
-      m[H - 1][3] = 'door';  // to cafeteria
+      m[H - 1][10] = 'door'; m[H - 1][11] = 'door'; 
+      m[0][5]  = 'door'; m[0][6]  = 'door'; 
+      m[0][15] = 'door'; m[0][16] = 'door'; 
+      m[H - 1][3] = 'door'; m[H - 1][4] = 'door';
       return m;
     }
 
     if (key === 'classroom') {
-      // Classroom — desks in rows, teacher desk, board
       const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      // Walls
       for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      // Board at front
       m[1][9] = 'board'; m[1][10] = 'board'; m[1][11] = 'board';
-      // Teacher desk
       m[3][10] = 'desk';
-      // Student desks in grid (3 rows x 4 columns)
       for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 4; col++) {
           m[6 + row * 2][4 + col * 3] = 'desk';
-          // Chair in front of each desk
           m[7 + row * 2][4 + col * 3] = 'chair';
         }
       }
-      // Floor variety
       for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) {
-          if (m[r][c] === 'floor' && (r + c) % 5 === 0) m[r][c] = 'floor2';
-        }
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 5 === 0) m[r][c] = 'floor2';
       }
-      // Door back to corridor
-      m[H - 1][10] = 'door';
+      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
       return m;
     }
 
     if (key === 'auditorium') {
-      // School Auditorium — stage, seating, display boards
       const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      // Walls
       for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      // Stage area (top section)
-      for (let c = 3; c < 17; c++) {
-        m[2][c] = 'stage'; m[3][c] = 'stage';
-      }
-      // Display boards on walls
+      for (let c = 3; c < 17; c++) { m[2][c] = 'stage'; m[3][c] = 'stage'; }
       m[1][5] = 'board'; m[1][10] = 'board'; m[1][15] = 'board';
-      // Seating rows
       for (let row = 0; row < 4; row++) {
-        for (let col = 2; col < 18; col += 2) {
-          m[6 + row * 2][col] = 'chair';
-        }
+        for (let col = 2; col < 18; col += 2) m[6 + row * 2][col] = 'chair';
       }
-      // Floor variety
       for (let r = 4; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) {
-          if (m[r][c] === 'floor' && (r * c) % 6 === 0) m[r][c] = 'floor2';
-        }
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r * c) % 6 === 0) m[r][c] = 'floor2';
       }
-      // Door
-      m[H - 1][10] = 'door';
+      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
       return m;
     }
 
     if (key === 'cafeteria') {
-      // Cafeteria — tables, chairs, obstacles
       const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      // Walls
       for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      // Tables with chairs (4 clusters)
       const tablePositions = [
-        { r: 3, c: 4 }, { r: 3, c: 11 },
-        { r: 8, c: 4 }, { r: 8, c: 11 },
-        { r: 6, c: 16 }, { r: 11, c: 8 }
+        { r: 3, c: 4 }, { r: 3, c: 11 }, { r: 8, c: 4 }, 
+        { r: 8, c: 11 }, { r: 6, c: 16 }, { r: 11, c: 8 }
       ];
       tablePositions.forEach(({ r, c }) => {
         m[r][c] = 'table';
-        // Chairs around table
         if (r - 1 >= 1) m[r - 1][c] = 'chair';
         if (r + 1 < H - 1) m[r + 1][c] = 'chair';
         if (c - 1 >= 1 && m[r][c - 1] === 'floor') m[r][c - 1] = 'chair';
         if (c + 1 < W - 1 && m[r][c + 1] === 'floor') m[r][c + 1] = 'chair';
       });
-      // Serving counter (wall-like)
       for (let c = 2; c < 8; c++) m[1][c] = 'desk';
-      // Floor variety
       for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) {
-          if (m[r][c] === 'floor' && (r + c) % 4 === 0) m[r][c] = 'floor2';
-        }
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 4 === 0) m[r][c] = 'floor2';
       }
-      // Door
-      m[H - 1][10] = 'door';
+      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
       return m;
     }
 
-    // Default fallback — empty grass field
     return Array.from({ length: H }, () => Array(W).fill('grass'));
   }
 
@@ -400,22 +385,30 @@ class WorldScene extends Phaser.Scene {
   _getTransitions(mapKey) {
     const transitions = {
       garden: [
-        { fromX: 10, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+        { fromX: 10, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
+        { fromX: 11, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
       ],
       corridor: [
         { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
+        { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
         { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
+        { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
         { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-        { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
+        { fromX: 16, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
+        { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 },
+        { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
       ],
       classroom: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  }
+        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  },
+        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  }
       ],
       auditorium: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
+        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  },
+        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
       ],
       cafeteria: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 }
+        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 },
+        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 }
       ]
     };
     return transitions[mapKey] || [];

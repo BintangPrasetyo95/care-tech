@@ -16,8 +16,8 @@ class Player {
 
     /* --- sprite -------------------------------------------------- */
     this.sprite = scene.physics.add.sprite(x, y, 'player', 0)
-      .setSize(14, 14)           // collision box smaller than tile
-      .setOffset(9, 9)
+      .setSize(14, 14)           // collision box for feet
+      .setOffset(9, 16)          // shift box down to the character's feet in the 32x32 frame
       .setDepth(5);              // render above ground tiles
 
     /* --- input --------------------------------------------------- */
@@ -67,6 +67,12 @@ class Player {
     else if (vx > 0) this.facing = 'right';
 
     /* -- play walk / idle animation -- */
+    if (this.facing === 'left') {
+      this.sprite.setFlipX(true);
+    } else if (this.facing === 'right') {
+      this.sprite.setFlipX(false);
+    }
+
     if (body.velocity.x !== 0 || body.velocity.y !== 0) {
       this.sprite.anims.play('player_walk_' + this.facing, true);
     } else {
