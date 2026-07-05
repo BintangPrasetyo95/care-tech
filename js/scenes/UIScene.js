@@ -126,7 +126,7 @@ class UIScene extends Phaser.Scene {
 
     // ── Clickable option buttons (pool of 4) ────────
     this.optionButtons = [];
-    const optStartY = this._boxY + 76;
+    const optStartY = this._boxY + 64;
     const optSpacing = 18;
 
     for (let i = 0; i < 4; i++) {
@@ -223,7 +223,7 @@ class UIScene extends Phaser.Scene {
 
     // ── Render option buttons INSIDE the box ────────
     const choices = node.choices || [];
-    const optStartY = this._boxY + 76;
+    const optStartY = this._boxY + 64;
     const optSpacing = 18;
 
     for (let i = 0; i < this.optionButtons.length; i++) {

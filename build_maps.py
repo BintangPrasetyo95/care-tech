@@ -22,7 +22,7 @@ tiles = {
     'stage': (124, 45, 18),
     'flower': (251, 113, 133),
     'tree': (22, 101, 52),
-    'water': (14, 165, 233),
+    'water_tl': (14, 165, 233),
     'bookshelf': (68, 64, 60),
     'path_1_3': (0, 0, 0, 0),
     'path_1_4': (0, 0, 0, 0),
@@ -34,6 +34,12 @@ tiles = {
     'path_1_1': (0, 0, 0, 0),
     'path_3_2': (0, 0, 0, 0),
     'path_1_2': (0, 0, 0, 0),
+    'water_tr': (0, 0, 0, 0),
+    'water_bl': (0, 0, 0, 0),
+    'water_br': (0, 0, 0, 0),
+    'tree_0_0': (0,0,0,0), 'tree_0_1': (0,0,0,0), 'tree_0_2': (0,0,0,0),
+    'tree_1_0': (0,0,0,0), 'tree_1_1': (0,0,0,0), 'tree_1_2': (0,0,0,0),
+    'tree_2_0': (0,0,0,0), 'tree_2_1': (0,0,0,0), 'tree_2_2': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -45,6 +51,8 @@ draw = ImageDraw.Draw(img)
 
 try:
     garden_sheet = Image.open('stuff/school_garden_sprites.png')
+    pond_sheet = Image.open('stuff/school_garden_pond_sprites.png')
+    big_tree_sheet = Image.open('stuff/A_single__massive_oa...-890691365-0 color.png')
     custom_tiles = {
         'grass': garden_sheet.crop((0, 3*32, 32, 4*32)),
         'grass2': garden_sheet.crop((0, 4*32, 32, 5*32)),
@@ -59,7 +67,20 @@ try:
         'path_3_1': garden_sheet.crop((3*32, 1*32, 4*32, 2*32)),
         'path_1_1': garden_sheet.crop((1*32, 1*32, 2*32, 2*32)),
         'path_3_2': garden_sheet.crop((3*32, 2*32, 4*32, 3*32)),
-        'path_1_2': garden_sheet.crop((1*32, 2*32, 2*32, 3*32))
+        'path_1_2': garden_sheet.crop((1*32, 2*32, 2*32, 3*32)),
+        'water_tl': pond_sheet.crop((0, 0, 32, 32)),
+        'water_tr': pond_sheet.crop((32, 0, 64, 32)),
+        'water_bl': pond_sheet.crop((0, 32, 32, 64)),
+        'water_br': pond_sheet.crop((32, 32, 64, 64)),
+        'tree_0_0': big_tree_sheet.crop((0*32, 0*32, 1*32, 1*32)),
+        'tree_0_1': big_tree_sheet.crop((1*32, 0*32, 2*32, 1*32)),
+        'tree_0_2': big_tree_sheet.crop((2*32, 0*32, 3*32, 1*32)),
+        'tree_1_0': big_tree_sheet.crop((0*32, 1*32, 1*32, 2*32)),
+        'tree_1_1': big_tree_sheet.crop((1*32, 1*32, 2*32, 2*32)),
+        'tree_1_2': big_tree_sheet.crop((2*32, 1*32, 3*32, 2*32)),
+        'tree_2_0': big_tree_sheet.crop((0*32, 2*32, 1*32, 3*32)),
+        'tree_2_1': big_tree_sheet.crop((1*32, 2*32, 2*32, 3*32)),
+        'tree_2_2': big_tree_sheet.crop((2*32, 2*32, 3*32, 3*32)),
     }
 except Exception as e:
     custom_tiles = {}
@@ -149,7 +170,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'water', 'bookshelf']
+    return name in ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]
@@ -177,7 +198,7 @@ garden_grid[8][2] = 'path_1_4'
 for c in range(3, 10): garden_grid[7][c] = 'path_2_2'
 for c in range(3, 17): garden_grid[8][c] = 'path_2_0'
 
-garden_grid[8][18] = 'path_2_4'
+garden_grid[8][17] = 'path_2_4'
 garden_grid[7][17] = 'path_2_3'
 for c in range(12, 17): garden_grid[7][c] = 'path_2_2'
 for r in range(1, 7): garden_grid[r][10] = 'path_3_1'
@@ -185,8 +206,12 @@ for r in range(1, 7): garden_grid[r][11] = 'path_1_1'
 garden_grid[7][10] = 'path_3_2'
 garden_grid[7][11] = 'path_1_2'
 for r, c in [(3,3), (3,4), (4,3), (11,15), (11,16), (12,16)]: garden_grid[r][c] = 'flower'
-for r, c in [(2,2), (2,17), (12,2), (4,15), (10,5)]: garden_grid[r][c] = 'tree'
-for r, c in [(10,13), (10,14), (11,13), (11,14)]: garden_grid[r][c] = 'water'
+for r, c in [(2,2), (2,17), (12,2), (4,15), (10,5)]:
+    garden_grid[r][c] = 'tree_0_0'; garden_grid[r][c+1] = 'tree_0_1'; garden_grid[r][c+2] = 'tree_0_2';
+    garden_grid[r+1][c] = 'tree_1_0'; garden_grid[r+1][c+1] = 'tree_1_1'; garden_grid[r+1][c+2] = 'tree_1_2';
+    garden_grid[r+2][c] = 'tree_2_0'; garden_grid[r+2][c+1] = 'tree_2_1'; garden_grid[r+2][c+2] = 'tree_2_2';
+garden_grid[10][13] = 'water_tl'; garden_grid[10][14] = 'water_tr';
+garden_grid[11][13] = 'water_bl'; garden_grid[11][14] = 'water_br';
 for r, c in [(6,5), (6,14), (8,8), (5,10)]: garden_grid[r][c] = 'bench'
 garden_grid[0][10] = 'door'
 g_grnd, g_obj = build_layers(garden_grid, 'grass')

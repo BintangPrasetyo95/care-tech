@@ -129,21 +129,24 @@ class WorldScene extends Phaser.Scene {
     const objectLayer = map.createBlankLayer('Objects', tileset);
     
     groundLayer.setDepth(0);
-    objectLayer.setDepth(1);
+    objectLayer.setDepth(10); // Renders above the player (depth 5)
 
-    // Dictionary mapping string names to Tiled tileset IDs (1-based index)
     const TILE_IDS = {
       'grass': 1, 'grass2': 2, 'path': 3, 'path2': 4,
       'wall': 5, 'wall_top': 6, 'floor': 7, 'floor2': 8,
       'door': 9, 'bench': 10, 'desk': 11, 'board': 12,
       'chair': 13, 'table': 14, 'stage': 15, 'flower': 16,
-      'tree': 17, 'water': 18, 'bookshelf': 19,
+      'tree': 17, 'water_tl': 18, 'bookshelf': 19,
       'path_1_3': 20, 'path_1_4': 21, 'path_2_2': 22, 'path_2_0': 23,
       'path_2_4': 24, 'path_2_3': 25, 'path_3_1': 26, 'path_1_1': 27,
-      'path_3_2': 28, 'path_1_2': 29
+      'path_3_2': 28, 'path_1_2': 29,
+      'water_tr': 30, 'water_bl': 31, 'water_br': 32,
+      'tree_0_0': 33, 'tree_0_1': 34, 'tree_0_2': 35,
+      'tree_1_0': 36, 'tree_1_1': 37, 'tree_1_2': 38,
+      'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41
     };
     
-    const solidTiles = ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'water', 'bookshelf'];
+    const solidTiles = ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
 
     const mapData = this._getMapData(mapKey);
 
@@ -153,7 +156,7 @@ class WorldScene extends Phaser.Scene {
         const tileName = mapData[r][c];
         const tileId = TILE_IDS[tileName] || 0;
         
-        if (solidTiles.includes(tileName) || tileName === 'door') {
+        if (solidTiles.includes(tileName) || tileName === 'door' || (tileName && tileName.startsWith('tree_'))) {
           // Put interactive/solid objects on Object layer, put default floor beneath it
           const floorId = (mapKey === 'garden') ? TILE_IDS['grass'] : TILE_IDS['floor'];
           groundLayer.putTileAt(floorId, c, r);
@@ -165,8 +168,9 @@ class WorldScene extends Phaser.Scene {
       }
     }
 
-    // Set collision on the Objects layer. (Tile ID 9 is door, we exclude it so player can walk into it)
-    objectLayer.setCollisionByExclusion([-1, 9]);
+    // Set collision on the Objects layer. (Exclude door and non-root tree parts so player can walk through them)
+    const excludeIds = [-1, TILE_IDS['door'], TILE_IDS['tree_0_0'], TILE_IDS['tree_0_1'], TILE_IDS['tree_0_2'], TILE_IDS['tree_1_0'], TILE_IDS['tree_1_1'], TILE_IDS['tree_1_2'], TILE_IDS['tree_2_0'], TILE_IDS['tree_2_2']];
+    objectLayer.setCollisionByExclusion(excludeIds);
 
     // Set this.walls to the objectLayer so physics colliders work
     this.walls = objectLayer;
@@ -189,7 +193,7 @@ class WorldScene extends Phaser.Scene {
       for (let c = 3; c <= 9; c++) { m[7][c] = 'path_2_2'; }
       for (let c = 3; c <= 16; c++) { m[8][c] = 'path_2_0'; }
       
-      m[8][18] = 'path_2_4';
+      m[8][17] = 'path_2_4';
       m[7][17] = 'path_2_3';
       for (let c = 12; c <= 16; c++) { m[7][c] = 'path_2_2'; }
       for (let r = 1; r <= 6; r++) { m[r][10] = 'path_3_1'; }
@@ -198,10 +202,16 @@ class WorldScene extends Phaser.Scene {
       m[7][11] = 'path_1_2';
       m[3][3] = 'flower'; m[3][4] = 'flower'; m[4][3] = 'flower';
       m[11][15] = 'flower'; m[11][16] = 'flower'; m[12][16] = 'flower';
-      m[2][2] = 'tree'; m[2][17] = 'tree'; m[12][2] = 'tree';
-      m[4][15] = 'tree'; m[10][5] = 'tree';
-      m[10][13] = 'water'; m[10][14] = 'water';
-      m[11][13] = 'water'; m[11][14] = 'water';
+      
+      const putBigTree = (r, c) => {
+        m[r][c] = 'tree_0_0'; m[r][c+1] = 'tree_0_1'; m[r][c+2] = 'tree_0_2';
+        m[r+1][c] = 'tree_1_0'; m[r+1][c+1] = 'tree_1_1'; m[r+1][c+2] = 'tree_1_2';
+        m[r+2][c] = 'tree_2_0'; m[r+2][c+1] = 'tree_2_1'; m[r+2][c+2] = 'tree_2_2';
+      };
+      putBigTree(2,2); putBigTree(2,17); putBigTree(12,2); putBigTree(4,15); putBigTree(10,5);
+
+      m[10][13] = 'water_tl'; m[10][14] = 'water_tr';
+      m[11][13] = 'water_bl'; m[11][14] = 'water_br';
       m[6][5] = 'bench'; m[6][14] = 'bench'; m[9][8] = 'bench'; // moved bench to not overlap 2-tile path
       m[5][9] = 'bench'; // moved bench to left of the 2-tile path
       m[0][10] = 'door'; m[0][11] = 'door';
