@@ -55,55 +55,79 @@ class UIScene extends Phaser.Scene {
       color: '#facc15'
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
-    /* ══════════ Map Name (top-center) ══════════ */
-    this.mapNameTxt = this.add.text(width / 2, 20, '', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: '#7f5af0',
-      letterSpacing: 2
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+    /* ══════════ Sidebar Menu (ESC to toggle) ══════════ */
+    this.sidebarContainer = this.add.container(-260, 0).setScrollFactor(0).setDepth(400);
+    
+    // Sidebar Background
+    this.sidebarContainer.add(
+      this.add.rectangle(0, 0, 260, height, 0x16161a, 0.95)
+        .setOrigin(0, 0).setStrokeStyle(2, 0x7f5af0)
+    );
+    
+    // Title
+    this.sidebarContainer.add(
+      this.add.text(130, 30, 'CARE-TECH', {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#7f5af0'
+      }).setOrigin(0.5)
+    );
+    
+    // Subtitle
+    this.sidebarContainer.add(
+      this.add.text(130, 52, 'Harmonia School', {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '12px', color: '#94a1b2'
+      }).setOrigin(0.5)
+    );
 
-    /* ══════════ Map Switch Menu ══════════ */
-    this.mapMenuBtn = this.add.text(width / 2, 40, '[ Switch Level ]', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif',
-      fontSize: '10px',
-      color: '#ffffff',
-      backgroundColor: '#2cb67d',
-      padding: { x: 4, y: 2 }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: true });
+    // Current Level Display
+    this.sidebarLevelText = this.add.text(130, 90, '', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#fffffe', align: 'center', wordWrap: { width: 220 }
+    }).setOrigin(0.5);
+    this.sidebarContainer.add(this.sidebarLevelText);
 
-    this.mapMenuPanel = this.add.container(width / 2, 100).setScrollFactor(0).setDepth(300).setVisible(false);
-    this.mapMenuPanel.add(this.add.rectangle(0, 0, 160, 120, 0x16161a, 0.9).setStrokeStyle(1, 0x7f5af0));
+    // Switch Level Button
+    this.switchLevelBtn = this.add.text(130, 130, '[ Switch Level ]', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#2cb67d', padding: { x: 8, y: 4 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.sidebarContainer.add(this.switchLevelBtn);
 
-    const maps = [
-      { key: 'garden', name: 'Garden' },
-      { key: 'corridor', name: 'Corridor' },
-      { key: 'classroom', name: 'Classroom (Locked)' },
-      { key: 'auditorium', name: 'Auditorium (Locked)' }
+    // Level List Container
+    this.levelListContainer = this.add.container(0, 160).setVisible(false);
+    this.sidebarContainer.add(this.levelListContainer);
+
+    // Levels from Game Design Flow
+    const levelInfos = [
+      { key: 'garden', name: 'Level 1: Detective Emotion' },
+      { key: 'corridor', name: 'Level 2: Empathy Rescue' },
+      { key: 'classroom', name: 'Level 3: Mystery Case' },
+      { key: 'auditorium', name: 'Level 4: Harmony Builder' },
+      { key: 'cafeteria', name: 'Level 5: Time Challenge X' }
     ];
 
-    maps.forEach((m, i) => {
-      const btn = this.add.text(0, -40 + i * 25, m.name, {
-        fontFamily: '"Segoe UI", system-ui, sans-serif',
-        fontSize: '11px',
-        color: m.name.includes('Locked') ? '#6b7280' : '#ffffff'
-      }).setOrigin(0.5).setInteractive({ useHandCursor: !m.name.includes('Locked') });
+    levelInfos.forEach((lvl, i) => {
+      const btn = this.add.text(130, i * 30, lvl.name, {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '10px', color: '#b0bec5'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
       
+      btn.on('pointerover', () => btn.setColor('#fffffe'));
+      btn.on('pointerout', () => btn.setColor('#b0bec5'));
       btn.on('pointerdown', () => {
-        if (!m.name.includes('Locked')) {
-          this.mapMenuPanel.setVisible(false);
-          const world = this.scene.get('World');
-          if (world && world._changeMap) {
-             world._changeMap(m.key, 10 * 32 + 16, 7 * 32 + 16); 
-          }
+        this._toggleSidebar();
+        const world = this.scene.get('World');
+        if (world && world._changeMap) {
+           world._changeMap(lvl.key, 10 * 32 + 16, 7 * 32 + 16); 
         }
       });
-      this.mapMenuPanel.add(btn);
+      this.levelListContainer.add(btn);
     });
 
-    this.mapMenuBtn.on('pointerdown', () => {
-      this.mapMenuPanel.setVisible(!this.mapMenuPanel.visible);
+    this.switchLevelBtn.on('pointerdown', () => {
+      this.levelListContainer.setVisible(!this.levelListContainer.visible);
+    });
+
+    // ESC to toggle sidebar
+    this.sidebarOpen = false;
+    this.input.keyboard.on('keydown-ESC', () => {
+      this._toggleSidebar();
     });
 
     /* ══════════ Interaction Prompt ══════════ */
@@ -395,15 +419,30 @@ class UIScene extends Phaser.Scene {
     this.clockTxt.setText(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
   }
 
+  _toggleSidebar() {
+    this.sidebarOpen = !this.sidebarOpen;
+    if (this.sidebarOpen) {
+      this.levelListContainer.setVisible(false);
+    }
+    this.tweens.add({
+      targets: this.sidebarContainer,
+      x: this.sidebarOpen ? 0 : -260,
+      duration: 300,
+      ease: 'Power2'
+    });
+  }
+
   _refreshMapName() {
     const mapKey = this.registry.get('currentMap');
     const names = {
-      garden:     '🌿 SCHOOL GARDEN',
-      corridor:   '🏫 CORRIDOR',
-      classroom:  '📚 CLASSROOM',
-      auditorium: '🎭 AUDITORIUM',
-      cafeteria:  '🍽️ CAFETERIA'
+      garden:     'Level 1: Detective Emotion\n(School Garden)',
+      corridor:   'Level 2: Empathy Rescue\n(Corridor & Library)',
+      classroom:  'Level 3: Mystery Case\n(Class Investigation)',
+      auditorium: 'Level 4: Harmony Builder\n(School Auditorium)',
+      cafeteria:  'Level 5: Time Challenge X\n(Cafeteria)'
     };
-    this.mapNameTxt.setText(names[mapKey] || mapKey.toUpperCase());
+    if (this.sidebarLevelText) {
+      this.sidebarLevelText.setText('Current Level:\n' + (names[mapKey] || mapKey.toUpperCase()));
+    }
   }
 }
