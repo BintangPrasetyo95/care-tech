@@ -55,19 +55,33 @@ class UIScene extends Phaser.Scene {
       color: '#facc15'
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
+
+    /* ══════════ Mobile/Clickable Menu Toggle ══════════ */
+    this.menuToggleBtn = this.add.text(12, 45, ' ☰ MENU ', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif',
+      fontSize: '11px',
+      color: '#ffffff',
+      backgroundColor: '#0ea5e9',
+      padding: { x: 4, y: 2 }
+    }).setOrigin(0, 0).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: true });
+    
+    this.menuToggleBtn.on('pointerdown', () => {
+      this._toggleSidebar();
+    });
+
     /* ══════════ Sidebar Menu (ESC to toggle) ══════════ */
     this.sidebarContainer = this.add.container(-260, 0).setScrollFactor(0).setDepth(400);
     
     // Sidebar Background
     this.sidebarContainer.add(
       this.add.rectangle(0, 0, 260, height, 0x16161a, 0.95)
-        .setOrigin(0, 0).setStrokeStyle(2, 0x7f5af0)
+        .setOrigin(0, 0).setStrokeStyle(2, 0x0ea5e9)
     );
     
     // Title
     this.sidebarContainer.add(
       this.add.text(130, 30, 'CARE-TECH', {
-        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#7f5af0'
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#0ea5e9'
       }).setOrigin(0.5)
     );
     
@@ -99,6 +113,16 @@ class UIScene extends Phaser.Scene {
     this.switchLangBtn.on('pointerdown', () => {
       const curLang = this.registry.get('lang') || 'id';
       this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
+    });
+
+    // Close Sidebar Button
+    this.closeSidebarBtn = this.add.text(130, height - 30, '[ Kembali ]', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#ef4444', padding: { x: 8, y: 4 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.sidebarContainer.add(this.closeSidebarBtn);
+    
+    this.closeSidebarBtn.on('pointerdown', () => {
+      this._toggleSidebar();
     });
 
     // Level List Container
@@ -163,7 +187,7 @@ class UIScene extends Phaser.Scene {
       this._boxX, this._boxY, this._boxW, this._boxH, 0x1a1a2e, 0.92
     )
       .setOrigin(0)
-      .setStrokeStyle(2, 0x7c4dff)
+      .setStrokeStyle(2, 0x0ea5e9)
       .setScrollFactor(0)
       .setDepth(200)
       .setVisible(false);
@@ -172,13 +196,13 @@ class UIScene extends Phaser.Scene {
     this.speakerTxt = this.add.text(this._boxX + 10, this._boxY + 6, '', {
       fontFamily: 'monospace',
       fontSize: '11px',
-      color: '#b388ff',
+      color: '#38bdf8',
       fontStyle: 'bold',
     }).setScrollFactor(0).setDepth(201).setVisible(false);
 
     // Accent border at top of dialog
     this.dialogBorder = this.add.rectangle(
-      this._boxX + 10, this._boxY + 22, this._boxW - 20, 1, 0x7c4dff, 0.4
+      this._boxX + 10, this._boxY + 22, this._boxW - 20, 1, 0x0ea5e9, 0.4
     ).setOrigin(0).setScrollFactor(0).setDepth(201).setVisible(false);
 
     // Dialog text
@@ -457,7 +481,8 @@ class UIScene extends Phaser.Scene {
     
     if (this.harmonyLabelTxt) this.harmonyLabelTxt.setText(lang === 'en' ? '♥ HARMONY' : '♥ HARMONI');
     if (this.switchLevelBtn) this.switchLevelBtn.setText(lang === 'en' ? '[ Switch Level ]' : '[ Ganti Level ]');
-    if (this.switchLangBtn) this.switchLangBtn.setText(lang === 'en' ? '[ Switch Language (EN) ]' : '[ Ganti Bahasa (ID) ]');
+    if (this.switchLangBtn)    this.switchLangBtn.setText(lang === 'en' ? '[ Switch Language (EN) ]' : '[ Ganti Bahasa (ID) ]');
+    this.closeSidebarBtn.setText(lang === 'en' ? '[ Back (Close) ]' : '[ Kembali (Tutup) ]');
     if (this.interactPrompt) this.interactPrompt.setText(lang === 'en' ? '[ Press E to interact ]' : '[ Tekan E untuk interaksi ]');
     
     if (this.levelButtons) {

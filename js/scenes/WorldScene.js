@@ -212,8 +212,8 @@ class WorldScene extends Phaser.Scene {
             if (!objId) return;
             if (objName.startsWith('water')) {
               midLayer.putTileAt(objId, c, r);
-            } else if (objName.startsWith('bench')) {
-              midLayer2.putTileAt(objId, c, r);
+            } else if (objName.startsWith('bench_1')) {
+              midLayer.putTileAt(objId, c, r);
             } else {
               objectLayersTransparent[i].putTileAt(objId, c, r);
               objectLayers[i].putTileAt(objId, c, r);
@@ -225,8 +225,8 @@ class WorldScene extends Phaser.Scene {
             midLayer.putTileAt(groundId, c, r);
           } else if (groundName === 'wall' || groundName === 'wall_top') {
             midLayer.putTileAt(groundId, c, r);
-          } else if (groundName.startsWith('bench')) {
-            midLayer2.putTileAt(groundId, c, r);
+          } else if (groundName.startsWith('bench_1')) {
+            midLayer.putTileAt(groundId, c, r);
           } else {
             objectLayersTransparent[0].putTileAt(groundId, c, r);
             objectLayers[0].putTileAt(groundId, c, r);

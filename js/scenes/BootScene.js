@@ -11,29 +11,33 @@ class BootScene extends Phaser.Scene {
     /* ── Progress bar (drawn procedurally) ── */
     const { width, height } = this.scale;
 
-    // Dark background
-    this.cameras.main.setBackgroundColor('#0f0e17');
+    // Soft light background
+    this.cameras.main.setBackgroundColor('#f0fdfa');
 
     // Loading text
-    const loadText = this.add.text(width / 2, height / 2 - 30, 'Loading CARE-TECH…', {
+    const loadText = this.add.text(width / 2, height / 2 - 40, 'Loading CARE-TECH…', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
-      fontSize: '14px',
-      color: '#94a1b2'
+      fontSize: '15px',
+      color: '#64748b',
+      letterSpacing: 1
     }).setOrigin(0.5);
 
-    // Progress bar track
+    // Progress bar track (soft border)
     const barX = width * 0.25;
-    const barY = height / 2;
+    const barY = height / 2 + 10;
     const barW = width * 0.5;
-    const barH = 8;
-    this.add.rectangle(barX + barW / 2, barY, barW, barH, 0x242629).setOrigin(0.5);
+    const barH = 6;
+    
+    const track = this.add.graphics();
+    track.fillStyle(0xe2e8f0, 1);
+    track.fillRoundedRect(barX, barY - barH / 2, barW, barH, 3);
 
-    // Progress bar fill
+    // Progress bar fill (light blue)
     const bar = this.add.graphics();
     this.load.on('progress', v => {
       bar.clear()
-         .fillStyle(0x7f5af0, 1)
-         .fillRoundedRect(barX, barY - barH / 2, barW * v, barH, 4);
+         .fillStyle(0x0ea5e9, 1)
+         .fillRoundedRect(barX, barY - barH / 2, barW * v, barH, 3);
     });
 
     this.load.on('complete', () => {
