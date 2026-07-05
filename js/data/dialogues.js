@@ -11,9 +11,9 @@ const DIALOGUES = {
 
   /* ══════════ Level 1 — Detective Emotion (School Garden) ══════════ */
 
-  nakula_intro: {
+  player_intro: {
     speaker : 'Nakula',
-    portrait: 'nakula_happy',
+    portrait: 'player_happy',
     text    : 'Hey, look — Nabula is sitting alone over there on that bench. She seems… off. What do you think?',
     choices : [
       { label: 'A) It seems like Nabula is sad…',       next: 'nabula_sad_ack',   harmonyDelta:  10 },
@@ -27,12 +27,12 @@ const DIALOGUES = {
     speaker : 'Nabula',
     portrait: 'nabula_smile',
     text    : '… you noticed? That… actually means a lot. Thank you.',
-    next    : 'nakula_impressed'
+    next    : 'player_impressed'
   },
 
-  nakula_impressed: {
+  player_impressed: {
     speaker : 'Nakula',
-    portrait: 'nakula_happy',
+    portrait: 'player_happy',
     text    : 'See? Sometimes just noticing someone\'s feelings is the first step. Nice one.',
     next    : null
   },
@@ -41,19 +41,19 @@ const DIALOGUES = {
     speaker : 'Nabula',
     portrait: 'nabula_neutral',
     text    : '… yeah, I guess. Everyone needs space sometimes.',
-    next    : 'nakula_hmm'
+    next    : 'player_hmm'
   },
 
-  nakula_hmm: {
+  player_hmm: {
     speaker : 'Nakula',
-    portrait: 'nakula_neutral',
+    portrait: 'player_neutral',
     text    : 'Hmm… I wonder if that\'s really what\'s going on though.',
     next    : null
   },
 
   nabula_ignore: {
     speaker : 'Nakula',
-    portrait: 'nakula_sad',
+    portrait: 'player_sad',
     text    : 'Come on… we should at least check on her. What if something\'s wrong?',
     next    : null
   },
@@ -62,12 +62,12 @@ const DIALOGUES = {
     speaker : 'Nabula',
     portrait: 'nabula_surprised',
     text    : 'Oh! Hi… I wasn\'t expecting anyone to come over. That\'s… nice of you.',
-    next    : 'nakula_smiles'
+    next    : 'player_smiles'
   },
 
-  nakula_smiles: {
+  player_smiles: {
     speaker : 'Nakula',
-    portrait: 'nakula_happy',
+    portrait: 'player_happy',
     text    : 'That\'s the spirit! Being proactive about reaching out matters.',
     next    : null
   },

@@ -64,6 +64,48 @@ class UIScene extends Phaser.Scene {
       letterSpacing: 2
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
+    /* ══════════ Map Switch Menu ══════════ */
+    this.mapMenuBtn = this.add.text(width / 2, 40, '[ Switch Level ]', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif',
+      fontSize: '10px',
+      color: '#ffffff',
+      backgroundColor: '#2cb67d',
+      padding: { x: 4, y: 2 }
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: true });
+
+    this.mapMenuPanel = this.add.container(width / 2, 100).setScrollFactor(0).setDepth(300).setVisible(false);
+    this.mapMenuPanel.add(this.add.rectangle(0, 0, 160, 120, 0x16161a, 0.9).setStrokeStyle(1, 0x7f5af0));
+
+    const maps = [
+      { key: 'garden', name: 'Garden' },
+      { key: 'corridor', name: 'Corridor' },
+      { key: 'classroom', name: 'Classroom (Locked)' },
+      { key: 'auditorium', name: 'Auditorium (Locked)' }
+    ];
+
+    maps.forEach((m, i) => {
+      const btn = this.add.text(0, -40 + i * 25, m.name, {
+        fontFamily: '"Segoe UI", system-ui, sans-serif',
+        fontSize: '11px',
+        color: m.name.includes('Locked') ? '#6b7280' : '#ffffff'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: !m.name.includes('Locked') });
+      
+      btn.on('pointerdown', () => {
+        if (!m.name.includes('Locked')) {
+          this.mapMenuPanel.setVisible(false);
+          const world = this.scene.get('World');
+          if (world && world._changeMap) {
+             world._changeMap(m.key, 10 * 32 + 16, 7 * 32 + 16); 
+          }
+        }
+      });
+      this.mapMenuPanel.add(btn);
+    });
+
+    this.mapMenuBtn.on('pointerdown', () => {
+      this.mapMenuPanel.setVisible(!this.mapMenuPanel.visible);
+    });
+
     /* ══════════ Interaction Prompt ══════════ */
     this.interactPrompt = this.add.text(width / 2, height - 130, '[ Press E to interact ]', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',

@@ -40,6 +40,14 @@ tiles = {
     'tree_0_0': (0,0,0,0), 'tree_0_1': (0,0,0,0), 'tree_0_2': (0,0,0,0),
     'tree_1_0': (0,0,0,0), 'tree_1_1': (0,0,0,0), 'tree_1_2': (0,0,0,0),
     'tree_2_0': (0,0,0,0), 'tree_2_1': (0,0,0,0), 'tree_2_2': (0,0,0,0),
+    'dummy_42': (0,0,0,0),
+    'grass_var1': (0,0,0,0),
+    'grass_var2': (0,0,0,0),
+    'bench_0_0': (0,0,0,0), 'bench_0_1': (0,0,0,0), 'bench_0_2': (0,0,0,0),
+    'dummy_48': (0,0,0,0),
+    'dummy_49': (0,0,0,0),
+    'bench_1_0': (0,0,0,0), 'bench_1_1': (0,0,0,0), 'bench_1_2': (0,0,0,0),
+    'door_big_l': (0,0,0,0), 'door_big_r': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -53,7 +61,13 @@ try:
     garden_sheet = Image.open('stuff/school_garden_sprites.png')
     pond_sheet = Image.open('stuff/school_garden_pond_sprites.png')
     big_tree_sheet = Image.open('stuff/A_single__massive_oa...-890691365-0 color.png')
+    grass_v1 = Image.open('stuff/grass variant 1.png')
+    grass_v2 = Image.open('stuff/grass variant 2.png')
+    bench_sheet = Image.open('stuff/A_long_top_down_wood...-1859695563-0.png')
+    big_door_sheet = Image.open('stuff/A_set_of_large__form...-1004951539-0.png')
+    wall_tile = Image.open('stuff/tile_3_0.png')
     custom_tiles = {
+        'wall': wall_tile,
         'grass': garden_sheet.crop((0, 3*32, 32, 4*32)),
         'grass2': garden_sheet.crop((0, 4*32, 32, 5*32)),
         'path': garden_sheet.crop((0, 0, 32, 32)),
@@ -81,6 +95,16 @@ try:
         'tree_2_0': big_tree_sheet.crop((0*32, 2*32, 1*32, 3*32)),
         'tree_2_1': big_tree_sheet.crop((1*32, 2*32, 2*32, 3*32)),
         'tree_2_2': big_tree_sheet.crop((2*32, 2*32, 3*32, 3*32)),
+        'grass_var1': grass_v1,
+        'grass_var2': grass_v2,
+        'bench_0_0': bench_sheet.crop((0*32, 0*32, 1*32, 1*32)),
+        'bench_0_1': bench_sheet.crop((1*32, 0*32, 2*32, 1*32)),
+        'bench_0_2': bench_sheet.crop((2*32, 0*32, 3*32, 1*32)),
+        'bench_1_0': bench_sheet.crop((0*32, 1*32, 1*32, 2*32)),
+        'bench_1_1': bench_sheet.crop((1*32, 1*32, 2*32, 2*32)),
+        'bench_1_2': bench_sheet.crop((2*32, 1*32, 3*32, 2*32)),
+        'door_big_l': big_door_sheet.crop((0, 0, 32, 32)),
+        'door_big_r': big_door_sheet.crop((32, 0, 64, 32)),
     }
 except Exception as e:
     custom_tiles = {}
@@ -170,7 +194,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf']
+    return name in ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]
@@ -178,7 +202,7 @@ def build_layers(base_grid, fallback='grass'):
     for r in range(H):
         for c in range(W):
             tile = base_grid[r][c]
-            if is_solid(tile) or tile == 'door':
+            if is_solid(tile) or tile == 'door' or tile == 'door_big_l' or tile == 'door_big_r':
                 ground[r][c] = fallback
                 objs[r][c] = tile
             else:
@@ -188,10 +212,15 @@ def build_layers(base_grid, fallback='grass'):
 
 # 1. Garden
 garden_grid = [['grass' if (r+c)%7 != 0 else 'grass2' for c in range(W)] for r in range(H)]
-for c in range(W): garden_grid[0][c] = 'wall'; garden_grid[H-1][c] = 'wall'
-for r in range(H): garden_grid[r][0] = 'wall'; garden_grid[r][W-1] = 'wall'
+for c in range(W):
+    garden_grid[0][c] = 'wall'
+    garden_grid[H-1][c] = 'wall'
+for r in range(H):
+    garden_grid[r][0] = 'wall'
+    garden_grid[r][W-1] = 'wall'
+
 for c in range(2, 18): garden_grid[7][c] = 'path'
-for r in range(1, 7): garden_grid[r][10] = 'path'
+for r in range(0, 7): garden_grid[r][10] = 'path'
 
 garden_grid[7][2] = 'path_1_3'
 garden_grid[8][2] = 'path_1_4'
@@ -201,18 +230,27 @@ for c in range(3, 17): garden_grid[8][c] = 'path_2_0'
 garden_grid[8][17] = 'path_2_4'
 garden_grid[7][17] = 'path_2_3'
 for c in range(12, 17): garden_grid[7][c] = 'path_2_2'
-for r in range(1, 7): garden_grid[r][10] = 'path_3_1'
-for r in range(1, 7): garden_grid[r][11] = 'path_1_1'
+for r in range(0, 7): garden_grid[r][10] = 'path_3_1'
+for r in range(0, 7): garden_grid[r][11] = 'path_1_1'
 garden_grid[7][10] = 'path_3_2'
 garden_grid[7][11] = 'path_1_2'
-for r, c in [(3,3), (3,4), (4,3), (11,15), (11,16), (12,16)]: garden_grid[r][c] = 'flower'
-for r, c in [(2,2), (2,17), (12,2), (4,15), (10,5), (6,5), (6,14), (9,8), (5,9)]:
+garden_grid[3][3] = 'grass_var1'
+garden_grid[3][4] = 'grass_var2'
+garden_grid[4][3] = 'grass_var1'
+garden_grid[11][15] = 'grass_var2'
+garden_grid[11][16] = 'grass_var1'
+garden_grid[12][16] = 'grass_var2'
+
+for r, c in [(2,2), (2,17), (10,1), (4,15), (10,5), (6,5), (6,14), (9,8), (4,8), (9,15)]:
     garden_grid[r][c] = 'tree_0_0'; garden_grid[r][c+1] = 'tree_0_1'; garden_grid[r][c+2] = 'tree_0_2';
     garden_grid[r+1][c] = 'tree_1_0'; garden_grid[r+1][c+1] = 'tree_1_1'; garden_grid[r+1][c+2] = 'tree_1_2';
     garden_grid[r+2][c] = 'tree_2_0'; garden_grid[r+2][c+1] = 'tree_2_1'; garden_grid[r+2][c+2] = 'tree_2_2';
 garden_grid[10][13] = 'water_tl'; garden_grid[10][14] = 'water_tr';
 garden_grid[11][13] = 'water_bl'; garden_grid[11][14] = 'water_br';
-garden_grid[0][10] = 'door'
+
+for r, c in [(6,3), (6,12), (1,6)]:
+    garden_grid[r-1][c] = 'bench_0_0'; garden_grid[r-1][c+1] = 'bench_0_1'; garden_grid[r-1][c+2] = 'bench_0_2';
+    garden_grid[r][c] = 'bench_1_0'; garden_grid[r][c+1] = 'bench_1_1'; garden_grid[r][c+2] = 'bench_1_2';
 g_grnd, g_obj = build_layers(garden_grid, 'grass')
 with open('assets/tilemaps/garden.json', 'w') as f:
     json.dump(make_tiled_json(W, H, g_grnd, g_obj), f)

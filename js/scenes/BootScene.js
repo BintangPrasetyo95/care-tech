@@ -43,9 +43,13 @@ class BootScene extends Phaser.Scene {
     /* ── Try loading real sprite sheets (uncomment when assets exist) ── */
     this.load.spritesheet('player', 'assets/sprites/player.png',
                           { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('nabula', 'assets/sprites/nabula.png',
+                          { frameWidth: 32, frameHeight: 32 });
+    
     
     // Load tileset image
     this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
+    this.load.spritesheet('tileset_sheet', 'assets/sprites/tileset.png?v=' + Date.now(), { frameWidth: 32, frameHeight: 32 });
   }
 
   create() {
@@ -77,8 +81,8 @@ class BootScene extends Phaser.Scene {
 
     /* ── Characters ── */
     // makeSprite('player',  0x3b82f6);   // blue
-    makeSprite('nakula',  0xf59e0b);   // amber
-    makeSprite('nabula',  0xec4899);   // pink
+    // makeSprite('nakula',  0xf59e0b);   // amber
+    // makeSprite('nabula',  0xec4899);   // pink
     makeSprite('riko',    0xef4444);   // red
     makeSprite('rani',    0x8b5cf6);   // violet
     makeSprite('bully',   0x6b7280);   // gray
@@ -94,7 +98,7 @@ class BootScene extends Phaser.Scene {
     // With single-frame placeholders we create one-frame anims
     // so the Player/NPC code doesn't crash. Replace with real
     // spritesheets when pixel art is ready.
-    const characters = ['nakula', 'nabula', 'riko', 'rani', 'bully', 'student'];
+    const characters = ['riko', 'rani', 'bully', 'student'];
     characters.forEach(key => {
       dirs.forEach(dir => {
         if (!this.anims.exists(`${key}_walk_${dir}`)) {
@@ -116,24 +120,26 @@ class BootScene extends Phaser.Scene {
       });
     });
 
-    // Real animations for Player
+    // Real animations for Player, Nabula, Nakula
     dirs.forEach(dir => {
-      if (!this.anims.exists(`player_walk_${dir}`)) {
-        this.anims.create({
-          key: `player_walk_${dir}`,
-          frames: this.anims.generateFrameNumbers('player', { start: 0, end: 5 }),
-          frameRate: 10,
-          repeat: -1
-        });
-      }
-      if (!this.anims.exists(`player_idle_${dir}`)) {
-        this.anims.create({
-          key: `player_idle_${dir}`,
-          frames: [{ key: 'player', frame: 0 }],
-          frameRate: 1,
-          repeat: -1
-        });
-      }
+      ['player', 'nabula'].forEach(key => {
+        if (!this.anims.exists(`${key}_walk_${dir}`)) {
+          this.anims.create({
+            key: `${key}_walk_${dir}`,
+            frames: this.anims.generateFrameNumbers(key, { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+          });
+        }
+        if (!this.anims.exists(`${key}_idle_${dir}`)) {
+          this.anims.create({
+            key: `${key}_idle_${dir}`,
+            frames: [{ key: key, frame: 0 }],
+            frameRate: 1,
+            repeat: -1
+          });
+        }
+      });
     });
   }
 }

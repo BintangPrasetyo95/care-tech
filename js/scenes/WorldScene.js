@@ -25,6 +25,8 @@ class WorldScene extends Phaser.Scene {
     const px = this.spawnX || 5 * TILE + TILE / 2;
     const py = this.spawnY || 7 * TILE + TILE / 2;
     this.player = new Player(this, px, py);
+    this.player.sprite.setCollideWorldBounds(true);
+    this.physics.world.setBounds(0, 0, 20 * TILE, 15 * TILE);
 
     /* ── NPCs ── */
     this.npcs = [];
@@ -135,9 +137,11 @@ class WorldScene extends Phaser.Scene {
     // Create blank layers
     const groundLayer = map.createBlankLayer('Ground', tileset);
     const midLayer = map.createBlankLayer('Mid', tileset);
+    const midLayer2 = map.createBlankLayer('Mid2', tileset);
     
     groundLayer.setDepth(0);
     midLayer.setDepth(1);
+    midLayer2.setDepth(2);
     
     // We create multiple object layers to support trees overlapping trees
     const objectLayersTransparent = [];
@@ -164,7 +168,8 @@ class WorldScene extends Phaser.Scene {
       'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41,
       'grass_var1': 43, 'grass_var2': 44,
       'bench_0_0': 45, 'bench_0_1': 46, 'bench_0_2': 47,
-      'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52
+      'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52,
+      'door_big_l': 53, 'door_big_r': 54
     };
     
     const solidTiles = ['wall', 'wall_top', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
@@ -205,18 +210,23 @@ class WorldScene extends Phaser.Scene {
             if (i >= objectLayers.length) return;
             const objId = TILE_IDS[objName];
             if (!objId) return;
-            
-            if (objName.startsWith('water') || objName.startsWith('bench')) {
+            if (objName.startsWith('water')) {
               midLayer.putTileAt(objId, c, r);
+            } else if (objName.startsWith('bench')) {
+              midLayer2.putTileAt(objId, c, r);
             } else {
               objectLayersTransparent[i].putTileAt(objId, c, r);
               objectLayers[i].putTileAt(objId, c, r);
             }
           });
-        } else if (solidTiles.includes(groundName) || groundName === 'door' || groundName.startsWith('bench')) {
+        } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench')) {
           // If it's a solid object OR a bench piece that was placed without putObj somehow
-          if (groundName.startsWith('water') || groundName.startsWith('bench')) {
+          if (groundName.startsWith('water')) {
             midLayer.putTileAt(groundId, c, r);
+          } else if (groundName === 'wall' || groundName === 'wall_top') {
+            midLayer.putTileAt(groundId, c, r);
+          } else if (groundName.startsWith('bench')) {
+            midLayer2.putTileAt(groundId, c, r);
           } else {
             objectLayersTransparent[0].putTileAt(groundId, c, r);
             objectLayers[0].putTileAt(groundId, c, r);
@@ -259,6 +269,16 @@ class WorldScene extends Phaser.Scene {
     const mask = new Phaser.Display.Masks.BitmapMask(this, this.playerMaskImage);
     mask.invertAlpha = true;
     objectLayers.forEach(layer => layer.setMask(mask));
+
+    // Draw off-screen doors and walls at r = -1 for garden transition
+    if (mapKey === 'garden') {
+      const yPos = -1 * TILE + TILE / 2;
+      const x10 = 10 * TILE + TILE / 2;
+      const x11 = 11 * TILE + TILE / 2;
+      
+      this.add.sprite(x10, yPos, 'tileset_sheet', TILE_IDS['door_big_l']).setDepth(1);
+      this.add.sprite(x11, yPos, 'tileset_sheet', TILE_IDS['door_big_r']).setDepth(1);
+    }
   }
 
   /* ────── Map data for each area (Human Readable 2D Arrays) ────── */
@@ -281,8 +301,8 @@ class WorldScene extends Phaser.Scene {
       m[8][17] = 'path_2_4';
       m[7][17] = 'path_2_3';
       for (let c = 12; c <= 16; c++) { m[7][c] = 'path_2_2'; }
-      for (let r = 1; r <= 6; r++) { m[r][10] = 'path_3_1'; }
-      for (let r = 1; r <= 6; r++) { m[r][11] = 'path_1_1'; }
+      for (let r = 0; r <= 6; r++) { m[r][10] = 'path_3_1'; }
+      for (let r = 0; r <= 6; r++) { m[r][11] = 'path_1_1'; }
       m[7][10] = 'path_3_2';
       m[7][11] = 'path_1_2';
       m[3][3] = 'grass_var1'; m[3][4] = 'grass_var2'; m[4][3] = 'grass_var1';
@@ -307,7 +327,6 @@ class WorldScene extends Phaser.Scene {
 
       putObj(10, 13, 'water_tl'); putObj(10, 14, 'water_tr');
       putObj(11, 13, 'water_bl'); putObj(11, 14, 'water_br');
-      putObj(0, 10, 'door'); putObj(0, 11, 'door');
 
       const putBigBench = (r, c) => {
         putObj(r-1, c, 'bench_0_0'); putObj(r-1, c+1, 'bench_0_1'); putObj(r-1, c+2, 'bench_0_2');
@@ -405,10 +424,13 @@ class WorldScene extends Phaser.Scene {
   /* ────── NPC spawning per map ────── */
   _spawnNPCs(mapKey) {
     if (mapKey === 'garden') {
-      this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 7 * TILE + TILE / 2,
-        'nakula', 'nakula_intro', { name: 'Nakula' }));
-      this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 4 * TILE + TILE / 2,
-        'nabula', null, { name: 'Nabula' }));   // silent until approached via Nakula's dialogue
+      // Nabula on the bench
+      this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+        'nabula', 'player_intro', { name: 'Nabula' }));
+      
+      // Generic NPC near the door
+      this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 1 * TILE + TILE / 2,
+        'student', null, { name: 'Student' }));
       // Background students
       this.npcs.push(new NPC(this, 15 * TILE + TILE / 2, 9 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
@@ -443,7 +465,7 @@ class WorldScene extends Phaser.Scene {
       this.npcs.push(new NPC(this, 14 * TILE + TILE / 2, 6 * TILE + TILE / 2,
         'student', 'student_chat_2', { name: 'Student' }));
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
-        'nakula', 'student_chat_1', { name: 'Nakula' }));
+        'player', 'student_chat_1', { name: 'Nakula' }));
     }
   }
 
