@@ -22,7 +22,7 @@ class WorldScene extends Phaser.Scene {
     this._buildMap(mapKey);
 
     /* ── Player ── */
-    const px = this.spawnX || 5 * TILE + TILE / 2;
+    const px = this.spawnX || 10 * TILE + TILE / 2;
     const py = this.spawnY || 7 * TILE + TILE / 2;
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
