@@ -55,6 +55,7 @@ class BootScene extends Phaser.Scene {
   create() {
     this._generatePlaceholders();
     this._defineAnimations();
+    this.registry.set('lang', 'id');
 
     // Hide the HTML preloader
     const preloader = document.getElementById('preloader');

@@ -16,7 +16,7 @@ class UIScene extends Phaser.Scene {
     this.harmonyPanel = this.add.rectangle(12, 8, 200, 32, 0x16161a, 0.85)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(100);
     // Label
-    this.add.text(18, 11, '♥ HARMONY', {
+    this.harmonyLabelTxt = this.add.text(18, 11, '♥ HARMONI', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
       fontSize: '9px',
       fontStyle: 'bold',
@@ -85,26 +85,38 @@ class UIScene extends Phaser.Scene {
     this.sidebarContainer.add(this.sidebarLevelText);
 
     // Switch Level Button
-    this.switchLevelBtn = this.add.text(130, 130, '[ Switch Level ]', {
+    this.switchLevelBtn = this.add.text(130, 130, '[ Ganti Level ]', {
       fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#2cb67d', padding: { x: 8, y: 4 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     this.sidebarContainer.add(this.switchLevelBtn);
 
+    // Switch Language Button
+    this.switchLangBtn = this.add.text(130, 165, '[ Ganti Bahasa (ID) ]', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#eab308', padding: { x: 8, y: 4 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.sidebarContainer.add(this.switchLangBtn);
+    
+    this.switchLangBtn.on('pointerdown', () => {
+      const curLang = this.registry.get('lang') || 'id';
+      this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
+    });
+
     // Level List Container
-    this.levelListContainer = this.add.container(0, 160).setVisible(false);
+    this.levelListContainer = this.add.container(0, 200).setVisible(false);
     this.sidebarContainer.add(this.levelListContainer);
 
     // Levels from Game Design Flow
     const levelInfos = [
-      { key: 'garden', name: 'Level 1: Detective Emotion' },
-      { key: 'corridor', name: 'Level 2: Empathy Rescue' },
-      { key: 'classroom', name: 'Level 3: Mystery Case' },
-      { key: 'auditorium', name: 'Level 4: Harmony Builder' },
-      { key: 'cafeteria', name: 'Level 5: Time Challenge X' }
+      { key: 'garden', name: {en: 'Level 1: Detective Emotion', id: 'Level 1: Detektif Emosi'} },
+      { key: 'corridor', name: {en: 'Level 2: Empathy Rescue', id: 'Level 2: Penyelamatan Empati'} },
+      { key: 'classroom', name: {en: 'Level 3: Mystery Case', id: 'Level 3: Kasus Misteri'} },
+      { key: 'auditorium', name: {en: 'Level 4: Harmony Builder', id: 'Level 4: Pembangun Harmoni'} },
+      { key: 'cafeteria', name: {en: 'Level 5: Time Challenge X', id: 'Level 5: Tantangan Waktu X'} }
     ];
+    this.levelButtons = [];
 
     levelInfos.forEach((lvl, i) => {
-      const btn = this.add.text(130, i * 30, lvl.name, {
+      const btn = this.add.text(130, i * 30, lvl.name['id'], {
         fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '10px', color: '#b0bec5'
       }).setOrigin(0.5).setInteractive({ useHandCursor: true });
       
@@ -117,7 +129,8 @@ class UIScene extends Phaser.Scene {
            world._changeMap(lvl.key, 10 * 32 + 16, 7 * 32 + 16); 
         }
       });
-      this.levelListContainer.add(btn);
+            this.levelListContainer.add(btn);
+      this.levelButtons.push({btn, name: lvl.name});
     });
 
     this.switchLevelBtn.on('pointerdown', () => {
@@ -131,7 +144,7 @@ class UIScene extends Phaser.Scene {
     });
 
     /* ══════════ Interaction Prompt ══════════ */
-    this.interactPrompt = this.add.text(width / 2, height - 130, '[ Press E to interact ]', {
+    this.interactPrompt = this.add.text(width / 2, height - 130, '[ Tekan E untuk interaksi ]', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
       fontSize: '10px',
       color: '#e2e8f0',
@@ -227,6 +240,7 @@ class UIScene extends Phaser.Scene {
     }
 
     /* ══════════ Event Listeners ══════════ */
+    this.registry.events.on('changedata-lang', () => this._refreshLanguage());
     this.registry.events.on('changedata-harmony', (_, val, prevVal) => {
       this._refreshHarmony();
       this._flashHarmonyChange(val - prevVal);
@@ -278,14 +292,19 @@ class UIScene extends Phaser.Scene {
   /* ══════════ Dialogue Rendering ══════════ */
 
   _showNode(nodeId) {
+    this._currentDialogueNode = nodeId;
     const node = DIALOGUES[nodeId];
     if (!node) { this._closeDialogue(); return; }
 
     // Show panel elements
     this.dialogBg.setVisible(true);
     this.dialogBorder.setVisible(true);
-    this.speakerTxt.setVisible(true).setText((node.speaker || '').toUpperCase());
-    this.dialogText.setVisible(true).setText(node.text);
+    const lang = this.registry.get('lang') || 'id';
+    const speakerName = (typeof node.speaker === 'object' ? node.speaker[lang] : node.speaker) || '';
+    const textStr = (typeof node.text === 'object' ? node.text[lang] : node.text) || '';
+    
+    this.speakerTxt.setVisible(true).setText(speakerName.toUpperCase());
+    this.dialogText.setVisible(true).setText(textStr);
 
     // ── Render option buttons INSIDE the box ────────
     const choices = node.choices || [];
@@ -299,7 +318,7 @@ class UIScene extends Phaser.Scene {
       if (i < choices.length) {
         const ch = choices[i];
         btn
-          .setText(`[${i + 1}] ${ch.label}`)
+          .setText(`[${i + 1}] ${typeof ch.label === 'object' ? ch.label[lang] : ch.label}`)
           .setPosition(this._boxX + 14, optStartY + i * optSpacing)
           .setVisible(true)
           .setColor('#b0bec5')
@@ -432,17 +451,40 @@ class UIScene extends Phaser.Scene {
     });
   }
 
+
+  _refreshLanguage() {
+    const lang = this.registry.get('lang') || 'id';
+    
+    if (this.harmonyLabelTxt) this.harmonyLabelTxt.setText(lang === 'en' ? '♥ HARMONY' : '♥ HARMONI');
+    if (this.switchLevelBtn) this.switchLevelBtn.setText(lang === 'en' ? '[ Switch Level ]' : '[ Ganti Level ]');
+    if (this.switchLangBtn) this.switchLangBtn.setText(lang === 'en' ? '[ Switch Language (EN) ]' : '[ Ganti Bahasa (ID) ]');
+    if (this.interactPrompt) this.interactPrompt.setText(lang === 'en' ? '[ Press E to interact ]' : '[ Tekan E untuk interaksi ]');
+    
+    if (this.levelButtons) {
+      this.levelButtons.forEach(b => b.btn.setText(b.name[lang]));
+    }
+    
+    this._refreshMapName();
+    
+    if (this.registry.get('dialogueActive')) {
+      const activeNode = this._currentDialogueNode;
+      if (activeNode) this._showNode(activeNode);
+    }
+  }
+
   _refreshMapName() {
+    const lang = this.registry.get('lang') || 'id';
     const mapKey = this.registry.get('currentMap');
     const names = {
-      garden:     'Level 1: Detective Emotion\n(School Garden)',
-      corridor:   'Level 2: Empathy Rescue\n(Corridor & Library)',
-      classroom:  'Level 3: Mystery Case\n(Class Investigation)',
-      auditorium: 'Level 4: Harmony Builder\n(School Auditorium)',
-      cafeteria:  'Level 5: Time Challenge X\n(Cafeteria)'
+      garden:     lang === 'en' ? 'Level 1: Detective Emotion\n(School Garden)' : 'Level 1: Detektif Emosi\n(Taman Sekolah)',
+      corridor:   lang === 'en' ? 'Level 2: Empathy Rescue\n(Corridor & Library)' : 'Level 2: Penyelamatan Empati\n(Lorong & Perpustakaan)',
+      classroom:  lang === 'en' ? 'Level 3: Mystery Case\n(Class Investigation)' : 'Level 3: Kasus Misteri\n(Investigasi Kelas)',
+      auditorium: lang === 'en' ? 'Level 4: Harmony Builder\n(School Auditorium)' : 'Level 4: Pembangun Harmoni\n(Auditorium)',
+      cafeteria:  lang === 'en' ? 'Level 5: Time Challenge X\n(Cafeteria)' : 'Level 5: Tantangan Waktu X\n(Kantin)'
     };
+    const prefix = lang === 'en' ? 'Current Level:\n' : 'Level Saat Ini:\n';
     if (this.sidebarLevelText) {
-      this.sidebarLevelText.setText('Current Level:\n' + (names[mapKey] || mapKey.toUpperCase()));
+      this.sidebarLevelText.setText(prefix + (names[mapKey] || mapKey.toUpperCase()));
     }
   }
 }

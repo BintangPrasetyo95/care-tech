@@ -1,203 +1,197 @@
-/* ───────────── data / dialogues.js ─────────────
-   All dialogue trees stored as plain objects.
-   Each node has `speaker`, `text`, optional `choices`,
-   and optional `next` (auto-advance).
-
-   Choices carry `harmonyDelta` so the dialogue system can
-   update the global Harmony Index on selection.
-   ────────────────────────────────────────────── */
-
 const DIALOGUES = {
 
   /* ══════════ Level 1 — Detective Emotion (School Garden) ══════════ */
 
   player_intro: {
-    speaker : 'Nakula',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_happy',
-    text    : 'Hey, look — Nabula is sitting alone over there on that bench. She seems… off. What do you think?',
+    text    : { 
+      en: 'Hey, look — Nabula is sitting alone over there on that bench. She seems… off. What do you think?',
+      id: 'Hei, lihat — Nabula duduk sendirian di bangku sana. Dia tampak… murung. Bagaimana menurutmu?' 
+    },
     choices : [
-      { label: 'A) It seems like Nabula is sad…',       next: 'nabula_sad_ack',   harmonyDelta:  10 },
-      { label: 'B) Maybe she just wants to be alone.',   next: 'nabula_alone_ack', harmonyDelta:   0 },
-      { label: 'C) I don\'t really care.',               next: 'nabula_ignore',    harmonyDelta:  -5 },
-      { label: 'D) Let\'s go talk to her right now!',    next: 'nabula_eager',     harmonyDelta:   5 }
+      { label: { en: 'A) It seems like Nabula is sad…', id: 'A) Sepertinya Nabula sedang sedih…' },       next: 'nabula_sad_ack',   harmonyDelta:  10 },
+      { label: { en: 'B) Maybe she just wants to be alone.', id: 'B) Mungkin dia hanya ingin sendirian.' },   next: 'nabula_alone_ack', harmonyDelta:   0 },
+      { label: { en: 'C) I don\'t really care.', id: 'C) Aku tidak peduli.' },               next: 'nabula_ignore',    harmonyDelta:  -5 },
+      { label: { en: 'D) Let\'s go talk to her right now!', id: 'D) Ayo kita bicara dengannya sekarang!' },    next: 'nabula_eager',     harmonyDelta:   5 }
     ]
   },
 
   nabula_sad_ack: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_smile',
-    text    : '… you noticed? That… actually means a lot. Thank you.',
+    text    : { en: '… you noticed? That… actually means a lot. Thank you.', id: '… kamu sadar? Itu… sangat berarti bagiku. Terima kasih.' },
     next    : 'player_impressed'
   },
 
   player_impressed: {
-    speaker : 'Nakula',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_happy',
-    text    : 'See? Sometimes just noticing someone\'s feelings is the first step. Nice one.',
+    text    : { en: 'See? Sometimes just noticing someone\'s feelings is the first step. Nice one.', id: 'Lihat kan? Terkadang sekadar menyadari perasaan seseorang adalah langkah pertama. Bagus sekali.' },
     next    : null
   },
 
   nabula_alone_ack: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_neutral',
-    text    : '… yeah, I guess. Everyone needs space sometimes.',
+    text    : { en: '… yeah, I guess. Everyone needs space sometimes.', id: '… ya, kurasa. Setiap orang butuh ruang kadang-kadang.' },
     next    : 'player_hmm'
   },
 
   player_hmm: {
-    speaker : 'Nakula',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_neutral',
-    text    : 'Hmm… I wonder if that\'s really what\'s going on though.',
+    text    : { en: 'Hmm… I wonder if that\'s really what\'s going on though.', id: 'Hmm… Aku jadi bertanya-tanya apakah itu benar-benar yang terjadi.' },
     next    : null
   },
 
   nabula_ignore: {
-    speaker : 'Nakula',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_sad',
-    text    : 'Come on… we should at least check on her. What if something\'s wrong?',
+    text    : { en: 'Come on… we should at least check on her. What if something\'s wrong?', id: 'Ayolah… kita setidaknya harus memeriksanya. Bagaimana kalau ada apa-apa?' },
     next    : null
   },
 
   nabula_eager: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_surprised',
-    text    : 'Oh! Hi… I wasn\'t expecting anyone to come over. That\'s… nice of you.',
+    text    : { en: 'Oh! Hi… I wasn\'t expecting anyone to come over. That\'s… nice of you.', id: 'Oh! Hai… Aku tidak menyangka akan ada yang datang. Kalian… baik sekali.' },
     next    : 'player_smiles'
   },
 
   player_smiles: {
-    speaker : 'Nakula',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_happy',
-    text    : 'That\'s the spirit! Being proactive about reaching out matters.',
+    text    : { en: 'That\'s the spirit! Being proactive about reaching out matters.', id: 'Itu baru semangat! Bersikap proaktif untuk menjangkau orang lain itu penting.' },
     next    : null
   },
 
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */
 
   bully_taunt: {
-    speaker : 'Bully NPC',
+    speaker : { en: 'Bully NPC', id: 'Perundung' },
     portrait: 'bully_smirk',
-    text    : 'Ha ha, look at Nabula — pretending she doesn\'t hear us! What a joke.',
+    text    : { en: 'Ha ha, look at Nabula — pretending she doesn\'t hear us! What a joke.', id: 'Ha ha, lihat Nabula — pura-pura tidak dengar kita! Lelucon macam apa ini.' },
     next    : 'bully_taunt_2'
   },
 
   bully_taunt_2: {
-    speaker : 'Bully NPC',
+    speaker : { en: 'Bully NPC', id: 'Perundung' },
     portrait: 'bully_smirk',
-    text    : 'Hey Nabula! Why so quiet? Cat got your tongue? Hahaha!',
+    text    : { en: 'Hey Nabula! Why so quiet? Cat got your tongue? Hahaha!', id: 'Hei Nabula! Kenapa diam saja? Kucing makan lidahmu? Hahaha!' },
     next    : 'nabula_runs'
   },
 
   nabula_runs: {
-    speaker : '',
+    speaker : { en: '', id: '' },
     portrait: null,
-    text    : '[ Nabula lowers her head and runs toward the back of the library… ]',
+    text    : { en: '[ Nabula lowers her head and runs toward the back of the library… ]', id: '[ Nabula menundukkan kepala dan lari ke belakang perpustakaan… ]' },
     next    : 'narrator_find_her'
   },
 
   narrator_find_her: {
-    speaker : '',
+    speaker : { en: '', id: '' },
     portrait: null,
-    text    : '[ You should find Nabula. She went behind the library — head through the corridor. ]',
+    text    : { en: '[ You should find Nabula. She went behind the library — head through the corridor. ]', id: '[ Kamu harus mencari Nabula. Dia pergi ke belakang perpustakaan — telusuri lorong. ]' },
     next    : null
   },
 
   nabula_found: {
-    speaker : 'Player',
+    speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_neutral',
-    text    : 'Nabula? I found you. Are you okay?',
+    text    : { en: 'Nabula? I found you. Are you okay?', id: 'Nabula? Aku menemukanmu. Kamu baik-baik saja?' },
     choices : [
-      { label: 'A) Do you want to talk about it?',       next: 'nabula_open',   harmonyDelta:  15 },
-      { label: 'B) You should stand up for yourself.',    next: 'nabula_shrug',  harmonyDelta:   0 },
-      { label: 'C) Just ignore them, it\'ll pass.',       next: 'nabula_sad2',   harmonyDelta:  -5 }
+      { label: { en: 'A) Do you want to talk about it?', id: 'A) Apakah kamu ingin membicarakannya?' },       next: 'nabula_open',   harmonyDelta:  15 },
+      { label: { en: 'B) You should stand up for yourself.', id: 'B) Kamu harus membela dirimu sendiri.' },    next: 'nabula_shrug',  harmonyDelta:   0 },
+      { label: { en: 'C) Just ignore them, it\'ll pass.', id: 'C) Abaikan saja mereka, nanti juga lewat.' },       next: 'nabula_sad2',   harmonyDelta:  -5 }
     ]
   },
 
   nabula_open: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_smile',
-    text    : '… I\'d like that. Thank you for coming to find me. It means more than you know.',
+    text    : { en: '… I\'d like that. Thank you for coming to find me. It means more than you know.', id: '… Aku mau. Terima kasih sudah mencariku. Ini sangat berarti.' },
     next    : 'nabula_open_2'
   },
 
   nabula_open_2: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_neutral',
-    text    : 'Sometimes I feel like nobody sees what\'s happening… but you did.',
+    text    : { en: 'Sometimes I feel like nobody sees what\'s happening… but you did.', id: 'Terkadang aku merasa tidak ada yang melihat apa yang terjadi… tapi kamu melihatnya.' },
     next    : null
   },
 
   nabula_shrug: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_neutral',
-    text    : 'It\'s… not that easy. You don\'t know what it\'s like when everyone just watches.',
+    text    : { en: 'It\'s… not that easy. You don\'t know what it\'s like when everyone just watches.', id: 'Itu… tidak semudah itu. Kamu tidak tahu rasanya saat semua orang hanya menonton.' },
     next    : 'nabula_shrug_2'
   },
 
   nabula_shrug_2: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_sad',
-    text    : 'But… thanks for at least coming to check on me.',
+    text    : { en: 'But… thanks for at least coming to check on me.', id: 'Tapi… terima kasih karena setidaknya sudah mengecek keadaanku.' },
     next    : null
   },
 
   nabula_sad2: {
-    speaker : 'Nabula',
+    speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_sad',
-    text    : '… yeah… I\'ll try. It just… doesn\'t feel like it ever stops.',
+    text    : { en: '… yeah… I\'ll try. It just… doesn\'t feel like it ever stops.', id: '… ya… Aku akan coba. Hanya saja… rasanya ini tidak pernah berhenti.' },
     next    : null
   },
 
   /* ══════════ Generic NPC Interactions ══════════ */
 
   student_chat_1: {
-    speaker : 'Student',
+    speaker : { en: 'Student', id: 'Siswa' },
     portrait: 'student_neutral',
-    text    : 'Hey! Have you checked the bulletin board in the corridor? There\'s something interesting posted.',
+    text    : { en: 'Hey! Have you checked the bulletin board in the corridor? There\'s something interesting posted.', id: 'Hei! Sudahkah kamu memeriksa papan pengumuman di lorong? Ada sesuatu yang menarik.' },
     next    : null
   },
 
   student_chat_2: {
-    speaker : 'Student',
+    speaker : { en: 'Student', id: 'Siswa' },
     portrait: 'student_neutral',
-    text    : 'Harmonia School feels different lately… I hope things get better.',
+    text    : { en: 'Harmonia School feels different lately… I hope things get better.', id: 'Sekolah Harmonia terasa berbeda akhir-akhir ini… Kuharap semuanya membaik.' },
     next    : null
   },
 
   rani_intro: {
-    speaker : 'Teacher Rani',
+    speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
     portrait: 'rani_neutral',
-    text    : 'Hello there. Remember — if you see anything concerning, don\'t hesitate to tell a teacher.',
+    text    : { en: 'Hello there. Remember — if you see anything concerning, don\'t hesitate to tell a teacher.', id: 'Halo. Ingat — jika kalian melihat sesuatu yang mengkhawatirkan, jangan ragu untuk melapor.' },
     next    : 'rani_intro_2'
   },
 
   rani_intro_2: {
-    speaker : 'Teacher Rani',
+    speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
     portrait: 'rani_neutral',
-    text    : 'We all have a role to play in making this school a safe place.',
+    text    : { en: 'We all have a role to play in making this school a safe place.', id: 'Kita semua punya peran untuk menjadikan sekolah ini tempat yang aman.' },
     next    : null
   },
 
   riko_corridor: {
-    speaker : 'Riko',
+    speaker : { en: 'Riko', id: 'Riko' },
     portrait: 'riko_neutral',
-    text    : '… what are you looking at? Mind your own business.',
+    text    : { en: '… what are you looking at? Mind your own business.', id: '… apa lihat-lihat? Urus saja urusanmu sendiri.' },
     next    : null
   },
 
   /* ══════════ Object Interactions ══════════ */
 
   board_interact: {
-    speaker : '',
+    speaker : { en: '', id: '' },
     portrait: null,
-    text    : '[ A bulletin board. It reads: "Harmonia School Values — Respect, Empathy, Kindness." ]',
+    text    : { en: '[ A bulletin board. It reads: "Harmonia School Values — Respect, Empathy, Kindness." ]', id: '[ Papan pengumuman. Bertuliskan: "Nilai Sekolah Harmonia — Rasa Hormat, Empati, Kebaikan." ]' },
     next    : null
   },
 
   desk_interact: {
-    speaker : '',
+    speaker : { en: '', id: '' },
     portrait: null,
-    text    : '[ A neat classroom desk. Textbooks and pencils are arranged carefully. ]',
+    text    : { en: '[ A neat classroom desk. Textbooks and pencils are arranged carefully. ]', id: '[ Meja kelas yang rapi. Buku pelajaran dan pensil tersusun rapi. ]' },
     next    : null
   }
 };
