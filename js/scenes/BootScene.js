@@ -45,7 +45,7 @@ class BootScene extends Phaser.Scene {
                           { frameWidth: 32, frameHeight: 32 });
     
     // Load tileset image
-    this.load.image('tileset', 'assets/sprites/tileset.png');
+    this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
   }
 
   create() {

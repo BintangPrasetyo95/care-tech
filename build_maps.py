@@ -206,13 +206,12 @@ for r in range(1, 7): garden_grid[r][11] = 'path_1_1'
 garden_grid[7][10] = 'path_3_2'
 garden_grid[7][11] = 'path_1_2'
 for r, c in [(3,3), (3,4), (4,3), (11,15), (11,16), (12,16)]: garden_grid[r][c] = 'flower'
-for r, c in [(2,2), (2,17), (12,2), (4,15), (10,5)]:
+for r, c in [(2,2), (2,17), (12,2), (4,15), (10,5), (6,5), (6,14), (9,8), (5,9)]:
     garden_grid[r][c] = 'tree_0_0'; garden_grid[r][c+1] = 'tree_0_1'; garden_grid[r][c+2] = 'tree_0_2';
     garden_grid[r+1][c] = 'tree_1_0'; garden_grid[r+1][c+1] = 'tree_1_1'; garden_grid[r+1][c+2] = 'tree_1_2';
     garden_grid[r+2][c] = 'tree_2_0'; garden_grid[r+2][c+1] = 'tree_2_1'; garden_grid[r+2][c+2] = 'tree_2_2';
 garden_grid[10][13] = 'water_tl'; garden_grid[10][14] = 'water_tr';
 garden_grid[11][13] = 'water_bl'; garden_grid[11][14] = 'water_br';
-for r, c in [(6,5), (6,14), (8,8), (5,10)]: garden_grid[r][c] = 'bench'
 garden_grid[0][10] = 'door'
 g_grnd, g_obj = build_layers(garden_grid, 'grass')
 with open('assets/tilemaps/garden.json', 'w') as f:

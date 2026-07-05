@@ -36,6 +36,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Collisions ── */
     this.physics.add.collider(this.player.sprite, this.walls);
+    if (this.midWalls) this.physics.add.collider(this.player.sprite, this.midWalls);
     this.npcs.forEach(n => {
       this.physics.add.collider(this.player.sprite, n.sprite);
     });
@@ -61,12 +62,19 @@ class WorldScene extends Phaser.Scene {
     this._drawDebugGrid();
   }
 
-  update() {
-    this.player.update();
-    this.npcs.forEach(n => n.update());
+  update(time, delta) {
+    if (this.player) this.player.update(time, delta);
+    this.npcs.forEach(npc => npc.update(time, delta));
+    this._updatePlayerMask();
 
     /* ── Check proximity for interaction prompt ── */
     this._updateProximity();
+  }
+
+  _updatePlayerMask() {
+    if (!this.player || !this.playerMaskImage) return;
+    this.playerMaskImage.x = this.player.sprite.x;
+    this.playerMaskImage.y = this.player.sprite.y - 16;
   }
 
   /* ────── Debug Grid ────── */
@@ -126,10 +134,20 @@ class WorldScene extends Phaser.Scene {
 
     // Create blank layers
     const groundLayer = map.createBlankLayer('Ground', tileset);
-    const objectLayer = map.createBlankLayer('Objects', tileset);
+    const midLayer = map.createBlankLayer('Mid', tileset);
     
     groundLayer.setDepth(0);
-    objectLayer.setDepth(10); // Renders above the player (depth 5)
+    midLayer.setDepth(1);
+    
+    // We create multiple object layers to support trees overlapping trees
+    const objectLayersTransparent = [];
+    const objectLayers = [];
+    for (let i = 0; i < 3; i++) {
+      const tLayer = map.createBlankLayer(`ObjectsTransparent_${i}`, tileset).setDepth(9 + i * 0.1).setAlpha(0.3);
+      const oLayer = map.createBlankLayer(`Objects_${i}`, tileset).setDepth(10 + i * 0.1);
+      objectLayersTransparent.push(tLayer);
+      objectLayers.push(oLayer);
+    }
 
     const TILE_IDS = {
       'grass': 1, 'grass2': 2, 'path': 3, 'path2': 4,
@@ -143,37 +161,104 @@ class WorldScene extends Phaser.Scene {
       'water_tr': 30, 'water_bl': 31, 'water_br': 32,
       'tree_0_0': 33, 'tree_0_1': 34, 'tree_0_2': 35,
       'tree_1_0': 36, 'tree_1_1': 37, 'tree_1_2': 38,
-      'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41
+      'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41,
+      'grass_var1': 43, 'grass_var2': 44,
+      'bench_0_0': 45, 'bench_0_1': 46, 'bench_0_2': 47,
+      'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52
     };
     
-    const solidTiles = ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
+    const solidTiles = ['wall', 'wall_top', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
 
     const mapData = this._getMapData(mapKey);
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
-        const tileName = mapData[r][c];
-        const tileId = TILE_IDS[tileName] || 0;
+        const cell = Array.isArray(mapData[r][c]) ? mapData[r][c] : [mapData[r][c]];
+        const groundName = cell[0];
+        const objects = cell.slice(1);
+
+        const groundId = TILE_IDS[groundName] || 0;
         
-        if (solidTiles.includes(tileName) || tileName === 'door' || (tileName && tileName.startsWith('tree_'))) {
-          // Put interactive/solid objects on Object layer, put default floor beneath it
-          const floorId = (mapKey === 'garden') ? TILE_IDS['grass'] : TILE_IDS['floor'];
-          groundLayer.putTileAt(floorId, c, r);
-          objectLayer.putTileAt(tileId, c, r);
+        // ALWAYS put the base floor to prevent black spots
+        // Deterministic hash with an 80% / 10% / 10% split
+        let baseFloorId = TILE_IDS['floor'];
+        if (mapKey === 'garden') {
+          const hashValue = (r * 37 + c * 17) % 100;
+          if (hashValue < 80) {
+            baseFloorId = TILE_IDS['grass'];
+          } else if (hashValue < 90) {
+            baseFloorId = TILE_IDS['grass_var1'];
+          } else {
+            baseFloorId = TILE_IDS['grass_var2'];
+          }
+        }
+        groundLayer.putTileAt(baseFloorId, c, r);
+
+        if (objects.length > 0) {
+          // We have a ground item and one or more objects
+          if (groundId !== baseFloorId && groundName !== 'grass' && groundName !== 'grass2') {
+            midLayer.putTileAt(groundId, c, r);
+          }
+          
+          objects.forEach((objName, i) => {
+            if (i >= objectLayers.length) return;
+            const objId = TILE_IDS[objName];
+            if (!objId) return;
+            
+            if (objName.startsWith('water') || objName.startsWith('bench')) {
+              midLayer.putTileAt(objId, c, r);
+            } else {
+              objectLayersTransparent[i].putTileAt(objId, c, r);
+              objectLayers[i].putTileAt(objId, c, r);
+            }
+          });
+        } else if (solidTiles.includes(groundName) || groundName === 'door' || groundName.startsWith('bench')) {
+          // If it's a solid object OR a bench piece that was placed without putObj somehow
+          if (groundName.startsWith('water') || groundName.startsWith('bench')) {
+            midLayer.putTileAt(groundId, c, r);
+          } else {
+            objectLayersTransparent[0].putTileAt(groundId, c, r);
+            objectLayers[0].putTileAt(groundId, c, r);
+          }
         } else {
-          // Just normal ground
-          groundLayer.putTileAt(tileId, c, r);
+          // It's a non-solid ground decoration
+          if (groundId !== baseFloorId && groundName !== 'grass' && groundName !== 'grass2') {
+            midLayer.putTileAt(groundId, c, r);
+          }
         }
       }
     }
 
-    // Set collision on the Objects layer. (Exclude door and non-root tree parts so player can walk through them)
-    const excludeIds = [-1, TILE_IDS['door'], TILE_IDS['tree_0_0'], TILE_IDS['tree_0_1'], TILE_IDS['tree_0_2'], TILE_IDS['tree_1_0'], TILE_IDS['tree_1_1'], TILE_IDS['tree_1_2'], TILE_IDS['tree_2_0'], TILE_IDS['tree_2_2']];
-    objectLayer.setCollisionByExclusion(excludeIds);
+    // Set collision
+    const collidableIds = solidTiles.map(name => TILE_IDS[name]).filter(id => id !== undefined);
+    midLayer.setCollision(collidableIds);
+    objectLayers.forEach(layer => layer.setCollision(collidableIds));
 
-    // Set this.walls to the objectLayer so physics colliders work
-    this.walls = objectLayer;
+    this.walls = objectLayers;
+    this.midWalls = midLayer;
+
+    // Apply inverted BitmapMask to objectLayer to create a soft see-through hole for the player
+    const radius = 40; // Smaller circle as requested
+    const size = radius * 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d');
+    const gradient = context.createRadialGradient(radius, radius, 0, radius, radius, radius);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, size, size);
+
+    if (!this.textures.exists('softCircle')) {
+      this.textures.addCanvas('softCircle', canvas);
+    }
+    
+    this.playerMaskImage = this.make.image({ x: 0, y: 0, key: 'softCircle' }, false);
+    const mask = new Phaser.Display.Masks.BitmapMask(this, this.playerMaskImage);
+    mask.invertAlpha = true;
+    objectLayers.forEach(layer => layer.setMask(mask));
   }
 
   /* ────── Map data for each area (Human Readable 2D Arrays) ────── */
@@ -200,21 +285,39 @@ class WorldScene extends Phaser.Scene {
       for (let r = 1; r <= 6; r++) { m[r][11] = 'path_1_1'; }
       m[7][10] = 'path_3_2';
       m[7][11] = 'path_1_2';
-      m[3][3] = 'flower'; m[3][4] = 'flower'; m[4][3] = 'flower';
-      m[11][15] = 'flower'; m[11][16] = 'flower'; m[12][16] = 'flower';
+      m[3][3] = 'grass_var1'; m[3][4] = 'grass_var2'; m[4][3] = 'grass_var1';
+      m[11][15] = 'grass_var2'; m[11][16] = 'grass_var1'; m[12][16] = 'grass_var2';
+      
+      const putObj = (r, c, obj) => {
+        if (Array.isArray(m[r][c])) {
+          m[r][c].push(obj);
+        } else {
+          m[r][c] = [m[r][c], obj];
+        }
+      };
       
       const putBigTree = (r, c) => {
-        m[r][c] = 'tree_0_0'; m[r][c+1] = 'tree_0_1'; m[r][c+2] = 'tree_0_2';
-        m[r+1][c] = 'tree_1_0'; m[r+1][c+1] = 'tree_1_1'; m[r+1][c+2] = 'tree_1_2';
-        m[r+2][c] = 'tree_2_0'; m[r+2][c+1] = 'tree_2_1'; m[r+2][c+2] = 'tree_2_2';
+        putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
+        putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
+        putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
       };
-      putBigTree(2,2); putBigTree(2,17); putBigTree(12,2); putBigTree(4,15); putBigTree(10,5);
+      putBigTree(2,2); putBigTree(2,17); putBigTree(10,1); putBigTree(4,15); putBigTree(10,5);
+      putBigTree(6,5); putBigTree(6,14); putBigTree(9,8); putBigTree(4,8);
+      putBigTree(9,15);
 
-      m[10][13] = 'water_tl'; m[10][14] = 'water_tr';
-      m[11][13] = 'water_bl'; m[11][14] = 'water_br';
-      m[6][5] = 'bench'; m[6][14] = 'bench'; m[9][8] = 'bench'; // moved bench to not overlap 2-tile path
-      m[5][9] = 'bench'; // moved bench to left of the 2-tile path
-      m[0][10] = 'door'; m[0][11] = 'door';
+      putObj(10, 13, 'water_tl'); putObj(10, 14, 'water_tr');
+      putObj(11, 13, 'water_bl'); putObj(11, 14, 'water_br');
+      putObj(0, 10, 'door'); putObj(0, 11, 'door');
+
+      const putBigBench = (r, c) => {
+        putObj(r-1, c, 'bench_0_0'); putObj(r-1, c+1, 'bench_0_1'); putObj(r-1, c+2, 'bench_0_2');
+        putObj(r, c, 'bench_1_0'); putObj(r, c+1, 'bench_1_1'); putObj(r, c+2, 'bench_1_2');
+      };
+
+      putBigBench(6, 3);
+      putBigBench(6, 12);
+      putBigBench(1, 6);
+      
       return m;
     }
 
