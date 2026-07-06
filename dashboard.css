@@ -97,6 +97,45 @@ body {
 
 .menu-item .icon { font-size: 1.4rem; }
 
+/* Dropdown Menu */
+.has-dropdown {
+    position: relative;
+    flex-direction: column;
+}
+
+.has-dropdown .dropdown-menu {
+    display: none;
+    list-style: none;
+    flex-direction: column;
+    padding-left: 2.5rem;
+    background: #f9f9f9;
+    border-radius: 0 0 10px 10px;
+}
+
+.has-dropdown.active-dropdown .dropdown-menu {
+    display: flex;
+}
+
+.dropdown-menu li a {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    color: #6c6c6c;
+}
+
+.dropdown-menu li a:hover {
+    color: var(--primary-color);
+    background: transparent;
+    transform: translateX(3px);
+}
+
+.dropdown-icon {
+    transition: transform 0.3s ease;
+}
+
+.has-dropdown.active-dropdown .dropdown-icon {
+    transform: rotate(180deg);
+}
+
 /* Main Content Area */
 .main-content {
     flex-grow: 1;
