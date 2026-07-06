@@ -1,0 +1,175 @@
+/* Base Styles & Typography */
+:root {
+    --primary-color: #FFB7B2; /* Soft Pastel Red/Pink */
+    --secondary-color: #E2F0CB; /* Soft Pastel Green */
+    --tertiary-color: #B5EAD7; /* Soft Pastel Mint */
+    --quaternary-color: #C7CEEA; /* Soft Pastel Blue */
+    --text-color: #5D5D5D; /* Soft Dark Gray for readability */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(199, 206, 234, 0.4);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(135deg, #FFDAC1, #FF9AA2);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Background Animated Shapes */
+.background-shapes {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    animation: float 15s infinite ease-in-out alternate;
+    filter: blur(10px);
+}
+
+.circle1 {
+    width: 300px;
+    height: 300px;
+    top: -50px;
+    left: -50px;
+    background: var(--tertiary-color);
+    animation-duration: 12s;
+}
+
+.circle2 {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -100px;
+    background: var(--quaternary-color);
+    animation-duration: 18s;
+}
+
+.circle3 {
+    width: 200px;
+    height: 200px;
+    top: 20%;
+    right: 15%;
+    background: var(--secondary-color);
+    animation-duration: 15s;
+    animation-delay: -5s;
+}
+
+.circle4 {
+    width: 250px;
+    height: 250px;
+    bottom: 20%;
+    left: 10%;
+    background: var(--primary-color);
+    animation-duration: 20s;
+    animation-delay: -8s;
+}
+
+@keyframes float {
+    0% { transform: translateY(0) translateX(0) scale(1); }
+    50% { transform: translateY(-30px) translateX(20px) scale(1.05); }
+    100% { transform: translateY(20px) translateX(-20px) scale(0.95); }
+}
+
+/* Landing Page Layout */
+.landing-container {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 500px;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+}
+
+.logo-placeholder {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: bounce 2s infinite ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #FF8596; /* Slightly darker pastel for contrast */
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin-bottom: 2.5rem;
+    color: #6C6C6C;
+}
+
+/* Call to Action Button */
+.btn-start {
+    display: inline-block;
+    background: linear-gradient(45deg, #FF9AA2, #FFB7B2);
+    color: white;
+    text-decoration: none;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    box-shadow: 0 10px 20px rgba(255, 154, 162, 0.4);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-start:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 25px rgba(255, 154, 162, 0.5);
+    background: linear-gradient(45deg, #FFB7B2, #FFDAC1);
+    color: #FF8596;
+}
+
+.btn-start:active {
+    transform: translateY(2px) scale(0.98);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    h1 { font-size: 2.5rem; }
+    p { font-size: 1.1rem; }
+    .btn-start { padding: 0.8rem 2rem; font-size: 1.2rem; }
+}
