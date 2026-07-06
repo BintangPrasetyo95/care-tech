@@ -1,0 +1,206 @@
+/* Base Styles & Theme */
+:root {
+    --primary-color: #007BFF; /* Solid Blue */
+    --secondary-color: #28A745; /* Solid Green */
+    --text-color: #333333; 
+    --glass-bg: rgba(206, 247, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px 0 rgba(179, 229, 252, 0.3);
+    
+    --sidebar-width: 260px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    background: #F0F2F5; /* Standard solid gray dashboard background */
+    min-height: 100vh;
+    color: var(--text-color);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Background Shapes Removed for Solid Theme */
+
+/* Solid Panel Utility */
+.glass-panel {
+    background: #FFFFFF;
+    border: 1px solid #Eef2f5;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border-radius: 20px;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    padding: 0;
+    gap: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    background: #FFFFFF;
+    border-right: 1px solid #Eef2f5;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.sidebar-logo {
+    width: 50px;
+    height: auto;
+}
+
+.sidebar-header h2 {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    text-decoration: none;
+    color: #7b7b7b;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.menu-item a:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #4FC3F7;
+    transform: translateX(5px);
+}
+
+.menu-item.active a {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.menu-item .icon { font-size: 1.4rem; }
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* Header */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    background: #FFFFFF;
+    border-bottom: 1px solid #Eef2f5;
+}
+
+.greeting h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.3rem;
+}
+
+.greeting p { color: #888; }
+
+.avatar {
+    font-size: 2.5rem;
+    background: white;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.wide-card {
+    grid-column: 1 / -1;
+}
+
+.dashboard-card {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dashboard-card h3 {
+    font-size: 1.4rem;
+    color: #6C6C6C;
+    margin-bottom: 1rem;
+}
+
+/* Interactive Cards */
+.interactive-card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+    align-items: center;
+}
+
+.interactive-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 12px 25px rgba(0, 123, 255, 0.15);
+}
+
+.card-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Status specific */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.status-emoji { font-size: 2rem; }
+.status-text { font-size: 1.2rem; color: #555; }
+
+.btn-small {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+.btn-small:hover { background: #0056b3; }
