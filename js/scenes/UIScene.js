@@ -57,79 +57,94 @@ class UIScene extends Phaser.Scene {
 
 
     /* ══════════ Mobile/Clickable Menu Toggle ══════════ */
-    this.menuToggleBtn = this.add.text(12, 45, ' ☰ MENU ', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif',
-      fontSize: '11px',
-      color: '#ffffff',
-      backgroundColor: '#0ea5e9',
-      padding: { x: 4, y: 2 }
-    }).setOrigin(0, 0).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: true });
+    const menuToggleBg = this.add.graphics().setScrollFactor(0).setDepth(101);
+    menuToggleBg.fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6);
     
-    this.menuToggleBtn.on('pointerdown', () => {
-      this._toggleSidebar();
+    this.menuToggleTxt = this.add.text(12 + 38, 45 + 13, '☰ MENU', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#ffffff'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(102);
+
+    this.menuToggleZone = this.add.zone(12 + 38, 45 + 13, 76, 26)
+      .setOrigin(0.5).setScrollFactor(0).setDepth(103).setInteractive({ useHandCursor: true });
+    
+    this.menuToggleZone.on('pointerover', () => menuToggleBg.clear().fillStyle(0x0284c7, 1).fillRoundedRect(12, 45, 76, 26, 6));
+    this.menuToggleZone.on('pointerout', () => menuToggleBg.clear().fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6));
+    this.menuToggleZone.on('pointerdown', () => {
+      menuToggleBg.clear().fillStyle(0x0369a1, 1).fillRoundedRect(12, 45, 76, 26, 6);
+      this.time.delayedCall(100, () => {
+        menuToggleBg.clear().fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6);
+        this._toggleSidebar();
+      });
     });
 
     /* ══════════ Sidebar Menu (ESC to toggle) ══════════ */
-    this.sidebarContainer = this.add.container(-260, 0).setScrollFactor(0).setDepth(400);
+    this.sidebarContainer = this.add.container(-300, 0).setScrollFactor(0).setDepth(400);
     
-    // Sidebar Background
+    const sidebarBg = this.add.graphics();
+    sidebarBg.fillStyle(0x0f172a, 0.96).fillRect(0, 0, 280, height); // Dark slate
+    sidebarBg.fillStyle(0x38bdf8, 1).fillRect(278, 0, 2, height); // Bright blue edge
+    sidebarBg.fillStyle(0x38bdf8, 0.15).fillRect(274, 0, 4, height); // Glow effect
+    this.sidebarContainer.add(sidebarBg);
+    
     this.sidebarContainer.add(
-      this.add.rectangle(0, 0, 260, height, 0x16161a, 0.95)
-        .setOrigin(0, 0).setStrokeStyle(2, 0x0ea5e9)
+      this.add.text(140, 36, 'CARE-TECH', {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '26px', fontStyle: '900', color: '#38bdf8', letterSpacing: 2
+      }).setOrigin(0.5).setShadow(0, 2, '#000000', 4, false, true)
     );
     
-    // Title
     this.sidebarContainer.add(
-      this.add.text(130, 30, 'CARE-TECH', {
-        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#0ea5e9'
-      }).setOrigin(0.5)
-    );
-    
-    // Subtitle
-    this.sidebarContainer.add(
-      this.add.text(130, 52, 'Harmonia School', {
-        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '12px', color: '#94a1b2'
+      this.add.text(140, 62, 'Harmonia School', {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '13px', fontStyle: '600', color: '#94a3b8', letterSpacing: 1
       }).setOrigin(0.5)
     );
 
-    // Current Level Display
-    this.sidebarLevelText = this.add.text(130, 90, '', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#fffffe', align: 'center', wordWrap: { width: 220 }
+    const divider = this.add.graphics().lineStyle(1, 0x334155, 1).lineBetween(30, 85, 250, 85);
+    this.sidebarContainer.add(divider);
+
+    this.sidebarLevelText = this.add.text(140, 110, '', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '12px', color: '#e2e8f0', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
     }).setOrigin(0.5);
     this.sidebarContainer.add(this.sidebarLevelText);
 
-    // Switch Level Button
-    this.switchLevelBtn = this.add.text(130, 130, '[ Ganti Level ]', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#2cb67d', padding: { x: 8, y: 4 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    this.sidebarContainer.add(this.switchLevelBtn);
+    // Button Generator
+    const createBtn = (x, y, w, h, text, defaultHex, hoverHex, onClick) => {
+      const btnGroup = this.add.container(x, y);
+      const shadow = this.add.graphics().fillStyle(0x000000, 0.3).fillRoundedRect(0, 3, w, h, 6);
+      const bg = this.add.graphics().fillStyle(defaultHex, 1).fillRoundedRect(0, 0, w, h, 6);
+      const txt = this.add.text(w / 2, h / 2, text, {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#ffffff'
+      }).setOrigin(0.5);
+      
+      btnGroup.add([shadow, bg, txt]);
+      const zone = this.add.zone(w / 2, h / 2, w, h).setInteractive({ useHandCursor: true });
+      btnGroup.add(zone);
+      
+      zone.on('pointerover', () => { bg.clear().fillStyle(hoverHex, 1).fillRoundedRect(0, 0, w, h, 6); btnGroup.y -= 1; shadow.y += 1; });
+      zone.on('pointerout', () => { bg.clear().fillStyle(defaultHex, 1).fillRoundedRect(0, 0, w, h, 6); btnGroup.y += 1; shadow.y -= 1; });
+      zone.on('pointerdown', () => {
+        btnGroup.y += 2; shadow.y -= 2;
+        this.time.delayedCall(100, () => { btnGroup.y -= 2; shadow.y += 2; onClick(); });
+      });
+      this.sidebarContainer.add(btnGroup);
+      return { txt, zone, btnGroup };
+    };
 
-    // Switch Language Button
-    this.switchLangBtn = this.add.text(130, 165, '[ Ganti Bahasa (ID) ]', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#eab308', padding: { x: 8, y: 4 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    this.sidebarContainer.add(this.switchLangBtn);
-    
-    this.switchLangBtn.on('pointerdown', () => {
+    this.switchLevelBtnObj = createBtn(40, 145, 200, 34, 'Ganti Level', 0x10b981, 0x059669, () => {
+      this.levelListContainer.setVisible(!this.levelListContainer.visible);
+    });
+
+    this.switchLangBtnObj = createBtn(40, 190, 200, 34, 'Ganti Bahasa (ID)', 0xf59e0b, 0xd97706, () => {
       const curLang = this.registry.get('lang') || 'id';
       this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
     });
-
-    // Close Sidebar Button
-    this.closeSidebarBtn = this.add.text(130, height - 30, '[ Kembali ]', {
-      fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#ffffff', backgroundColor: '#ef4444', padding: { x: 8, y: 4 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    this.sidebarContainer.add(this.closeSidebarBtn);
     
-    this.closeSidebarBtn.on('pointerdown', () => {
+    this.closeSidebarBtnObj = createBtn(40, height - 50, 200, 34, 'Kembali', 0xef4444, 0xdc2626, () => {
       this._toggleSidebar();
     });
 
-    // Level List Container
-    this.levelListContainer = this.add.container(0, 200).setVisible(false);
+    this.levelListContainer = this.add.container(0, 235).setVisible(false);
     this.sidebarContainer.add(this.levelListContainer);
 
-    // Levels from Game Design Flow
     const levelInfos = [
       { key: 'garden', name: {en: 'Level 1: Detective Emotion', id: 'Level 1: Detektif Emosi'} },
       { key: 'corridor', name: {en: 'Level 2: Empathy Rescue', id: 'Level 2: Penyelamatan Empati'} },
@@ -140,25 +155,28 @@ class UIScene extends Phaser.Scene {
     this.levelButtons = [];
 
     levelInfos.forEach((lvl, i) => {
-      const btn = this.add.text(130, i * 30, lvl.name['id'], {
-        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '10px', color: '#b0bec5'
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      const bg = this.add.graphics();
+      const drawBg = (color, alpha) => bg.clear().fillStyle(color, alpha).fillRoundedRect(35, i * 32, 210, 26, 4);
+      drawBg(0x1e293b, 0.7);
+
+      const btnTxt = this.add.text(140, i * 32 + 13, lvl.name['id'], {
+        fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', color: '#94a3b8', fontStyle: '600'
+      }).setOrigin(0.5);
       
-      btn.on('pointerover', () => btn.setColor('#fffffe'));
-      btn.on('pointerout', () => btn.setColor('#b0bec5'));
-      btn.on('pointerdown', () => {
+      const zone = this.add.zone(140, i * 32 + 13, 210, 26).setInteractive({ useHandCursor: true });
+      
+      zone.on('pointerover', () => { drawBg(0x38bdf8, 0.2); btnTxt.setColor('#38bdf8'); });
+      zone.on('pointerout', () => { drawBg(0x1e293b, 0.7); btnTxt.setColor('#94a3b8'); });
+      zone.on('pointerdown', () => {
         this._toggleSidebar();
         const world = this.scene.get('World');
         if (world && world._changeMap) {
            world._changeMap(lvl.key, 10 * 32 + 16, 7 * 32 + 16); 
         }
       });
-            this.levelListContainer.add(btn);
-      this.levelButtons.push({btn, name: lvl.name});
-    });
-
-    this.switchLevelBtn.on('pointerdown', () => {
-      this.levelListContainer.setVisible(!this.levelListContainer.visible);
+      
+      this.levelListContainer.add([bg, btnTxt, zone]);
+      this.levelButtons.push({txt: btnTxt, name: lvl.name});
     });
 
     // ESC to toggle sidebar
@@ -469,9 +487,9 @@ class UIScene extends Phaser.Scene {
     }
     this.tweens.add({
       targets: this.sidebarContainer,
-      x: this.sidebarOpen ? 0 : -260,
-      duration: 300,
-      ease: 'Power2'
+      x: this.sidebarOpen ? 0 : -300,
+      duration: 350,
+      ease: 'Cubic.easeOut'
     });
   }
 
@@ -480,13 +498,13 @@ class UIScene extends Phaser.Scene {
     const lang = this.registry.get('lang') || 'id';
     
     if (this.harmonyLabelTxt) this.harmonyLabelTxt.setText(lang === 'en' ? '♥ HARMONY' : '♥ HARMONI');
-    if (this.switchLevelBtn) this.switchLevelBtn.setText(lang === 'en' ? '[ Switch Level ]' : '[ Ganti Level ]');
-    if (this.switchLangBtn)    this.switchLangBtn.setText(lang === 'en' ? '[ Switch Language (EN) ]' : '[ Ganti Bahasa (ID) ]');
-    this.closeSidebarBtn.setText(lang === 'en' ? '[ Back (Close) ]' : '[ Kembali (Tutup) ]');
+    if (this.switchLevelBtnObj) this.switchLevelBtnObj.txt.setText(lang === 'en' ? 'Switch Level' : 'Ganti Level');
+    if (this.switchLangBtnObj)  this.switchLangBtnObj.txt.setText(lang === 'en' ? 'Switch Language (EN)' : 'Ganti Bahasa (ID)');
+    if (this.closeSidebarBtnObj) this.closeSidebarBtnObj.txt.setText(lang === 'en' ? 'Back' : 'Kembali');
     if (this.interactPrompt) this.interactPrompt.setText(lang === 'en' ? '[ Press E to interact ]' : '[ Tekan E untuk interaksi ]');
     
     if (this.levelButtons) {
-      this.levelButtons.forEach(b => b.btn.setText(b.name[lang]));
+      this.levelButtons.forEach(b => b.txt.setText(b.name[lang]));
     }
     
     this._refreshMapName();

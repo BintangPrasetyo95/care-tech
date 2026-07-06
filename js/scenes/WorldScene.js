@@ -353,10 +353,10 @@ class WorldScene extends Phaser.Scene {
       m[10][2] = 'bookshelf'; m[10][3] = 'bookshelf';
       m[12][2] = 'bookshelf'; m[12][3] = 'bookshelf';
       m[1][10] = 'board';
-      m[H - 1][10] = 'door'; m[H - 1][11] = 'door'; 
-      m[0][5]  = 'door'; m[0][6]  = 'door'; 
-      m[0][15] = 'door'; m[0][16] = 'door'; 
-      m[H - 1][3] = 'door'; m[H - 1][4] = 'door';
+      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r'; 
+      m[0][5]  = 'door_big_l'; m[0][6]  = 'door_big_r'; 
+      m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r'; 
+      m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
       return m;
     }
 
@@ -375,7 +375,7 @@ class WorldScene extends Phaser.Scene {
       for (let r = 2; r < H - 1; r++) {
         for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 5 === 0) m[r][c] = 'floor2';
       }
-      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
+      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
       return m;
     }
 
@@ -391,7 +391,7 @@ class WorldScene extends Phaser.Scene {
       for (let r = 4; r < H - 1; r++) {
         for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r * c) % 6 === 0) m[r][c] = 'floor2';
       }
-      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
+      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
       return m;
     }
 
@@ -414,7 +414,7 @@ class WorldScene extends Phaser.Scene {
       for (let r = 2; r < H - 1; r++) {
         for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 4 === 0) m[r][c] = 'floor2';
       }
-      m[H - 1][10] = 'door'; m[H - 1][11] = 'door';
+      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
       return m;
     }
 
