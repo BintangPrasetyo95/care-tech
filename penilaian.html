@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Dashboard</title>
+    <title>CareTech - Penilaian</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-    <!-- Solid background, no shapes -->
-
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
@@ -22,7 +20,7 @@
             </div>
             
             <ul class="sidebar-menu">
-                <li class="menu-item active">
+                <li class="menu-item">
                     <a href="dashboard.html">
                         <span class="icon">🏠</span>
                         <span class="text">Beranda</span>
@@ -34,7 +32,7 @@
                         <span class="text">Jurnal Harian</span>
                     </a>
                 </li>
-                <li class="menu-item">
+                <li class="menu-item active">
                     <a href="penilaian.html">
                         <span class="icon">⭐️</span>
                         <span class="text">Penilaian</span>
@@ -65,8 +63,8 @@
         <main class="main-content">
             <header class="top-header">
                 <div class="greeting">
-                    <h1 id="welcome-message">Selamat Datang! 👋</h1>
-                    <p>Siap untuk berpetualang dan belajar hari ini?</p>
+                    <h1>Penilaian ⭐️</h1>
+                    <p>Lihat perkembangan dan nilai belajarmu.</p>
                 </div>
                 <div class="user-profile">
                     <div class="avatar">🧑‍🎓</div>
@@ -74,51 +72,22 @@
             </header>
 
             <div class="content-grid">
+                <div class="dashboard-card wide-card glass-panel">
+                    <h3>Papan Peringkat & Nilai</h3>
+                    <p style="color:#777; margin-bottom:1rem;">Kumpulkan poin dari game dan modul untuk meningkatkan nilaimu!</p>
+                    
+                    <div style="border: 1px solid #Eef2f5; padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem; background: #fafafa; display:flex; justify-content:space-between;">
+                        <span><strong>Total Poin Harmoni:</strong></span>
+                        <span style="color:var(--primary-color); font-weight:bold; font-size:1.2rem;">0 Pts</span>
+                    </div>
 
-                <!-- Quick Action Cards -->
-                <div class="dashboard-card glass-panel interactive-card" onclick="location.href='game.html'">
-                    <div class="card-icon">🎮</div>
-                    <h3>Main Game</h3>
-                    <p>Lanjutkan petualanganmu di Harmonia School!</p>
-                </div>
-                
-                <div class="dashboard-card glass-panel interactive-card">
-                    <div class="card-icon">📖</div>
-                    <h3>Komik Terbaru</h3>
-                    <p>Baca episode komik interaktif minggu ini.</p>
+                    <div style="border: 1px solid #Eef2f5; padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem; background: #fafafa; display:flex; justify-content:space-between;">
+                        <span><strong>Misi Selesai:</strong></span>
+                        <span style="color:var(--secondary-color); font-weight:bold; font-size:1.2rem;">0 / 10</span>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
-
-    <script>
-        // Simple logic to show reflection status without needing a login
-        document.addEventListener('DOMContentLoaded', () => {
-            const reflectionStatusDiv = document.getElementById('reflection-status');
-            const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
-            
-            if (allReflections.length > 0) {
-                // Get the most recent reflection
-                const latest = allReflections[allReflections.length - 1];
-                let emoji = "😐";
-                if(latest.feeling === "senang") emoji = "😃";
-                if(latest.feeling === "sedih") emoji = "😔";
-                if(latest.feeling === "marah") emoji = "😠";
-
-                reflectionStatusDiv.innerHTML = `
-                    <div class="status-badge">
-                        <span class="status-emoji">${emoji}</span>
-                        <span class="status-text">Perasaanmu: <strong>${latest.feeling.charAt(0).toUpperCase() + latest.feeling.slice(1)}</strong></span>
-                    </div>
-                    <p style="margin-top: 1rem; color: #777;">Terima kasih sudah berbagi perasaanmu hari ini!</p>
-                `;
-            } else {
-                reflectionStatusDiv.innerHTML = `
-                    <p>Kamu belum mengisi refleksi hari ini.</p>
-                    <a href="reflection.html" class="btn-small">Isi Refleksi Sekarang</a>
-                `;
-            }
-        });
-    </script>
 </body>
 </html>
