@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="CARE-TECH: An anti-bullying narrative RPG set in Harmonia School. Build empathy, protect friends, and raise the Harmony Index." />
   <title>CARE-TECH: Harmonia School</title>
+  <link rel="icon" href="assets/logo-care-tech.png" />
   <style>
     /* ── Reset & full-bleed canvas ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      background: #0f0e17;
+      background: #e8faff;
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
     canvas {
@@ -26,7 +27,7 @@
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, #121313 0%, #0f1011 100%);
+      background: radial-gradient(circle at center, #ddecec 0%, #0f1011 100%);
       z-index: 9999;
       transition: opacity 1.2s ease-in-out, visibility 1.2s;
     }
@@ -77,8 +78,7 @@
 
   <!-- Pre-loader shown while scripts download -->
   <div id="preloader">
-    <h1>CARE-<span>TECH</span></h1>
-    <p>Harmonia School</p>
+    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 300px; margin-bottom: 2rem;">
     <div class="loader-orb"></div>
   </div>
 

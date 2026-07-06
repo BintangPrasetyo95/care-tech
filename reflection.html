@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTech - Refleksi Diri</title>
+    <link rel="icon" href="assets/logo-care-tech.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="reflection.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape circle1"></div>
+        <div class="shape circle2"></div>
+        <div class="shape circle3"></div>
+        <div class="shape circle4"></div>
+    </div>
+
+    <div class="reflection-container">
+        <div class="glass-card">
+            <h2>Halo! 👋</h2>
+            <p>Sebelum kita mulai, yuk ceritakan bagaimana keadaanmu hari ini.</p>
+            
+            <form id="reflection-form">
+                <!-- Question 1 -->
+                <div class="question-block active" id="q1">
+                    <h3>Bagaimana perasaanmu hari ini?</h3>
+                    <div class="emoji-options">
+                        <label class="emoji-option">
+                            <input type="radio" name="feeling" value="senang" required>
+                            <span class="emoji">😃</span>
+                            <span class="label">Senang</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="feeling" value="biasa">
+                            <span class="emoji">😐</span>
+                            <span class="label">Biasa Saja</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="feeling" value="sedih">
+                            <span class="emoji">😔</span>
+                            <span class="label">Sedih</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="feeling" value="marah">
+                            <span class="emoji">😠</span>
+                            <span class="label">Marah</span>
+                        </label>
+                    </div>
+                    <div class="textarea-container">
+                        <textarea name="feeling_notes" rows="3" placeholder="Boleh ceritakan lebih lanjut di sini ya... (opsional)" class="custom-textarea"></textarea>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="question-block" id="q2">
+                    <h3>Seberapa bersemangat kamu untuk belajar?</h3>
+                    <div class="emoji-options">
+                        <label class="emoji-option">
+                            <input type="radio" name="energy" value="sangat_semangat" required>
+                            <span class="emoji">🚀</span>
+                            <span class="label">Sangat Semangat!</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="energy" value="semangat">
+                            <span class="emoji">👍</span>
+                            <span class="label">Semangat</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="energy" value="kurang">
+                            <span class="emoji">🥱</span>
+                            <span class="label">Kurang</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="question-block" id="q3">
+                    <h3>Apakah kamu sudah sarapan / makan?</h3>
+                    <div class="emoji-options">
+                        <label class="emoji-option">
+                            <input type="radio" name="food" value="sudah" required>
+                            <span class="emoji">🥪</span>
+                            <span class="label">Sudah</span>
+                        </label>
+                        <label class="emoji-option">
+                            <input type="radio" name="food" value="belum">
+                            <span class="emoji">🍽️</span>
+                            <span class="label">Belum</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="navigation-buttons">
+                    <button type="button" id="btn-prev" class="btn btn-secondary" style="display: none;">Kembali</button>
+                    <button type="button" id="btn-next" class="btn btn-primary">Lanjut</button>
+                    <button type="submit" id="btn-submit" class="btn btn-primary" style="display: none;">Selesai & Ke Dashboard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simple logic for the step-by-step form
+        const questions = document.querySelectorAll('.question-block');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnSubmit = document.getElementById('btn-submit');
+        const form = document.getElementById('reflection-form');
+        
+        let currentStep = 0;
+
+        function updateForm() {
+            questions.forEach((q, index) => {
+                q.classList.remove('active');
+                if (index === currentStep) {
+                    q.classList.add('active');
+                }
+            });
+
+            btnPrev.style.display = currentStep > 0 ? 'inline-block' : 'none';
+            
+            if (currentStep === questions.length - 1) {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'inline-block';
+            } else {
+                btnNext.style.display = 'inline-block';
+                btnSubmit.style.display = 'none';
+            }
+        }
+
+        btnNext.addEventListener('click', () => {
+            // Validate if option selected before proceeding
+            const currentInputs = questions[currentStep].querySelectorAll('input[type="radio"]');
+            const isChecked = Array.from(currentInputs).some(radio => radio.checked);
+            
+            if (isChecked) {
+                if (currentStep < questions.length - 1) {
+                    currentStep++;
+                    updateForm();
+                }
+            } else {
+                alert("Tolong pilih salah satu ya! 😊");
+            }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateForm();
+            }
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Collect data
+            const formData = new FormData(form);
+            const reflectionData = {
+                feeling: formData.get('feeling'),
+                feeling_notes: formData.get('feeling_notes'),
+                energy: formData.get('energy'),
+                food: formData.get('food'),
+                date: new Date().toISOString()
+            };
+            
+            // Store locally (simulate sending to teacher/backend)
+            let allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+            allReflections.push(reflectionData);
+            localStorage.setItem('caretech_reflections', JSON.stringify(allReflections));
+
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+</body>
+</html>
