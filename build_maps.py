@@ -48,6 +48,12 @@ tiles = {
     'dummy_49': (0,0,0,0),
     'bench_1_0': (0,0,0,0), 'bench_1_1': (0,0,0,0), 'bench_1_2': (0,0,0,0),
     'door_big_l': (0,0,0,0), 'door_big_r': (0,0,0,0),
+    'school_wall_tl': (0,0,0,0), 'school_wall_t': (0,0,0,0), 'school_wall_tr': (0,0,0,0),
+    'school_wall_l': (0,0,0,0), 'school_wall_c': (0,0,0,0), 'school_wall_r': (0,0,0,0),
+    'school_wall_bl': (0,0,0,0), 'school_wall_b': (0,0,0,0), 'school_wall_br': (0,0,0,0),
+    'school_wall_itl': (0,0,0,0), 'school_wall_itr': (0,0,0,0),
+    'school_wall_ibl': (0,0,0,0), 'school_wall_ibr': (0,0,0,0),
+    'school_floor': (0,0,0,0), 'school_floor2': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -58,16 +64,32 @@ img = Image.new('RGBA', (cols * TILE_SIZE, rows * TILE_SIZE), (0, 0, 0, 0))
 draw = ImageDraw.Draw(img)
 
 try:
-    garden_sheet = Image.open('stuff/school_garden_sprites.png')
-    pond_sheet = Image.open('stuff/school_garden_pond_sprites.png')
-    big_tree_sheet = Image.open('stuff/A_single__massive_oa...-890691365-0 color.png')
-    grass_v1 = Image.open('stuff/grass variant 1.png')
-    grass_v2 = Image.open('stuff/grass variant 2.png')
-    bench_sheet = Image.open('stuff/A_long_top_down_wood...-1859695563-0.png')
-    big_door_sheet = Image.open('stuff/A_set_of_large__form...-1004951539-0.png')
-    wall_tile = Image.open('stuff/tile_3_0.png')
+    garden_sheet = Image.open('assets/sprites/school_garden_sprites.png')
+    pond_sheet = Image.open('assets/sprites/school_garden_pond_sprites.png')
+    big_tree_sheet = Image.open('assets/sprites/big_tree.png')
+    grass_v1 = Image.open('assets/sprites/grass variant 1.png')
+    grass_v2 = Image.open('assets/sprites/grass variant 2.png')
+    bench_sheet = Image.open('assets/sprites/long_bench.png')
+    big_door_sheet = Image.open('assets/sprites/big_door.png')
+    wall_tile = Image.open('assets/sprites/tile_3_0.png')
+    school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
     custom_tiles = {
         'wall': wall_tile,
+        'school_wall_tl': school_fw.crop((1*32, 0*32, 2*32, 1*32)),
+        'school_wall_t': school_fw.crop((2*32, 0*32, 3*32, 1*32)),
+        'school_wall_tr': school_fw.crop((3*32, 0*32, 4*32, 1*32)),
+        'school_wall_l': school_fw.crop((1*32, 1*32, 2*32, 2*32)),
+        'school_wall_c': school_fw.crop((2*32, 1*32, 3*32, 2*32)),
+        'school_wall_r': school_fw.crop((3*32, 1*32, 4*32, 2*32)),
+        'school_wall_bl': school_fw.crop((1*32, 2*32, 2*32, 3*32)),
+        'school_wall_b': school_fw.crop((2*32, 2*32, 3*32, 3*32)),
+        'school_wall_br': school_fw.crop((3*32, 2*32, 4*32, 3*32)),
+        'school_wall_itl': school_fw.crop((1*32, 3*32, 2*32, 4*32)),
+        'school_wall_itr': school_fw.crop((2*32, 3*32, 3*32, 4*32)),
+        'school_wall_ibl': school_fw.crop((1*32, 4*32, 2*32, 5*32)),
+        'school_wall_ibr': school_fw.crop((2*32, 4*32, 3*32, 5*32)),
+        'school_floor': school_fw.crop((0, 0, 32, 32)),
+        'school_floor2': school_fw.crop((0, 32, 32, 64)),
         'grass': garden_sheet.crop((0, 3*32, 32, 4*32)),
         'grass2': garden_sheet.crop((0, 4*32, 32, 5*32)),
         'path': garden_sheet.crop((0, 0, 32, 32)),
@@ -194,7 +216,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
+    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]
@@ -256,28 +278,28 @@ with open('assets/tilemaps/garden.json', 'w') as f:
     json.dump(make_tiled_json(W, H, g_grnd, g_obj), f)
 
 # 2. Corridor
-cor_grid = [['floor' for _ in range(W)] for _ in range(H)]
-for c in range(W): cor_grid[0][c] = 'wall_top'; cor_grid[H-1][c] = 'wall'
-for r in range(H): cor_grid[r][0] = 'wall'; cor_grid[r][W-1] = 'wall'
-for c in range(1, W-1): cor_grid[1][c] = 'wall_top'; cor_grid[5][c] = 'wall'
-for c in [5,6,14,15]: cor_grid[5][c] = 'floor'
+cor_grid = [['school_floor' for _ in range(W)] for _ in range(H)]
+for c in range(W): cor_grid[0][c] = 'school_wall_top'; cor_grid[H-1][c] = 'school_wall'
+for r in range(H): cor_grid[r][0] = 'school_wall'; cor_grid[r][W-1] = 'school_wall'
+for c in range(1, W-1): cor_grid[1][c] = 'school_wall_top'; cor_grid[5][c] = 'school_wall'
+for c in [5,6,14,15]: cor_grid[5][c] = 'school_floor'
 for r in range(2, 5):
     for c in range(1, W-1):
-        if c % 3 == 0: cor_grid[r][c] = 'floor2'
+        if c % 3 == 0: cor_grid[r][c] = 'school_floor2'
 for r, c in [(8,2), (8,3), (8,4), (10,2), (10,3), (12,2), (12,3)]: cor_grid[r][c] = 'bookshelf'
 cor_grid[1][10] = 'board'
 cor_grid[H-1][10] = 'door'
 cor_grid[0][5] = 'door'
 cor_grid[0][15] = 'door'
 cor_grid[H-1][3] = 'door'
-c_grnd, c_obj = build_layers(cor_grid, 'floor')
+c_grnd, c_obj = build_layers(cor_grid, 'school_floor')
 with open('assets/tilemaps/corridor.json', 'w') as f:
     json.dump(make_tiled_json(W, H, c_grnd, c_obj), f)
 
 # 3. Classroom
-cls_grid = [['floor' for _ in range(W)] for _ in range(H)]
-for c in range(W): cls_grid[0][c] = 'wall_top'; cls_grid[H-1][c] = 'wall'
-for r in range(H): cls_grid[r][0] = 'wall'; cls_grid[r][W-1] = 'wall'
+cls_grid = [['school_floor' for _ in range(W)] for _ in range(H)]
+for c in range(W): cls_grid[0][c] = 'school_wall_top'; cls_grid[H-1][c] = 'school_wall'
+for r in range(H): cls_grid[r][0] = 'school_wall'; cls_grid[r][W-1] = 'school_wall'
 cls_grid[1][9] = 'board'; cls_grid[1][10] = 'board'; cls_grid[1][11] = 'board'
 cls_grid[3][10] = 'desk'
 for row in range(3):
@@ -286,45 +308,45 @@ for row in range(3):
         cls_grid[7 + row*2][4 + col*3] = 'chair'
 for r in range(2, H-1):
     for c in range(1, W-1):
-        if cls_grid[r][c] == 'floor' and (r+c)%5 == 0: cls_grid[r][c] = 'floor2'
+        if cls_grid[r][c] == 'school_floor' and (r+c)%5 == 0: cls_grid[r][c] = 'school_floor2'
 cls_grid[H-1][10] = 'door'
-cl_grnd, cl_obj = build_layers(cls_grid, 'floor')
+cl_grnd, cl_obj = build_layers(cls_grid, 'school_floor')
 with open('assets/tilemaps/classroom.json', 'w') as f:
     json.dump(make_tiled_json(W, H, cl_grnd, cl_obj), f)
 
 # 4. Auditorium
-aud_grid = [['floor' for _ in range(W)] for _ in range(H)]
-for c in range(W): aud_grid[0][c] = 'wall_top'; aud_grid[H-1][c] = 'wall'
-for r in range(H): aud_grid[r][0] = 'wall'; aud_grid[r][W-1] = 'wall'
+aud_grid = [['school_floor' for _ in range(W)] for _ in range(H)]
+for c in range(W): aud_grid[0][c] = 'school_wall_top'; aud_grid[H-1][c] = 'school_wall'
+for r in range(H): aud_grid[r][0] = 'school_wall'; aud_grid[r][W-1] = 'school_wall'
 for c in range(3, 17): aud_grid[2][c] = 'stage'; aud_grid[3][c] = 'stage'
 aud_grid[1][5] = 'board'; aud_grid[1][10] = 'board'; aud_grid[1][15] = 'board'
 for row in range(4):
     for col in range(2, 18, 2): aud_grid[6 + row*2][col] = 'chair'
 for r in range(4, H-1):
     for c in range(1, W-1):
-        if aud_grid[r][c] == 'floor' and (r*c)%6 == 0: aud_grid[r][c] = 'floor2'
+        if aud_grid[r][c] == 'school_floor' and (r*c)%6 == 0: aud_grid[r][c] = 'school_floor2'
 aud_grid[H-1][10] = 'door'
-a_grnd, a_obj = build_layers(aud_grid, 'floor')
+a_grnd, a_obj = build_layers(aud_grid, 'school_floor')
 with open('assets/tilemaps/auditorium.json', 'w') as f:
     json.dump(make_tiled_json(W, H, a_grnd, a_obj), f)
 
 # 5. Cafeteria
-caf_grid = [['floor' for _ in range(W)] for _ in range(H)]
-for c in range(W): caf_grid[0][c] = 'wall_top'; caf_grid[H-1][c] = 'wall'
-for r in range(H): caf_grid[r][0] = 'wall'; caf_grid[r][W-1] = 'wall'
+caf_grid = [['school_floor' for _ in range(W)] for _ in range(H)]
+for c in range(W): caf_grid[0][c] = 'school_wall_top'; caf_grid[H-1][c] = 'school_wall'
+for r in range(H): caf_grid[r][0] = 'school_wall'; caf_grid[r][W-1] = 'school_wall'
 for tp in [(3,4), (3,11), (8,4), (8,11), (6,16), (11,8)]:
     r, c = tp
     caf_grid[r][c] = 'table'
     if r-1 >= 1: caf_grid[r-1][c] = 'chair'
     if r+1 < H-1: caf_grid[r+1][c] = 'chair'
-    if c-1 >= 1 and caf_grid[r][c-1] == 'floor': caf_grid[r][c-1] = 'chair'
-    if c+1 < W-1 and caf_grid[r][c+1] == 'floor': caf_grid[r][c+1] = 'chair'
+    if c-1 >= 1 and caf_grid[r][c-1] == 'school_floor': caf_grid[r][c-1] = 'chair'
+    if c+1 < W-1 and caf_grid[r][c+1] == 'school_floor': caf_grid[r][c+1] = 'chair'
 for c in range(2, 8): caf_grid[1][c] = 'desk'
 for r in range(2, H-1):
     for c in range(1, W-1):
-        if caf_grid[r][c] == 'floor' and (r+c)%4 == 0: caf_grid[r][c] = 'floor2'
+        if caf_grid[r][c] == 'school_floor' and (r+c)%4 == 0: caf_grid[r][c] = 'school_floor2'
 caf_grid[H-1][10] = 'door'
-cf_grnd, cf_obj = build_layers(caf_grid, 'floor')
+cf_grnd, cf_obj = build_layers(caf_grid, 'school_floor')
 with open('assets/tilemaps/cafeteria.json', 'w') as f:
     json.dump(make_tiled_json(W, H, cf_grnd, cf_obj), f)
 

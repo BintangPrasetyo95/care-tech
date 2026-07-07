@@ -169,10 +169,16 @@ class WorldScene extends Phaser.Scene {
       'grass_var1': 43, 'grass_var2': 44,
       'bench_0_0': 45, 'bench_0_1': 46, 'bench_0_2': 47,
       'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52,
-      'door_big_l': 53, 'door_big_r': 54
+      'door_big_l': 53, 'door_big_r': 54,
+      'school_wall_tl': 55, 'school_wall_t': 56, 'school_wall_tr': 57,
+      'school_wall_l': 58, 'school_wall_c': 59, 'school_wall_r': 60,
+      'school_wall_bl': 61, 'school_wall_b': 62, 'school_wall_br': 63,
+      'school_wall_itl': 64, 'school_wall_itr': 65,
+      'school_wall_ibl': 66, 'school_wall_ibr': 67,
+      'school_floor': 68, 'school_floor2': 69
     };
     
-    const solidTiles = ['wall', 'wall_top', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
+    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
 
     const mapData = this._getMapData(mapKey);
 
@@ -187,7 +193,7 @@ class WorldScene extends Phaser.Scene {
         
         // ALWAYS put the base floor to prevent black spots
         // Deterministic hash with an 80% / 10% / 10% split
-        let baseFloorId = TILE_IDS['floor'];
+        let baseFloorId = TILE_IDS['school_floor'];
         if (mapKey === 'garden') {
           const hashValue = (r * 37 + c * 17) % 100;
           if (hashValue < 80) {
@@ -223,7 +229,7 @@ class WorldScene extends Phaser.Scene {
           // If it's a solid object OR a bench piece that was placed without putObj somehow
           if (groundName.startsWith('water')) {
             midLayer.putTileAt(groundId, c, r);
-          } else if (groundName === 'wall' || groundName === 'wall_top') {
+          } else if (groundName === 'wall' || groundName === 'wall_top' || groundName.startsWith('school_wall_')) {
             midLayer.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('bench_1')) {
             midLayer.putTileAt(groundId, c, r);
@@ -282,6 +288,47 @@ class WorldScene extends Phaser.Scene {
   }
 
   /* ────── Map data for each area (Human Readable 2D Arrays) ────── */
+  
+  _autotileSchoolWalls(m) {
+    const H = m.length;
+    const W = m[0].length;
+    for (let r = 0; r < H; r++) {
+      for (let c = 0; c < W; c++) {
+        if (m[r][c].startsWith('school_wall')) {
+          const topW = (r === 0 || m[r-1][c].startsWith('school_wall'));
+          const botW = (r === H-1 || m[r+1][c].startsWith('school_wall'));
+          const leftW = (c === 0 || m[r][c-1].startsWith('school_wall'));
+          const rightW = (c === W-1 || m[r][c+1].startsWith('school_wall'));
+
+          if (!topW && botW && !leftW && rightW) m[r][c] = 'school_wall_tl';
+          else if (!topW && botW && leftW && rightW) m[r][c] = 'school_wall_t';
+          else if (!topW && botW && leftW && !rightW) m[r][c] = 'school_wall_tr';
+          else if (topW && botW && !leftW && rightW) m[r][c] = 'school_wall_l';
+          else if (topW && botW && leftW && rightW) {
+            const tlW = (r === 0 || c === 0 || m[r-1][c-1].startsWith('school_wall'));
+            const trW = (r === 0 || c === W-1 || m[r-1][c+1].startsWith('school_wall'));
+            const blW = (r === H-1 || c === 0 || m[r+1][c-1].startsWith('school_wall'));
+            const brW = (r === H-1 || c === W-1 || m[r+1][c+1].startsWith('school_wall'));
+            if (!tlW) m[r][c] = 'school_wall_itl';
+            else if (!trW) m[r][c] = 'school_wall_itr';
+            else if (!blW) m[r][c] = 'school_wall_ibl';
+            else if (!brW) m[r][c] = 'school_wall_ibr';
+            else m[r][c] = 'school_wall_c';
+          }
+          else if (topW && botW && leftW && !rightW) m[r][c] = 'school_wall_r';
+          else if (topW && !botW && !leftW && rightW) m[r][c] = 'school_wall_bl';
+          else if (topW && !botW && leftW && rightW) m[r][c] = 'school_wall_b';
+          else if (topW && !botW && leftW && !rightW) m[r][c] = 'school_wall_br';
+          else {
+            if (!topW && !botW) m[r][c] = 'school_wall_b';
+            else if (!leftW && !rightW) m[r][c] = 'school_wall_r';
+            else m[r][c] = 'school_wall_c';
+          }
+        }
+      }
+    }
+  }
+
   _getMapData(key) {
     const W = 20, H = 15;
 
@@ -341,13 +388,14 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (key === 'corridor') {
-      const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      for (let c = 1; c < W - 1; c++) { m[1][c] = 'wall_top'; m[5][c] = 'wall'; }
-      m[5][5] = 'floor'; m[5][6] = 'floor'; m[5][14] = 'floor'; m[5][15] = 'floor';
+      const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
+      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
+      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
+      for (let c = 1; c < W - 1; c++) { m[1][c] = 'school_wall_top'; m[5][c] = 'school_wall'; m[6][c] = 'school_wall'; }
+      m[5][5] = 'school_floor'; m[5][6] = 'school_floor'; m[5][14] = 'school_floor'; m[5][15] = 'school_floor';
+      m[6][5] = 'school_floor'; m[6][6] = 'school_floor'; m[6][14] = 'school_floor'; m[6][15] = 'school_floor';
       for (let r = 2; r < 5; r++) {
-        for (let c = 1; c < W - 1; c++) if (c % 3 === 0) m[r][c] = 'floor2';
+        for (let c = 1; c < W - 1; c++) if (c % 3 === 0) m[r][c] = 'school_floor2';
       }
       m[8][2] = 'bookshelf'; m[8][3] = 'bookshelf'; m[8][4] = 'bookshelf';
       m[10][2] = 'bookshelf'; m[10][3] = 'bookshelf';
@@ -357,13 +405,14 @@ class WorldScene extends Phaser.Scene {
       m[0][5]  = 'door_big_l'; m[0][6]  = 'door_big_r'; 
       m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r'; 
       m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
+      this._autotileSchoolWalls(m);
       return m;
     }
 
     if (key === 'classroom') {
-      const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
+      const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
+      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
+      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
       m[1][9] = 'board'; m[1][10] = 'board'; m[1][11] = 'board';
       m[3][10] = 'desk';
       for (let row = 0; row < 3; row++) {
@@ -373,32 +422,34 @@ class WorldScene extends Phaser.Scene {
         }
       }
       for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 5 === 0) m[r][c] = 'floor2';
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r + c) % 5 === 0) m[r][c] = 'school_floor2';
       }
       m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
+      this._autotileSchoolWalls(m);
       return m;
     }
 
     if (key === 'auditorium') {
-      const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
+      const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
+      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
+      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
       for (let c = 3; c < 17; c++) { m[2][c] = 'stage'; m[3][c] = 'stage'; }
       m[1][5] = 'board'; m[1][10] = 'board'; m[1][15] = 'board';
       for (let row = 0; row < 4; row++) {
         for (let col = 2; col < 18; col += 2) m[6 + row * 2][col] = 'chair';
       }
       for (let r = 4; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r * c) % 6 === 0) m[r][c] = 'floor2';
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r * c) % 6 === 0) m[r][c] = 'school_floor2';
       }
       m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
+      this._autotileSchoolWalls(m);
       return m;
     }
 
     if (key === 'cafeteria') {
-      const m = Array.from({ length: H }, () => Array(W).fill('floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'wall_top'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
+      const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
+      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
+      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
       const tablePositions = [
         { r: 3, c: 4 }, { r: 3, c: 11 }, { r: 8, c: 4 }, 
         { r: 8, c: 11 }, { r: 6, c: 16 }, { r: 11, c: 8 }
@@ -407,14 +458,15 @@ class WorldScene extends Phaser.Scene {
         m[r][c] = 'table';
         if (r - 1 >= 1) m[r - 1][c] = 'chair';
         if (r + 1 < H - 1) m[r + 1][c] = 'chair';
-        if (c - 1 >= 1 && m[r][c - 1] === 'floor') m[r][c - 1] = 'chair';
-        if (c + 1 < W - 1 && m[r][c + 1] === 'floor') m[r][c + 1] = 'chair';
+        if (c - 1 >= 1 && m[r][c - 1] === 'school_floor') m[r][c - 1] = 'chair';
+        if (c + 1 < W - 1 && m[r][c + 1] === 'school_floor') m[r][c + 1] = 'chair';
       });
       for (let c = 2; c < 8; c++) m[1][c] = 'desk';
       for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'floor' && (r + c) % 4 === 0) m[r][c] = 'floor2';
+        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r + c) % 4 === 0) m[r][c] = 'school_floor2';
       }
       m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
+      this._autotileSchoolWalls(m);
       return m;
     }
 
