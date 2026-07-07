@@ -13,6 +13,7 @@ const config = {
   width  : TILE * 20,      // 640 px (20 tiles wide)
   height : TILE * 15,      // 480 px (15 tiles tall)
   pixelArt : true,         // keep sprites crisp
+  roundPixels : true,      // prevent sub-pixel rendering (ghosting/jitter)
 
   physics: {
     default: 'arcade',

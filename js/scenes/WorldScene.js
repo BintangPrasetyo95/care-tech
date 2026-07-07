@@ -43,8 +43,7 @@ class WorldScene extends Phaser.Scene {
       this.physics.add.collider(this.player.sprite, n.sprite);
     });
 
-    /* ── Camera ── */
-    this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+    this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
     this.cameras.main.setZoom(SCALE);
     this.cameras.main.setBackgroundColor('#0f0e17');
 
