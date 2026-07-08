@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Harmonia School</title>
+    <title>CareTech - Pretest</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,8 +67,8 @@
                             <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">Pretest</a></li>
-                            <li><a href="game.html" class="active-subitem">Game</a></li>
+                            <li><a href="pretest.html" class="active-subitem">Pretest</a></li>
+                            <li><a href="game.html">Game</a></li>
                             <li><a href="posttest.html">Posttest</a></li>
                         </ul>
                     </li>
@@ -80,8 +80,8 @@
         <main class="main-content">
             <header class="top-header">
                 <div class="greeting">
-                    <h1 id="welcome-message">Harmonia School</h1>
-                    <p>Sebuah game interaktif anti-bullying.</p>
+                    <h1 id="welcome-message">Pretest</h1>
+                    <p>Uji pemahamanmu sebelum memulai materi dan game.</p>
                 </div>
                 <div class="user-profile">
                     <img class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="Profile">
@@ -89,16 +89,56 @@
             </header>
 
             
-            <div class="content-grid" style="display: block; padding: 2rem;">
-                <div class="dashboard-card glass-panel" style="max-width: 800px; margin: 0 auto; text-align: center; padding: 3rem;">
-                    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 250px; margin-bottom: 2rem;">
-                    <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Selamat datang di Harmonia School!</h2>
-                    <p style="font-size: 1.1rem; color: #555; line-height: 1.6; margin-bottom: 2rem;">
-                        Di game ini, kamu akan bermain sebagai siswa di Harmonia School. Tugasmu adalah mencegah perundungan (bullying), membantu teman-teman yang membutuhkan, dan meningkatkan <strong>Indeks Harmoni</strong> di sekolahmu.<br><br>
-                        Gunakan tombol panah atau <strong>WASD</strong> untuk bergerak, dan tekan <strong>E</strong> untuk berinteraksi dengan teman-temanmu.
-                    </p>
-                    <button class="btn-start" style="font-size: 1.2rem; padding: 12px 40px; cursor: pointer; border: none;" onclick="window.location.href='play.html'">Mulai Game 🎮</button>
+            <div class="content-grid" style="display: block; padding: 1rem 2rem;">
+                <div class="dashboard-card glass-panel" style="max-width: 800px; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <h2 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 0.5rem;">Evaluasi Pretest</h2>
+                        <p style="color: #64748b;">Jawablah pertanyaan berikut dengan jujur sesuai dengan apa yang kamu pahami.</p>
+                    </div>
+                    
+                    <div id="quiz-container" style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.8);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">
+                            <span>Pertanyaan <span id="current-q">1</span> dari 3</span>
+                        </div>
+                        
+                        <h3 id="question-text" style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #1e293b; line-height: 1.5;">Apa yang sebaiknya kamu lakukan jika melihat teman di-bully?</h3>
+                        
+                        <div class="options-container" style="display: flex; flex-direction: column; gap: 10px;">
+                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="radio" name="answer" value="a" style="margin-right: 15px; transform: scale(1.2);">
+                                <span>Ikut menertawakan</span>
+                            </label>
+                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="radio" name="answer" value="b" style="margin-right: 15px; transform: scale(1.2);">
+                                <span>Melaporkan ke guru atau orang dewasa</span>
+                            </label>
+                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="radio" name="answer" value="c" style="margin-right: 15px; transform: scale(1.2);">
+                                <span>Pura-pura tidak melihat</span>
+                            </label>
+                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                <input type="radio" name="answer" value="d" style="margin-right: 15px; transform: scale(1.2);">
+                                <span>Ikut mengejek</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                            <button id="btn-next" style="padding: 12px 30px; font-size: 1rem; font-weight: bold; color: white; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4); transition: transform 0.2s;" onclick="alert('Ini adalah prototipe. Jawaban berhasil disimpan!'); window.location.href='dashboard.html';">Selanjutnya ➔</button>
+                        </div>
+                    </div>
                 </div>
+                
+                <style>
+                    .quiz-option:hover {
+                        border-color: var(--primary-color) !important;
+                        background: #f0f9ff !important;
+                    }
+                    .quiz-option:has(input:checked) {
+                        border-color: var(--primary-color) !important;
+                        background: #e0f2fe !important;
+                        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+                    }
+                </style>
             </div>
 
         </main>
