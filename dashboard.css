@@ -119,7 +119,10 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(0.95);
 }
 
-.menu-item .icon { font-size: 1.4rem; }
+.menu-item .icon {
+    font-size: 1.4rem;
+    margin-right: 15px;
+}
 
 /* Dropdown Menu */
 .has-dropdown {
@@ -196,6 +199,7 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    object-fit: cover;
 }
 
 /* Content Grid */

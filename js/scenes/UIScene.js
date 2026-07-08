@@ -138,8 +138,12 @@ class UIScene extends Phaser.Scene {
       this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
     });
     
-    this.closeSidebarBtnObj = createBtn(40, height - 50, 200, 34, 'Kembali', 0xef4444, 0xdc2626, () => {
+    this.closeSidebarBtnObj = createBtn(40, height - 90, 200, 34, 'Lanjut Main', 0x3b82f6, 0x2563eb, () => {
       this._toggleSidebar();
+    });
+    
+    this.exitGameBtnObj = createBtn(40, height - 45, 200, 34, 'Keluar Game', 0xef4444, 0xdc2626, () => {
+      window.location.href = 'game.html';
     });
 
     this.levelListContainer = this.add.container(0, 235).setVisible(false);
@@ -500,7 +504,8 @@ class UIScene extends Phaser.Scene {
     if (this.harmonyLabelTxt) this.harmonyLabelTxt.setText(lang === 'en' ? '♥ HARMONY' : '♥ HARMONI');
     if (this.switchLevelBtnObj) this.switchLevelBtnObj.txt.setText(lang === 'en' ? 'Switch Level' : 'Ganti Level');
     if (this.switchLangBtnObj)  this.switchLangBtnObj.txt.setText(lang === 'en' ? 'Switch Language (EN)' : 'Ganti Bahasa (ID)');
-    if (this.closeSidebarBtnObj) this.closeSidebarBtnObj.txt.setText(lang === 'en' ? 'Back' : 'Kembali');
+    if (this.closeSidebarBtnObj) this.closeSidebarBtnObj.txt.setText(lang === 'en' ? 'Resume' : 'Lanjut Main');
+    if (this.exitGameBtnObj) this.exitGameBtnObj.txt.setText(lang === 'en' ? 'Exit Game' : 'Keluar Game');
     if (this.interactPrompt) this.interactPrompt.setText(lang === 'en' ? '[ Press E to interact ]' : '[ Tekan E untuk interaksi ]');
     
     if (this.levelButtons) {
