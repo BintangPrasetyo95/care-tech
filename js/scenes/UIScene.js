@@ -9,12 +9,27 @@ class UIScene extends Phaser.Scene {
   constructor() { super('UI'); }
 
   create() {
-    const { width, height } = this.scale;
+    const rawWidth = this.scale.width;
+    const rawHeight = this.scale.height;
+    
+    // Determine a responsive zoom scale for the UI (e.g., 2x for most screens, 3x for 1080p+)
+    this.uiZoom = Math.max(1.5, rawHeight / 480);
+    this.cameras.main.setZoom(this.uiZoom);
+    
+    const width = rawWidth / this.uiZoom;
+    const height = rawHeight / this.uiZoom;
+    
+    // Shift camera so (0,0) is at the top-left of the screen
+    this.cameras.main.scrollX = -(rawWidth - width) / 2;
+    this.cameras.main.scrollY = -(rawHeight - height) / 2;
+    
+    this._effWidth = width;
+    this._effHeight = height;
 
     /* ══════════ Harmony Bar (top-left) ══════════ */
     // Background panel
     this.harmonyPanel = this.add.rectangle(12, 8, 200, 32, 0x16161a, 0.85)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(100);
+      .setOrigin(0, 0).setScrollFactor(1).setDepth(100);
     // Label
     this.harmonyLabelTxt = this.add.text(18, 11, '♥ HARMONI', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
@@ -22,20 +37,20 @@ class UIScene extends Phaser.Scene {
       fontStyle: 'bold',
       color: '#94a1b2',
       letterSpacing: 1
-    }).setScrollFactor(0).setDepth(101);
+    }).setScrollFactor(1).setDepth(101);
     // Bar track
     this.harmonyTrack = this.add.rectangle(18, 28, 186, 8, 0x242629)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(101);
+      .setOrigin(0, 0.5).setScrollFactor(1).setDepth(101);
     // Bar fill
     this.harmonyBar = this.add.rectangle(18, 28, 0, 8, 0x2cb67d)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(102);
+      .setOrigin(0, 0.5).setScrollFactor(1).setDepth(102);
     // Value text
     this.harmonyTxt = this.add.text(110, 28, '', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
       fontSize: '9px',
       fontStyle: 'bold',
       color: '#fffffe'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(103);
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(103);
 
     /* ══════════ Harmony Change Flash ══════════ */
     this.harmonyFlash = this.add.text(220, 20, '', {
@@ -43,29 +58,29 @@ class UIScene extends Phaser.Scene {
       fontSize: '14px',
       fontStyle: 'bold',
       color: '#2cb67d'
-    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(103).setAlpha(0);
+    }).setOrigin(0, 0.5).setScrollFactor(1).setDepth(103).setAlpha(0);
 
     /* ══════════ Clock (top-right) ══════════ */
     this.clockPanel = this.add.rectangle(width - 12, 8, 80, 24, 0x16161a, 0.85)
-      .setOrigin(1, 0).setScrollFactor(0).setDepth(100);
+      .setOrigin(1, 0).setScrollFactor(1).setDepth(100);
     this.clockTxt = this.add.text(width - 52, 20, '', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
       fontSize: '12px',
       fontStyle: 'bold',
       color: '#facc15'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
 
 
     /* ══════════ Mobile/Clickable Menu Toggle ══════════ */
-    const menuToggleBg = this.add.graphics().setScrollFactor(0).setDepth(101);
+    const menuToggleBg = this.add.graphics().setScrollFactor(1).setDepth(101);
     menuToggleBg.fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6);
     
     this.menuToggleTxt = this.add.text(12 + 38, 45 + 13, '☰ MENU', {
       fontFamily: '"Segoe UI", system-ui, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#ffffff'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(102);
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(102);
 
     this.menuToggleZone = this.add.zone(12 + 38, 45 + 13, 76, 26)
-      .setOrigin(0.5).setScrollFactor(0).setDepth(103).setInteractive({ useHandCursor: true });
+      .setOrigin(0.5).setScrollFactor(1).setDepth(103).setInteractive({ useHandCursor: true });
     
     this.menuToggleZone.on('pointerover', () => menuToggleBg.clear().fillStyle(0x0284c7, 1).fillRoundedRect(12, 45, 76, 26, 6));
     this.menuToggleZone.on('pointerout', () => menuToggleBg.clear().fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6));
@@ -78,7 +93,7 @@ class UIScene extends Phaser.Scene {
     });
 
     /* ══════════ Sidebar Menu (ESC to toggle) ══════════ */
-    this.sidebarContainer = this.add.container(-300, 0).setScrollFactor(0).setDepth(400);
+    this.sidebarContainer = this.add.container(-300, 0).setScrollFactor(1).setDepth(400);
     
     const sidebarBg = this.add.graphics();
     sidebarBg.fillStyle(0x0f172a, 0.96).fillRect(0, 0, 280, height); // Dark slate
@@ -196,7 +211,7 @@ class UIScene extends Phaser.Scene {
       color: '#e2e8f0',
       backgroundColor: '#16161a',
       padding: { x: 8, y: 4 }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(150).setAlpha(0);
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(150).setAlpha(0);
 
     /* ══════════ Dialogue Panel (bottom) ══════════ */
     this._boxH = 148;
@@ -210,7 +225,7 @@ class UIScene extends Phaser.Scene {
     )
       .setOrigin(0)
       .setStrokeStyle(2, 0x0ea5e9)
-      .setScrollFactor(0)
+      .setScrollFactor(1)
       .setDepth(200)
       .setVisible(false);
 
@@ -220,12 +235,12 @@ class UIScene extends Phaser.Scene {
       fontSize: '11px',
       color: '#38bdf8',
       fontStyle: 'bold',
-    }).setScrollFactor(0).setDepth(201).setVisible(false);
+    }).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Accent border at top of dialog
     this.dialogBorder = this.add.rectangle(
       this._boxX + 10, this._boxY + 22, this._boxW - 20, 1, 0x0ea5e9, 0.4
-    ).setOrigin(0).setScrollFactor(0).setDepth(201).setVisible(false);
+    ).setOrigin(0).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Dialog text
     this.dialogText = this.add.text(this._boxX + 10, this._boxY + 28, '', {
@@ -234,14 +249,14 @@ class UIScene extends Phaser.Scene {
       color: '#ffffff',
       wordWrap: { width: this._boxW - 24 },
       lineSpacing: 4,
-    }).setScrollFactor(0).setDepth(201).setVisible(false);
+    }).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Continue indicator
     this.continueText = this.add.text(this._boxX + this._boxW - 14, this._boxY + this._boxH - 14, '▼', {
       fontFamily: 'monospace',
       fontSize: '10px',
       color: '#94a1b2'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(202).setVisible(false);
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(202).setVisible(false);
     // Pulse the continue indicator
     this.tweens.add({
       targets: this.continueText,
@@ -267,7 +282,7 @@ class UIScene extends Phaser.Scene {
           padding: { x: 6, y: 3 },
         }
       )
-        .setScrollFactor(0)
+        .setScrollFactor(1)
         .setDepth(202)
         .setVisible(false)
         .setInteractive({ useHandCursor: true });
@@ -307,6 +322,60 @@ class UIScene extends Phaser.Scene {
         this.registry.set('clock', t);
         this._refreshClock(t);
       }
+    });
+
+    /* ══════════ Window Resize Handler ══════════ */
+    this.scale.on('resize', this._handleResize, this);
+  }
+
+  _handleResize(gameSize) {
+    const rawWidth = gameSize.width;
+    const rawHeight = gameSize.height;
+    
+    this.uiZoom = Math.max(1.5, rawHeight / 480);
+    this.cameras.main.setZoom(this.uiZoom);
+    
+    const width = rawWidth / this.uiZoom;
+    const height = rawHeight / this.uiZoom;
+    
+    this.cameras.main.scrollX = -(rawWidth - width) / 2;
+    this.cameras.main.scrollY = -(rawHeight - height) / 2;
+
+    this._effWidth = width;
+    this._effHeight = height;
+
+    // Clock
+    this.clockPanel.setPosition(width - 12, 8);
+    this.clockTxt.setPosition(width - 52, 20);
+
+    // Sidebar
+    const sidebarBg = this.sidebarContainer.getAt(0);
+    sidebarBg.clear();
+    sidebarBg.fillStyle(0x0f172a, 0.96).fillRect(0, 0, 280, height);
+    sidebarBg.fillStyle(0x38bdf8, 1).fillRect(278, 0, 2, height);
+    sidebarBg.fillStyle(0x38bdf8, 0.15).fillRect(274, 0, 4, height);
+
+    this.closeSidebarBtnObj.btnGroup.setY(height - 90);
+    this.exitGameBtnObj.btnGroup.setY(height - 45);
+
+    // Interact Prompt
+    this.interactPrompt.setPosition(width / 2, height - 130);
+
+    // Dialogue Box
+    this._boxW = width - 16;
+    this._boxY = height - this._boxH - 4;
+
+    this.dialogBg.setSize(this._boxW, this._boxH).setPosition(this._boxX, this._boxY);
+    this.speakerTxt.setPosition(this._boxX + 10, this._boxY + 6);
+    this.dialogBorder.setSize(this._boxW - 20, 1).setPosition(this._boxX + 10, this._boxY + 22);
+    this.dialogText.setPosition(this._boxX + 10, this._boxY + 28);
+    this.dialogText.setStyle({ wordWrap: { width: this._boxW - 24 } });
+    this.continueText.setPosition(this._boxX + this._boxW - 14, this._boxY + this._boxH - 14);
+
+    const optStartY = this._boxY + 64;
+    const optSpacing = 18;
+    this.optionButtons.forEach((btn, i) => {
+      btn.setPosition(this._boxX + 14, optStartY + i * optSpacing);
     });
   }
 

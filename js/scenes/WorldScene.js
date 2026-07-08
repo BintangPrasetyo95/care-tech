@@ -60,7 +60,7 @@ class WorldScene extends Phaser.Scene {
     this.nearestInteractable = null;
 
     /* ── Debug Grid (Row, Col) ── */
-    this._drawDebugGrid();
+    // this._drawDebugGrid();
   }
 
   update(time, delta) {

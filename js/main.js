@@ -6,12 +6,12 @@
    ─────────────────────────────────── */
 
 const TILE  = 32;          // logical tile size used everywhere
-const SCALE = 2;           // pixel-art up-scale factor
+const SCALE = 4;           // pixel-art up-scale factor (increased for full screen)
 
 const config = {
   type   : Phaser.AUTO,
-  width  : TILE * 20,      // 640 px (20 tiles wide)
-  height : TILE * 15,      // 480 px (15 tiles tall)
+  width  : window.innerWidth,      // Use full screen width
+  height : window.innerHeight,     // Use full screen height
   pixelArt : true,         // keep sprites crisp
   roundPixels : true,      // prevent sub-pixel rendering (ghosting/jitter)
 
@@ -24,7 +24,7 @@ const config = {
   },
 
   scale: {
-    mode      : Phaser.Scale.FIT,
+    mode      : Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
 
