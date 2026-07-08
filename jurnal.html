@@ -87,9 +87,31 @@
             </header>
 
             <div class="content-grid">
-                <div class="dashboard-card wide-card glass-panel" id="jurnal-list">
-                    <h3>Riwayat Jurnal</h3>
-                    <!-- Jurnal items will be injected here via JS -->
+                <div class="dashboard-card wide-card glass-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <button id="prev-month" class="btn-start" style="padding: 5px 15px; cursor: pointer; border-radius: 6px; font-size: 0.9rem;">&lt; Sebelumnya</button>
+                        <h2 id="calendar-title" style="margin: 0; color: var(--primary-color);">Bulan Tahun</h2>
+                        <button id="next-month" class="btn-start" style="padding: 5px 15px; cursor: pointer; border-radius: 6px; font-size: 0.9rem;">Selanjutnya &gt;</button>
+                    </div>
+                    
+                    <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; margin-bottom: 1rem;">
+                        <!-- Days of week -->
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Min</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sen</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sel</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Rab</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Kam</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Jum</div>
+                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sab</div>
+                        <!-- Dates will be injected here -->
+                    </div>
+                </div>
+
+                <div class="dashboard-card wide-card glass-panel" id="jurnal-details" style="display: none; margin-top: 2rem; border-left: 5px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; border-bottom: 1px solid #eef2f5; padding-bottom: 0.5rem;" id="details-date">Tanggal</h3>
+                    <div id="details-content">
+                        <!-- Details injected here -->
+                    </div>
                 </div>
             </div>
         </main>
@@ -97,34 +119,117 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const listDiv = document.getElementById('jurnal-list');
             const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+            
+            // Map entries by YYYY-MM-DD
+            const reflectionsByDate = {};
+            allReflections.forEach(ref => {
+                const d = new Date(ref.date);
+                const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                reflectionsByDate[dateKey] = ref; // store latest per day
+            });
 
-            if(allReflections.length === 0) {
-                listDiv.innerHTML += `<p>Belum ada catatan jurnal. Mulailah dengan mengisi refleksi harian!</p>`;
-                return;
-            }
+            let currentDate = new Date();
 
-            allReflections.reverse().forEach(ref => {
-                const date = new Date(ref.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                let emoji = "😐";
-                if(ref.feeling === "senang") emoji = "😃";
-                if(ref.feeling === "sedih") emoji = "😔";
-                if(ref.feeling === "marah") emoji = "😠";
+            const calendarTitle = document.getElementById('calendar-title');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const detailsCard = document.getElementById('jurnal-details');
+            const detailsDate = document.getElementById('details-date');
+            const detailsContent = document.getElementById('details-content');
 
-                const notesHtml = ref.feeling_notes ? `<p style="margin-top:0.5rem; color:#666;"><em>"${ref.feeling_notes}"</em></p>` : '';
+            const renderCalendar = (date) => {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                
+                calendarTitle.textContent = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                
+                // Clear existing dates
+                const existingDates = calendarGrid.querySelectorAll('.cal-date');
+                existingDates.forEach(el => el.remove());
 
-                const html = `
-                    <div style="border: 1px solid #Eef2f5; padding: 1.5rem; border-radius: 15px; margin-bottom: 1rem; background: #fafafa;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <span style="font-weight:bold; color:var(--primary-color);">${date}</span>
-                            <span style="font-size:1.5rem;">${emoji}</span>
-                        </div>
-                        <p><strong>Perasaan:</strong> ${ref.feeling.charAt(0).toUpperCase() + ref.feeling.slice(1)}</p>
-                        ${notesHtml}
-                    </div>
-                `;
-                listDiv.innerHTML += html;
+                const firstDayIndex = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Blank spaces for first row
+                for(let i = 0; i < firstDayIndex; i++) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'cal-date';
+                    calendarGrid.appendChild(emptyDiv);
+                }
+
+                // Use local timezone to get today string to avoid UTC mismatches
+                const todayDate = new Date();
+                const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
+
+                for(let day = 1; day <= daysInMonth; day++) {
+                    const dKey = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                    const entry = reflectionsByDate[dKey];
+                    
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'cal-date';
+                    dayDiv.style.padding = '10px';
+                    dayDiv.style.border = '1px solid #eef2f5';
+                    dayDiv.style.borderRadius = '8px';
+                    dayDiv.style.minHeight = '70px';
+                    dayDiv.style.cursor = entry ? 'pointer' : 'default';
+                    dayDiv.style.background = entry ? '#eff6ff' : (dKey === todayStr ? '#fffbec' : '#fafafa');
+                    dayDiv.style.transition = 'transform 0.2s, box-shadow 0.2s';
+                    
+                    if (entry) {
+                        dayDiv.onmouseover = () => { dayDiv.style.transform = 'translateY(-2px)'; dayDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'; };
+                        dayDiv.onmouseout = () => { dayDiv.style.transform = 'translateY(0)'; dayDiv.style.boxShadow = 'none'; };
+                    }
+                    
+                    let content = `<div style="font-weight: 500; font-size: 1.1rem; ${dKey === todayStr ? 'color: var(--primary-color);' : ''}">${day}</div>`;
+                    if(entry) {
+                        let emoji = "😐";
+                        if(entry.feeling === "senang") emoji = "😃";
+                        if(entry.feeling === "sedih") emoji = "😔";
+                        if(entry.feeling === "marah") emoji = "😠";
+                        content += `<div style="font-size: 2rem; margin-top: 5px;">${emoji}</div>`;
+                        
+                        dayDiv.onclick = () => {
+                            const longDate = new Date(year, month, day).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                            detailsDate.textContent = longDate;
+                            
+                            const notesHtml = entry.feeling_notes ? `<p style="margin-top:1rem; color:#444; padding: 1rem; background: rgba(255,255,255,0.7); border-radius: 8px; font-style: italic; font-size: 1.1rem;">"${entry.feeling_notes}"</p>` : '';
+                            
+                            detailsContent.innerHTML = `
+                                <div style="display:flex; align-items:center; gap: 20px;">
+                                    <span style="font-size:4rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">${emoji}</span>
+                                    <div>
+                                        <p style="margin:0; color: #777; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Perasaan</p>
+                                        <p style="margin:0; font-size: 1.5rem; font-weight: bold; color: var(--text-color);">${entry.feeling.charAt(0).toUpperCase() + entry.feeling.slice(1)}</p>
+                                    </div>
+                                </div>
+                                ${notesHtml}
+                            `;
+                            detailsCard.style.display = 'block';
+                            
+                            // Scroll to details
+                            detailsCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        };
+                    } else {
+                        dayDiv.style.color = '#bbb';
+                    }
+                    
+                    dayDiv.innerHTML = content;
+                    calendarGrid.appendChild(dayDiv);
+                }
+            };
+
+            renderCalendar(currentDate);
+
+            document.getElementById('prev-month').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                detailsCard.style.display = 'none';
+                renderCalendar(currentDate);
+            });
+
+            document.getElementById('next-month').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                detailsCard.style.display = 'none';
+                renderCalendar(currentDate);
             });
         });
     </script>

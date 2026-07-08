@@ -88,19 +88,155 @@
                 </div>
             </header>
 
-            <div class="content-grid">
-
-                <!-- Quick Action Cards -->
-                <div class="dashboard-card glass-panel interactive-card" onclick="location.href='game.html'">
-                    <div class="card-icon">🎮</div>
-                    <h3>Main Game</h3>
-                    <p>Lanjutkan petualanganmu di Harmonia School!</p>
+            <div class="content-grid" style="grid-template-columns: 1fr; gap: 2rem;">
+                <!-- Top wide greeting card -->
+                <div class="dashboard-card wide-card glass-panel" style="display: flex; flex-direction: column; padding: 2.5rem; border-radius: 16px; gap: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #E8EDF4;" alt="Avatar">
+                        <div>
+                            <h2 style="color: #2D3748; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.2rem; font-family: 'Inter', sans-serif;">Selamat datang, Pelajar!</h2>
+                            <p style="color: #4A72C8; font-weight: 600; font-size: 1rem;">Harmonia School</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; text-align: center; border-top: 1px solid #E8EDF4; padding-top: 2rem;">
+                        <div>
+                            <h3 style="color: #4A72C8; font-size: 2.2rem; margin-bottom: 0.5rem; font-family: 'Inter', sans-serif; font-weight: 700;">8</h3>
+                            <p style="color: #2D3748; font-size: 0.95rem; font-weight: 600;">Modul Selesai</p>
+                        </div>
+                        <div>
+                            <h3 style="color: #4A72C8; font-size: 2.2rem; margin-bottom: 0.5rem; font-family: 'Inter', sans-serif; font-weight: 700;">3</h3>
+                            <p style="color: #2D3748; font-size: 0.95rem; font-weight: 600;">Jurnal Ditulis</p>
+                        </div>
+                        <div>
+                            <h3 style="color: #4A72C8; font-size: 2.2rem; margin-bottom: 0.5rem; font-family: 'Inter', sans-serif; font-weight: 700;">85%</h3>
+                            <p style="color: #2D3748; font-size: 0.95rem; font-weight: 600;">Skor Penilaian</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="dashboard-card glass-panel interactive-card">
-                    <div class="card-icon">📖</div>
-                    <h3>Komik Terbaru</h3>
-                    <p>Baca episode komik interaktif minggu ini.</p>
+
+                <!-- Progress / Features Section -->
+                <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
+                    <h2 style="text-align: center; color: #2D3748; margin-bottom: 2.5rem; font-size: 1.8rem; font-weight: 700; font-family: 'Inter', sans-serif;">Progress Pembelajaran</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem;">
+                        
+                        <!-- Komik Card -->
+                        <div class="interactive-card" onclick="location.href='komik.html'" style="position: relative; border-radius: 16px; overflow: hidden; height: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <img src="https://images.unsplash.com/photo-1544716278-e513176f20b5?q=80&w=600&auto=format&fit=crop" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);" alt="Komik">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem;">
+                                <h3 style="color: white; font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Komik Digital</h3>
+                                <div style="width: 90px; height: 90px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #7871C2; font-size: 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                    0%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Modul Card -->
+                        <div class="interactive-card" onclick="location.href='modul.html'" style="position: relative; border-radius: 16px; overflow: hidden; height: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=600&auto=format&fit=crop" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);" alt="Modul">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem;">
+                                <h3 style="color: white; font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Modul Digital</h3>
+                                <div style="width: 90px; height: 90px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #7871C2; font-size: 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                    25%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Game Card -->
+                        <div class="interactive-card" onclick="location.href='game.html'" style="position: relative; border-radius: 16px; overflow: hidden; height: 260px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=600&auto=format&fit=crop" style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);" alt="Game">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1rem;">
+                                <h3 style="color: white; font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Game RPG</h3>
+                                <div style="width: 90px; height: 90px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; color: #7871C2; font-size: 1.4rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                    0%
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Komik Digital List -->
+                <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
+                    <h2 style="color: #2D3748; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; font-family: 'Inter', sans-serif;">Daftar Komik Digital</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <a href="komik.html?ep=1" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
+                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 1</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Pengenalan</p>
+                            </div>
+                        </a>
+                        <a href="komik.html?ep=2" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
+                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 2</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Konflik Awal</p>
+                            </div>
+                        </a>
+                        <a href="komik.html?ep=3" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
+                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 3</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Penyelesaian</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modul Digital List -->
+                <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
+                    <h2 style="color: #2D3748; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; font-family: 'Inter', sans-serif;">Daftar Modul Digital</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <a href="modul.html?id=1" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
+                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📚</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Modul 1</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Cyberbullying</p>
+                            </div>
+                        </a>
+                        <a href="modul.html?id=2" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
+                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📚</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Modul 2</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Empati & Interaksi</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alur Evaluasi & Permainan -->
+                <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
+                    <h2 style="color: #2D3748; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; font-family: 'Inter', sans-serif;">Alur Evaluasi & Permainan</h2>
+                    <div style="display: flex; gap: 1.5rem; align-items: center; overflow-x: auto; padding-bottom: 1rem;">
+                        <a href="pretest.html" style="flex: 1; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 2rem; background: #F4F7FB; border: 2px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.borderColor='#4A72C8';" onmouseout="this.style.background='#F4F7FB'; this.style.borderColor='#E8EDF4';">
+                            <div style="font-size: 3rem;">📝</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.2rem; margin: 0; font-weight: 700;">1. Pretest</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin-top: 0.5rem;">Uji kemampuan awalmu</p>
+                            </div>
+                        </a>
+                        
+                        <div style="font-size: 2rem; color: #CBD5E0; font-weight: bold;">➡️</div>
+                        
+                        <a href="game.html" style="flex: 1; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 2rem; background: #F4F7FB; border: 2px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.borderColor='#4A72C8';" onmouseout="this.style.background='#F4F7FB'; this.style.borderColor='#E8EDF4';">
+                            <div style="font-size: 3rem;">🎮</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.2rem; margin: 0; font-weight: 700;">2. Game</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin-top: 0.5rem;">Mainkan simulasinya</p>
+                            </div>
+                        </a>
+                        
+                        <div style="font-size: 2rem; color: #CBD5E0; font-weight: bold;">➡️</div>
+
+                        <a href="posttest.html" style="flex: 1; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 2rem; background: #F4F7FB; border: 2px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.borderColor='#4A72C8';" onmouseout="this.style.background='#F4F7FB'; this.style.borderColor='#E8EDF4';">
+                            <div style="font-size: 3rem;">📋</div>
+                            <div>
+                                <h4 style="color: #2D3748; font-size: 1.2rem; margin: 0; font-weight: 700;">3. Posttest</h4>
+                                <p style="color: #718096; font-size: 0.9rem; margin-top: 0.5rem;">Evaluasi hasil akhir</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </main>

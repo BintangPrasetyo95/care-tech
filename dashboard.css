@@ -14,7 +14,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: #F4F6F8;
+    background: #7871C2; /* Purplish background from reference */
     min-height: 100vh;
     color: var(--text-color);
     overflow-x: hidden;
@@ -78,50 +78,53 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #E8EDF4;
     display: flex;
     flex-direction: column;
 }
 
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
 .section-title {
-    font-size: 0.75rem;
-    color: #a0a0a0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 0.8rem;
-    padding-left: 1.5rem;
-    font-weight: 700;
-    font-family: 'Inter', sans-serif;
+    display: none; /* Hide text titles to match the reference */
 }
 
 .menu-item a {
     display: flex;
     align-items: center;
     padding: 0.8rem 1rem;
-    margin: 0.2rem 0.5rem;
-    border-radius: 12px;
+    margin: 0.4rem 0.5rem;
+    border-radius: 8px;
+    background: #F4F7FB;
+    border: 1px solid #E8EDF4;
     text-decoration: none;
-    color: #7b7b7b;
+    color: #2D3748;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s ease;
 }
 
 .menu-item a:hover {
-    background: #f0f7f9;
-    color: var(--primary-color);
-    transform: translateX(5px);
+    background: #E2E8F0;
 }
 
 .menu-item.active > a {
-    background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color));
-    color: gray;
-    box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4);
-    transform: scale(0.95);
+    background: #E2E8F0;
+    color: #1A202C;
 }
 
 .menu-item .icon {
-    font-size: 1.4rem;
-    margin-right: 15px;
+    display: none; /* Hide emojis */
+}
+
+.menu-item a::before {
+    content: "▶";
+    color: #4A72C8;
+    font-size: 0.75rem;
+    margin-right: 12px;
 }
 
 /* Dropdown Menu */
@@ -183,17 +186,17 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2.5rem;
-    background: #FFFFFF;
-    border-bottom: 1px solid #Eef2f5;
+    background: #2172BA; /* Blue header */
+    border-bottom: none;
 }
 
 .greeting h1 {
     font-size: 2rem;
-    color: var(--primary-color);
+    color: #FFFFFF;
     margin-bottom: 0.3rem;
 }
 
-.greeting p { color: #888; }
+.greeting p { color: #E2E8F0; }
 
 .avatar {
     font-size: 2.5rem;
