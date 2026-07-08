@@ -7,7 +7,7 @@
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
@@ -19,51 +19,60 @@
                 <h2>CareTech</h2>
             </div>
             
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="dashboard.html">
-                        <span class="icon">🏠</span>
-                        <span class="text">Beranda</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="jurnal.html">
-                        <span class="icon">📓</span>
-                        <span class="text">Jurnal Harian</span>
-                    </a>
-                </li>
-                <li class="menu-item active">
-                    <a href="penilaian.html">
-                        <span class="icon">⭐️</span>
-                        <span class="text">Penilaian</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="komik.html">
-                        <span class="icon">📖</span>
-                        <span class="text">Komik Digital</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="modul.html">
-                        <span class="icon">📚</span>
-                        <span class="text">Modul Digital</span>
-                    </a>
-                </li>
-                <li class="menu-item has-dropdown">
-                    <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
-                        <span class="icon">🎮</span>
-                        <span class="text">Game</span>
-                        <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="pretest.html">Pretest</a></li>
-                        <li><a href="game.html">Game</a></li>
-                        <li><a href="posttest.html">Posttest</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
+            <div class="sidebar-section">
+                <h3 class="section-title">Menu Utama</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item ">
+                        <a href="dashboard.html">
+                            <span class="icon">🏠</span>
+                            <span class="text">Beranda</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="jurnal.html">
+                            <span class="icon">📓</span>
+                            <span class="text">Jurnal Harian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item active">
+                        <a href="penilaian.html">
+                            <span class="icon">⭐️</span>
+                            <span class="text">Penilaian</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section hiburan-section">
+                <h3 class="section-title">Eksplorasi</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item ">
+                        <a href="komik.html">
+                            <span class="icon">📖</span>
+                            <span class="text">Komik Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown ">
+                        <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
+                            <span class="icon">🎮</span>
+                            <span class="text">Game</span>
+                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="pretest.html">Pretest</a></li>
+                            <li><a href="game.html">Game</a></li>
+                            <li><a href="posttest.html">Posttest</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+</nav>
 
         <!-- Main Content Area -->
         <main class="main-content">

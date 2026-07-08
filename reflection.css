@@ -1,13 +1,13 @@
 /* Base Styles & Typography (Reusing theme) */
 :root {
-    --primary-color: #81D4FA; /* Soft Light Blue */
-    --secondary-color: #C8E6C9; /* Soft Light Green */
-    --tertiary-color: #B3E5FC; /* Lighter Blue */
-    --quaternary-color: #A5D6A7; /* Lighter Green */
-    --text-color: #5D5D5D; 
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-shadow: 0 8px 32px 0 rgba(179, 229, 252, 0.4);
+    --primary-color: #4FC3F7; /* Light Blue */
+    --secondary-color: #81C784; /* Light Green */
+    --tertiary-color: #81D4FA; /* Softer Blue */
+    --quaternary-color: #A5D6A7; /* Softer Green */
+    --text-color: #333333; 
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(79, 195, 247, 0.2);
+    --glass-shadow: 0 4px 15px 0 rgba(79, 195, 247, 0.1);
 }
 
 * {
@@ -17,8 +17,8 @@
 }
 
 body {
-    font-family: 'Quicksand', sans-serif;
-    background: linear-gradient(135deg, #E1F5FE, #E8F5E9);
+    font-family: 'Inter', sans-serif;
+    background: #F9F9F9;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -28,15 +28,13 @@ body {
     position: relative;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lora', serif;
+}
+
 /* Background Animated Shapes */
 .background-shapes {
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    overflow: hidden;
+    display: none;
 }
 
 .shape {
@@ -70,8 +68,8 @@ body {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 2px solid var(--glass-border);
-    border-radius: 30px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
     padding: 3rem 2.5rem;
     text-align: center;
     box-shadow: var(--glass-shadow);
@@ -126,9 +124,9 @@ h3 {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    border-radius: 20px;
+    border-radius: 8px;
     background: white;
-    border: 3px solid transparent;
+    border: 1px solid #Eef2f5;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     width: 100px;
@@ -165,12 +163,12 @@ h3 {
 }
 
 .emoji-option input[type="radio"]:checked ~ .label {
-    color: #4FC3F7;
+    color: var(--primary-color);
 }
 
 .emoji-option:has(input[type="radio"]:checked) {
-    border-color: #81D4FA;
-    background: #E1F5FE;
+    border-color: var(--primary-color);
+    background: #F4F6F8;
     transform: scale(1.05);
 }
 
@@ -183,8 +181,8 @@ h3 {
 .custom-textarea {
     width: 100%;
     padding: 1rem;
-    border-radius: 15px;
-    border: 2px solid var(--glass-border);
+    border-radius: 4px;
+    border: 1px solid var(--glass-border);
     background: rgba(255, 255, 255, 0.7);
     font-family: inherit;
     font-size: 1rem;
@@ -196,9 +194,9 @@ h3 {
 
 .custom-textarea:focus {
     outline: none;
-    border-color: #81D4FA;
+    border-color: var(--primary-color);
     background: white;
-    box-shadow: 0 4px 15px rgba(129, 212, 250, 0.2);
+    box-shadow: 0 4px 15px rgba(15, 44, 89, 0.1);
 }
 
 .custom-textarea::placeholder {
@@ -215,26 +213,27 @@ h3 {
 
 .btn {
     padding: 0.8rem 2rem;
-    border-radius: 50px;
-    font-size: 1.2rem;
-    font-weight: 700;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    border: none;
+    border: 1px solid transparent;
     font-family: inherit;
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, #81D4FA, #A5D6A7);
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 8px 15px rgba(129, 212, 250, 0.3);
+    box-shadow: 0 4px 10px rgba(15, 44, 89, 0.2);
     margin-left: auto; /* Push to right */
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 20px rgba(129, 212, 250, 0.4);
-    background: linear-gradient(45deg, #A5D6A7, #81D4FA);
+    box-shadow: 0 6px 15px rgba(15, 44, 89, 0.3);
+    background: var(--secondary-color);
+    color: white;
 }
 
 .btn-secondary {
