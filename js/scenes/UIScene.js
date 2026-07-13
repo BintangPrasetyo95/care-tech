@@ -71,6 +71,16 @@ class UIScene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
 
 
+    /* ══════════ QTE Timer ══════════ */
+    this.qteTimerTxt = this.add.text(width / 2, height / 4, '', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif',
+      fontSize: '24px',
+      fontStyle: 'bold',
+      color: '#ef4444',
+      stroke: '#000000',
+      strokeThickness: 3
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(200).setVisible(false);
+
     /* ══════════ Mobile/Clickable Menu Toggle ══════════ */
     const menuToggleBg = this.add.graphics().setScrollFactor(1).setDepth(101);
     menuToggleBg.fillStyle(0x0ea5e9, 1).fillRoundedRect(12, 45, 76, 26, 6);
@@ -556,7 +566,37 @@ class UIScene extends Phaser.Scene {
     this.registry.set('dialogueActive', false);
   }
 
-  /* ══════════ HUD Refresh Methods ══════════ */
+  /* ══════════ QTE Methods ══════════ */
+  startQTETimer(durationSec, onFailCallback) {
+    this.qteTimerTxt.setVisible(true);
+    let timeLeft = durationSec;
+    this.qteTimerTxt.setText(`00:${timeLeft.toString().padStart(2, '0')}`);
+    
+    if (this._qteTimerEvent) this._qteTimerEvent.destroy();
+    
+    this._qteTimerEvent = this.time.addEvent({
+      delay: 1000,
+      repeat: durationSec - 1,
+      callback: () => {
+        timeLeft--;
+        this.qteTimerTxt.setText(`00:${timeLeft.toString().padStart(2, '0')}`);
+        if (timeLeft <= 0) {
+          this.stopQTETimer();
+          if (onFailCallback) onFailCallback();
+        }
+      }
+    });
+  }
+
+  stopQTETimer() {
+    this.qteTimerTxt.setVisible(false);
+    if (this._qteTimerEvent) {
+      this._qteTimerEvent.destroy();
+      this._qteTimerEvent = null;
+    }
+  }
+
+  /* ══════════ Helper Methods ══════════ */
 
   _refreshHarmony() {
     const val = this.registry.get('harmony');

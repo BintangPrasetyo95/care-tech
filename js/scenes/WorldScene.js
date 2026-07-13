@@ -147,6 +147,46 @@ class WorldScene extends Phaser.Scene {
         // Find the initiative board and update its state so it doesn't prompt again
         const board = this.npcs.find(n => n.key === 'initiative_board');
         if (board) board.dialogueId = 'board_already_done';
+      } else if (action === 'start_qte') {
+        this.registry.set('qte_active', true);
+        const victim = this.npcs.find(n => n.key === 'qte_victim');
+        if (victim) victim.dialogueId = 'qte_success';
+        
+        if (this.qteArrow) this.qteArrow.setVisible(true);
+        
+        this.scene.get('UI').startQTETimer(20, () => {
+          if (this.registry.get('qte_active')) {
+            this.registry.set('qte_active', false);
+            this.registry.set('dialogueActive', true);
+            
+            const v = this.npcs.find(n => n.key === 'qte_victim');
+            if (v) v.dialogueId = null;
+            
+            this.scene.get('UI')._showNode('qte_fail');
+          }
+        });
+      } else if (action === 'complete_level5') {
+        this.registry.set('level5_complete', true);
+        this.registry.set('qte_active', false);
+        this.scene.get('UI').stopQTETimer();
+        if (this.qteArrow) this.qteArrow.destroy();
+        
+        // Make the bullies walk out the door
+        const bullies = this.npcs.filter(n => n.key === 'bully');
+        bullies.forEach((bully, idx) => {
+          this.tweens.chain({
+            targets: bully.sprite,
+            tweens: [
+              { y: 5 * TILE, duration: 800 }, // Move down clear of top tables
+              { x: 10 * TILE + (idx * 15), duration: 1200 }, // Move left towards the center aisle
+              { y: 15 * TILE, duration: 2500 } // Move down to exit
+            ],
+            onComplete: () => {
+              bully.sprite.destroy();
+              if (bully.indicator) bully.indicator.destroy();
+            }
+          });
+        });
       }
     }, this);
     this.events.on('shutdown', () => {
@@ -167,6 +207,19 @@ class WorldScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+
+    // Trigger Level 5 (Cafeteria QTE)
+    if (this.registry.get('currentMap') === 'cafeteria' &&
+        this.registry.get('level4_complete') &&
+        !this.registry.get('level5_triggered') &&
+        !this.registry.get('dialogueActive')) {
+      if (this.player.sprite.y < 12 * TILE) {
+        this.registry.set('level5_triggered', true);
+        this.registry.set('dialogueActive', true);
+        this.scene.get('UI')._showNode('qte_intro');
+      }
+    }
+
     if (this.player) this.player.update(time, delta);
     for (let i = 0; i < this.npcs.length; i++) {
       this.npcs[i].update(time, delta);
@@ -696,6 +749,37 @@ class WorldScene extends Phaser.Scene {
         'student', 'student_chat_2', { name: 'Student' }));
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
         'player', 'student_chat_1', { name: 'Nakula' }));
+        
+      if (!this.registry.get('level5_complete')) {
+        const vx = 15 * TILE + TILE / 2;
+        const vy = 3 * TILE + TILE / 2;
+        
+        const victim = new NPC(this, vx, vy,
+          'student', null, { name: 'Victim', immovable: true });
+        victim.key = 'qte_victim';
+        this.npcs.push(victim);
+        
+        // Surrounding bullies
+        this.npcs.push(new NPC(this, vx - TILE, vy, 'bully', null, { name: 'Bully 1', immovable: true })); // Left
+        this.npcs.push(new NPC(this, vx + TILE, vy, 'bully', null, { name: 'Bully 2', immovable: true })); // Right
+        this.npcs.push(new NPC(this, vx, vy - TILE, 'bully', null, { name: 'Bully 3', immovable: true })); // Top
+          
+        this.qteArrow = this.add.text(victim.sprite.x, victim.sprite.y - 40, '⬇', {
+          fontFamily: 'sans-serif',
+          fontSize: '32px',
+          color: '#ef4444',
+          stroke: '#ffffff',
+          strokeThickness: 4
+        }).setOrigin(0.5).setDepth(200).setVisible(false);
+        
+        this.tweens.add({
+          targets: this.qteArrow,
+          y: victim.sprite.y - 30,
+          yoyo: true,
+          repeat: -1,
+          duration: 400
+        });
+      }
     }
   }
 

@@ -237,6 +237,41 @@ const DIALOGUES = {
     next    : null
   },
 
+  /* ══════════ Level 5 — Time Challenge (Cafeteria) ══════════ */
+
+  qte_intro: {
+    speaker : { en: '', id: '' },
+    portrait: null,
+    text    : { en: '[ You hear loud mocking from across the cafeteria! You need to stop it before it gets worse! ]', id: '[ Kamu mendengar ejekan keras dari seberang kantin! Kamu harus menghentikannya sebelum makin parah! ]' },
+    next    : null,
+    action  : 'start_qte'
+  },
+  
+  qte_success: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_angry',
+    text    : { en: 'Hey! Stop it right now! Leave them alone!', id: 'Hei! Hentikan sekarang juga! Tinggalkan mereka!' },
+    next    : 'qte_success_2',
+    harmonyDelta: 20
+  },
+
+  qte_success_2: {
+    speaker : { en: 'Bully', id: 'Perundung' },
+    portrait: 'bully_neutral',
+    text    : { en: 'Tch... whatever, let\'s go guys.', id: 'Cih... terserah, ayo pergi teman-teman.' },
+    next    : null,
+    action  : 'complete_level5'
+  },
+
+  qte_fail: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_sad',
+    text    : { en: 'I was too late... they already left, and the damage is done.', id: 'Aku terlambat... mereka sudah pergi, dan semuanya sudah terjadi.' },
+    next    : null,
+    action  : 'complete_level5',
+    harmonyDelta: -10
+  },
+
   /* ══════════ Generic NPC Interactions ══════════ */
 
   student_chat_1: {
