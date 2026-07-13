@@ -42,6 +42,44 @@ class NPC {
         ease: 'Sine.easeInOut'
       });
     }
+
+    /* --- floating emotion bubble --- */
+    if (opts.emotion) {
+      this.emotionBubble = scene.add.graphics();
+      this.emotionBubble.fillStyle(0xffffff, 0.95);
+      this.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
+      // tail
+      this.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
+
+      this.emotionText = scene.add.text(0, 0, opts.emotion, {
+        fontSize: '12px'
+      }).setOrigin(0.5, 0.45);
+
+      this.emotionContainer = scene.add.container(x, y - 35, [this.emotionBubble, this.emotionText])
+        .setDepth(11);
+      
+      this.emotionOffset = 0;
+      this.emotionTween = scene.tweens.add({
+        targets: this,
+        emotionOffset: -4,
+        yoyo: true,
+        repeat: -1,
+        duration: 1200,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  }
+
+  /* Permanently remove the emotion bubble */
+  clearEmotion() {
+    if (this.emotionContainer) {
+      this.emotionContainer.destroy();
+      this.emotionContainer = null;
+    }
+    if (this.emotionTween) {
+      this.emotionTween.stop();
+      this.emotionTween = null;
+    }
   }
 
   /* Called every frame by WorldScene.update() */
@@ -49,6 +87,14 @@ class NPC {
     // Update indicator position to follow NPC
     if (this.indicator) {
       this.indicator.setPosition(this.sprite.x, this.sprite.y - 20);
+    }
+    // Update emotion bubble position and visibility based on movement
+    if (this.emotionContainer) {
+      this.emotionContainer.setPosition(this.sprite.x, this.sprite.y - 35 + this.emotionOffset);
+      
+      // Hide if moving (idle check)
+      const isMoving = Math.abs(this.sprite.body.velocity.x) > 0.1 || Math.abs(this.sprite.body.velocity.y) > 0.1;
+      this.emotionContainer.setVisible(!isMoving);
     }
   }
 

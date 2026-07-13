@@ -10,10 +10,10 @@ const DIALOGUES = {
       id: 'Hei, lihat — Nabula duduk sendirian di bangku sana. Dia tampak… murung. Bagaimana menurutmu?' 
     },
     choices : [
-      { label: { en: 'A) It seems like Nabula is sad…', id: 'A) Sepertinya Nabula sedang sedih…' },       next: 'nabula_sad_ack',   harmonyDelta:  10 },
-      { label: { en: 'B) Maybe she just wants to be alone.', id: 'B) Mungkin dia hanya ingin sendirian.' },   next: 'nabula_alone_ack', harmonyDelta:   0 },
-      { label: { en: 'C) I don\'t really care.', id: 'C) Aku tidak peduli.' },               next: 'nabula_ignore',    harmonyDelta:  -5 },
-      { label: { en: 'D) Let\'s go talk to her right now!', id: 'D) Ayo kita bicara dengannya sekarang!' },    next: 'nabula_eager',     harmonyDelta:   5 }
+      { label: { en: 'It seems like Nabula is sad…', id: 'Sepertinya Nabula sedang sedih…' },       next: 'nabula_sad_ack',   harmonyDelta:  10, action: 'nabula_smile_anim' },
+      { label: { en: 'Maybe she just wants to be alone.', id: 'Mungkin dia hanya ingin sendirian.' },   next: 'nabula_alone_ack', harmonyDelta:   0 },
+      { label: { en: 'I don\'t really care.', id: 'Aku tidak peduli.' },               next: 'nabula_ignore',    harmonyDelta:  -5 },
+      { label: { en: 'Let\'s go talk to her right now!', id: 'Ayo kita bicara dengannya sekarang!' },    next: 'nabula_eager',     harmonyDelta:   5 }
     ]
   },
 
@@ -28,7 +28,8 @@ const DIALOGUES = {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_happy',
     text    : { en: 'See? Sometimes just noticing someone\'s feelings is the first step. Nice one.', id: 'Lihat kan? Terkadang sekadar menyadari perasaan seseorang adalah langkah pertama. Bagus sekali.' },
-    next    : null
+    next    : null,
+    action  : 'complete_level1'
   },
 
   nabula_alone_ack: {
@@ -42,14 +43,16 @@ const DIALOGUES = {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_neutral',
     text    : { en: 'Hmm… I wonder if that\'s really what\'s going on though.', id: 'Hmm… Aku jadi bertanya-tanya apakah itu benar-benar yang terjadi.' },
-    next    : null
+    next    : null,
+    action  : 'complete_level1'
   },
 
   nabula_ignore: {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_sad',
     text    : { en: 'Come on… we should at least check on her. What if something\'s wrong?', id: 'Ayolah… kita setidaknya harus memeriksanya. Bagaimana kalau ada apa-apa?' },
-    next    : null
+    next    : null,
+    action  : 'complete_level1'
   },
 
   nabula_eager: {
@@ -63,7 +66,8 @@ const DIALOGUES = {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_happy',
     text    : { en: 'That\'s the spirit! Being proactive about reaching out matters.', id: 'Itu baru semangat! Bersikap proaktif untuk menjangkau orang lain itu penting.' },
-    next    : null
+    next    : null,
+    action  : 'complete_level1'
   },
 
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */
@@ -86,7 +90,8 @@ const DIALOGUES = {
     speaker : { en: '', id: '' },
     portrait: null,
     text    : { en: '[ Nabula lowers her head and runs toward the back of the library… ]', id: '[ Nabula menundukkan kepala dan lari ke belakang perpustakaan… ]' },
-    next    : 'narrator_find_her'
+    next    : 'narrator_find_her',
+    action  : 'nabula_run_away'
   },
 
   narrator_find_her: {
@@ -101,9 +106,9 @@ const DIALOGUES = {
     portrait: 'player_neutral',
     text    : { en: 'Nabula? I found you. Are you okay?', id: 'Nabula? Aku menemukanmu. Kamu baik-baik saja?' },
     choices : [
-      { label: { en: 'A) Do you want to talk about it?', id: 'A) Apakah kamu ingin membicarakannya?' },       next: 'nabula_open',   harmonyDelta:  15 },
-      { label: { en: 'B) You should stand up for yourself.', id: 'B) Kamu harus membela dirimu sendiri.' },    next: 'nabula_shrug',  harmonyDelta:   0 },
-      { label: { en: 'C) Just ignore them, it\'ll pass.', id: 'C) Abaikan saja mereka, nanti juga lewat.' },       next: 'nabula_sad2',   harmonyDelta:  -5 }
+      { label: { en: 'Do you want to talk about it?', id: 'Apakah kamu ingin membicarakannya?' },       next: 'nabula_open',   harmonyDelta:  15, action: 'nabula_smile_anim' },
+      { label: { en: 'You should stand up for yourself.', id: 'Kamu harus membela dirimu sendiri.' },    next: 'nabula_shrug',  harmonyDelta:   0 },
+      { label: { en: 'Just ignore them, it\'ll pass.', id: 'Abaikan saja mereka, nanti juga lewat.' },       next: 'nabula_sad2',   harmonyDelta:  -5 }
     ]
   },
 

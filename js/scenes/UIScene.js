@@ -416,7 +416,14 @@ class UIScene extends Phaser.Scene {
   _showNode(nodeId) {
     this._currentDialogueNode = nodeId;
     const node = DIALOGUES[nodeId];
-    if (!node) { this._closeDialogue(); return; }
+    if (!node) {
+      this._closeDialogue();
+      return;
+    }
+
+    if (node.action) {
+      this.registry.events.emit('dialogue_action', node.action);
+    }
 
     // Show panel elements
     this.dialogBg.setVisible(true);
@@ -479,28 +486,48 @@ class UIScene extends Phaser.Scene {
         this.dialogBg.disableInteractive();
         this._showNode(node.next);
       });
-      // Also advance on E or Space
-      this.input.keyboard.once('keydown-E', () => {
-        this.dialogBg.disableInteractive();
-        this._showNode(node.next);
-      });
-      this.input.keyboard.once('keydown-SPACE', () => {
-        this.dialogBg.disableInteractive();
-        this._showNode(node.next);
+      
+      // Clean up previous listeners and timers
+      this.input.keyboard.removeAllListeners('keydown-E');
+      this.input.keyboard.removeAllListeners('keydown-SPACE');
+      if (this._dialogueTimer) this._dialogueTimer.destroy();
+
+      // Also advance on E or Space (add slight delay to prevent same-frame trigger)
+      this._dialogueTimer = this.time.delayedCall(100, () => {
+        this.input.keyboard.once('keydown-E', () => {
+          this.dialogBg.disableInteractive();
+          this._showNode(node.next);
+        });
+        this.input.keyboard.once('keydown-SPACE', () => {
+          this.dialogBg.disableInteractive();
+          this._showNode(node.next);
+        });
       });
     } else {
       // End of dialogue — click or press key to close
       this.continueText.setVisible(true);
       this.dialogBg.setInteractive();
       this.dialogBg.once('pointerdown', () => this._closeDialogue());
-      this.input.keyboard.once('keydown-E', () => this._closeDialogue());
-      this.input.keyboard.once('keydown-SPACE', () => this._closeDialogue());
+      
+      this.input.keyboard.removeAllListeners('keydown-E');
+      this.input.keyboard.removeAllListeners('keydown-SPACE');
+      if (this._dialogueTimer) this._dialogueTimer.destroy();
+
+      this._dialogueTimer = this.time.delayedCall(100, () => {
+        this.input.keyboard.once('keydown-E', () => this._closeDialogue());
+        this.input.keyboard.once('keydown-SPACE', () => this._closeDialogue());
+      });
     }
   }
 
   _selectOption(ch) {
     const cur = this.registry.get('harmony');
     this.registry.set('harmony', Phaser.Math.Clamp(cur + (ch.harmonyDelta || 0), 0, 100));
+    
+    if (ch.action) {
+      this.registry.events.emit('dialogue_action', ch.action);
+    }
+
     if (ch.next) {
       this._showNode(ch.next);
     } else {
@@ -516,7 +543,16 @@ class UIScene extends Phaser.Scene {
     this.portraitImage.setVisible(false);
     this.continueText.setVisible(false);
     this.optionButtons.forEach(btn => btn.setVisible(false).removeAllListeners('pointerdown'));
+    
     this.input.keyboard.removeAllListeners('keydown');
+    this.input.keyboard.removeAllListeners('keydown-E');
+    this.input.keyboard.removeAllListeners('keydown-SPACE');
+    
+    if (this._dialogueTimer) {
+      this._dialogueTimer.destroy();
+      this._dialogueTimer = null;
+    }
+
     this.registry.set('dialogueActive', false);
   }
 

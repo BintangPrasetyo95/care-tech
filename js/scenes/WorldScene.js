@@ -60,6 +60,82 @@ class WorldScene extends Phaser.Scene {
     this.nearestInteractable = null;
     this.currentTransitions = this._getTransitions(mapKey);
 
+    /* ── Dialogue Action Listener ── */
+    this.registry.events.on('dialogue_action', (action) => {
+      if (action === 'nabula_smile_anim') {
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          nabula.clearEmotion();
+          
+          nabula.emotionBubble = this.add.graphics();
+          nabula.emotionBubble.fillStyle(0xffffff, 0.95);
+          nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
+          nabula.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
+
+          nabula.emotionText = this.add.text(0, 0, '😊', { fontSize: '12px' }).setOrigin(0.5, 0.45);
+          nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
+          
+          nabula.emotionOffset = 0;
+          nabula.emotionTween = this.tweens.add({
+            targets: nabula,
+            emotionOffset: -4,
+            yoyo: true,
+            repeat: -1,
+            duration: 1200,
+            ease: 'Sine.easeInOut'
+          });
+
+          this.tweens.add({
+            targets: nabula.sprite,
+            y: nabula.sprite.y - 10,
+            yoyo: true,
+            duration: 150,
+            ease: 'Power1'
+          });
+        }
+      } else if (action === 'nabula_run_away') {
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          nabula.clearEmotion();
+          nabula.dialogueId = 'nabula_found';
+          
+          this.tweens.add({
+            targets: nabula.sprite,
+            x: 5 * TILE + TILE / 2,
+            y: 12 * TILE + TILE / 2,
+            duration: 2000,
+            onStart: () => {
+              nabula.sprite.anims.play('nabula_walk_left', true);
+            },
+            onComplete: () => {
+              nabula.sprite.anims.play('nabula_idle_down', true);
+              // Give back her sad emotion
+              nabula.emotionBubble = this.add.graphics();
+              nabula.emotionBubble.fillStyle(0xffffff, 0.95);
+              nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
+              nabula.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
+              nabula.emotionText = this.add.text(0, 0, '😔', { fontSize: '12px' }).setOrigin(0.5, 0.45);
+              nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
+              nabula.emotionOffset = 0;
+              nabula.emotionTween = this.tweens.add({
+                targets: nabula,
+                emotionOffset: -4,
+                yoyo: true,
+                repeat: -1,
+                duration: 1200,
+                ease: 'Sine.easeInOut'
+              });
+            }
+          });
+        }
+      } else if (action === 'complete_level1') {
+        this.registry.set('level1_complete', true);
+      }
+    }, this);
+    this.events.on('shutdown', () => {
+      this.registry.events.off('dialogue_action');
+    });
+
     /* ── Debug Grid (Row, Col) ── */
     // this._drawDebugGrid();
   }
@@ -70,6 +146,20 @@ class WorldScene extends Phaser.Scene {
       this.npcs[i].update(time, delta);
     }
     this._updatePlayerMask();
+
+    /* ── Level 2 Auto-Trigger ── */
+    if (this.registry.get('currentMap') === 'corridor' && this.registry.get('level1_complete') && !this.registry.get('level2_triggered')) {
+      if (this.player.sprite.y < 9 * TILE && !this.registry.get('dialogueActive')) {
+        this.registry.set('level2_triggered', true);
+        
+        // Stop player movement
+        this.player.sprite.setVelocity(0, 0);
+        this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+        
+        // Start bully taunt dialogue
+        this.scene.get('UI').startDialogue('bully_taunt');
+      }
+    }
 
     /* ── Check proximity for interaction prompt ── */
     this._updateProximity();
@@ -486,7 +576,7 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'garden') {
       // Nabula on the bench
       this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-        'nabula', 'player_intro', { name: 'Nabula' }));
+        'nabula', 'player_intro', { name: 'Nabula', emotion: '😔' }));
       
       // Generic NPC near the door
       this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 1 * TILE + TILE / 2,
@@ -497,14 +587,25 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (mapKey === 'corridor') {
-      this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 3 * TILE + TILE / 2,
-        'bully', 'bully_taunt', { name: 'Bully' }));
-      this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 3 * TILE + TILE / 2,
-        'bully', null, { name: 'Bully 2' }));
-      // Nabula hiding behind library (bottom-left area)
-      this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 12 * TILE + TILE / 2,
-        'nabula', 'nabula_found', { name: 'Nabula' }));
-      // Riko lurking
+      if (this.registry.get('level1_complete')) {
+        this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+          'bully', 'bully_taunt', { name: 'Bully' }));
+        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+          'bully', null, { name: 'Bully 2' }));
+        
+        if (!this.registry.get('level2_triggered')) {
+          // Nabula being mocked
+          this.npcs.push(new NPC(this, 11 * TILE + TILE / 2, 4 * TILE + TILE / 2,
+            'nabula', null, { name: 'Nabula', emotion: '😔' }));
+        } else {
+          // Nabula hiding behind library
+          this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 12 * TILE + TILE / 2,
+            'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
+        }
+      }
+      
+      // Riko lurking (always there or maybe also needs level 1?)
+      // Let's keep him there for ambient.
       this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 8 * TILE + TILE / 2,
         'riko', 'riko_corridor', { name: 'Riko' }));
     }
@@ -535,7 +636,8 @@ class WorldScene extends Phaser.Scene {
 
     const px = this.player.sprite.x;
     const py = this.player.sprite.y;
-    const thresholdSq = (TILE * 1.8) * (TILE * 1.8);
+    let nearest = null;
+    let nearestDistSq = (TILE * 1.8) * (TILE * 1.8);
 
     // Check NPC proximity
     for (let i = 0; i < this.npcs.length; i++) {
@@ -544,10 +646,18 @@ class WorldScene extends Phaser.Scene {
       
       const dx = px - npc.sprite.x;
       const dy = py - npc.sprite.y;
-      if (dx * dx + dy * dy < thresholdSq) {
-        this.scene.get('UI').startDialogue(npc.dialogueId);
-        return;
+      const distSq = dx * dx + dy * dy;
+
+      if (distSq < nearestDistSq) {
+        nearestDistSq = distSq;
+        nearest = npc;
       }
+    }
+
+    if (nearest) {
+      if (nearest.clearEmotion) nearest.clearEmotion();
+      this.scene.get('UI').startDialogue(nearest.dialogueId);
+      return;
     }
 
     // Check door / scene transitions

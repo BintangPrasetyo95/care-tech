@@ -46,7 +46,10 @@ class Player {
     body.setVelocity(0);
 
     // Freeze during dialogue
-    if (this.scene.registry.get('dialogueActive')) return;
+    if (this.scene.registry.get('dialogueActive')) {
+      this.sprite.anims.play('player_idle_' + this.facing, true);
+      return;
+    }
 
     let vx = 0;
     let vy = 0;
