@@ -229,6 +229,12 @@ class UIScene extends Phaser.Scene {
       .setDepth(200)
       .setVisible(false);
 
+    // Portrait image
+    this.portraitImage = this.add.image(this._boxX + 42, this._boxY - 32, 'player_neutral')
+      .setScrollFactor(1)
+      .setDepth(201)
+      .setVisible(false);
+
     // Speaker name
     this.speakerTxt = this.add.text(this._boxX + 10, this._boxY + 6, '', {
       fontFamily: 'monospace',
@@ -366,6 +372,7 @@ class UIScene extends Phaser.Scene {
     this._boxY = height - this._boxH - 4;
 
     this.dialogBg.setSize(this._boxW, this._boxH).setPosition(this._boxX, this._boxY);
+    this.portraitImage.setPosition(this._boxX + 42, this._boxY - 32);
     this.speakerTxt.setPosition(this._boxX + 10, this._boxY + 6);
     this.dialogBorder.setSize(this._boxW - 20, 1).setPosition(this._boxX + 10, this._boxY + 22);
     this.dialogText.setPosition(this._boxX + 10, this._boxY + 28);
@@ -420,6 +427,12 @@ class UIScene extends Phaser.Scene {
     
     this.speakerTxt.setVisible(true).setText(speakerName.toUpperCase());
     this.dialogText.setVisible(true).setText(textStr);
+
+    if (node.portrait) {
+      this.portraitImage.setTexture(node.portrait).setVisible(true);
+    } else {
+      this.portraitImage.setVisible(false);
+    }
 
     // ── Render option buttons INSIDE the box ────────
     const choices = node.choices || [];
@@ -500,6 +513,7 @@ class UIScene extends Phaser.Scene {
     this.dialogBorder.setVisible(false);
     this.speakerTxt.setVisible(false);
     this.dialogText.setVisible(false);
+    this.portraitImage.setVisible(false);
     this.continueText.setVisible(false);
     this.optionButtons.forEach(btn => btn.setVisible(false).removeAllListeners('pointerdown'));
     this.input.keyboard.removeAllListeners('keydown');

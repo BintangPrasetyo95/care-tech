@@ -58,6 +58,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Proximity prompt tracking ── */
     this.nearestInteractable = null;
+    this.currentTransitions = this._getTransitions(mapKey);
 
     /* ── Debug Grid (Row, Col) ── */
     // this._drawDebugGrid();
@@ -65,7 +66,9 @@ class WorldScene extends Phaser.Scene {
 
   update(time, delta) {
     if (this.player) this.player.update(time, delta);
-    this.npcs.forEach(npc => npc.update(time, delta));
+    for (let i = 0; i < this.npcs.length; i++) {
+      this.npcs[i].update(time, delta);
+    }
     this._updatePlayerMask();
 
     /* ── Check proximity for interaction prompt ── */
@@ -99,22 +102,28 @@ class WorldScene extends Phaser.Scene {
     if (this.registry.get('dialogueActive')) return;
 
     let nearest = null;
-    let nearestDist = TILE * 1.8;
+    let nearestDistSq = (TILE * 1.8) * (TILE * 1.8);
+    const px = this.player.sprite.x;
+    const py = this.player.sprite.y;
 
-    for (const npc of this.npcs) {
+    for (let i = 0; i < this.npcs.length; i++) {
+      const npc = this.npcs[i];
       if (!npc.dialogueId) continue;
-      const dist = Phaser.Math.Distance.Between(
-        this.player.sprite.x, this.player.sprite.y,
-        npc.sprite.x, npc.sprite.y
-      );
-      if (dist < nearestDist) {
-        nearestDist = dist;
+      const dx = px - npc.sprite.x;
+      const dy = py - npc.sprite.y;
+      const distSq = dx * dx + dy * dy;
+
+      if (distSq < nearestDistSq) {
+        nearestDistSq = distSq;
         nearest = npc;
       }
     }
 
     // Show/hide NPC indicators
-    this.npcs.forEach(n => n.setIndicatorVisible(n === nearest));
+    for (let i = 0; i < this.npcs.length; i++) {
+      const n = this.npcs[i];
+      n.setIndicatorVisible(n === nearest);
+    }
 
     // Tell UIScene about nearby interactable
     const uiScene = this.scene.get('UI');
@@ -524,13 +533,18 @@ class WorldScene extends Phaser.Scene {
   _tryInteract() {
     if (this.registry.get('dialogueActive')) return;
 
+    const px = this.player.sprite.x;
+    const py = this.player.sprite.y;
+    const thresholdSq = (TILE * 1.8) * (TILE * 1.8);
+
     // Check NPC proximity
-    for (const npc of this.npcs) {
-      const dist = Phaser.Math.Distance.Between(
-        this.player.sprite.x, this.player.sprite.y,
-        npc.sprite.x, npc.sprite.y
-      );
-      if (dist < TILE * 1.8 && npc.dialogueId) {
+    for (let i = 0; i < this.npcs.length; i++) {
+      const npc = this.npcs[i];
+      if (!npc.dialogueId) continue;
+      
+      const dx = px - npc.sprite.x;
+      const dy = py - npc.sprite.y;
+      if (dx * dx + dy * dy < thresholdSq) {
         this.scene.get('UI').startDialogue(npc.dialogueId);
         return;
       }
@@ -544,10 +558,9 @@ class WorldScene extends Phaser.Scene {
   _isNearDoor() {
     const px = Math.round((this.player.sprite.x - TILE / 2) / TILE);
     const py = Math.round((this.player.sprite.y - TILE / 2) / TILE);
-    const mapKey = this.registry.get('currentMap');
-    const transitions = this._getTransitions(mapKey);
 
-    for (const t of transitions) {
+    for (let i = 0; i < this.currentTransitions.length; i++) {
+      const t = this.currentTransitions[i];
       if (px === t.fromX && Math.abs(py - t.fromY) <= 1) return true;
     }
     return false;
@@ -556,10 +569,9 @@ class WorldScene extends Phaser.Scene {
   _checkDoor() {
     const px = Math.round((this.player.sprite.x - TILE / 2) / TILE);
     const py = Math.round((this.player.sprite.y - TILE / 2) / TILE);
-    const mapKey = this.registry.get('currentMap');
-    const transitions = this._getTransitions(mapKey);
 
-    for (const t of transitions) {
+    for (let i = 0; i < this.currentTransitions.length; i++) {
+      const t = this.currentTransitions[i];
       if (px === t.fromX && Math.abs(py - t.fromY) <= 1) {
         this._changeMap(t.toMap, t.spawnX * TILE + TILE / 2, t.spawnY * TILE + TILE / 2);
         return;
@@ -569,35 +581,37 @@ class WorldScene extends Phaser.Scene {
 
   /** Define all map transitions */
   _getTransitions(mapKey) {
-    const transitions = {
-      garden: [
-        { fromX: 10, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
-        { fromX: 11, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
-      ],
-      corridor: [
-        { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
-        { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
-        { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
-        { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
-        { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-        { fromX: 16, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-        { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 },
-        { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
-      ],
-      classroom: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  },
-        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  }
-      ],
-      auditorium: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  },
-        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
-      ],
-      cafeteria: [
-        { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 },
-        { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 }
-      ]
-    };
-    return transitions[mapKey] || [];
+    if (!this._transitionsCache) {
+      this._transitionsCache = {
+        garden: [
+          { fromX: 10, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
+          { fromX: 11, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+        ],
+        corridor: [
+          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
+          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
+          { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
+          { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
+          { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
+          { fromX: 16, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
+          { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 },
+          { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
+        ],
+        classroom: [
+          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  },
+          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  }
+        ],
+        auditorium: [
+          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  },
+          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
+        ],
+        cafeteria: [
+          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 },
+          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 }
+        ]
+      };
+    }
+    return this._transitionsCache[mapKey] || [];
   }
 
   _changeMap(newMap, spawnX, spawnY) {

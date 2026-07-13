@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,12 @@
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
@@ -18,7 +22,7 @@
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
             </div>
-            
+
             <div class="sidebar-section">
                 <h3 class="section-title">Menu Utama</h3>
                 <ul class="sidebar-menu">
@@ -59,7 +63,8 @@
                         </a>
                     </li>
                     <li class="menu-item has-dropdown ">
-                        <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
+                        <a href="javascript:void(0)" class="dropdown-toggle"
+                            onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
                             <span class="text">Game</span>
                             <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
@@ -72,7 +77,7 @@
                     </li>
                 </ul>
             </div>
-</nav>
+        </nav>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -82,25 +87,79 @@
                     <p>Baca cerita seru tentang persahabatan.</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="Profile">
+                    <img class="avatar"
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop"
+                        alt="Profile">
                 </div>
             </header>
 
             <div class="content-grid">
-                <div class="dashboard-card glass-panel interactive-card">
-                    <div class="card-icon" style="font-size:3rem; margin-bottom:0.5rem;">📚</div>
+                <div class="dashboard-card glass-panel interactive-card"
+                    style="background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                    <img src="assets/comics/Komik%201.png" alt="Cover Episode 1"
+                        style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
                     <h3>Episode 1</h3>
-                    <p style="color:#777; font-size:0.9rem; margin-bottom:1rem;">Hari Pertama di Harmonia</p>
-                    <button class="btn-small">Baca Sekarang</button>
+                    <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Memahami dan Mengenali
+                        Emosi bersama teman</p>
+                    <button class="btn-small"
+                        onclick="window.open('assets/comics/1%20Memahami%20dan%20Mengenali%20Emosi%20bersama%20teman.pdf', '_blank')">Baca
+                        Sekarang</button>
                 </div>
-                
-                <div class="dashboard-card glass-panel" style="opacity: 0.6;">
-                    <div class="card-icon" style="font-size:3rem; margin-bottom:0.5rem;">🔒</div>
+
+                <div class="dashboard-card glass-panel"
+                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                    <div style="position:relative; display:inline-block;">
+                        <img src="assets/comics/Komik%202.png" alt="Cover Episode 2"
+                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                        <div
+                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            🔒</div>
+                    </div>
                     <h3>Episode 2</h3>
-                    <p style="color:#777; font-size:0.9rem;">Selesaikan Episode 1 untuk membuka.</p>
+                    <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
+                </div>
+
+                <div class="dashboard-card glass-panel"
+                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                    <div style="position:relative; display:inline-block;">
+                        <img src="assets/comics/Komik%203.png" alt="Cover Episode 3"
+                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                        <div
+                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            🔒</div>
+                    </div>
+                    <h3>Episode 3</h3>
+                    <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
+                </div>
+
+                <div class="dashboard-card glass-panel"
+                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                    <div style="position:relative; display:inline-block;">
+                        <img src="assets/comics/Komik%204.png" alt="Cover Episode 4"
+                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                        <div
+                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            🔒</div>
+                    </div>
+                    <h3>Episode 4</h3>
+                    <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
+                </div>
+
+                <div class="dashboard-card glass-panel"
+                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                    <div style="position:relative; display:inline-block;">
+                        <!-- <img src="assets/comics/Komik%205.png" alt="Cover Episode 5"
+                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);"> -->
+                        <div
+                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            🔒</div>
+                    </div>
+                    <h3>Episode 5</h3>
+                    <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
                 </div>
             </div>
         </main>
     </div>
 </body>
+
 </html>

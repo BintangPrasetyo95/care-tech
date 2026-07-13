@@ -91,6 +91,32 @@ class BootScene extends Phaser.Scene {
     makeSprite('bully',   0x6b7280);   // gray
     makeSprite('student', 0x22d3ee);   // cyan
 
+    /* ── Portraits ── */
+    const makePortrait = (key, color) => {
+      g.clear();
+      g.fillStyle(color, 1);
+      g.fillRoundedRect(0, 0, 64, 64, 8);
+      g.fillStyle(0xffffff, 0.8);
+      g.fillCircle(32, 24, 12); // head
+      g.fillRoundedRect(16, 40, 32, 24, 6); // body
+      g.generateTexture(key, 64, 64);
+    };
+
+    const portraitColors = {
+      player: 0x3b82f6,
+      nabula: 0xec4899,
+      riko: 0xef4444,
+      rani: 0x8b5cf6,
+      bully: 0x6b7280,
+      student: 0x22d3ee
+    };
+
+    ['player', 'nabula', 'riko', 'rani', 'bully', 'student'].forEach(char => {
+      ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk'].forEach(emotion => {
+        makePortrait(`${char}_${emotion}`, portraitColors[char]);
+      });
+    });
+
     g.destroy();
   }
 
