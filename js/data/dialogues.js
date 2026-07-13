@@ -147,6 +147,86 @@ const DIALOGUES = {
     next    : null
   },
 
+  /* ══════════ Level 3 — Mystery Case (Classroom) ══════════ */
+
+  evidence_phone: {
+    speaker : { en: '', id: '' },
+    portrait: null,
+    text    : { en: '[ An abandoned smartphone. The screen shows a group chat laughing about Nabula... ]', id: '[ Sebuah ponsel yang tertinggal. Layarnya menampilkan obrolan grup yang menertawakan Nabula... ]' },
+    next    : 'evidence_phone_2'
+  },
+  evidence_phone_2: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_sad',
+    text    : { en: 'This is horrible... I need to remember this.', id: 'Ini mengerikan... Aku harus mengingat ini.' },
+    next    : null,
+    action  : 'found_evidence_phone'
+  },
+
+  witness_intro: {
+    speaker : { en: 'Classmate', id: 'Teman Sekelas' },
+    portrait: 'student_neutral',
+    text    : { en: 'Hey, did you see what happened in the corridor?', id: 'Hei, kamu lihat apa yang terjadi di lorong?' },
+    choices : [
+      { label: { en: 'Who started it?', id: 'Siapa yang memulainya?' }, next: 'witness_ask_who', harmonyDelta: 0 }
+    ]
+  },
+  witness_ask_who: {
+    speaker : { en: 'Classmate', id: 'Teman Sekelas' },
+    portrait: 'student_neutral',
+    text    : { en: 'It was Riko. He brought his friends to corner Nabula.', id: 'Itu Riko. Dia membawa teman-temannya untuk memojokkan Nabula.' },
+    next    : 'witness_end'
+  },
+  witness_end: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_neutral',
+    text    : { en: 'Okay, I should report this properly.', id: 'Oke, aku harus melaporkan ini dengan benar.' },
+    next    : null,
+    action  : 'found_evidence_witness'
+  },
+
+  rani_report_ready: {
+    speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
+    portrait: 'rani_neutral',
+    text    : { en: 'Nakula, you look concerned. What happened?', id: 'Nakula, kamu terlihat khawatir. Apa yang terjadi?' },
+    choices : [
+      { label: { en: 'Riko and his friends are bullying Nabula.', id: 'Riko dan teman-temannya merundung Nabula.' }, next: 'rani_report_good', harmonyDelta: 20 },
+      { label: { en: 'Nothing, just wanted to say hi.', id: 'Tidak ada apa-apa, hanya ingin menyapa.' }, next: 'rani_intro', harmonyDelta: 0 }
+    ]
+  },
+  rani_report_good: {
+    speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
+    portrait: 'rani_neutral',
+    text    : { en: 'Thank you for telling me. I will handle this immediately and talk to Riko.', id: 'Terima kasih sudah memberitahuku. Ibu akan segera menanganinya dan bicara dengan Riko.' },
+    next    : null,
+    action  : 'complete_level3'
+  },
+
+  /* ══════════ Level 4 — Harmony Builder (Auditorium) ══════════ */
+
+  board_initiative_intro: {
+    speaker : { en: 'Student Council', id: 'OSIS' },
+    portrait: null,
+    text    : { en: '[ Choose an initiative to build in the school to improve student harmony! ]', id: '[ Pilih inisiatif untuk dibangun di sekolah untuk meningkatkan kerukunan siswa! ]' },
+    choices : [
+      { label: { en: 'Build a "Vent Corner"', id: 'Bangun "Pojok Curhat"' }, next: 'board_initiative_done', harmonyDelta: 10, action: 'build_vent_corner' },
+      { label: { en: 'Build an "Appreciation Box"', id: 'Bangun "Kotak Apresiasi"' }, next: 'board_initiative_done', harmonyDelta: 15, action: 'build_appreciation_box' },
+      { label: { en: 'Start a "Peer Support Program"', id: 'Mulai "Program Dukungan Sebaya"' }, next: 'board_initiative_done', harmonyDelta: 20, action: 'build_peer_support' }
+    ]
+  },
+  board_initiative_done: {
+    speaker : { en: '', id: '' },
+    portrait: null,
+    text    : { en: '[ Initiative selected! The school environment will change. ]', id: '[ Inisiatif dipilih! Lingkungan sekolah akan berubah. ]' },
+    next    : null
+  },
+  board_already_done: {
+    speaker : { en: '', id: '' },
+    portrait: null,
+    text    : { en: '[ You have already selected an initiative. Check the corridor! ]', id: '[ Kamu sudah memilih inisiatif. Coba cek lorong! ]' },
+    next    : null
+  },
+
   /* ══════════ Generic NPC Interactions ══════════ */
 
   student_chat_1: {

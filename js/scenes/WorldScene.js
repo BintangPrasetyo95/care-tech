@@ -130,6 +130,14 @@ class WorldScene extends Phaser.Scene {
         }
       } else if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
+      } else if (action === 'found_evidence_phone') {
+        this.registry.set('evidence_phone', true);
+        this._checkLevel3Ready();
+      } else if (action === 'found_evidence_witness') {
+        this.registry.set('evidence_witness', true);
+        this._checkLevel3Ready();
+      } else if (action === 'complete_level3') {
+        this.registry.set('level3_complete', true);
       }
     }, this);
     this.events.on('shutdown', () => {
@@ -138,6 +146,15 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Debug Grid (Row, Col) ── */
     // this._drawDebugGrid();
+  }
+
+  _checkLevel3Ready() {
+    if (this.registry.get('evidence_phone') && this.registry.get('evidence_witness')) {
+      const rani = this.npcs.find(n => n.key === 'rani');
+      if (rani) {
+        rani.dialogueId = 'rani_report_ready';
+      }
+    }
   }
 
   update(time, delta) {
@@ -501,7 +518,9 @@ class WorldScene extends Phaser.Scene {
       m[1][10] = 'board';
       m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r'; 
       m[0][5]  = 'door_big_l'; m[0][6]  = 'door_big_r'; 
+      m[1][5]  = 'school_floor'; m[1][6]  = 'school_floor';
       m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r'; 
+      m[1][15] = 'school_floor'; m[1][16] = 'school_floor';
       m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
       this._autotileSchoolWalls(m);
       return m;
@@ -574,9 +593,11 @@ class WorldScene extends Phaser.Scene {
   /* ────── NPC spawning per map ────── */
   _spawnNPCs(mapKey) {
     if (mapKey === 'garden') {
-      // Nabula on the bench
-      this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-        'nabula', 'player_intro', { name: 'Nabula', emotion: '😔' }));
+      if (!this.registry.get('level1_complete')) {
+        // Nabula on the bench
+        this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+          'nabula', 'player_intro', { name: 'Nabula', emotion: '😔' }));
+      }
       
       // Generic NPC near the door
       this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 1 * TILE + TILE / 2,
@@ -613,8 +634,19 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'classroom') {
       this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'rani', 'rani_intro', { name: 'Teacher Rani' }));
+        
+      // The Witness
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 7 * TILE + TILE / 2,
-        'student', 'student_chat_2', { name: 'Student' }));
+        'student', 'witness_intro', { name: 'Witness' }));
+        
+      // The abandoned smartphone (evidence)
+      const phone = new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+        'student', 'evidence_phone', { name: 'Smartphone', immovable: true });
+      phone.sprite.setAlpha(0); // Invisible, but has interaction radius and pulse indicator
+      this.npcs.push(phone);
+      
+      // Also ensure if we enter the room and we already have both evidence, Rani's dialogue is ready
+      this._checkLevel3Ready();
     }
 
     if (mapKey === 'auditorium') {
