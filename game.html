@@ -91,7 +91,7 @@
             
             <div class="content-grid" style="display: block; padding: 2rem;">
                 <div class="dashboard-card glass-panel" style="max-width: 800px; margin: 0 auto; text-align: center; padding: 3rem;">
-                    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 250px; margin-bottom: 2rem;">
+                    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 250px; display: block; margin: 0 auto 2rem auto;">
                     <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Selamat datang di Harmonia School!</h2>
                     <p style="font-size: 1.1rem; color: #555; line-height: 1.6; margin-bottom: 2rem;">
                         Di game ini, kamu akan bermain sebagai siswa di Harmonia School. Tugasmu adalah mencegah perundungan (bullying), membantu teman-teman yang membutuhkan, dan meningkatkan <strong>Indeks Harmoni</strong> di sekolahmu.<br><br>
@@ -110,26 +110,28 @@
             const reflectionStatusDiv = document.getElementById('reflection-status');
             const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
             
-            if (allReflections.length > 0) {
-                // Get the most recent reflection
-                const latest = allReflections[allReflections.length - 1];
-                let emoji = "😐";
-                if(latest.feeling === "senang") emoji = "😃";
-                if(latest.feeling === "sedih") emoji = "😔";
-                if(latest.feeling === "marah") emoji = "😠";
+            if (reflectionStatusDiv) {
+                if (allReflections.length > 0) {
+                    // Get the most recent reflection
+                    const latest = allReflections[allReflections.length - 1];
+                    let emoji = "😐";
+                    if(latest.feeling === "senang") emoji = "😃";
+                    if(latest.feeling === "sedih") emoji = "😔";
+                    if(latest.feeling === "marah") emoji = "😠";
 
-                reflectionStatusDiv.innerHTML = `
-                    <div class="status-badge">
-                        <span class="status-emoji">${emoji}</span>
-                        <span class="status-text">Perasaanmu: <strong>${latest.feeling.charAt(0).toUpperCase() + latest.feeling.slice(1)}</strong></span>
-                    </div>
-                    <p style="margin-top: 1rem; color: #777;">Terima kasih sudah berbagi perasaanmu hari ini!</p>
-                `;
-            } else {
-                reflectionStatusDiv.innerHTML = `
-                    <p>Kamu belum mengisi refleksi hari ini.</p>
-                    <a href="reflection.html" class="btn-small">Isi Refleksi Sekarang</a>
-                `;
+                    reflectionStatusDiv.innerHTML = `
+                        <div class="status-badge">
+                            <span class="status-emoji">${emoji}</span>
+                            <span class="status-text">Perasaanmu: <strong>${latest.feeling.charAt(0).toUpperCase() + latest.feeling.slice(1)}</strong></span>
+                        </div>
+                        <p style="margin-top: 1rem; color: #777;">Terima kasih sudah berbagi perasaanmu hari ini!</p>
+                    `;
+                } else {
+                    reflectionStatusDiv.innerHTML = `
+                        <p>Kamu belum mengisi refleksi hari ini.</p>
+                        <a href="reflection.html" class="btn-small">Isi Refleksi Sekarang</a>
+                    `;
+                }
             }
         });
     </script>
