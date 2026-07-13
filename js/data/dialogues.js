@@ -123,7 +123,8 @@ const DIALOGUES = {
     speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_neutral',
     text    : { en: 'Sometimes I feel like nobody sees what\'s happening… but you did.', id: 'Terkadang aku merasa tidak ada yang melihat apa yang terjadi… tapi kamu melihatnya.' },
-    next    : null
+    next    : null,
+    action  : 'complete_level2'
   },
 
   nabula_shrug: {
@@ -137,13 +138,22 @@ const DIALOGUES = {
     speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_sad',
     text    : { en: 'But… thanks for at least coming to check on me.', id: 'Tapi… terima kasih karena setidaknya sudah mengecek keadaanku.' },
-    next    : null
+    next    : null,
+    action  : 'complete_level2'
   },
 
   nabula_sad2: {
     speaker : { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_sad',
     text    : { en: '… yeah… I\'ll try. It just… doesn\'t feel like it ever stops.', id: '… ya… Aku akan coba. Hanya saja… rasanya ini tidak pernah berhenti.' },
+    next    : null,
+    action  : 'complete_level2'
+  },
+
+  nabula_safe: {
+    speaker : { en: 'Nabula', id: 'Nabula' },
+    portrait: 'nabula_smile',
+    text    : { en: 'I feel a bit safer in here near the teacher... thanks for earlier.', id: 'Aku merasa sedikit lebih aman di sini dekat guru... terima kasih untuk sebelumnya.' },
     next    : null
   },
 
@@ -233,6 +243,13 @@ const DIALOGUES = {
     speaker : { en: 'Student', id: 'Siswa' },
     portrait: 'student_neutral',
     text    : { en: 'Hey! Have you checked the bulletin board in the corridor? There\'s something interesting posted.', id: 'Hei! Sudahkah kamu memeriksa papan pengumuman di lorong? Ada sesuatu yang menarik.' },
+    next    : null
+  },
+
+  peer_supporter_chat: {
+    speaker : { en: 'Peer Supporter', id: 'Konselor Sebaya' },
+    portrait: 'student_neutral',
+    text    : { en: 'Hi there! We are here to listen if you or anyone else needs to talk about bullying, stress, or anything at all. You are not alone!', id: 'Hai! Kami di sini untuk mendengarkan jika kamu atau siapa pun butuh teman bicara soal perundungan, stres, atau apa pun. Kamu tidak sendirian!' },
     next    : null
   },
 

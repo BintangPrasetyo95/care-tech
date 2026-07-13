@@ -130,6 +130,8 @@ class WorldScene extends Phaser.Scene {
         }
       } else if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
+      } else if (action === 'complete_level2') {
+        this.registry.set('level2_complete', true);
       } else if (action === 'found_evidence_phone') {
         this.registry.set('evidence_phone', true);
         this._checkLevel3Ready();
@@ -138,6 +140,13 @@ class WorldScene extends Phaser.Scene {
         this._checkLevel3Ready();
       } else if (action === 'complete_level3') {
         this.registry.set('level3_complete', true);
+      } else if (['build_vent_corner', 'build_appreciation_box', 'build_peer_support'].includes(action)) {
+        this.registry.set('built_project', action);
+        this.registry.set('level4_complete', true);
+        
+        // Find the initiative board and update its state so it doesn't prompt again
+        const board = this.npcs.find(n => n.key === 'initiative_board');
+        if (board) board.dialogueId = 'board_already_done';
       }
     }, this);
     this.events.on('shutdown', () => {
@@ -618,7 +627,7 @@ class WorldScene extends Phaser.Scene {
           // Nabula being mocked
           this.npcs.push(new NPC(this, 11 * TILE + TILE / 2, 4 * TILE + TILE / 2,
             'nabula', null, { name: 'Nabula', emotion: '😔' }));
-        } else {
+        } else if (!this.registry.get('level2_complete')) {
           // Nabula hiding behind library
           this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 12 * TILE + TILE / 2,
             'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
@@ -629,11 +638,31 @@ class WorldScene extends Phaser.Scene {
       // Let's keep him there for ambient.
       this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 8 * TILE + TILE / 2,
         'riko', 'riko_corridor', { name: 'Riko' }));
+
+      // Level 4 Initiative Additions
+      const project = this.registry.get('built_project');
+      if (project === 'build_vent_corner') {
+        this.npcs.push(new NPC(this, 2 * TILE + TILE / 2, 12 * TILE + TILE / 2,
+          'student', 'board_interact', { name: 'Vent Corner', immovable: true }));
+      } else if (project === 'build_appreciation_box') {
+        const box = new NPC(this, 14 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+          'student', 'board_interact', { name: 'Appreciation Box', immovable: true });
+        box.sprite.setAlpha(0); // Invisible box but glowing
+        this.npcs.push(box);
+      } else if (project === 'build_peer_support') {
+        this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+          'student', 'peer_supporter_chat', { name: 'Peer Supporter' }));
+      }
     }
 
     if (mapKey === 'classroom') {
       this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'rani', 'rani_intro', { name: 'Teacher Rani' }));
+        
+      if (this.registry.get('level2_complete')) {
+        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+          'nabula', 'nabula_safe', { name: 'Nabula' }));
+      }
         
       // The Witness
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 7 * TILE + TILE / 2,
@@ -652,6 +681,14 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'auditorium') {
       this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
+        
+      // The Initiative Board (Middle board at row 1, col 10)
+      const isBuilt = this.registry.get('level4_complete');
+      const board = new NPC(this, 10 * TILE + TILE / 2, 1 * TILE + TILE / 2,
+        'student', isBuilt ? 'board_already_done' : 'board_initiative_intro', { name: 'Initiative Board', immovable: true });
+      board.key = 'initiative_board';
+      board.sprite.setAlpha(0); // Invisible, attached to the tilemap board graphic
+      this.npcs.push(board);
     }
 
     if (mapKey === 'cafeteria') {
