@@ -72,6 +72,12 @@
                             <li><a href="posttest.html">Posttest</a></li>
                         </ul>
                     </li>
+                    <li class="menu-item ">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Evaluasi</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
 </nav>
@@ -94,7 +100,7 @@
                     <div style="display: flex; align-items: center; gap: 1.5rem;">
                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #E8EDF4;" alt="Avatar">
                         <div>
-                            <h2 style="color: #2D3748; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.2rem; font-family: 'Inter', sans-serif;">Selamat datang, Pelajar!</h2>
+                            <h2 style="color: #2D3748; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.2rem; font-family: 'Inter', sans-serif;">Selamat datang, Zuruki!</h2>
                             <p style="color: #4A72C8; font-weight: 600; font-size: 1rem;">Harmonia School</p>
                         </div>
                     </div>
@@ -159,49 +165,115 @@
                 <!-- Komik Digital List -->
                 <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
                     <h2 style="color: #2D3748; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; font-family: 'Inter', sans-serif;">Daftar Komik Digital</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                        <a href="komik.html?ep=1" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
-                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
-                            <div>
-                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 1</h4>
-                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Pengenalan</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                        <div class="dashboard-card glass-panel interactive-card"
+                            style="background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                            <img src="assets/comics/Komik%201.png" alt="Cover Episode 1"
+                                style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                            <h3 style="margin-top: 0;">Episode 1</h3>
+                            <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Memahami dan Mengenali
+                                Emosi bersama teman</p>
+                            <button class="btn-small"
+                                onclick="window.open('assets/comics/1%20Memahami%20dan%20Mengenali%20Emosi%20bersama%20teman.pdf', '_blank')">Baca
+                                Sekarang</button>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel"
+                            style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                            <div style="position:relative; display:inline-block;">
+                                <img src="assets/comics/Komik%202.png" alt="Cover Episode 2"
+                                    style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                                <div
+                                    style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                    🔒</div>
                             </div>
-                        </a>
-                        <a href="komik.html?ep=2" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
-                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
-                            <div>
-                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 2</h4>
-                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Konflik Awal</p>
+                            <h3 style="margin-top: 0;">Episode 2</h3>
+                            <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Pengambilan Keputusan yang Bertanggung Jawab</p>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel"
+                            style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                            <div style="position:relative; display:inline-block;">
+                                <img src="assets/comics/Komik%203.png" alt="Cover Episode 3"
+                                    style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                                <div
+                                    style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                    🔒</div>
                             </div>
-                        </a>
-                        <a href="komik.html?ep=3" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
-                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📖</div>
-                            <div>
-                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Episode 3</h4>
-                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Penyelesaian</p>
+                            <h3 style="margin-top: 0;">Episode 3</h3>
+                            <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Membangun Lingkungan Sekolah yang Harmonis</p>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel"
+                            style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                            <div style="position:relative; display:inline-block;">
+                                <img src="assets/comics/Komik%204.png" alt="Cover Episode 4"
+                                    style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                                <div
+                                    style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                    🔒</div>
                             </div>
-                        </a>
+                            <h3 style="margin-top: 0;">Episode 4</h3>
+                            <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Hentikan Bullying: Mari Saling Menghargai</p>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel"
+                            style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
+                            <div style="position:relative; display:inline-block;">
+                                <img src="assets/comics/Komik%205.png" alt="Cover Episode 5"
+                                    style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
+                                <div
+                                    style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                    🔒</div>
+                            </div>
+                            <h3 style="margin-top: 0;">Episode 5</h3>
+                            <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Modul Digital List -->
                 <div class="dashboard-card wide-card glass-panel" style="padding: 2.5rem; border-radius: 16px;">
                     <h2 style="color: #2D3748; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 700; font-family: 'Inter', sans-serif;">Daftar Modul Digital</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                        <a href="modul.html?id=1" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
-                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📚</div>
-                            <div>
-                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Modul 1</h4>
-                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Cyberbullying</p>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="dashboard-card glass-panel wide-card"
+                            style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
+                            <div style="display:flex; align-items:center; gap:2rem;">
+                                <img src="assets/module/Modul%201.png" alt="Cover Modul 1"
+                                    style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
+                                <div>
+                                    <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Mengenali dan Memahami Emosi</h3>
+                                    <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Pelajari cara mengenali dan mengelola emosimu dengan baik.</p>
+                                    <a href="assets/module/1%20Modul%20Pembelajaran%20Mengenali%20dan%20Memahami%20Emosi.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
+                                </div>
                             </div>
-                        </a>
-                        <a href="modul.html?id=2" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background: #F4F7FB; border: 1px solid #E8EDF4; border-radius: 12px; transition: all 0.2s ease;" onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F4F7FB'">
-                            <div style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📚</div>
-                            <div>
-                                <h4 style="color: #2D3748; font-size: 1.1rem; margin: 0;">Modul 2</h4>
-                                <p style="color: #718096; font-size: 0.9rem; margin: 0;">Empati & Interaksi</p>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel wide-card"
+                            style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
+                            <div style="display:flex; align-items:center; gap:2rem;">
+                                <img src="assets/module/Modul%202.png" alt="Cover Modul 2"
+                                    style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
+                                <div>
+                                    <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Pencegahan dan Penanganan Perundungan</h3>
+                                    <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Cara membangun lingkungan yang aman dan harmonis.</p>
+                                    <a href="assets/module/2%20Modul%20Pembelajaran%20Pencegahan%20dan%20Penanganan%20Perundungan.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
+                                </div>
                             </div>
-                        </a>
+                        </div>
+        
+                        <div class="dashboard-card glass-panel wide-card"
+                            style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
+                            <div style="display:flex; align-items:center; gap:2rem;">
+                                <img src="assets/module/Modul%203.png" alt="Cover Modul 3"
+                                    style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
+                                <div>
+                                    <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Empati dan Kepedulian Sosial</h3>
+                                    <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Membangun rasa kepedulian terhadap sesama.</p>
+                                    <a href="assets/module/3%20Modul%20Pembelajaran%20Empati%20dan%20Kepedulian%20Sosial.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
