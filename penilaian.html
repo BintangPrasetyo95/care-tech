@@ -92,8 +92,8 @@
                 </div>
             </header>
 
-            <div class="content-grid">
-                <div class="dashboard-card wide-card glass-panel">
+            <div class="content-grid" style="display: flex; gap: 1.5rem; align-items: stretch; flex-wrap: wrap;">
+                <div class="dashboard-card wide-card glass-panel" style="flex: 0 0 calc(60% - 0.75rem); margin-bottom: 0;">
                     <h3>Papan Peringkat & Nilai</h3>
                     <p style="color:#777; margin-bottom:1rem;">Kumpulkan poin dari game dan modul untuk meningkatkan nilaimu!</p>
                     
@@ -107,8 +107,78 @@
                         <span style="color:var(--secondary-color); font-weight:bold; font-size:1.2rem;">0 / 10</span>
                     </div>
                 </div>
+
+                <div class="dashboard-card wide-card glass-panel" style="flex: 0 0 calc(40% - 0.75rem); margin-top: 0;">
+                    <h3>Grafik Aktivitas Jurnal</h3>
+                    <p style="color:#777; margin-bottom:1rem;">Perkembangan pengisian jurnal harianmu.</p>
+                    <canvas id="journalGraph"></canvas>
+                </div>
             </div>
         </main>
     </div>
+
+    <!-- Chart.js for rendering the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('journalGraph').getContext('2d');
+        
+        // Pemetaan nilai ke mood
+        const moodLabels = {
+            1: 'Mad',
+            2: 'Sad',
+            3: 'Normal',
+            4: 'Happy'
+        };
+
+        const journalGraph = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10 Jul', '11 Jul', '12 Jul', '13 Jul', '14 Jul', '15 Jul', '16 Jul'],
+                datasets: [{
+                    label: 'Mood Harian',
+                    data: [3, 2, 4, 3, 1, 3, 4],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Mood: ' + moodLabels[context.parsed.y];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 1,
+                        max: 4,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return moodLabels[value];
+                            },
+                            font: {
+                                size: 14,
+                                weight: '500'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
