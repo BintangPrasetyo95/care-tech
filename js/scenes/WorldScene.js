@@ -335,27 +335,27 @@ class WorldScene extends Phaser.Scene {
       'wall': 5, 'wall_top': 6, 'floor': 7, 'floor2': 8,
       'door': 9, 'bench': 10, 'desk': 11, 'board': 12,
       'chair': 13, 'table': 14, 'stage': 15, 'flower': 16,
-      'tree': 17, 'water_tl': 18, 'bookshelf': 19,
-      'path_1_3': 20, 'path_1_4': 21, 'path_2_2': 22, 'path_2_0': 23,
-      'path_2_4': 24, 'path_2_3': 25, 'path_3_1': 26, 'path_1_1': 27,
-      'path_3_2': 28, 'path_1_2': 29,
-      'water_tr': 30, 'water_bl': 31, 'water_br': 32,
-      'tree_0_0': 33, 'tree_0_1': 34, 'tree_0_2': 35,
-      'tree_1_0': 36, 'tree_1_1': 37, 'tree_1_2': 38,
-      'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41,
-      'grass_var1': 43, 'grass_var2': 44,
-      'bench_0_0': 45, 'bench_0_1': 46, 'bench_0_2': 47,
-      'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52,
-      'door_big_l': 53, 'door_big_r': 54,
-      'school_wall_tl': 55, 'school_wall_t': 56, 'school_wall_tr': 57,
-      'school_wall_l': 58, 'school_wall_c': 59, 'school_wall_r': 60,
-      'school_wall_bl': 61, 'school_wall_b': 62, 'school_wall_br': 63,
-      'school_wall_itl': 64, 'school_wall_itr': 65,
-      'school_wall_ibl': 66, 'school_wall_ibr': 67,
-      'school_floor': 68, 'school_floor2': 69
+      'tree': 17, 'water_tl': 18, 'bookshelf': 19, 'bookshelf_t': 20, 'bookshelf_b': 21,
+      'path_1_3': 22, 'path_1_4': 23, 'path_2_2': 24, 'path_2_0': 25,
+      'path_2_4': 26, 'path_2_3': 27, 'path_3_1': 28, 'path_1_1': 29,
+      'path_3_2': 30, 'path_1_2': 31,
+      'water_tr': 32, 'water_bl': 33, 'water_br': 34,
+      'tree_0_0': 35, 'tree_0_1': 36, 'tree_0_2': 37,
+      'tree_1_0': 38, 'tree_1_1': 39, 'tree_1_2': 40,
+      'tree_2_0': 41, 'tree_2_1': 42, 'tree_2_2': 43,
+      'grass_var1': 45, 'grass_var2': 46,
+      'bench_0_0': 47, 'bench_0_1': 48, 'bench_0_2': 49,
+      'bench_1_0': 52, 'bench_1_1': 53, 'bench_1_2': 54,
+      'door_big_l': 55, 'door_big_r': 56,
+      'school_wall_tl': 57, 'school_wall_t': 58, 'school_wall_tr': 59,
+      'school_wall_l': 60, 'school_wall_c': 61, 'school_wall_r': 62,
+      'school_wall_bl': 63, 'school_wall_b': 64, 'school_wall_br': 65,
+      'school_wall_itl': 66, 'school_wall_itr': 67,
+      'school_wall_ibl': 68, 'school_wall_ibr': 69,
+      'school_floor': 70, 'school_floor2': 71
     };
     
-    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf'];
+    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b'];
 
     const mapData = this._getMapData(mapKey);
 
@@ -402,8 +402,8 @@ class WorldScene extends Phaser.Scene {
               objectLayers[i].putTileAt(objId, c, r);
             }
           });
-        } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench')) {
-          // If it's a solid object OR a bench piece that was placed without putObj somehow
+        } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench') || groundName === 'bookshelf_t') {
+          // If it's a solid object OR a tall object that needs to be in front
           if (groundName.startsWith('water')) {
             midLayer.putTileAt(groundId, c, r);
           } else if (groundName === 'wall' || groundName === 'wall_top' || groundName.startsWith('school_wall_')) {
@@ -574,9 +574,11 @@ class WorldScene extends Phaser.Scene {
       for (let r = 2; r < 5; r++) {
         for (let c = 1; c < W - 1; c++) if (c % 3 === 0) m[r][c] = 'school_floor2';
       }
-      m[8][2] = 'bookshelf'; m[8][3] = 'bookshelf'; m[8][4] = 'bookshelf';
-      m[10][2] = 'bookshelf'; m[10][3] = 'bookshelf';
-      m[12][2] = 'bookshelf'; m[12][3] = 'bookshelf';
+      for (const r of [8, 10, 12]) {
+        m[r - 1][2] = 'bookshelf_t'; m[r][2] = 'bookshelf_b';
+        m[r - 1][3] = 'bookshelf_t'; m[r][3] = 'bookshelf_b';
+      }
+      m[7][4] = 'bookshelf_t'; m[8][4] = 'bookshelf_b';
       m[1][10] = 'board';
       m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r'; 
       m[0][5]  = 'door_big_l'; m[0][6]  = 'door_big_r'; 
@@ -599,6 +601,10 @@ class WorldScene extends Phaser.Scene {
           m[6 + row * 2][4 + col * 3] = 'desk';
           m[7 + row * 2][4 + col * 3] = 'chair';
         }
+      }
+      for (const r of [3, 5, 7, 9]) {
+        m[r - 1][1] = 'bookshelf_t'; m[r][1] = 'bookshelf_b';
+        m[r - 1][18] = 'bookshelf_t'; m[r][18] = 'bookshelf_b';
       }
       for (let r = 2; r < H - 1; r++) {
         for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r + c) % 5 === 0) m[r][c] = 'school_floor2';

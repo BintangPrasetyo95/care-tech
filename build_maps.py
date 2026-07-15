@@ -23,7 +23,9 @@ tiles = {
     'flower': (251, 113, 133),
     'tree': (22, 101, 52),
     'water_tl': (14, 165, 233),
-    'bookshelf': (68, 64, 60),
+    'bookshelf': (0, 0, 0, 0),
+    'bookshelf_t': (0, 0, 0, 0),
+    'bookshelf_b': (0, 0, 0, 0),
     'path_1_3': (0, 0, 0, 0),
     'path_1_4': (0, 0, 0, 0),
     'path_2_2': (0, 0, 0, 0),
@@ -71,6 +73,7 @@ try:
     grass_v2 = Image.open('assets/sprites/grass variant 2.png')
     bench_sheet = Image.open('assets/sprites/long_bench.png')
     big_door_sheet = Image.open('assets/sprites/big_door.png')
+    bookshelf_sheet = Image.open('assets/sprites/bookshelf_sprites.png')
     wall_tile = Image.open('assets/sprites/tile_3_0.png')
     school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
     custom_tiles = {
@@ -127,6 +130,8 @@ try:
         'bench_1_2': bench_sheet.crop((2*32, 1*32, 3*32, 2*32)),
         'door_big_l': big_door_sheet.crop((0, 0, 32, 32)),
         'door_big_r': big_door_sheet.crop((32, 0, 64, 32)),
+        'bookshelf_t': bookshelf_sheet.crop((0, 0, 32, 32)),
+        'bookshelf_b': bookshelf_sheet.crop((0, 32, 32, 64)),
     }
 except Exception as e:
     custom_tiles = {}
@@ -216,7 +221,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
+    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]
@@ -286,7 +291,9 @@ for c in [5,6,14,15]: cor_grid[5][c] = 'school_floor'
 for r in range(2, 5):
     for c in range(1, W-1):
         if c % 3 == 0: cor_grid[r][c] = 'school_floor2'
-for r, c in [(8,2), (8,3), (8,4), (10,2), (10,3), (12,2), (12,3)]: cor_grid[r][c] = 'bookshelf'
+for r, c in [(8,2), (8,3), (8,4), (10,2), (10,3), (12,2), (12,3)]: 
+    cor_grid[r-1][c] = 'bookshelf_t'
+    cor_grid[r][c] = 'bookshelf_b'
 cor_grid[1][10] = 'board'
 cor_grid[H-1][10] = 'door'
 cor_grid[0][5] = 'door'
@@ -306,6 +313,12 @@ for row in range(3):
     for col in range(4):
         cls_grid[6 + row*2][4 + col*3] = 'desk'
         cls_grid[7 + row*2][4 + col*3] = 'chair'
+# Add bookshelves to the left and right walls of the classroom
+for r in [3, 5, 7, 9]:
+    cls_grid[r-1][1] = 'bookshelf_t'
+    cls_grid[r][1] = 'bookshelf_b'
+    cls_grid[r-1][18] = 'bookshelf_t'
+    cls_grid[r][18] = 'bookshelf_b'
 for r in range(2, H-1):
     for c in range(1, W-1):
         if cls_grid[r][c] == 'school_floor' and (r+c)%5 == 0: cls_grid[r][c] = 'school_floor2'
