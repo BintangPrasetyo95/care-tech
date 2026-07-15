@@ -104,32 +104,16 @@
                     
                     <div id="quiz-container" style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.8);">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">
-                            <span>Pertanyaan <span id="current-q">1</span> dari 3</span>
+                            <span>Pertanyaan <span id="current-q">1</span> dari <span id="total-q">3</span></span>
                         </div>
                         
-                        <h3 id="question-text" style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #1e293b; line-height: 1.5;">Apa yang sebaiknya kamu lakukan jika melihat teman di-bully?</h3>
+                        <h3 id="question-text" style="font-size: 1.1rem; margin-bottom: 1.5rem; color: #1e293b; line-height: 1.5; font-weight: 500;"></h3>
                         
-                        <div class="options-container" style="display: flex; flex-direction: column; gap: 10px;">
-                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                <input type="radio" name="answer" value="a" style="margin-right: 15px; transform: scale(1.2);">
-                                <span>Ikut menertawakan</span>
-                            </label>
-                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                <input type="radio" name="answer" value="b" style="margin-right: 15px; transform: scale(1.2);">
-                                <span>Melaporkan ke guru atau orang dewasa</span>
-                            </label>
-                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                <input type="radio" name="answer" value="c" style="margin-right: 15px; transform: scale(1.2);">
-                                <span>Pura-pura tidak melihat</span>
-                            </label>
-                            <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                <input type="radio" name="answer" value="d" style="margin-right: 15px; transform: scale(1.2);">
-                                <span>Ikut mengejek</span>
-                            </label>
+                        <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;">
                         </div>
                         
                         <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-                            <button id="btn-next" style="padding: 12px 30px; font-size: 1rem; font-weight: bold; color: white; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4); transition: transform 0.2s;" onclick="alert('Ini adalah prototipe. Jawaban berhasil disimpan!'); window.location.href='dashboard.html';">Selanjutnya ➔</button>
+                            <button id="btn-next" style="padding: 12px 30px; font-size: 1rem; font-weight: bold; color: white; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4); transition: transform 0.2s;" onclick="nextQuestion()">Selanjutnya ➔</button>
                         </div>
                     </div>
                 </div>
@@ -151,32 +135,95 @@
     </div>
 
     <script>
-        // Simple logic to show reflection status without needing a login
-        document.addEventListener('DOMContentLoaded', () => {
-            const reflectionStatusDiv = document.getElementById('reflection-status');
-            const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
-            
-            if (allReflections.length > 0) {
-                // Get the most recent reflection
-                const latest = allReflections[allReflections.length - 1];
-                let emoji = "😐";
-                if(latest.feeling === "senang") emoji = "😃";
-                if(latest.feeling === "sedih") emoji = "😔";
-                if(latest.feeling === "marah") emoji = "😠";
+        const questions = [
+            {
+                type: "mcq",
+                text: "Bima adalah siswa kelas V yang akhir-akhir ini terlihat lebih pendiam. Ia sering tidak ikut bermain bersama teman-temannya karena beberapa siswa mengejek cara bicaranya. Bima merasa sedih dan mulai tidak percaya diri untuk tampil di depan kelas. Berdasarkan situasi tersebut, apa dampak yang mungkin dialami Bima dan tindakan terbaik yang dapat dilakukan oleh teman-temannya?",
+                options: [
+                    "A. Bima menjadi lebih kuat karena ejekan membuatnya terbiasa menghadapi masalah.",
+                    "B. Bima dapat mengalami kehilangan rasa percaya diri, sehingga teman-temannya perlu mendukung dan menghentikan ejekan.",
+                    "C. Bima sebaiknya menghindari semua teman agar tidak merasa sedih.",
+                    "D. Teman-teman Bima sebaiknya ikut mengejek agar Bima belajar menerima kritik."
+                ]
+            },
+            {
+                type: "mcq",
+                text: "Saat bermain di sekolah, Sinta melihat seorang teman menangis karena diejek oleh beberapa siswa. Sinta ingin membantu, tetapi ia takut ikut menjadi sasaran ejekan. Menurutmu, keputusan yang paling menunjukkan sikap peduli terhadap kesehatan mental teman adalah....",
+                options: [
+                    "A. Membiarkan kejadian tersebut karena bukan masalahnya.",
+                    "B. Ikut tertawa agar tidak dianggap berbeda oleh kelompoknya.",
+                    "C. Mendekati teman tersebut, memberikan dukungan, mengajak pelaku berhenti, dan meminta bantuan guru jika diperlukan.",
+                    "D. Mengunggah kejadian tersebut ke media sosial agar banyak orang mengetahuinya."
+                ]
+            },
+            {
+                type: "essay",
+                text: "Raka adalah siswa kelas VI yang biasanya aktif dan sering bermain bersama teman-temannya. Namun, beberapa minggu terakhir Raka terlihat lebih pendiam dan sering menyendiri. Hal ini terjadi karena beberapa temannya sering mengejek hasil gambarnya yang dianggap kurang bagus. Raka merasa sedih, malu, dan mulai takut untuk menunjukkan hasil karyanya kepada orang lain. Ia hanya memendam perasaannya sendiri karena khawatir akan semakin diejek.<br><br><strong>Pertanyaan:</strong><br>1. Menurut kamu, apa yang mungkin sedang dirasakan oleh Raka? Jelaskan alasanmu!<br>2. Jika kamu menjadi teman Raka, apa yang akan kamu lakukan untuk membantu Raka merasa lebih baik?"
+            }
+        ];
 
-                reflectionStatusDiv.innerHTML = `
-                    <div class="status-badge">
-                        <span class="status-emoji">${emoji}</span>
-                        <span class="status-text">Perasaanmu: <strong>${latest.feeling.charAt(0).toUpperCase() + latest.feeling.slice(1)}</strong></span>
-                    </div>
-                    <p style="margin-top: 1rem; color: #777;">Terima kasih sudah berbagi perasaanmu hari ini!</p>
-                `;
-            } else {
-                reflectionStatusDiv.innerHTML = `
-                    <p>Kamu belum mengisi refleksi hari ini.</p>
-                    <a href="reflection.html" class="btn-small">Isi Refleksi Sekarang</a>
+        let currentQ = 0;
+
+        function renderQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('current-q').textContent = currentQ + 1;
+            document.getElementById('total-q').textContent = questions.length;
+            document.getElementById('question-text').innerHTML = q.text;
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+            
+            if (q.type === 'mcq') {
+                q.options.forEach((opt, index) => {
+                    optsContainer.innerHTML += `
+                        <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="answer" value="${index}" style="margin-right: 15px; transform: scale(1.2);">
+                            <span>${opt}</span>
+                        </label>
+                    `;
+                });
+            } else if (q.type === 'essay') {
+                optsContainer.innerHTML += `
+                    <textarea style="width: 100%; height: 150px; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1rem; resize: vertical;" placeholder="Tuliskan jawabanmu di sini..."></textarea>
                 `;
             }
+
+            if (currentQ === questions.length - 1) {
+                document.getElementById('btn-next').textContent = 'Selesai ➔';
+            } else {
+                document.getElementById('btn-next').textContent = 'Selanjutnya ➔';
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQ < questions.length - 1) {
+                let valid = true;
+                if (questions[currentQ].type === 'mcq') {
+                    const selected = document.querySelector('input[name="answer"]:checked');
+                    if (!selected) {
+                        alert('Silakan pilih salah satu jawaban.');
+                        valid = false;
+                    }
+                } else if (questions[currentQ].type === 'essay') {
+                    const txt = document.querySelector('textarea').value;
+                    if (txt.trim().length === 0) {
+                        alert('Silakan isi jawaban esai.');
+                        valid = false;
+                    }
+                }
+
+                if (valid) {
+                    currentQ++;
+                    renderQuestion();
+                }
+            } else {
+                alert('Jawaban berhasil disimpan!');
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuestion();
         });
     </script>
 </body>
