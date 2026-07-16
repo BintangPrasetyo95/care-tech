@@ -145,82 +145,105 @@ h1, h2, h3, h4, h5, h6, .nav-brand {
 
 /* Hero Image classes removed */
 
-/* Steps Section */
-.steps-section {
-    padding: 5rem 5%;
+/* Features Section (Previously Steps) */
+.features-section {
+    padding: 8rem 10%;
     position: relative;
     z-index: 10;
-    text-align: center;
+    background: #FFFFFF;
 }
 
-.steps-section h2 {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 3rem;
+.features-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6rem;
+    gap: 4rem;
 }
 
-.steps-grid {
+.features-title-container {
+    flex: 1.2;
+    position: relative;
+}
+
+.bg-text {
+    position: absolute;
+    top: -40px;
+    left: -10px;
+    font-size: 8rem;
+    font-weight: 800;
+    color: #EAEAEA;
+    letter-spacing: 5px;
+    z-index: 0;
+    line-height: 1;
+    font-family: 'Inter', sans-serif;
+}
+
+.subtitle {
+    position: relative;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4FC3F7;
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    z-index: 1;
+    text-transform: uppercase;
+}
+
+.features-title-container h2 {
+    position: relative;
+    font-size: 2.2rem;
+    font-weight: 500;
+    color: #111111;
+    line-height: 1.4;
+    z-index: 1;
+    font-family: 'Inter', sans-serif;
+}
+
+.features-desc-container {
+    flex: 1;
+    padding-top: 5.5rem; /* Aligns with the end of the h2 text somewhat */
+}
+
+.features-desc-container p {
+    font-size: 1.1rem;
+    color: #777777;
+    line-height: 1.8;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem 6rem;
+}
+
+.feature-item {
     display: flex;
     flex-direction: column;
-    gap: 3rem;
-    max-width: 900px;
-    margin: 0 auto;
-    position: relative;
 }
 
-.steps-grid::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 6px;
-    background: linear-gradient(to bottom, 
-        rgba(79, 195, 247, 0) 0%, 
-        var(--secondary-color) 15%, 
-        var(--primary-color) 50%,
-        var(--secondary-color) 85%, 
-        rgba(79, 195, 247, 0) 100%);
-    transform: translateX(-50%);
-    z-index: 0;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(129, 199, 132, 0.4);
+.feature-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #4FC3F7;
+    margin-bottom: 0.5rem;
 }
 
-.step-card {
-    width: 45%;
-    position: relative;
-    z-index: 1;
+.feature-item h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #111111;
+    margin-bottom: 1rem;
+    font-family: 'Inter', sans-serif;
 }
 
-.step-card::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 20px;
-    height: 20px;
-    background: var(--secondary-color);
-    border: 4px solid #fff;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    z-index: 2;
+.feature-item p {
+    font-size: 1rem;
+    color: #555555;
+    line-height: 1.7;
 }
 
-.step-card:nth-child(odd) {
-    align-self: flex-start;
-}
-.step-card:nth-child(odd)::after {
-    left: 111.11%;
-}
-
-.step-card:nth-child(even) {
-    align-self: flex-end;
-}
-.step-card:nth-child(even)::after {
-    left: -11.11%;
-}
-
+/* Glass Card for Login Page */
 .glass-card {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -234,34 +257,7 @@ h1, h2, h3, h4, h5, h6, .nav-brand {
 }
 
 .glass-card:hover {
-    transform: translateY(-10px);
-}
-
-.step-icon {
-    width: 60px;
-    height: 60px;
-    background: var(--primary-color);
-    color: white;
-    font-size: 1.8rem;
-    font-weight: 700;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem auto;
-    box-shadow: 0 4px 10px rgba(15, 44, 89, 0.2);
-}
-
-.step-card h3 {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-}
-
-.step-card p {
-    font-size: 1rem;
-    color: #6C6C6C;
-    line-height: 1.5;
+    transform: translateY(-5px);
 }
 
 /* Call to Action Button */
@@ -287,15 +283,118 @@ h1, h2, h3, h4, h5, h6, .nav-brand {
     color: white;
 }
 
-/* Footer */
-footer {
-    text-align: center;
-    padding: 2rem 5%;
+/* Modern Footer */
+.modern-footer {
+    background: #F8F9FA;
+    padding: 6rem 10% 2rem 10%;
     position: relative;
     z-index: 10;
-    color: #6C6C6C;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    margin-top: 2rem;
+    color: #111111;
+    font-family: 'Inter', sans-serif;
+    margin-top: 0;
+    text-align: left;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4rem;
+    gap: 4rem;
+}
+
+.footer-left {
+    flex: 1.5;
+    position: relative;
+}
+
+.bg-text-footer {
+    position: absolute;
+    top: -50px;
+    left: -20px;
+    font-size: 6rem;
+    font-weight: 800;
+    color: #EFEFEF;
+    letter-spacing: 2px;
+    z-index: 0;
+    line-height: 1;
+}
+
+.subtitle-footer {
+    position: relative;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4FC3F7 ;
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    z-index: 1;
+    text-transform: uppercase;
+}
+
+.footer-title {
+    position: relative;
+    font-size: 2.2rem;
+    font-weight: 500;
+    line-height: 1.3;
+    z-index: 1;
+}
+
+.blue-text {
+    color: #4FC3F7;
+}
+
+.footer-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-top: 3rem;
+}
+
+.footer-info-block h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    color: #111111;
+}
+
+.footer-info-block p {
+    font-size: 0.95rem;
+    color: #333333;
+    line-height: 1.6;
+}
+
+.footer-divider {
+    height: 1px;
+    background: #E0E0E0;
+    margin-bottom: 2rem;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-icons svg {
+    color: #111111;
+    transition: color 0.3s ease;
+    cursor: pointer;
+}
+
+.social-icons svg:hover {
+    color: #667EEA;
+}
+
+.copyright {
+    font-size: 0.85rem;
+    color: #555555;
 }
 
 /* Responsive adjustments */
@@ -311,13 +410,41 @@ footer {
     .hero-content h1 {
         font-size: 2.8rem;
     }
+    .features-section {
+        padding: 5rem 5%;
+    }
+    .features-header {
+        flex-direction: column;
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+    .features-desc-container {
+        padding-top: 1rem;
+    }
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+    .footer-top {
+        flex-direction: column;
+        gap: 3rem;
+    }
+    .footer-right {
+        padding-top: 0;
+    }
 }
 
 @media (max-width: 600px) {
     .hero-content h1 { font-size: 2.2rem; }
     .hero-content p { font-size: 1rem; }
     .btn-start { padding: 0.8rem 2rem; font-size: 1.1rem; }
-    .steps-section h2 { font-size: 2rem; }
-    .steps-grid::before, .step-card::after { display: none; }
-    .step-card { width: 100%; align-self: center !important; }
+    .bg-text { font-size: 4rem; top: -10px; }
+    .features-title-container h2 { font-size: 1.8rem; }
+    .bg-text-footer { font-size: 3.5rem; top: -30px; }
+    .footer-title { font-size: 1.6rem; }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
 }

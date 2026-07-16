@@ -272,6 +272,13 @@ const DIALOGUES = {
     harmonyDelta: -10
   },
 
+  victim_thanks: {
+    speaker : { en: 'Victim', id: 'Korban' },
+    portrait: 'student_neutral',
+    text    : { en: 'Thank you for standing up for me. I really appreciate it.', id: 'Terima kasih sudah membelaku. Aku sangat menghargainya.' },
+    next    : null
+  },
+
   /* ══════════ Generic NPC Interactions ══════════ */
 
   student_chat_1: {

@@ -171,6 +171,12 @@ class WorldScene extends Phaser.Scene {
         this.scene.get('UI').stopQTETimer();
         if (this.qteArrow) this.qteArrow.destroy();
         
+        // Update victim dialogue to thank you
+        const victim = this.npcs.find(n => n.key === 'qte_victim');
+        if (victim) {
+            victim.dialogueId = 'victim_thanks';
+        }
+
         // Make the bullies walk out the door
         const bullies = this.npcs.filter(n => n.key === 'bully');
         bullies.forEach((bully, idx) => {
