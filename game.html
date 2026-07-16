@@ -85,6 +85,7 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="top-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
                     <h1 id="welcome-message">Harmonia School</h1>
                     <p>Sebuah game interaktif anti-bullying.</p>
@@ -140,6 +141,15 @@
                 }
             }
         });
+    </script>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if(sidebar) sidebar.classList.toggle('active');
+            if(overlay) overlay.classList.toggle('active');
+        }
     </script>
 </body>
 </html>

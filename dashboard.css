@@ -284,3 +284,94 @@ h1, h2, h3, h4, h5, h6 {
     transition: 0.3s;
 }
 .btn-small:hover { background: var(--secondary-color); }
+
+
+/* Mobile Menu Button & Overlay */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+    margin-right: 1rem;
+    padding: 0;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .dashboard-container {
+        position: relative;
+    }
+    
+    .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        height: 100vh;
+        z-index: 999;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+    
+    .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .top-header {
+        flex-wrap: wrap;
+        padding: 1rem;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+        order: -1;
+    }
+    
+    .greeting {
+        order: 0;
+        flex: 1;
+    }
+    
+    .greeting h1 {
+        font-size: 1.5rem;
+    }
+    
+    .user-profile {
+        order: 1;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+    
+    .avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 2rem;
+    }
+}

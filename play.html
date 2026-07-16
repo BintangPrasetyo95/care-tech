@@ -72,9 +72,86 @@
         box-shadow: 0 0 35px rgba(52, 211, 153, 0.5), inset 0 0 15px rgba(255,255,255,0.9);
       }
     }
+  
+    /* ══════════ Mobile Controls & Fullscreen ══════════ */
+    #mobile-start-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(15, 16, 17, 0.95);
+      z-index: 10000;
+      flex-direction: column; align-items: center; justify-content: center;
+      color: white; text-align: center;
+    }
+    #mobile-start-overlay h2 { font-size: 2rem; margin-bottom: 1rem; color: #38bdf8; }
+    #mobile-start-overlay button {
+      padding: 1rem 2rem; font-size: 1.5rem; background: #2cb67d; color: white;
+      border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+    }
+    @media (hover: none) and (pointer: coarse), (max-width: 900px) {
+      #mobile-start-overlay:not(.hidden) { display: flex; }
+    }
+    
+    #mobile-controls {
+      display: none;
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+    }
+    .mobile-active #mobile-controls { display: block; }
+    
+    .d-pad {
+      position: absolute; bottom: 20px; left: 20px;
+      width: 150px; height: 150px;
+      pointer-events: auto;
+    }
+    .d-btn {
+      position: absolute;
+      width: 50px; height: 50px;
+      background: rgba(255, 255, 255, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: white; font-weight: bold;
+      user-select: none; -webkit-user-select: none;
+    }
+    .d-btn:active, .action-btn:active { background: rgba(255, 255, 255, 0.6); }
+    .d-up { top: 0; left: 50px; }
+    .d-down { bottom: 0; left: 50px; }
+    .d-left { top: 50px; left: 0; }
+    .d-right { top: 50px; right: 0; }
+    
+    .action-btn {
+      position: absolute; bottom: 40px; right: 40px;
+      width: 80px; height: 80px;
+      background: rgba(44, 182, 125, 0.5);
+      border: 2px solid rgba(44, 182, 125, 0.8);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: white; font-weight: bold;
+      pointer-events: auto;
+      user-select: none; -webkit-user-select: none;
+    }
+
   </style>
 </head>
 <body>
+
+  <div id="mobile-start-overlay">
+    <h2>Mobile Mode</h2>
+    <p style="margin-bottom: 2rem;">Game requires Fullscreen and Landscape mode.</p>
+    <button id="btn-start-mobile">Play Game</button>
+  </div>
+
+  <div id="mobile-controls">
+    <div class="d-pad">
+      <div class="d-btn d-up" data-dir="up">▲</div>
+      <div class="d-btn d-down" data-dir="down">▼</div>
+      <div class="d-btn d-left" data-dir="left">◀</div>
+      <div class="d-btn d-right" data-dir="right">▶</div>
+    </div>
+    <div class="action-btn" id="btn-action">A</div>
+  </div>
+
 
   <!-- Pre-loader shown while scripts download -->
   <div id="preloader">
@@ -96,6 +173,72 @@
   <script src="js/scenes/WorldScene.js"></script>
   <script src="js/scenes/UIScene.js"></script>
   <script src="js/main.js"></script>
+
+
+  <script>
+    window.virtualInput = { up: false, down: false, left: false, right: false, actionJustDown: false };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById('btn-start-mobile');
+      const overlay = document.getElementById('mobile-start-overlay');
+      
+      const isMobile = window.matchMedia('(hover: none) and (pointer: coarse), (max-width: 900px)').matches;
+      if (!isMobile) {
+        overlay.classList.add('hidden');
+      }
+      
+      startBtn.addEventListener('click', async () => {
+        try {
+          if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape');
+          }
+        } catch (err) {
+          console.warn('Fullscreen/Orientation lock failed:', err);
+        }
+        overlay.classList.add('hidden');
+        document.body.classList.add('mobile-active');
+      });
+      
+      const bindBtn = (el, key) => {
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); window.virtualInput[key] = true; }, {passive: false});
+        el.addEventListener('touchend', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
+        el.addEventListener('mousedown', (e) => { e.preventDefault(); window.virtualInput[key] = true; });
+        el.addEventListener('mouseup', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
+        el.addEventListener('mouseleave', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
+      };
+      
+      document.querySelectorAll('.d-btn').forEach(btn => bindBtn(btn, btn.getAttribute('data-dir')));
+      
+      const triggerAction = () => {
+        window.virtualInput.actionJustDown = true;
+        const ev = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
+        window.dispatchEvent(ev);
+      };
+
+      const actionBtn = document.getElementById('btn-action');
+      actionBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerAction(); }, {passive: false});
+      actionBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerAction(); });
+
+      // Hide controls during dialogue
+      const checkDialogue = setInterval(() => {
+        if (window.game && window.game.registry) {
+          window.game.registry.events.on('changedata-dialogueActive', (parent, value) => {
+            const controls = document.getElementById('mobile-controls');
+            if (value) {
+              controls.style.display = 'none';
+            } else {
+              controls.style.display = 'block';
+            }
+          });
+          clearInterval(checkDialogue);
+        }
+      }, 200);
+    });
+  </script>
 
 </body>
 </html>

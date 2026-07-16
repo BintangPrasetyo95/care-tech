@@ -54,10 +54,10 @@ class Player {
     let vx = 0;
     let vy = 0;
 
-    if (this.cursors.left.isDown  || this.keyA.isDown) vx = -1;
-    if (this.cursors.right.isDown || this.keyD.isDown) vx =  1;
-    if (this.cursors.up.isDown    || this.keyW.isDown) vy = -1;
-    if (this.cursors.down.isDown  || this.keyS.isDown) vy =  1;
+    if (this.cursors.left.isDown  || this.keyA.isDown || (window.virtualInput && window.virtualInput.left)) vx = -1;
+    if (this.cursors.right.isDown || this.keyD.isDown || (window.virtualInput && window.virtualInput.right)) vx =  1;
+    if (this.cursors.up.isDown    || this.keyW.isDown || (window.virtualInput && window.virtualInput.up)) vy = -1;
+    if (this.cursors.down.isDown  || this.keyS.isDown || (window.virtualInput && window.virtualInput.down)) vy =  1;
 
     // Normalize diagonal speed
     const len = Math.sqrt(vx * vx + vy * vy) || 1;
@@ -92,9 +92,13 @@ class Player {
     this.sensor.setPosition(sx, sy);
   }
 
-  /** Check if player is pressing the interact key this frame */
   isInteracting() {
+    let vAction = false;
+    if (window.virtualInput && window.virtualInput.actionJustDown) {
+      vAction = true;
+      window.virtualInput.actionJustDown = false;
+    }
     return Phaser.Input.Keyboard.JustDown(this.actionKey) ||
-           Phaser.Input.Keyboard.JustDown(this.spaceKey);
+           Phaser.Input.Keyboard.JustDown(this.spaceKey) || vAction;
   }
 }
