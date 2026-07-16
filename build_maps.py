@@ -56,6 +56,9 @@ tiles = {
     'school_wall_itl': (0,0,0,0), 'school_wall_itr': (0,0,0,0),
     'school_wall_ibl': (0,0,0,0), 'school_wall_ibr': (0,0,0,0),
     'school_floor': (0,0,0,0), 'school_floor2': (0,0,0,0),
+    'tc_0_0': (0,0,0,0), 'tc_0_1': (0,0,0,0), 'tc_0_2': (0,0,0,0),
+    'tc_1_0': (0,0,0,0), 'tc_1_1': (0,0,0,0), 'tc_1_2': (0,0,0,0),
+    'tc_2_0': (0,0,0,0), 'tc_2_1': (0,0,0,0), 'tc_2_2': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -76,6 +79,7 @@ try:
     bookshelf_sheet = Image.open('assets/sprites/bookshelf_sprites.png')
     wall_tile = Image.open('assets/sprites/tile_3_0.png')
     school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
+    tc_sheet = Image.open('assets/sprites/table_and_chair.png')
     custom_tiles = {
         'wall': wall_tile,
         'school_wall_tl': school_fw.crop((1*32, 0*32, 2*32, 1*32)),
@@ -93,6 +97,15 @@ try:
         'school_wall_ibr': school_fw.crop((2*32, 4*32, 3*32, 5*32)),
         'school_floor': school_fw.crop((0, 0, 32, 32)),
         'school_floor2': school_fw.crop((0, 32, 32, 64)),
+        'tc_0_0': tc_sheet.crop((0*32, 0*32, 1*32, 1*32)),
+        'tc_0_1': tc_sheet.crop((1*32, 0*32, 2*32, 1*32)),
+        'tc_0_2': tc_sheet.crop((2*32, 0*32, 3*32, 1*32)),
+        'tc_1_0': tc_sheet.crop((0*32, 1*32, 1*32, 2*32)),
+        'tc_1_1': tc_sheet.crop((1*32, 1*32, 2*32, 2*32)),
+        'tc_1_2': tc_sheet.crop((2*32, 1*32, 3*32, 2*32)),
+        'tc_2_0': tc_sheet.crop((0*32, 2*32, 1*32, 3*32)),
+        'tc_2_1': tc_sheet.crop((1*32, 2*32, 2*32, 3*32)),
+        'tc_2_2': tc_sheet.crop((2*32, 2*32, 3*32, 3*32)),
         'grass': garden_sheet.crop((0, 3*32, 32, 4*32)),
         'grass2': garden_sheet.crop((0, 4*32, 32, 5*32)),
         'path': garden_sheet.crop((0, 0, 32, 32)),
@@ -221,7 +234,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r']
+    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r', 'tc_0_0', 'tc_0_1', 'tc_0_2', 'tc_1_0', 'tc_1_1', 'tc_1_2', 'tc_2_0', 'tc_2_1', 'tc_2_2']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]

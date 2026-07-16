@@ -200,7 +200,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    // this._drawDebugGrid();
+    this._drawDebugGrid();
   }
 
   _checkLevel3Ready() {
@@ -358,10 +358,13 @@ class WorldScene extends Phaser.Scene {
       'school_wall_bl': 63, 'school_wall_b': 64, 'school_wall_br': 65,
       'school_wall_itl': 66, 'school_wall_itr': 67,
       'school_wall_ibl': 68, 'school_wall_ibr': 69,
-      'school_floor': 70, 'school_floor2': 71
+      'school_floor': 70, 'school_floor2': 71,
+      'tc_0_0': 72, 'tc_0_1': 73, 'tc_0_2': 74,
+      'tc_1_0': 75, 'tc_1_1': 76, 'tc_1_2': 77,
+      'tc_2_0': 78, 'tc_2_1': 79, 'tc_2_2': 80
     };
     
-    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b'];
+    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_0_1', 'tc_1_0', 'tc_1_1', 'tc_1_2', 'tc_2_1'];
 
     const mapData = this._getMapData(mapKey);
 
@@ -510,6 +513,21 @@ class WorldScene extends Phaser.Scene {
         }
       }
     }
+
+    // Custom override: make walls beside doors look recessed
+    for (let r = 0; r < H; r++) {
+      for (let c = 0; c < W; c++) {
+        if (m[r][c] === 'door_big_l' && c + 1 < W && m[r][c+1] === 'door_big_r') {
+          if (r === 0) {
+            if (c > 0) m[r][c-1] = 'school_wall_ibr';
+            if (c + 2 < W) m[r][c+2] = 'school_wall_ibl';
+          } else {
+            if (c > 0) m[r][c-1] = 'school_wall_itl';
+            if (c + 2 < W) m[r][c+2] = 'school_wall_itr';
+          }
+        }
+      }
+    }
   }
 
   _getMapData(key) {
@@ -593,6 +611,11 @@ class WorldScene extends Phaser.Scene {
       m[1][15] = 'school_floor'; m[1][16] = 'school_floor';
       m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
       this._autotileSchoolWalls(m);
+      
+      // Manual texture overrides for corridor
+      m[0][0] = 'school_wall_itr';
+      m[0][19] = 'school_wall_itl';
+      
       return m;
     }
 
@@ -646,11 +669,9 @@ class WorldScene extends Phaser.Scene {
         { r: 8, c: 11 }, { r: 6, c: 16 }, { r: 11, c: 8 }
       ];
       tablePositions.forEach(({ r, c }) => {
-        m[r][c] = 'table';
-        if (r - 1 >= 1) m[r - 1][c] = 'chair';
-        if (r + 1 < H - 1) m[r + 1][c] = 'chair';
-        if (c - 1 >= 1 && m[r][c - 1] === 'school_floor') m[r][c - 1] = 'chair';
-        if (c + 1 < W - 1 && m[r][c + 1] === 'school_floor') m[r][c + 1] = 'chair';
+        m[r - 1][c - 1] = 'tc_0_0'; m[r - 1][c] = 'tc_0_1'; m[r - 1][c + 1] = 'tc_0_2';
+        m[r][c - 1] = 'tc_1_0';     m[r][c] = 'tc_1_1';     m[r][c + 1] = 'tc_1_2';
+        m[r + 1][c - 1] = 'tc_2_0'; m[r + 1][c] = 'tc_2_1'; m[r + 1][c + 1] = 'tc_2_2';
       });
       for (let c = 2; c < 8; c++) m[1][c] = 'desk';
       for (let r = 2; r < H - 1; r++) {
