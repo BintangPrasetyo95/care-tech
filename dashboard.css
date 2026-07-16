@@ -56,7 +56,27 @@ h1, h2, h3, h4, h5, h6 {
     padding: 2rem 1.5rem;
     background: #FFFFFF;
     border-right: 1px solid #Eef2f5;
+    overflow-y: auto;
 }
+
+/* Custom Scrollbar for Sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
 
 .sidebar-header {
     display: flex;

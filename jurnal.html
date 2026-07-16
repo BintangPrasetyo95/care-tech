@@ -9,6 +9,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .btn-calendar-nav {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-calendar-nav:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            color: #334155;
+            border-color: #94a3b8;
+        }
+        .btn-calendar-nav:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -102,9 +130,9 @@
             <div class="content-grid">
                 <div class="dashboard-card wide-card glass-panel">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <button id="prev-month" class="btn-start" style="padding: 5px 15px; cursor: pointer; border-radius: 6px; font-size: 0.9rem;">&lt; Sebelumnya</button>
+                        <button id="prev-month" class="btn-calendar-nav"><span>&larr;</span> Sebelumnya</button>
                         <h2 id="calendar-title" style="margin: 0; color: var(--primary-color);">Bulan Tahun</h2>
-                        <button id="next-month" class="btn-start" style="padding: 5px 15px; cursor: pointer; border-radius: 6px; font-size: 0.9rem;">Selanjutnya &gt;</button>
+                        <button id="next-month" class="btn-calendar-nav">Selanjutnya <span>&rarr;</span></button>
                     </div>
                     
                     <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; margin-bottom: 1rem;">
