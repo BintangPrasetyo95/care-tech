@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTech - AI Chatbot</title>
+    <link rel="icon" href="assets/logo-care-tech.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid #E8EDF4;
+        }
+        .chat-header {
+            padding: 1.5rem;
+            background: #F4F7FB;
+            border-bottom: 1px solid #E8EDF4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h2 { color: #2D3748; margin: 0; font-size: 1.2rem; }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: #fcfcfc;
+        }
+        .message {
+            max-width: 80%;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #4FC3F7;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .message.ai {
+            align-self: flex-start;
+            background: #F4F7FB;
+            color: #2D3748;
+            border: 1px solid #E8EDF4;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-input-area {
+            padding: 1.5rem;
+            background: #fff;
+            border-top: 1px solid #E8EDF4;
+            display: flex;
+            gap: 1rem;
+        }
+        .chat-input {
+            flex-grow: 1;
+            padding: 1rem;
+            border: 1px solid #E8EDF4;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .chat-input:focus { border-color: #4FC3F7; }
+        .btn-send {
+            background: #4FC3F7;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-send:hover { background: #29b6f6; }
+        .btn-send:disabled { background: #b3e5fc; cursor: not-allowed; }
+        
+        #api-key-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 2rem;
+            text-align: center;
+        }
+        #api-key-panel input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.8rem 1rem;
+            border: 1px solid #E8EDF4;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+            outline: none;
+        }
+        #api-key-panel input:focus { border-color: #4FC3F7; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
+                <h2>CareTech</h2>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="section-title">Menu Utama</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item">
+                        <a href="dashboard.html">
+                            <span class="icon">🏠</span>
+                            <span class="text">Beranda</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="jurnal.html">
+                            <span class="icon">📓</span>
+                            <span class="text">Jurnal Harian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="penilaian.html">
+                            <span class="icon">⭐️</span>
+                            <span class="text">Penilaian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item active">
+                        <a href="chat.html">
+                            <span class="icon">🤖</span>
+                            <span class="text">AI Chatbot</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section hiburan-section">
+                <h3 class="section-title">Eksplorasi</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item ">
+                        <a href="komik.html">
+                            <span class="icon">📖</span>
+                            <span class="text">Komik Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown ">
+                        <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
+                            <span class="icon">🎮</span>
+                            <span class="text">Game</span>
+                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="pretest.html">Pretest</a></li>
+                            <li><a href="game.html">Game</a></li>
+                            <li><a href="posttest.html">Posttest</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Evaluasi</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="greeting">
+                    <h1>Teman Curhat AI</h1>
+                    <p>Luapkan perasaanmu di sini, aku siap mendengarkan.</p>
+                </div>
+                <div class="user-profile">
+                    <img class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="Profile">
+                </div>
+            </header>
+
+            <div style="padding: 1.5rem; height: 100%;">
+                <div class="chat-container">
+                    
+                    <!-- API Key Panel -->
+                    <div id="api-key-panel">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🤖</div>
+                        <h2>Masukkan GEMINI API Link / Key</h2>
+                        <p style="color: #64748b; max-width: 500px; margin-top: 0.5rem;">Untuk menggunakan chatbot ini, kamu memerlukan API Key dari Google Gemini. Masukkan API Key kamu di bawah ini (Key kamu hanya disimpan di browsermu dan aman).</p>
+                        <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                        <button class="btn-send" style="padding: 0.8rem 2rem;" onclick="saveApiKey()">Mulai Curhat</button>
+                    </div>
+
+                    <!-- Chat Interface -->
+                    <div id="chat-interface" style="display: none; height: 100%; flex-direction: column;">
+                        <div class="chat-header">
+                            <h2>Sesi Curhat</h2>
+                            <button class="btn-send" style="background: #f1f5f9; color: #475569; padding: 0.5rem 1rem;" onclick="clearApiKey()">Reset API Key</button>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message ai">Halo! Aku adalah teman AI-mu. Apa yang sedang kamu rasakan atau pikirkan hari ini? Jangan ragu untuk curhat ya!</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ketik pesanmu di sini..." onkeypress="handleKeyPress(event)"></textarea>
+                            <button class="btn-send" id="btn-send" onclick="sendMessage()">Kirim</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if(sidebar) sidebar.classList.toggle('active');
+            if(overlay) overlay.classList.toggle('active');
+        }
+
+        let apiKey = localStorage.getItem('caretech_gemini_key');
+        let chatHistory = [];
+
+        function init() {
+            if (apiKey) {
+                document.getElementById('api-key-panel').style.display = 'none';
+                document.getElementById('chat-interface').style.display = 'flex';
+            } else {
+                document.getElementById('api-key-panel').style.display = 'flex';
+                document.getElementById('chat-interface').style.display = 'none';
+            }
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('api-key-input').value.trim();
+            if (input) {
+                apiKey = input;
+                localStorage.setItem('caretech_gemini_key', apiKey);
+                init();
+            } else {
+                alert("Masukkan API Key yang valid!");
+            }
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('caretech_gemini_key');
+            apiKey = null;
+            chatHistory = [];
+            document.getElementById('chat-messages').innerHTML = '<div class="message ai">Halo! Aku adalah teman AI-mu. Apa yang sedang kamu rasakan atau pikirkan hari ini? Jangan ragu untuk curhat ya!</div>';
+            init();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addMessageToUI(text, sender) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            // Basic Markdown to HTML (bold and linebreaks)
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            msgDiv.innerHTML = formattedText;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('chat-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            // 1. Add user message
+            addMessageToUI(text, 'user');
+            inputEl.value = '';
+            
+            // Add to history
+            chatHistory.push({
+                "role": "user",
+                "parts": [{ "text": text }]
+            });
+
+            const btn = document.getElementById('btn-send');
+            btn.disabled = true;
+            btn.innerText = 'Mengetik...';
+
+            try {
+                const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, dan mendukung. Namamu adalah Teman AI. Dengarkan keluh kesah pengguna dan berikan respons yang suportif dan tidak menghakimi.";
+                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemInstruction }] },
+                        contents: chatHistory
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message || "Gagal menghubungi Gemini API.");
+                }
+
+                if (data.candidates && data.candidates[0].content) {
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    addMessageToUI(aiText, 'ai');
+                    chatHistory.push({
+                        "role": "model",
+                        "parts": [{ "text": aiText }]
+                    });
+                } else {
+                    throw new Error("Respons tidak valid dari Gemini API.");
+                }
+            } catch (error) {
+                console.error(error);
+                addMessageToUI(`**Error:** ${error.message} (Pastikan API Key benar dan kamu terkoneksi ke internet)`, 'ai');
+                // Remove last user message from history so they can retry
+                chatHistory.pop();
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Kirim';
+            }
+        }
+
+        // Initialize view
+        init();
+    </script>
+</body>
+</html>
