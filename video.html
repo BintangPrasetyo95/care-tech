@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTech - Modul Digital</title>
+    <link rel="icon" href="assets/logo-care-tech.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
+                <h2>CareTech</h2>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">Menu Utama</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item ">
+                        <a href="dashboard.html">
+                            <span class="icon">🏠</span>
+                            <span class="text">Beranda</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="jurnal.html">
+                            <span class="icon">📓</span>
+                            <span class="text">Jurnal Harian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="penilaian.html">
+                            <span class="icon">⭐️</span>
+                            <span class="text">Penilaian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="chat.html">
+                            <span class="icon">🤖</span>
+                            <span class="text">ESA AI</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section hiburan-section">
+                <h3 class="section-title">Eksplorasi</h3>
+                <ul class="sidebar-menu">
+                    <li class="menu-item ">
+                        <a href="komik.html">
+                            <span class="icon">📖</span>
+                            <span class="text">Komik Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item active">
+                        <a href="video.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Video Pembelajaran</span>
+                        </a>
+                    </li>
+                    <li class="menu-item ">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown ">
+                        <a href="javascript:void(0)" class="dropdown-toggle"
+                            onclick="this.parentElement.classList.toggle('active-dropdown')">
+                            <span class="icon">🎮</span>
+                            <span class="text">Game</span>
+                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="pretest.html">Pretest</a></li>
+                            <li><a href="game.html">Game</a></li>
+                            <li><a href="posttest.html">Posttest</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="greeting">
+                    <h1>Video Pembelajaran</h1>
+                    <p>Tonton video materi edukasi interaktif.</p>
+                </div>
+                <div class="user-profile">
+                    <img class="avatar"
+                        src="./assets/profile.jpg"
+                        alt="Profile">
+                </div>
+            </header>
+
+            <div class="content-grid" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- YouTube Embed Video -->
+                <div class="dashboard-card glass-panel wide-card">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <h3 style="color: #2D3748; margin: 0; font-size: 1.4rem;">Mengenal Perundungan (Bullying)</h3>
+                        <p style="color: #4A5568; margin-bottom: 0.5rem;">Mari pelajari cara mencegah perundungan agar lingkungan sekolah menjadi lebih aman dan nyaman untuk semua.</p>
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <iframe src="https://www.youtube.com/embed/BF4hRjaLHNE?si=q_iZ2xxEUOxaHyFp" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- YouTube Embed Video 2 -->
+                <div class="dashboard-card glass-panel wide-card">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <h3 style="color: #2D3748; margin: 0; font-size: 1.4rem;">Kesehatan Mental lebih dari "Ayo Semangat!"</h3>
+                        <p style="color: #4A5568; margin-bottom: 0.5rem;">Video pembelajaran mengenai cara menumbuhkan rasa empati terhadap teman.</p>
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <iframe src="https://www.youtube.com/embed/B0orrtwOwLE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locked Video 2 -->
+                <div class="dashboard-card glass-panel wide-card" style="position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 16px; backdrop-filter: blur(2px);">
+                        <div style="text-align: center;">
+                            <span style="font-size: 3.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">🔒</span>
+                            <p style="font-weight: 700; color: #2D3748; margin-top: 1rem; font-size: 1.2rem;">Video Terkunci</p>
+                            <p style="color: #4A5568; font-size: 0.9rem;">Selesaikan kuis untuk membuka video ini.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <h3 style="color: #2D3748; margin: 0; font-size: 1.4rem;">Menjadi Teman yang Baik</h3>
+                        <p style="color: #4A5568; margin-bottom: 0.5rem;">Tips dan trik untuk menjadi siswa yang suportif dan peduli dengan sesama.</p>
+                        <div style="background: #e2e8f0; width: 100%; padding-bottom: 56.25%; border-radius: 12px;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if(sidebar) sidebar.classList.toggle('active');
+            if(overlay) overlay.classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>
