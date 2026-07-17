@@ -59,6 +59,10 @@ tiles = {
     'tc_0_0': (0,0,0,0), 'tc_0_1': (0,0,0,0), 'tc_0_2': (0,0,0,0),
     'tc_1_0': (0,0,0,0), 'tc_1_1': (0,0,0,0), 'tc_1_2': (0,0,0,0),
     'tc_2_0': (0,0,0,0), 'tc_2_1': (0,0,0,0), 'tc_2_2': (0,0,0,0),
+    'caf_srv_0_0': (0,0,0,0), 'caf_srv_0_1': (0,0,0,0), 'caf_srv_0_2': (0,0,0,0),
+    'caf_srv_0_3': (0,0,0,0), 'caf_srv_0_4': (0,0,0,0), 'caf_srv_0_5': (0,0,0,0),
+    'caf_srv_1_0': (0,0,0,0), 'caf_srv_1_1': (0,0,0,0), 'caf_srv_1_2': (0,0,0,0),
+    'caf_srv_1_3': (0,0,0,0), 'caf_srv_1_4': (0,0,0,0), 'caf_srv_1_5': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -80,6 +84,7 @@ try:
     wall_tile = Image.open('assets/sprites/tile_3_0.png')
     school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
     tc_sheet = Image.open('assets/sprites/table_and_chair.png')
+    caf_srv_sheet = Image.open('assets/sprites/cafeteria_service.png')
     custom_tiles = {
         'wall': wall_tile,
         'school_wall_tl': school_fw.crop((1*32, 0*32, 2*32, 1*32)),
@@ -145,6 +150,18 @@ try:
         'door_big_r': big_door_sheet.crop((32, 0, 64, 32)),
         'bookshelf_t': bookshelf_sheet.crop((0, 0, 32, 32)),
         'bookshelf_b': bookshelf_sheet.crop((0, 32, 32, 64)),
+        'caf_srv_0_0': caf_srv_sheet.crop((0*32, 0*32, 1*32, 1*32)),
+        'caf_srv_0_1': caf_srv_sheet.crop((1*32, 0*32, 2*32, 1*32)),
+        'caf_srv_0_2': caf_srv_sheet.crop((2*32, 0*32, 3*32, 1*32)),
+        'caf_srv_0_3': caf_srv_sheet.crop((3*32, 0*32, 4*32, 1*32)),
+        'caf_srv_0_4': caf_srv_sheet.crop((4*32, 0*32, 5*32, 1*32)),
+        'caf_srv_0_5': caf_srv_sheet.crop((5*32, 0*32, 6*32, 1*32)),
+        'caf_srv_1_0': caf_srv_sheet.crop((0*32, 1*32, 1*32, 2*32)),
+        'caf_srv_1_1': caf_srv_sheet.crop((1*32, 1*32, 2*32, 2*32)),
+        'caf_srv_1_2': caf_srv_sheet.crop((2*32, 1*32, 3*32, 2*32)),
+        'caf_srv_1_3': caf_srv_sheet.crop((3*32, 1*32, 4*32, 2*32)),
+        'caf_srv_1_4': caf_srv_sheet.crop((4*32, 1*32, 5*32, 2*32)),
+        'caf_srv_1_5': caf_srv_sheet.crop((5*32, 1*32, 6*32, 2*32)),
     }
 except Exception as e:
     custom_tiles = {}
@@ -234,7 +251,7 @@ def make_tiled_json(width, height, ground_layer, object_layer):
 W, H = 20, 15
 
 def is_solid(name):
-    return name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r', 'tc_0_0', 'tc_0_1', 'tc_0_2', 'tc_1_0', 'tc_1_1', 'tc_1_2', 'tc_2_0', 'tc_2_1', 'tc_2_2']
+    return name.startswith('caf_srv_') or name in ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'bush_tl', 'bush_t', 'bush_tr', 'bush_l', 'bush_r', 'bush_bl', 'bush_b', 'bush_br', 'door_big_l', 'door_big_r', 'tc_0_0', 'tc_0_1', 'tc_0_2', 'tc_1_0', 'tc_1_1', 'tc_1_2', 'tc_2_0', 'tc_2_1', 'tc_2_2']
 
 def build_layers(base_grid, fallback='grass'):
     ground = [['empty']*W for _ in range(H)]
@@ -367,7 +384,11 @@ for tp in [(3,4), (3,11), (8,4), (8,11), (6,16), (11,8)]:
     if r+1 < H-1: caf_grid[r+1][c] = 'chair'
     if c-1 >= 1 and caf_grid[r][c-1] == 'school_floor': caf_grid[r][c-1] = 'chair'
     if c+1 < W-1 and caf_grid[r][c+1] == 'school_floor': caf_grid[r][c+1] = 'chair'
-for c in range(2, 8): caf_grid[1][c] = 'desk'
+
+for c in range(2, 8):
+    caf_grid[1][c] = f'caf_srv_0_{c-2}'
+    caf_grid[2][c] = f'caf_srv_1_{c-2}'
+
 for r in range(2, H-1):
     for c in range(1, W-1):
         if caf_grid[r][c] == 'school_floor' and (r+c)%4 == 0: caf_grid[r][c] = 'school_floor2'
