@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - AI Chatbot</title>
+    <title>CareTech - ESA AI</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -215,7 +215,7 @@
                     <li class="menu-item active">
                         <a href="chat.html">
                             <span class="icon">🤖</span>
-                            <span class="text">AI Chatbot</span>
+                            <span class="text">ESA AI</span>
                         </a>
                     </li>
                 </ul>
@@ -262,11 +262,11 @@
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
-                    <h1>Teman Curhat AI</h1>
+                    <h1>Emotional Support Assistance</h1>
                     <p>Luapkan perasaanmu di sini, aku siap mendengarkan.</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="Profile">
+                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
                 </div>
             </header>
 
@@ -279,7 +279,7 @@
                         <h2>Masukkan GEMINI API Link / Key</h2>
                         <p style="color: #64748b; max-width: 500px; margin-top: 0.5rem;">Untuk menggunakan chatbot ini, kamu memerlukan API Key dari Google Gemini. Masukkan API Key kamu di bawah ini (Key kamu hanya disimpan di browsermu dan aman).</p>
                         <input type="password" id="api-key-input" placeholder="AIzaSy...">
-                        <button class="btn-send" style="padding: 0.8rem 2rem;" onclick="saveApiKey()">Mulai Curhat</button>
+                        <button class="btn-send" style="padding: 0.8rem 2rem;" onclick="savetest()">Mulai Curhat</button>
                     </div>
 
                     <!-- Chat Interface -->
@@ -287,9 +287,9 @@
                         <div class="chat-header">
                             <div class="ai-title-wrapper">
                                 <div class="ai-status-dot"></div>
-                                <h2>Teman AI</h2>
+                                <h2>ESA (Emotional Support Assistance)</h2>
                             </div>
-                            <button class="btn-send" style="background: #f1f5f9; color: #475569; padding: 0.5rem 1rem;" onclick="clearApiKey()">Reset API Key</button>
+                            <button class="btn-send" style="background: #f1f5f9; color: #475569; padding: 0.5rem 1rem;" onclick="cleartest()">Reset Obrolan</button>
                         </div>
                         <div class="chat-messages" id="chat-messages">
                             <div class="message ai">Halo! Aku adalah teman AI-mu. Apa yang sedang kamu rasakan atau pikirkan hari ini? Jangan ragu untuk curhat ya!</div>
@@ -313,36 +313,21 @@
             if(overlay) overlay.classList.toggle('active');
         }
 
-        let apiKey = localStorage.getItem('caretech_gemini_key');
+        let test = "AQ.Ab8RN6Ip5DK-DUolsm6g999tI2CqB3rPvSvdNhNnS_jVMWL9XA";
         let chatHistory = [];
 
         function init() {
-            if (apiKey) {
-                document.getElementById('api-key-panel').style.display = 'none';
-                document.getElementById('chat-interface').style.display = 'flex';
-            } else {
-                document.getElementById('api-key-panel').style.display = 'flex';
-                document.getElementById('chat-interface').style.display = 'none';
-            }
+            document.getElementById('api-key-panel').style.display = 'none';
+            document.getElementById('chat-interface').style.display = 'flex';
         }
 
-        function saveApiKey() {
-            const input = document.getElementById('api-key-input').value.trim();
-            if (input) {
-                apiKey = input;
-                localStorage.setItem('caretech_gemini_key', apiKey);
-                init();
-            } else {
-                alert("Masukkan API Key yang valid!");
-            }
+        function savetest() {
+            // Unused when hardcoded
         }
 
-        function clearApiKey() {
-            localStorage.removeItem('caretech_gemini_key');
-            apiKey = null;
+        function cleartest() {
             chatHistory = [];
             document.getElementById('chat-messages').innerHTML = '<div class="message ai">Halo! Aku adalah teman AI-mu. Apa yang sedang kamu rasakan atau pikirkan hari ini? Jangan ragu untuk curhat ya!</div>';
-            init();
         }
 
         function handleKeyPress(e) {
@@ -384,9 +369,9 @@
             btn.innerText = 'Mengetik...';
 
             try {
-                const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, dan mendukung. Namamu adalah Teman AI. Dengarkan keluh kesah pengguna dan berikan respons yang suportif dan tidak menghakimi.";
+                const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, dan mendukung. Namamu adalah Esa (Emotional Support Assistance). Dengarkan keluh kesah pengguna dan berikan respons yang suportif dan tidak menghakimi, dan tidak terlalu panjang.";
                 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${test}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -398,7 +383,7 @@
                 const data = await response.json();
                 
                 if (data.error) {
-                    throw new Error(data.error.message || "Gagal menghubungi Gemini API.");
+                    throw new Error(data.error.message || "Gagal menghubungkan.");
                 }
 
                 if (data.candidates && data.candidates[0].content) {
