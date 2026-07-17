@@ -200,7 +200,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    this._drawDebugGrid();
+    // this._drawDebugGrid();
   }
 
   _checkLevel3Ready() {
@@ -364,7 +364,7 @@ class WorldScene extends Phaser.Scene {
       'tc_2_0': 78, 'tc_2_1': 79, 'tc_2_2': 80
     };
     
-    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_0_1', 'tc_1_0', 'tc_1_1', 'tc_1_2', 'tc_2_1'];
+    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_1_1'];
 
     const mapData = this._getMapData(mapKey);
 
@@ -665,8 +665,16 @@ class WorldScene extends Phaser.Scene {
       for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
       const tablePositions = [
-        { r: 3, c: 4 }, { r: 3, c: 11 }, { r: 8, c: 4 }, 
-        { r: 8, c: 11 }, { r: 6, c: 16 }, { r: 11, c: 8 }
+        // Left side (organic layout)
+        { r: 4, c: 3 }, { r: 7, c: 3 }, // Pushed together vertically
+        { r: 5, c: 8 }, 
+        { r: 9, c: 7 }, 
+        { r: 12, c: 4 }, { r: 12, c: 8 }, 
+        // Right side (organic layout)
+        { r: 3, c: 17 },
+        { r: 5, c: 14 }, { r: 5, c: 17 }, // Pushed together horizontally
+        { r: 8, c: 13 }, { r: 9, c: 17 },
+        { r: 12, c: 14 }, { r: 12, c: 17 }
       ];
       tablePositions.forEach(({ r, c }) => {
         m[r - 1][c - 1] = 'tc_0_0'; m[r - 1][c] = 'tc_0_1'; m[r - 1][c + 1] = 'tc_0_2';
@@ -778,13 +786,13 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (mapKey === 'cafeteria') {
-      this.npcs.push(new NPC(this, 14 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+      this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'student_chat_2', { name: 'Student' }));
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
         'player', 'student_chat_1', { name: 'Nakula' }));
         
       if (!this.registry.get('level5_complete')) {
-        const vx = 15 * TILE + TILE / 2;
+        const vx = 11 * TILE + TILE / 2;
         const vy = 3 * TILE + TILE / 2;
         
         const victim = new NPC(this, vx, vy,
