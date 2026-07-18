@@ -21,15 +21,19 @@ body {
     background: #F9F9F9;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     color: var(--text-color);
-    overflow: hidden;
+    overflow-x: hidden;
     position: relative;
     background: linear-gradient(to right, rgba(15, 44, 89, 0.95) 0%, rgba(15, 44, 89, 0.7) 60%, rgba(15, 44, 89, 0) 100%), url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+body::before, body::after {
+    content: "";
+    flex: 1;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -66,6 +70,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 10;
     width: 90%;
     max-width: 600px;
+    margin: 2rem auto;
 }
 
 .glass-card {

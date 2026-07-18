@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
@@ -100,7 +101,7 @@
             </header>
 
             <div class="content-grid" style="display: flex; gap: 1.5rem; align-items: stretch; flex-wrap: wrap;">
-                <div class="dashboard-card wide-card glass-panel" style="flex: 0 0 calc(60% - 0.75rem); margin-bottom: 0;">
+                <div class="dashboard-card wide-card glass-panel" style="flex: 1 1 400px; margin-bottom: 0;">
                     <h3>Papan Peringkat & Nilai</h3>
                     <p style="color:#777; margin-bottom:1rem;">Kumpulkan poin dari game dan modul untuk meningkatkan nilaimu!</p>
                     
@@ -125,10 +126,23 @@
                     </div>
                 </div>
 
-                <div class="dashboard-card wide-card glass-panel" style="flex: 0 0 calc(40% - 0.75rem); margin-top: 0;">
+                <div class="dashboard-card wide-card glass-panel" style="flex: 1 1 300px; margin-top: 0;">
                     <h3>Grafik Aktivitas Jurnal</h3>
                     <p style="color:#777; margin-bottom:1rem;">Perkembangan pengisian jurnal harianmu.</p>
-                    <canvas id="journalGraph"></canvas>
+                    <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="journalGraph"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New row for Pretest vs Posttest Graph -->
+            <div class="content-grid" style="display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                <div class="dashboard-card wide-card glass-panel" style="flex: 1 1 100%;">
+                    <h3>Grafik Pretest & Posttest</h3>
+                    <p style="color:#777; margin-bottom:1rem;">Perbandingan nilai sebelum dan sesudah materi.</p>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="prepostGraph"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -165,7 +179,7 @@
     <!-- Chart.js for rendering the graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('journalGraph').getContext('2d');
+        const ctxJournal = document.getElementById('journalGraph').getContext('2d');
         
         // Pemetaan nilai ke mood
         const moodLabels = {
@@ -175,7 +189,7 @@
             4: 'Happy'
         };
 
-        const journalGraph = new Chart(ctx, {
+        const journalGraph = new Chart(ctxJournal, {
             type: 'line',
             data: {
                 labels: ['10 Jul', '11 Jul', '12 Jul', '13 Jul', '14 Jul', '15 Jul', '16 Jul'],
@@ -194,6 +208,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'top',
@@ -224,6 +239,48 @@
                 }
             }
         });
+
+        // Grafik Pretest & Posttest
+        const ctxPrepost = document.getElementById('prepostGraph').getContext('2d');
+        const prepostGraph = new Chart(ctxPrepost, {
+            type: 'bar',
+            data: {
+                labels: ['Materi 1', 'Materi 2', 'Materi 3', 'Materi 4'],
+                datasets: [
+                    {
+                        label: 'Pretest',
+                        data: [40, 50, 30, 45],
+                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Posttest',
+                        data: [85, 90, 75, 88],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
     </script>
 
     <script>
@@ -236,3 +293,4 @@
     </script>
 </body>
 </html>
+

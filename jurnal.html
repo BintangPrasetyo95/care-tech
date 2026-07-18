@@ -39,6 +39,7 @@
     </style>
 </head>
 <body>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
@@ -160,7 +161,36 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+            let allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+            
+            if (allReflections.length === 0) {
+                const today = new Date();
+                const feelings = ["senang", "sedih", "marah", "biasa"];
+                const notes = [
+                    "Hari ini cukup menyenangkan dan produktif.", 
+                    "Sedikit sedih karena ada masalah kecil.", 
+                    "Agak kesal dengan tugas yang menumpuk.", 
+                    "Hari yang biasa saja, tidak ada yang spesial.",
+                    "Sangat gembira karena bertemu teman lama!",
+                    "Merasa lelah setelah seharian beraktivitas."
+                ];
+                
+                // Generate data for the past 45 days up to today
+                for (let i = 45; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - i);
+                    
+                    // 85% chance to have an entry on any given day
+                    if (Math.random() > 0.15) {
+                        allReflections.push({
+                            date: d.toISOString(),
+                            feeling: feelings[Math.floor(Math.random() * feelings.length)],
+                            feeling_notes: notes[Math.floor(Math.random() * notes.length)]
+                        });
+                    }
+                }
+                localStorage.setItem('caretech_reflections', JSON.stringify(allReflections));
+            }
             
             // Map entries by YYYY-MM-DD
             const reflectionsByDate = {};
@@ -285,3 +315,4 @@
     </script>
 </body>
 </html>
+
