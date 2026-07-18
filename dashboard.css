@@ -395,3 +395,33 @@ h1, h2, h3, h4, h5, h6 {
         font-size: 2rem;
     }
 }
+
+@media (max-width: 600px) {
+    /* Fix inline flex containers on mobile */
+    .dashboard-card > div[style*="display: flex"], .dashboard-card > div[style*="display:flex"] {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1.5rem !important;
+    }
+    .dashboard-card > div > div > svg {
+        transform: rotate(90deg);
+    }
+    /* Reduce paddings */
+    .dashboard-card.wide-card {
+        padding: 1.5rem !important;
+    }
+}
+
+@media (max-width: 600px) {
+    #calendar-grid {
+        gap: 2px !important;
+        font-size: 0.85rem;
+    }
+    #calendar-grid > div {
+        padding: 5px !important;
+        min-height: 50px !important;
+    }
+    #calendar-grid > div > div:nth-child(2) {
+        font-size: 1.3rem !important;
+    }
+}
