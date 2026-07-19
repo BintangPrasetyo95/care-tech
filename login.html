@@ -12,8 +12,7 @@
     <style>
         .login-section {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             min-height: 100vh;
             padding: 8rem 5% 3rem 5%;
             background: linear-gradient(to right, rgba(15, 44, 89, 0.8), rgba(15, 44, 89, 0.8)), url('https://images.unsplash.com/photo-1758273241086-f3585ef8c2f8?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
@@ -22,10 +21,16 @@
             position: relative;
             z-index: 10;
         }
+
+        .login-section::before, .login-section::after {
+            content: "";
+            flex: 1;
+        }
         
         .login-card {
             width: 100%;
             max-width: 400px;
+            margin: 2rem auto;
             padding: 3rem 2rem;
         }
 
@@ -67,6 +72,18 @@
             border: none;
             cursor: pointer;
             margin-top: 1rem;
+        }
+        
+        @media (max-width: 600px) {
+            .login-section {
+                padding: 6rem 5% 2rem 5%;
+            }
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+            .login-card h2 {
+                font-size: 1.6rem;
+            }
         }
     </style>
 </head>
