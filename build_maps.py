@@ -83,6 +83,7 @@ try:
     bookshelf_sheet = Image.open('assets/sprites/bookshelf_sprites.png')
     wall_tile = Image.open('assets/sprites/tile_3_0.png')
     school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
+    lush_grass = Image.open('assets/sprites/custom_lush_grass.png')
     tc_sheet = Image.open('assets/sprites/table_and_chair.png')
     caf_srv_sheet = Image.open('assets/sprites/cafeteria_service.png')
     custom_tiles = {
@@ -268,49 +269,72 @@ def build_layers(base_grid, fallback='grass'):
     return ground, objs
 
 # 1. Garden
-garden_grid = [['grass' if (r+c)%7 != 0 else 'grass2' for c in range(W)] for r in range(H)]
-for c in range(W):
+W_garden, H_garden = 40, 15
+offset = 10
+garden_grid = [['grass' if (r+c)%7 != 0 else 'grass2' for c in range(W_garden)] for r in range(H_garden)]
+for c in range(W_garden):
     garden_grid[0][c] = 'wall'
-    garden_grid[H-1][c] = 'wall'
-for r in range(H):
+    garden_grid[H_garden-1][c] = 'wall'
+for r in range(H_garden):
     garden_grid[r][0] = 'wall'
-    garden_grid[r][W-1] = 'wall'
+    garden_grid[r][W_garden-1] = 'wall'
 
-for c in range(2, 18): garden_grid[7][c] = 'path'
-for r in range(0, 7): garden_grid[r][10] = 'path'
+for c in range(2, 18): garden_grid[7][c + offset] = 'path'
+for r in range(0, 7): garden_grid[r][10 + offset] = 'path'
 
-garden_grid[7][2] = 'path_1_3'
-garden_grid[8][2] = 'path_1_4'
-for c in range(3, 10): garden_grid[7][c] = 'path_2_2'
-for c in range(3, 17): garden_grid[8][c] = 'path_2_0'
+garden_grid[7][2 + offset] = 'path_1_3'
+garden_grid[8][2 + offset] = 'path_1_4'
+for c in range(3, 10): garden_grid[7][c + offset] = 'path_2_2'
+for c in range(3, 17): garden_grid[8][c + offset] = 'path_2_0'
 
-garden_grid[8][17] = 'path_2_4'
-garden_grid[7][17] = 'path_2_3'
-for c in range(12, 17): garden_grid[7][c] = 'path_2_2'
-for r in range(0, 7): garden_grid[r][10] = 'path_3_1'
-for r in range(0, 7): garden_grid[r][11] = 'path_1_1'
-garden_grid[7][10] = 'path_3_2'
-garden_grid[7][11] = 'path_1_2'
-garden_grid[3][3] = 'grass_var1'
-garden_grid[3][4] = 'grass_var2'
-garden_grid[4][3] = 'grass_var1'
-garden_grid[11][15] = 'grass_var2'
-garden_grid[11][16] = 'grass_var1'
-garden_grid[12][16] = 'grass_var2'
+garden_grid[8][17 + offset] = 'path_2_4'
+garden_grid[7][17 + offset] = 'path_2_3'
+for c in range(12, 17): garden_grid[7][c + offset] = 'path_2_2'
+for r in range(0, 7): garden_grid[r][10 + offset] = 'path_3_1'
+for r in range(0, 7): garden_grid[r][11 + offset] = 'path_1_1'
+garden_grid[7][10 + offset] = 'path_3_2'
+garden_grid[7][11 + offset] = 'path_1_2'
+garden_grid[3][3 + offset] = 'grass_var1'
+garden_grid[3][4 + offset] = 'grass_var2'
+garden_grid[4][3 + offset] = 'grass_var1'
+garden_grid[11][15 + offset] = 'grass_var2'
+garden_grid[11][16 + offset] = 'grass_var1'
+garden_grid[12][16 + offset] = 'grass_var2'
 
-for r, c in [(2,2), (2,17), (10,1), (4,15), (10,5), (6,5), (6,14), (9,8), (4,8), (9,15)]:
+for r, c in [(2,2+offset), (2,17+offset), (10,1+offset), (4,15+offset), (10,5+offset), (6,5+offset), (6,14+offset), (9,8+offset), (4,8+offset), (9,15+offset)]:
     garden_grid[r][c] = 'tree_0_0'; garden_grid[r][c+1] = 'tree_0_1'; garden_grid[r][c+2] = 'tree_0_2';
     garden_grid[r+1][c] = 'tree_1_0'; garden_grid[r+1][c+1] = 'tree_1_1'; garden_grid[r+1][c+2] = 'tree_1_2';
     garden_grid[r+2][c] = 'tree_2_0'; garden_grid[r+2][c+1] = 'tree_2_1'; garden_grid[r+2][c+2] = 'tree_2_2';
-garden_grid[10][13] = 'water_tl'; garden_grid[10][14] = 'water_tr';
-garden_grid[11][13] = 'water_bl'; garden_grid[11][14] = 'water_br';
 
-for r, c in [(6,3), (6,12), (1,6)]:
+for r, c in [(2,2), (5,5), (9,1), (4,32), (9,35), (1,35)]:
+    garden_grid[r][c] = 'tree_0_0'; garden_grid[r][c+1] = 'tree_0_1'; garden_grid[r][c+2] = 'tree_0_2';
+    garden_grid[r+1][c] = 'tree_1_0'; garden_grid[r+1][c+1] = 'tree_1_1'; garden_grid[r+1][c+2] = 'tree_1_2';
+    garden_grid[r+2][c] = 'tree_2_0'; garden_grid[r+2][c+1] = 'tree_2_1'; garden_grid[r+2][c+2] = 'tree_2_2';
+
+garden_grid[10][13+offset] = 'water_tl'; garden_grid[10][14+offset] = 'water_tr';
+garden_grid[11][13+offset] = 'water_bl'; garden_grid[11][14+offset] = 'water_br';
+
+for r, c in [(6,3+offset), (6,12+offset), (1,6+offset)]:
     garden_grid[r-1][c] = 'bench_0_0'; garden_grid[r-1][c+1] = 'bench_0_1'; garden_grid[r-1][c+2] = 'bench_0_2';
     garden_grid[r][c] = 'bench_1_0'; garden_grid[r][c+1] = 'bench_1_1'; garden_grid[r][c+2] = 'bench_1_2';
-g_grnd, g_obj = build_layers(garden_grid, 'grass')
+
+def build_layers_local(base_grid, fallback='grass', loc_W=20, loc_H=15):
+    ground = [['empty']*loc_W for _ in range(loc_H)]
+    objs = [['empty']*loc_W for _ in range(loc_H)]
+    for r in range(loc_H):
+        for c in range(loc_W):
+            tile = base_grid[r][c]
+            if is_solid(tile) or tile == 'door' or tile == 'door_big_l' or tile == 'door_big_r':
+                ground[r][c] = fallback
+                objs[r][c] = tile
+            else:
+                ground[r][c] = tile
+                objs[r][c] = 'empty'
+    return ground, objs
+
+g_grnd, g_obj = build_layers_local(garden_grid, 'grass', loc_W=W_garden, loc_H=H_garden)
 with open('assets/tilemaps/garden.json', 'w') as f:
-    json.dump(make_tiled_json(W, H, g_grnd, g_obj), f)
+    json.dump(make_tiled_json(W_garden, H_garden, g_grnd, g_obj), f)
 
 # 2. Corridor
 cor_grid = [['school_floor' for _ in range(W)] for _ in range(H)]

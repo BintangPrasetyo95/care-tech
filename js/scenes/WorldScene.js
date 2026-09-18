@@ -19,14 +19,20 @@ class WorldScene extends Phaser.Scene {
     /* ── Build the map ── */
     this.walls = this.physics.add.staticGroup();
     this.interactables = [];   // objects the player can interact with
-    this._buildMap(mapKey);
+    const mapData = this._getMapData(mapKey);
+    const mapW = mapData[0].length;
+    const mapH = mapData.length;
+    this._buildMap(mapKey, mapData);
 
     /* ── Player ── */
-    const px = this.spawnX || 10 * TILE + TILE / 2;
+    let defaultSpawnX = 10;
+    if (mapKey === 'garden') defaultSpawnX = 20;
+    
+    const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
     const py = this.spawnY || 7 * TILE + TILE / 2;
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
-    this.physics.world.setBounds(0, 0, 20 * TILE, 15 * TILE);
+    this.physics.world.setBounds(0, 0, mapW * TILE, mapH * TILE);
 
     /* ── NPCs ── */
     this.npcs = [];
@@ -310,8 +316,9 @@ class WorldScene extends Phaser.Scene {
   }
 
   /* ────── Map builder (Dynamic 2D Arrays) ────── */
-  _buildMap(mapKey) {
-    const W = 20, H = 15;
+  _buildMap(mapKey, mapData) {
+    const H = mapData.length;
+    const W = mapData[0].length;
     
     // Create an empty tilemap
     const map = this.make.tilemap({ tileWidth: TILE, tileHeight: TILE, width: W, height: H });
@@ -367,8 +374,6 @@ class WorldScene extends Phaser.Scene {
     };
     
     const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
-
-    const mapData = this._getMapData(mapKey);
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -467,8 +472,8 @@ class WorldScene extends Phaser.Scene {
     // Draw off-screen doors and walls at r = -1 for garden transition
     if (mapKey === 'garden') {
       const yPos = -1 * TILE + TILE / 2;
-      const x10 = 10 * TILE + TILE / 2;
-      const x11 = 11 * TILE + TILE / 2;
+      const x10 = 20 * TILE + TILE / 2;
+      const x11 = 21 * TILE + TILE / 2;
       
       this.add.sprite(x10, yPos, 'tileset_sheet', TILE_IDS['door_big_l']).setDepth(1);
       this.add.sprite(x11, yPos, 'tileset_sheet', TILE_IDS['door_big_r']).setDepth(1);
@@ -536,27 +541,31 @@ class WorldScene extends Phaser.Scene {
     const W = 20, H = 15;
 
     if (key === 'garden') {
+      const gW = 40;
       const m = Array.from({ length: H }, (_, r) =>
-        Array.from({ length: W }, (_, c) => ((r + c) % 7 === 0 ? 'grass2' : 'grass'))
+        Array.from({ length: gW }, (_, c) => ((r + c) % 7 === 0 ? 'grass2' : 'grass'))
       );
-      for (let c = 0; c < W; c++) { m[0][c] = 'wall'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][W - 1] = 'wall'; }
-      for (let c = 2; c < 18; c++) { m[7][c] = 'path'; m[8][c] = 'path'; }
-      for (let r = 1; r < 7; r++) { m[r][10] = 'path'; m[r][11] = 'path'; }
-      m[7][2] = 'path_1_3';
-      m[8][2] = 'path_1_4';
-      for (let c = 3; c <= 9; c++) { m[7][c] = 'path_2_2'; }
-      for (let c = 3; c <= 16; c++) { m[8][c] = 'path_2_0'; }
+      for (let c = 0; c < gW; c++) { m[0][c] = 'wall'; m[H - 1][c] = 'wall'; }
+      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][gW - 1] = 'wall'; }
       
-      m[8][17] = 'path_2_4';
-      m[7][17] = 'path_2_3';
-      for (let c = 12; c <= 16; c++) { m[7][c] = 'path_2_2'; }
-      for (let r = 0; r <= 6; r++) { m[r][10] = 'path_3_1'; }
-      for (let r = 0; r <= 6; r++) { m[r][11] = 'path_1_1'; }
-      m[7][10] = 'path_3_2';
-      m[7][11] = 'path_1_2';
-      m[3][3] = 'grass_var1'; m[3][4] = 'grass_var2'; m[4][3] = 'grass_var1';
-      m[11][15] = 'grass_var2'; m[11][16] = 'grass_var1'; m[12][16] = 'grass_var2';
+      const offset = 10;
+      for (let c = 2; c < 18; c++) { m[7][c + offset] = 'path'; m[8][c + offset] = 'path'; }
+      for (let r = 1; r < 7; r++) { m[r][10 + offset] = 'path'; m[r][11 + offset] = 'path'; }
+      m[7][2 + offset] = 'path_1_3';
+      m[8][2 + offset] = 'path_1_4';
+      for (let c = 3; c <= 9; c++) { m[7][c + offset] = 'path_2_2'; }
+      for (let c = 3; c <= 16; c++) { m[8][c + offset] = 'path_2_0'; }
+      
+      m[8][17 + offset] = 'path_2_4';
+      m[7][17 + offset] = 'path_2_3';
+      for (let c = 12; c <= 16; c++) { m[7][c + offset] = 'path_2_2'; }
+      for (let r = 0; r <= 6; r++) { m[r][10 + offset] = 'path_3_1'; }
+      for (let r = 0; r <= 6; r++) { m[r][11 + offset] = 'path_1_1'; }
+      m[7][10 + offset] = 'path_3_2';
+      m[7][11 + offset] = 'path_1_2';
+      
+      m[3][3 + offset] = 'grass_var1'; m[3][4 + offset] = 'grass_var2'; m[4][3 + offset] = 'grass_var1';
+      m[11][15 + offset] = 'grass_var2'; m[11][16 + offset] = 'grass_var1'; m[12][16 + offset] = 'grass_var2';
       
       const putObj = (r, c, obj) => {
         if (Array.isArray(m[r][c])) {
@@ -571,21 +580,25 @@ class WorldScene extends Phaser.Scene {
         putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
         putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
       };
-      putBigTree(2,2); putBigTree(2,17); putBigTree(10,1); putBigTree(4,15); putBigTree(10,5);
-      putBigTree(6,5); putBigTree(6,14); putBigTree(9,8); putBigTree(4,8);
-      putBigTree(9,15);
+      
+      putBigTree(2, 2 + offset); putBigTree(2, 17 + offset); putBigTree(10, 1 + offset); putBigTree(4, 15 + offset); putBigTree(10, 5 + offset);
+      putBigTree(6, 5 + offset); putBigTree(6, 14 + offset); putBigTree(9, 8 + offset); putBigTree(4, 8 + offset);
+      putBigTree(9, 15 + offset);
 
-      putObj(10, 13, 'water_tl'); putObj(10, 14, 'water_tr');
-      putObj(11, 13, 'water_bl'); putObj(11, 14, 'water_br');
+      // New trees to fill the extra space
+      putBigTree(2, 2); putBigTree(5, 5); putBigTree(9, 1); putBigTree(4, 32); putBigTree(9, 35); putBigTree(1, 35);
+
+      putObj(10, 13 + offset, 'water_tl'); putObj(10, 14 + offset, 'water_tr');
+      putObj(11, 13 + offset, 'water_bl'); putObj(11, 14 + offset, 'water_br');
 
       const putBigBench = (r, c) => {
         putObj(r-1, c, 'bench_0_0'); putObj(r-1, c+1, 'bench_0_1'); putObj(r-1, c+2, 'bench_0_2');
         putObj(r, c, 'bench_1_0'); putObj(r, c+1, 'bench_1_1'); putObj(r, c+2, 'bench_1_2');
       };
 
-      putBigBench(6, 3);
-      putBigBench(6, 12);
-      putBigBench(1, 6);
+      putBigBench(6, 3 + offset);
+      putBigBench(6, 12 + offset);
+      putBigBench(1, 6 + offset);
       
       return m;
     }
@@ -701,17 +714,18 @@ class WorldScene extends Phaser.Scene {
   /* ────── NPC spawning per map ────── */
   _spawnNPCs(mapKey) {
     if (mapKey === 'garden') {
+      const offset = 10;
       if (!this.registry.get('level1_complete')) {
         // Nabula on the bench
-        this.npcs.push(new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, (4 + offset) * TILE + TILE / 2, 6 * TILE + TILE / 2,
           'nabula', 'player_intro', { name: 'Nabula', emotion: '😔' }));
       }
       
       // Generic NPC near the door
-      this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 1 * TILE + TILE / 2,
+      this.npcs.push(new NPC(this, (7 + offset) * TILE + TILE / 2, 1 * TILE + TILE / 2,
         'student', null, { name: 'Student' }));
       // Background students
-      this.npcs.push(new NPC(this, 15 * TILE + TILE / 2, 9 * TILE + TILE / 2,
+      this.npcs.push(new NPC(this, (15 + offset) * TILE + TILE / 2, 9 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
     }
 
@@ -893,12 +907,12 @@ class WorldScene extends Phaser.Scene {
     if (!this._transitionsCache) {
       this._transitionsCache = {
         garden: [
-          { fromX: 10, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
-          { fromX: 11, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+          { fromX: 20, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
+          { fromX: 21, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
         ],
         corridor: [
-          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
-          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 10, spawnY: 2  },
+          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 20, spawnY: 2  },
+          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 20, spawnY: 2  },
           { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
           { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
           { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
