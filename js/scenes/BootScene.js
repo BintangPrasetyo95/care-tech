@@ -46,14 +46,14 @@ class BootScene extends Phaser.Scene {
 
     /* ── Try loading real sprite sheets (uncomment when assets exist) ── */
     this.load.spritesheet('player', 'assets/sprites/player.png',
-                          { frameWidth: 32, frameHeight: 32 });
+                          { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('nabula', 'assets/sprites/nabula.png',
-                          { frameWidth: 32, frameHeight: 32 });
+                          { frameWidth: 64, frameHeight: 64 });
     
     
     // Load tileset image
     this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
-    this.load.spritesheet('tileset_sheet', 'assets/sprites/tileset.png?v=' + Date.now(), { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('tileset_sheet', 'assets/sprites/tileset.png?v=' + Date.now(), { frameWidth: 64, frameHeight: 64 });
   }
 
   create() {

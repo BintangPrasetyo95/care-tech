@@ -11,13 +11,13 @@ class Player {
    */
   constructor(scene, x, y) {
     this.scene  = scene;
-    this.speed  = 120;           // px / sec
+    this.speed  = 240;           // px / sec
     this.facing = 'down';        // last direction faced
 
     /* --- sprite -------------------------------------------------- */
     this.sprite = scene.physics.add.sprite(x, y, 'player', 0)
-      .setSize(14, 14)           // collision box for feet
-      .setOffset(9, 16)          // shift box down to the character's feet in the 32x32 frame
+      .setSize(28, 28)           // collision box for feet
+      .setOffset(18, 32)         // shift box down to the character's feet in the 64x64 frame
       .setDepth(5);              // render above ground tiles
 
     /* --- input --------------------------------------------------- */
