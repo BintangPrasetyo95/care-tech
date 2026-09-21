@@ -45,11 +45,20 @@ class BootScene extends Phaser.Scene {
     });
 
     /* ── Try loading real sprite sheets (uncomment when assets exist) ── */
-    this.load.spritesheet('player', 'assets/sprites/player.png',
+    this.load.spritesheet('player', 'assets/sprites/characters/player.png',
                           { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('nabula', 'assets/sprites/nabula.png',
+    this.load.spritesheet('player_walk', 'assets/sprites/characters/player_walk.png',
                           { frameWidth: 64, frameHeight: 64 });
-    
+                          
+    this.load.spritesheet('nabula', 'assets/sprites/characters/nabula.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('nabula_walk', 'assets/sprites/characters/nabula_w_pack_walk.png',
+                          { frameWidth: 64, frameHeight: 64 });
+                          
+    this.load.spritesheet('nakula', 'assets/sprites/characters/nakula.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('nakula_walk', 'assets/sprites/characters/nakula_walk.png',
+                          { frameWidth: 64, frameHeight: 64 });
     
     // Load tileset image
     this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
@@ -151,11 +160,11 @@ class BootScene extends Phaser.Scene {
 
     // Real animations for Player, Nabula, Nakula
     dirs.forEach(dir => {
-      ['player', 'nabula'].forEach(key => {
+      ['player', 'nabula', 'nakula'].forEach(key => {
         if (!this.anims.exists(`${key}_walk_${dir}`)) {
           this.anims.create({
             key: `${key}_walk_${dir}`,
-            frames: this.anims.generateFrameNumbers(key, { start: 0, end: 5 }),
+            frames: this.anims.generateFrameNumbers(`${key}_walk`, { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1
           });
