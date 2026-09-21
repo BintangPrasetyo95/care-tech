@@ -206,7 +206,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    // this._drawDebugGrid();
+    this._drawDebugGrid();
   }
 
   _checkLevel3Ready() {
@@ -628,8 +628,22 @@ class WorldScene extends Phaser.Scene {
       this._autotileSchoolWalls(m);
       
       // Manual texture overrides for corridor
-      m[0][0] = 'school_wall_itr';
-      m[0][19] = 'school_wall_itl';
+      m[0][4] = m[2][0];
+      m[1][0] = m[2][0];
+      m[0][0] = 'school_wall_c'; // Full wall tile
+      m[6][0] = m[7][0];
+      m[14][5] = m[5][7];
+      m[14][2] = m[5][4];
+      m[14][9] = m[5][4];
+      m[14][12] = m[14][5];
+      m[6][19] = m[7][19];
+      m[1][19] = m[2][19];
+      m[0][17] = m[2][19];
+      m[0][11] = m[2][19];
+      m[0][7] = m[2][19];
+      m[0][9] = m[2][0];
+      m[0][14] = m[2][0];
+      m[0][19] = 'school_wall_c'; // Full wall tile
       
       return m;
     }
