@@ -206,7 +206,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    // this._drawDebugGrid();
+    this._drawDebugGrid(mapW, mapH);
   }
 
   _checkLevel3Ready() {
@@ -263,8 +263,8 @@ class WorldScene extends Phaser.Scene {
   }
 
   /* ────── Debug Grid ────── */
-  _drawDebugGrid() {
-    const W = 20, H = 15;
+  _drawDebugGrid(mapW, mapH) {
+    const W = mapW || 20, H = mapH || 15;
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
         this.add.text(c * TILE + TILE / 2, r * TILE + TILE / 2, `${r},${c}`, {
