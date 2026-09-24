@@ -206,7 +206,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    // this._drawDebugGrid();
+    this._drawDebugGrid(mapW, mapH);
   }
 
   _checkLevel3Ready() {
@@ -263,8 +263,8 @@ class WorldScene extends Phaser.Scene {
   }
 
   /* ────── Debug Grid ────── */
-  _drawDebugGrid() {
-    const W = 20, H = 15;
+  _drawDebugGrid(mapW, mapH) {
+    const W = mapW || 20, H = mapH || 15;
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
         this.add.text(c * TILE + TILE / 2, r * TILE + TILE / 2, `${r},${c}`, {
@@ -345,35 +345,37 @@ class WorldScene extends Phaser.Scene {
 
     const TILE_IDS = {
       'grass': 1, 'grass2': 2, 'path': 3, 'path2': 4,
-      'wall': 5, 'wall_top': 6, 'floor': 7, 'floor2': 8,
-      'door': 9, 'bench': 10, 'desk': 11, 'board': 12,
-      'chair': 13, 'table': 14, 'stage': 15, 'flower': 16,
-      'tree': 17, 'water_tl': 18, 'bookshelf': 19, 'bookshelf_t': 20, 'bookshelf_b': 21,
-      'path_1_3': 22, 'path_1_4': 23, 'path_2_2': 24, 'path_2_0': 25,
-      'path_2_4': 26, 'path_2_3': 27, 'path_3_1': 28, 'path_1_1': 29,
-      'path_3_2': 30, 'path_1_2': 31,
-      'water_tr': 32, 'water_bl': 33, 'water_br': 34,
-      'tree_0_0': 35, 'tree_0_1': 36, 'tree_0_2': 37,
-      'tree_1_0': 38, 'tree_1_1': 39, 'tree_1_2': 40,
-      'tree_2_0': 41, 'tree_2_1': 42, 'tree_2_2': 43,
-      'grass_var1': 45, 'grass_var2': 46,
-      'bench_0_0': 47, 'bench_0_1': 48, 'bench_0_2': 49,
-      'bench_1_0': 52, 'bench_1_1': 53, 'bench_1_2': 54,
-      'door_big_l': 55, 'door_big_r': 56,
-      'school_wall_tl': 57, 'school_wall_t': 58, 'school_wall_tr': 59,
-      'school_wall_l': 60, 'school_wall_c': 61, 'school_wall_r': 62,
-      'school_wall_bl': 63, 'school_wall_b': 64, 'school_wall_br': 65,
-      'school_wall_itl': 66, 'school_wall_itr': 67,
-      'school_wall_ibl': 68, 'school_wall_ibr': 69,
-      'school_floor': 70, 'school_floor2': 71,
-      'tc_0_0': 72, 'tc_0_1': 73, 'tc_0_2': 74,
-      'tc_1_0': 75, 'tc_1_1': 76, 'tc_1_2': 77,
-      'tc_2_0': 78, 'tc_2_1': 79, 'tc_2_2': 80,
-      'caf_srv_0_0': 81, 'caf_srv_0_1': 82, 'caf_srv_0_2': 83, 'caf_srv_0_3': 84, 'caf_srv_0_4': 85, 'caf_srv_0_5': 86,
-      'caf_srv_1_0': 87, 'caf_srv_1_1': 88, 'caf_srv_1_2': 89, 'caf_srv_1_3': 90, 'caf_srv_1_4': 91, 'caf_srv_1_5': 92
+      'floor': 5, 'floor2': 6, 'door': 7, 'bench': 8,
+      'desk': 9, 'board': 10, 'chair': 11, 'table': 12,
+      'stage': 13, 'flower': 14, 'tree': 15, 'water_tl': 16,
+      'bookshelf': 17, 'bookshelf_t': 18, 'bookshelf_b': 19,
+      'path_1_3': 20, 'path_1_4': 21, 'path_2_2': 22, 'path_2_0': 23,
+      'path_2_4': 24, 'path_2_3': 25, 'path_3_1': 26, 'path_1_1': 27,
+      'path_3_2': 28, 'path_1_2': 29,
+      'water_tr': 30, 'water_bl': 31, 'water_br': 32,
+      'tree_0_0': 33, 'tree_0_1': 34, 'tree_0_2': 35,
+      'tree_1_0': 36, 'tree_1_1': 37, 'tree_1_2': 38,
+      'tree_2_0': 39, 'tree_2_1': 40, 'tree_2_2': 41,
+      'grass_var1': 43, 'grass_var2': 44,
+      'bench_0_0': 45, 'bench_0_1': 46, 'bench_0_2': 47,
+      'bench_1_0': 50, 'bench_1_1': 51, 'bench_1_2': 52,
+      'door_big_l': 53, 'door_big_r': 54,
+      'school_wall_tl': 55, 'school_wall_t': 56, 'school_wall_tr': 57,
+      'school_wall_l': 58, 'school_wall_c': 59, 'school_wall_r': 60,
+      'school_wall_bl': 61, 'school_wall_b': 62, 'school_wall_br': 63,
+      'school_wall_itl': 64, 'school_wall_itr': 65,
+      'school_wall_ibl': 66, 'school_wall_ibr': 67,
+      'school_floor': 68, 'school_floor2': 69,
+      'tc_0_0': 70, 'tc_0_1': 71, 'tc_0_2': 72,
+      'tc_1_0': 73, 'tc_1_1': 74, 'tc_1_2': 75,
+      'tc_2_0': 76, 'tc_2_1': 77, 'tc_2_2': 78,
+      'gw_t': 79, 'gw_b': 80, 'gw_l': 81, 'gw_r': 82,
+      'gw_lt': 83, 'gw_lb': 84, 'gw_rt': 85, 'gw_rb': 86,
+      'caf_srv_0_0': 87, 'caf_srv_0_1': 88, 'caf_srv_0_2': 89, 'caf_srv_0_3': 90, 'caf_srv_0_4': 91, 'caf_srv_0_5': 92,
+      'caf_srv_1_0': 93, 'caf_srv_1_1': 94, 'caf_srv_1_2': 95, 'caf_srv_1_3': 96, 'caf_srv_1_4': 97, 'caf_srv_1_5': 98
     };
     
-    const solidTiles = ['wall', 'wall_top', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -545,8 +547,12 @@ class WorldScene extends Phaser.Scene {
       const m = Array.from({ length: H }, (_, r) =>
         Array.from({ length: gW }, (_, c) => ((r + c) % 7 === 0 ? 'grass2' : 'grass'))
       );
-      for (let c = 0; c < gW; c++) { m[0][c] = 'wall'; m[H - 1][c] = 'wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'wall'; m[r][gW - 1] = 'wall'; }
+      for (let c = 1; c < gW - 1; c++) { m[0][c] = 'gw_t'; m[H - 1][c] = 'gw_b'; }
+      for (let r = 1; r < H - 1; r++) { m[r][0] = 'gw_l'; m[r][gW - 1] = 'gw_r'; }
+      m[0][0] = 'gw_lt';
+      m[0][gW - 1] = 'gw_rt';
+      m[H - 1][0] = 'gw_lb';
+      m[H - 1][gW - 1] = 'gw_rb';
       
       const offset = 10;
       for (let c = 2; c < 18; c++) { m[7][c + offset] = 'path'; m[8][c + offset] = 'path'; }
