@@ -9,8 +9,6 @@ tiles = {
     'grass2': (22, 163, 74),
     'path': (212, 163, 115),
     'path2': (196, 149, 106),
-    'wall': (71, 85, 105),
-    'wall_top': (51, 65, 85),
     'floor': (254, 243, 199),
     'floor2': (253, 230, 138),
     'door': (146, 64, 14),
@@ -59,6 +57,8 @@ tiles = {
     'tc_0_0': (0,0,0,0), 'tc_0_1': (0,0,0,0), 'tc_0_2': (0,0,0,0),
     'tc_1_0': (0,0,0,0), 'tc_1_1': (0,0,0,0), 'tc_1_2': (0,0,0,0),
     'tc_2_0': (0,0,0,0), 'tc_2_1': (0,0,0,0), 'tc_2_2': (0,0,0,0),
+    'gw_t': (0,0,0,0), 'gw_b': (0,0,0,0), 'gw_l': (0,0,0,0), 'gw_r': (0,0,0,0),
+    'gw_lt': (0,0,0,0), 'gw_lb': (0,0,0,0), 'gw_rt': (0,0,0,0), 'gw_rb': (0,0,0,0),
     'caf_srv_0_0': (0,0,0,0), 'caf_srv_0_1': (0,0,0,0), 'caf_srv_0_2': (0,0,0,0),
     'caf_srv_0_3': (0,0,0,0), 'caf_srv_0_4': (0,0,0,0), 'caf_srv_0_5': (0,0,0,0),
     'caf_srv_1_0': (0,0,0,0), 'caf_srv_1_1': (0,0,0,0), 'caf_srv_1_2': (0,0,0,0),
@@ -81,12 +81,18 @@ try:
     bench_sheet = Image.open('assets/sprites/long_bench.png')
     big_door_sheet = Image.open('assets/sprites/big_door.png')
     bookshelf_sheet = Image.open('assets/sprites/bookshelf_sprites.png')
-    wall_tile = Image.open('assets/sprites/tile_3_0.png')
     school_fw = Image.open('assets/sprites/school_floor_wall_sprites.png')
     tc_sheet = Image.open('assets/sprites/table_and_chair.png')
     caf_srv_sheet = Image.open('assets/sprites/cafeteria_service.png')
+    gw_t = Image.open('assets/sprites/garden_walls/garden_wall_top.png')
+    gw_b = Image.open('assets/sprites/garden_walls/garden_wall_bottom.png')
+    gw_l = Image.open('assets/sprites/garden_walls/garden_wall_left.png')
+    gw_r = Image.open('assets/sprites/garden_walls/garden_wall_right.png')
+    gw_lt = Image.open('assets/sprites/garden_walls/garden_wall_left_top.png')
+    gw_lb = Image.open('assets/sprites/garden_walls/garden_wall_left_bottom.png')
+    gw_rt = Image.open('assets/sprites/garden_walls/garden_wall_right_top.png')
+    gw_rb = Image.open('assets/sprites/garden_walls/garden_wall_right_bottom.png')
     custom_tiles = {
-        'wall': wall_tile,
         'school_wall_tl': school_fw.crop((1*64, 0*64, 2*64, 1*64)),
         'school_wall_t': school_fw.crop((2*64, 0*64, 3*64, 1*64)),
         'school_wall_tr': school_fw.crop((3*64, 0*64, 4*64, 1*64)),
@@ -102,6 +108,8 @@ try:
         'school_wall_ibr': school_fw.crop((2*64, 4*64, 3*64, 5*64)),
         'school_floor': school_fw.crop((0, 0, 64, 64)),
         'school_floor2': school_fw.crop((0, 64, 64, 128)),
+        'gw_t': gw_t, 'gw_b': gw_b, 'gw_l': gw_l, 'gw_r': gw_r,
+        'gw_lt': gw_lt, 'gw_lb': gw_lb, 'gw_rt': gw_rt, 'gw_rb': gw_rb,
         'tc_0_0': tc_sheet.crop((0*64, 0*64, 1*64, 1*64)),
         'tc_0_1': tc_sheet.crop((1*64, 0*64, 2*64, 1*64)),
         'tc_0_2': tc_sheet.crop((2*64, 0*64, 3*64, 1*64)),
