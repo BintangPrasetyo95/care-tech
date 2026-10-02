@@ -45,8 +45,10 @@ class WorldScene extends Phaser.Scene {
     /* ── Collisions ── */
     this.physics.add.collider(this.player.sprite, this.walls);
     if (this.midWalls) this.physics.add.collider(this.player.sprite, this.midWalls);
+    if (this.treeColliders) this.physics.add.collider(this.player.sprite, this.treeColliders);
     this.npcs.forEach(n => {
       this.physics.add.collider(this.player.sprite, n.sprite);
+      if (this.treeColliders) this.physics.add.collider(n.sprite, this.treeColliders);
     });
 
     this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
@@ -206,7 +208,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    this._drawDebugGrid(mapW, mapH);
+    // this._drawDebugGrid(mapW, mapH);
   }
 
   _checkLevel3Ready() {
@@ -258,8 +260,40 @@ class WorldScene extends Phaser.Scene {
 
   _updatePlayerMask() {
     if (!this.player || !this.playerMaskImage) return;
-    this.playerMaskImage.x = this.player.sprite.x;
-    this.playerMaskImage.y = this.player.sprite.y - 16;
+
+    const behindTree = this._isPlayerBehindTree();
+
+    if (behindTree) {
+      this.playerMaskImage.x = this.player.sprite.x;
+      this.playerMaskImage.y = this.player.sprite.y - 16;
+      this.playerMaskImage.setVisible(true);
+      if (this.trunkLayer) this.trunkLayer.setDepth(6);
+    } else {
+      this.playerMaskImage.x = -1000;
+      this.playerMaskImage.y = -1000;
+      this.playerMaskImage.setVisible(false);
+      if (this.trunkLayer) this.trunkLayer.setDepth(3);
+    }
+
+    if (this.bookshelfTiers && this.player) {
+      const px = this.player.sprite.x;
+      const py = this.player.sprite.y;
+      for (const tier of this.bookshelfTiers) {
+        const behindThisTier = tier.zones.some(z =>
+          px >= z.minX && px <= z.maxX && py >= z.minY && py < z.maxY
+        );
+        tier.layer.setDepth(behindThisTier ? 6 : 3);
+      }
+    }
+  }
+
+  _isPlayerBehindTree() {
+    if (!this.player || !this.treeCanopies || this.treeCanopies.length === 0) return false;
+    const px = this.player.sprite.x;
+    const py = this.player.sprite.y;
+    return this.treeCanopies.some(tree =>
+      px >= tree.minX && px <= tree.maxX && py >= tree.minY && py < tree.maxY
+    );
   }
 
   /* ────── Debug Grid ────── */
@@ -328,10 +362,39 @@ class WorldScene extends Phaser.Scene {
     const groundLayer = map.createBlankLayer('Ground', tileset);
     const midLayer = map.createBlankLayer('Mid', tileset);
     const midLayer2 = map.createBlankLayer('Mid2', tileset);
+    this.trunkLayer = map.createBlankLayer('Trunks', tileset);
+    const trunkLayer = this.trunkLayer;
+    this.bottomWallLayer = map.createBlankLayer('BottomWalls', tileset);
+    const bottomWallLayer = this.bottomWallLayer;
     
     groundLayer.setDepth(0);
     midLayer.setDepth(1);
     midLayer2.setDepth(2);
+    trunkLayer.setDepth(3);
+    bottomWallLayer.setDepth(6);
+
+    // Find all base rows for bookshelves to give each tier its own layer
+    const bookshelfBaseRows = new Set();
+    for (let r = 0; r < H; r++) {
+      for (let c = 0; c < W; c++) {
+        const cell = Array.isArray(mapData[r][c]) ? mapData[r][c] : [mapData[r][c]];
+        if (cell.includes('bookshelf_b') || cell.includes('bookshelf')) {
+          bookshelfBaseRows.add(r);
+        }
+      }
+    }
+
+    this.bookshelfTiers = [];
+    const bookshelfLayersByRow = {};
+    bookshelfBaseRows.forEach(r => {
+      const layer = map.createBlankLayer(`Bookshelves_${r}`, tileset).setDepth(3);
+      bookshelfLayersByRow[r] = layer;
+      this.bookshelfTiers.push({
+        baseRow: r,
+        layer: layer,
+        zones: []
+      });
+    });
     
     // We create multiple object layers to support trees overlapping trees
     const objectLayersTransparent = [];
@@ -342,6 +405,8 @@ class WorldScene extends Phaser.Scene {
       objectLayersTransparent.push(tLayer);
       objectLayers.push(oLayer);
     }
+    this.treeColliders = this.physics.add.staticGroup();
+    this.treeCanopies = [];
 
     const TILE_IDS = {
       'grass': 1, 'grass2': 2, 'path': 3, 'path2': 4,
@@ -372,10 +437,11 @@ class WorldScene extends Phaser.Scene {
       'gw_t': 79, 'gw_b': 80, 'gw_l': 81, 'gw_r': 82,
       'gw_lt': 83, 'gw_lb': 84, 'gw_rt': 85, 'gw_rb': 86,
       'caf_srv_0_0': 87, 'caf_srv_0_1': 88, 'caf_srv_0_2': 89, 'caf_srv_0_3': 90, 'caf_srv_0_4': 91, 'caf_srv_0_5': 92,
-      'caf_srv_1_0': 93, 'caf_srv_1_1': 94, 'caf_srv_1_2': 95, 'caf_srv_1_3': 96, 'caf_srv_1_4': 97, 'caf_srv_1_5': 98
+      'caf_srv_1_0': 93, 'caf_srv_1_1': 94, 'caf_srv_1_2': 95, 'caf_srv_1_3': 96, 'caf_srv_1_4': 97, 'caf_srv_1_5': 98,
+      'path_3_0': 99, 'path_1_0': 100
     };
     
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'tree', 'tree_2_1', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'water', 'water_tl', 'water_tr', 'water_bl', 'water_br', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -415,19 +481,39 @@ class WorldScene extends Phaser.Scene {
               midLayer.putTileAt(objId, c, r);
             } else if (objName.startsWith('bench_1')) {
               midLayer.putTileAt(objId, c, r);
+            } else if (objName.startsWith('bookshelf')) {
+              const targetRow = (objName === 'bookshelf_t') ? (r + 1) : r;
+              const targetLayer = bookshelfLayersByRow[targetRow] || bookshelfLayersByRow[r] || midLayer;
+              targetLayer.putTileAt(objId, c, r);
+            } else if (objName.startsWith('tree_2_') || objName === 'tree') {
+              trunkLayer.putTileAt(objId, c, r);
             } else {
               objectLayersTransparent[i].putTileAt(objId, c, r);
               objectLayers[i].putTileAt(objId, c, r);
             }
           });
-        } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench') || groundName === 'bookshelf_t') {
+        } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench') || groundName.startsWith('tree') || groundName === 'bookshelf_t') {
           // If it's a solid object OR a tall object that needs to be in front
           if (groundName.startsWith('water')) {
             midLayer.putTileAt(groundId, c, r);
-          } else if (groundName === 'wall' || groundName === 'wall_top' || groundName.startsWith('school_wall_')) {
-            midLayer.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('bench_1')) {
             midLayer.putTileAt(groundId, c, r);
+          } else if (groundName.startsWith('bookshelf')) {
+            const targetRow = (groundName === 'bookshelf_t') ? (r + 1) : r;
+            const targetLayer = bookshelfLayersByRow[targetRow] || bookshelfLayersByRow[r] || midLayer;
+            targetLayer.putTileAt(groundId, c, r);
+          } else if (groundName.startsWith('tree_2_') || groundName === 'tree') {
+            trunkLayer.putTileAt(groundId, c, r);
+          } else if (groundName === 'gw_t' || groundName === 'gw_lt' || groundName === 'gw_rt' || groundName === 'gw_l' || groundName === 'gw_r') {
+            midLayer.putTileAt(groundId, c, r);
+          } else if (groundName === 'gw_b' || groundName === 'gw_lb' || groundName === 'gw_rb') {
+            bottomWallLayer.putTileAt(groundId, c, r);
+          } else if (groundName === 'wall' || groundName === 'wall_top' || groundName.startsWith('school_wall_') || groundName === 'school_wall') {
+            if (r === H - 1) {
+              bottomWallLayer.putTileAt(groundId, c, r);
+            } else {
+              midLayer.putTileAt(groundId, c, r);
+            }
           } else {
             objectLayersTransparent[0].putTileAt(groundId, c, r);
             objectLayers[0].putTileAt(groundId, c, r);
@@ -438,15 +524,65 @@ class WorldScene extends Phaser.Scene {
             midLayer.putTileAt(groundId, c, r);
           }
         }
+
+        // Tree trunks get a special 50% centered hitbox instead of a full tile collision
+        if (cell.includes('tree_2_1') || cell.includes('tree')) {
+          const hitbox = this.add.rectangle(c * TILE + TILE / 2, r * TILE + TILE / 2, TILE * 0.5, TILE * 0.5);
+          hitbox.setVisible(false);
+          this.physics.add.existing(hitbox, true);
+          this.treeColliders.add(hitbox);
+        }
+
+        // Record tree canopy bounds for behind-tree detection
+        if (cell.includes('tree_0_0')) {
+          this.treeCanopies.push({
+            minX: c * TILE - 10,
+            maxX: (c + 3) * TILE + 10,
+            minY: r * TILE - 20,
+            maxY: (r + 2) * TILE + 36
+          });
+        }
+        if (cell.includes('tree')) {
+          this.treeCanopies.push({
+            minX: c * TILE - 10,
+            maxX: (c + 1) * TILE + 10,
+            minY: (r - 1) * TILE - 20,
+            maxY: r * TILE + 36
+          });
+        }
+
+        // Record bookshelf bounds for behind-bookshelf detection per tier
+        if (cell.includes('bookshelf_b') || cell.includes('bookshelf')) {
+          const tier = this.bookshelfTiers.find(t => t.baseRow === r);
+          if (tier) {
+            tier.zones.push({
+              minX: (c - 0.2) * TILE,
+              maxX: (c + 1.2) * TILE,
+              minY: (r - 1.2) * TILE,
+              maxY: r * TILE + 20
+            });
+            if (mapKey === 'corridor' && (c === 2 || c === 3)) {
+              tier.zones.push({
+                minX: 0,
+                maxX: 2 * TILE + 8,
+                minY: (r - 1.2) * TILE,
+                maxY: r * TILE + 20
+              });
+            }
+          }
+        }
       }
     }
 
     // Set collision
     const collidableIds = solidTiles.map(name => TILE_IDS[name]).filter(id => id !== undefined);
     midLayer.setCollision(collidableIds);
+    trunkLayer.setCollision(collidableIds);
+    this.bookshelfTiers.forEach(t => t.layer.setCollision(collidableIds));
+    this.bottomWallLayer.setCollision(collidableIds);
     objectLayers.forEach(layer => layer.setCollision(collidableIds));
 
-    this.walls = objectLayers;
+    this.walls = [...objectLayers, trunkLayer, ...this.bookshelfTiers.map(t => t.layer), this.bottomWallLayer];
     this.midWalls = midLayer;
 
     // Apply inverted BitmapMask to objectLayer to create a soft see-through hole for the player
@@ -466,7 +602,8 @@ class WorldScene extends Phaser.Scene {
       this.textures.addCanvas('softCircle', canvas);
     }
     
-    this.playerMaskImage = this.make.image({ x: 0, y: 0, key: 'softCircle' }, false);
+    this.playerMaskImage = this.make.image({ x: -1000, y: -1000, key: 'softCircle' }, false);
+    this.playerMaskImage.setVisible(false);
     const mask = new Phaser.Display.Masks.BitmapMask(this, this.playerMaskImage);
     mask.invertAlpha = true;
     objectLayers.forEach(layer => layer.setMask(mask));
@@ -569,6 +706,41 @@ class WorldScene extends Phaser.Scene {
       for (let r = 0; r <= 6; r++) { m[r][11 + offset] = 'path_1_1'; }
       m[7][10 + offset] = 'path_3_2';
       m[7][11 + offset] = 'path_1_2';
+      
+      for (let r = 8; r <= 13; r++) {
+        m[r][5] = 'path_3_1';
+        m[r][6] = 'path_1_1';
+      }
+      for (let r = 6; r <= 8; r++) {
+        m[r][4] = 'path_3_1';
+      }
+      m[9][4] = 'path_1_4';
+      m[9][5] = 'path_3_0';
+      m[7][5] = 'path_1_1';
+      m[8][5] = 'path_1_2';
+      m[8][6] = 'path_2_3';
+
+      m[5][4] = 'path_1_3';
+      for (let c = 5; c <= 10; c++) {
+        m[5][c] = 'path_2_2';
+      }
+      m[5][11] = 'path_2_3';
+
+      m[6][5] = 'path_1_0';
+      for (let c = 6; c <= 9; c++) {
+        m[6][c] = 'path_2_0';
+      }
+
+      m[6][10] = 'path_3_0';
+      m[7][10] = 'path_3_1';
+      m[8][10] = 'path_1_4';
+
+      m[6][11] = 'path_1_1';
+      m[7][11] = 'path_1_2';
+      m[8][11] = 'path_2_0';
+
+      m[7][12] = 'path_2_2';
+      m[8][12] = 'path_2_0';
       
       m[3][3 + offset] = 'grass_var1'; m[3][4 + offset] = 'grass_var2'; m[4][3 + offset] = 'grass_var1';
       m[11][15 + offset] = 'grass_var2'; m[11][16 + offset] = 'grass_var1'; m[12][16 + offset] = 'grass_var2';
