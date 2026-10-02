@@ -63,6 +63,8 @@ tiles = {
     'caf_srv_0_3': (0,0,0,0), 'caf_srv_0_4': (0,0,0,0), 'caf_srv_0_5': (0,0,0,0),
     'caf_srv_1_0': (0,0,0,0), 'caf_srv_1_1': (0,0,0,0), 'caf_srv_1_2': (0,0,0,0),
     'caf_srv_1_3': (0,0,0,0), 'caf_srv_1_4': (0,0,0,0), 'caf_srv_1_5': (0,0,0,0),
+    'path_3_0': (0,0,0,0),
+    'path_1_0': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -170,6 +172,8 @@ try:
         'caf_srv_1_3': caf_srv_sheet.crop((3*64, 1*64, 4*64, 2*64)),
         'caf_srv_1_4': caf_srv_sheet.crop((4*64, 1*64, 5*64, 2*64)),
         'caf_srv_1_5': caf_srv_sheet.crop((5*64, 1*64, 6*64, 2*64)),
+        'path_3_0': garden_sheet.crop((3*64, 0*64, 4*64, 1*64)),
+        'path_1_0': garden_sheet.crop((1*64, 0*64, 2*64, 1*64)),
     }
 except Exception as e:
     import traceback

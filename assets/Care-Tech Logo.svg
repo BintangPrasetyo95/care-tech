@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="t">
+  <title id="t">Family care logo: heart with brain, family, chat bubble and shield</title>
+  <defs>
+    <linearGradient id="blue" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#1B45B0"/>
+      <stop offset="1" stop-color="#63B4F2"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#0F7F86"/>
+      <stop offset="1" stop-color="#62E3C4"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#5A3FB2"/>
+      <stop offset="1" stop-color="#B9AEEF"/>
+    </linearGradient>
+    <path id="body" d="M138 192C136 168 150 153 172 153C200 153 226 176 238 208V240C232 262 212 272 190 270C160 267 138 236 138 192Z"/>
+  </defs>
+  <g transform="translate(-29 76) scale(1.75)">
+    <!-- Left hemisphere: brain -->
+    <path fill="url(#blue)" d="M226 84C232 50 212 26 178 26C163 17 137 23 136 36C120 31 97 45 100 58C85 58 70 79 76 92C61 95 53 121 62 132C50 138 53 165 66 174C57 182 68 206 84 212C96 236 124 262 160 276C180 284 198 292 212 296C216 293 220 290 224 287C186 284 146 262 130 222C126 205 125 180 128 160C130 140 146 138 146 115C146 92 165 73 188 73C199 73 210 77 218 85Z"/>
+    <g fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M157 86L141 70V55"/><circle cx="141" cy="50" r="4.5"/>
+      <path d="M146 106H126L114 94"/><circle cx="110" cy="90" r="4.5"/>
+      <path d="M133 142H100"/><circle cx="95" cy="142" r="4.5"/>
+      <path d="M126 190H108L98 180"/><circle cx="94" cy="176" r="4.5"/>
+    </g>
+    <!-- Right hemisphere: care arc -->
+    <path fill="url(#teal)" d="M240 86C244 52 280 30 322 36C372 42 408 88 402 142C398 194 358 254 294 290C291 291 289 290 288 288C342 250 364 202 366 152C368 102 348 66 312 60C280 56 254 66 240 86Z"/>
+    <!-- Chat bubble -->
+    <path fill="url(#purple)" stroke="#fff" stroke-width="10" paint-order="stroke" stroke-linejoin="round" d="M386 62C412 62 430 78 430 98C430 118 412 134 386 134C376 134 367 132 360 128C355 132 348 138 342 140C346 136 347 130 346 124C341 116 340 108 340 98C340 78 358 62 386 62Z"/>
+    <g fill="#fff"><circle cx="367" cy="98" r="5"/><circle cx="386" cy="98" r="5"/><circle cx="405" cy="98" r="5"/></g>
+    <!-- Family -->
+    <use href="#body" fill="url(#blue)"/>
+    <use href="#body" fill="url(#teal)" transform="matrix(-1 0 0 1 480 0)"/>
+    <circle cx="188" cy="115" r="28" fill="url(#blue)"/>
+    <circle cx="292" cy="115" r="28" fill="url(#teal)"/>
+    <g fill="url(#purple)" stroke="#fff" stroke-width="10" paint-order="stroke" stroke-linejoin="round">
+      <path d="M204 200C216 192 228 191 240 191C252 191 264 192 276 200C278 222 266 241 240 243C214 241 202 222 204 200Z"/>
+      <circle cx="240" cy="168" r="17"/>
+    </g>
+    <path fill="#fff" d="M240 233C232 227 228 222 228 217C228 213 231 211 234 211C237 211 239 213 240 215C241 213 243 211 246 211C249 211 252 213 252 217C252 222 248 227 240 233Z"/>
+    <!-- Shield -->
+    <path fill="url(#blue)" stroke="#fff" stroke-width="10" paint-order="stroke" stroke-linejoin="round" d="M240 258C226 270 212 274 196 274V300C196 322 216 338 240 348C264 338 284 322 284 300V274C268 274 254 270 240 258Z"/>
+    <path fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" d="M220 302L234 316L260 288"/>
+  </g>
+</svg>
