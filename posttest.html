@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Posttest (Cardboard Cosmos)</title>
+    <title>CareTech - Posttest (NeuroAdventure)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -59,21 +59,21 @@
                 <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
                     <li class="menu-item">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="video.html">
-                            <span class="icon">🎬</span>
-                            <span class="text">Video Belajar</span>
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
                         </a>
                     </li>
                     <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
                         </a>
                     </li>
                     <li class="menu-item has-dropdown active-dropdown">
@@ -83,16 +83,16 @@
                             <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">1. Pretest</a></li>
-                            <li><a href="game.html">2. Main Game</a></li>
-                            <li><a href="posttest.html" class="active-subitem">3. Posttest ★</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html" class="active-subitem">2. Posttest (NeuroAdventure) ★</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
 
             <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
-                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">CARDBOARD ED. 2026</p>
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
             </div>
         </nav>
 
@@ -102,9 +102,9 @@
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
-                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 03 // Evaluasi Akhir</span>
-                    <h1 id="welcome-message">Posttest Pembelajaran</h1>
-                    <p>Uji seberapa jauh pemahamanmu setelah belajar materi dan bermain game.</p>
+                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 05 // Evaluasi Akhir</span>
+                    <h1 id="welcome-message">Posttest (NeuroAdventure)</h1>
+                    <p>Uji seberapa jauh pemahamanmu setelah belajar materi dan berpetualang di NeuroAdventure.</p>
                 </div>
                 <div class="user-profile">
                     <img class="avatar" src="./assets/profile.jpg" alt="Profile">
@@ -116,7 +116,7 @@
                     
                     <!-- Top Ribbon Header -->
                     <div style="text-align: center; margin-bottom: 2.2rem;">
-                        <span class="tape tape-lime" style="font-size: 1.05rem;">LEMBAR UJIAN POSTTEST</span>
+                        <span class="tape tape-lime" style="font-size: 1.05rem;">LEMBAR UJIAN POSTTEST (NEUROADVENTURE)</span>
                         <h2 style="font-size: 2.4rem; margin: 0.5rem 0 0.4rem;">Evaluasi Capaian Akhir</h2>
                         <p style="font-family: var(--mono); color: #444; font-size: 0.95rem;">Jawablah pertanyaan berikut dengan jujur sesuai pemahaman mendalammu.</p>
                     </div>
@@ -241,8 +241,8 @@
             } else {
                 // Save completion status
                 localStorage.setItem('caretech_posttest_completed', 'true');
-                alert('LUAR BIASA! 🎉\nSemua soal Posttest berhasil kamu selesaikan dengan sangat baik!\nHasil nilaimu akan dicatat pada halaman Penilaian.');
-                window.location.href = 'penilaian.html';
+                alert('LUAR BIASA! 🎉\nSemua soal Posttest (NeuroAdventure) berhasil kamu selesaikan dengan sangat baik!\nBonus Game dan Skenario Ekstra kini telah TERBUKA (UNLOCKED)!');
+                window.location.href = 'bonus-game.html';
             }
         }
 

@@ -1,51 +1,123 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Komik Digital</title>
+    <title>CareTech - Alternate Game Story (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
-</head>
+    <style>
+        /* ==========================================================================
+           ALTERNATE GAME STORY (COMIC ZINE SCRAPBOOK)
+           ========================================================================== */
 
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .comic-scrap-card {
+            background: #ffffff;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 7px 7px 0 var(--ink);
+            padding: 1.8rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+        }
+
+        .comic-scrap-card:nth-child(even) {
+            border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+            transform: rotate(1.2deg);
+        }
+
+        .comic-scrap-card:nth-child(odd) {
+            transform: rotate(-1.4deg);
+        }
+
+        .comic-scrap-card:hover {
+            transform: scale(1.025) rotate(0deg) !important;
+            box-shadow: 11px 11px 0 var(--ink) !important;
+        }
+
+        .comic-cover-box {
+            position: relative;
+            text-align: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .comic-cover-box img {
+            width: 140px;
+            height: auto;
+            border: 3.5px solid var(--ink);
+            border-radius: 8px;
+            box-shadow: 5px 5px 0 var(--ink);
+            transform: rotate(-2.5deg);
+            transition: transform 0.25s ease;
+            background: #ffffff;
+        }
+
+        .comic-scrap-card:hover .comic-cover-box img {
+            transform: rotate(2deg) scale(1.05);
+        }
+
+        .comic-scrap-card.locked-story {
+            background: #fdfaf3;
+            opacity: 0.9;
+        }
+
+        .comic-scrap-card.locked-story .comic-cover-box img {
+            filter: grayscale(0.5);
+            opacity: 0.8;
+        }
+    </style>
+</head>
 <body>
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:10%;left:18%"></b>
+        <b class="star" style="top:25%;right:15%;color:var(--cy);animation-delay:-0.6s"></b>
+        <b class="star" style="top:65%;left:22%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:85%;right:20%;color:var(--lime)"></b>
+        <i class="deb tp" style="left:6%;top:38%"></i>
+        <i class="deb sc" style="right:8%;top:55%;animation-delay:-1.5s"></i>
+    </div>
+
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container">
+    <div class="dashboard-container" style="position: relative; z-index: 1;">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
             </div>
-
+            
             <div class="sidebar-section">
-                <h3 class="section-title">Menu Utama</h3>
+                <span class="section-title">Menu Utama</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="dashboard.html">
                             <span class="icon">🏠</span>
                             <span class="text">Beranda</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="jurnal.html">
                             <span class="icon">📓</span>
                             <span class="text">Jurnal Harian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="penilaian.html">
                             <span class="icon">⭐️</span>
                             <span class="text">Penilaian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="chat.html">
                             <span class="icon">🤖</span>
                             <span class="text">ESA AI</span>
@@ -55,40 +127,43 @@
             </div>
 
             <div class="sidebar-section hiburan-section">
-                <h3 class="section-title">Eksplorasi</h3>
+                <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item active">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
+                    <li class="menu-item">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
-                        <a href="video.html">
-                            <span class="icon">📚</span>
-                            <span class="text">Video Pembelajaran</span>
-                        </a>
-                    </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown ">
-                        <a href="javascript:void(0)" class="dropdown-toggle"
-                            onclick="this.parentElement.classList.toggle('active-dropdown')">
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown active-dropdown">
+                        <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
-                            <span class="text">Game</span>
-                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                            <span class="text">Game Zone</span>
+                            <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">Pretest</a></li>
-                            <li><a href="game.html">Game</a></li>
-                            <li><a href="posttest.html">Posttest</a></li>
+                            <li><a href="game.html" class="active-subitem">1. Main Game ★</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
             </div>
         </nav>
 
@@ -97,80 +172,117 @@
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
-                    <h1>Komik Digital Interaktif</h1>
-                    <p>Baca cerita seru tentang persahabatan.</p>
+                    <a href="game.html" class="btn btn-small" style="background: var(--sun); margin-bottom: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                        ← Kembali ke Halaman Game
+                    </a>
+                    <span class="tape tape-pink" style="display: block; margin-bottom: 0.4rem; font-size: 0.85rem; width: fit-content;">HARMONIA RPG // RUTE CERITA</span>
+                    <h1>Alternate Game Story</h1>
+                    <p>Komik petualangan alur kisah alternatif para karakter Harmonia School!</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar"
-                        src="./assets/profile.jpg"
-                        alt="Profile">
+                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
                 </div>
             </header>
 
-            <div class="content-grid">
-                <div class="dashboard-card glass-panel interactive-card"
-                    style="background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <img src="assets/comics/Komik%201.png" alt="Cover Episode 1"
-                        style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                    <h3>Episode 1</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Memahami dan Mengenali
-                        Emosi bersama teman</p>
-                    <button class="btn-small"
-                        onclick="window.open('assets/comics/1%20Memahami%20dan%20Mengenali%20Emosi%20bersama%20teman.pdf', '_blank')">Baca
-                        Sekarang</button>
+            <div class="content-grid" style="display: block; max-width: 960px; margin: 0 auto;">
+                
+                <!-- Intro Card -->
+                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2.2rem; transform: rotate(-0.5deg);">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <span style="font-size: 3rem; filter: drop-shadow(3px 3px 0 var(--ink));">📖</span>
+                        <div style="flex: 1; min-width: 260px;">
+                            <h2 style="font-size: 2rem; margin: 0 0 0.4rem 0;">Tentang Rute Cerita Alternatif</h2>
+                            <p style="font-family: var(--mk); font-size: 1.15rem; color: #222; line-height: 1.6; margin: 0;">
+                                Rute cerita ini menghadirkan sudut pandang mendalam dari setiap karakter yang kamu temui di game RPG. Baca komik visual untuk memahami latar belakang emosi mereka dan cara terbaik menjadi teman yang suportif!
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="dashboard-card glass-panel"
-                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div style="position:relative; display:inline-block;">
-                        <img src="assets/comics/Komik%202.png" alt="Cover Episode 2"
-                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
-                        <div
-                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                            🔒</div>
-                    </div>
-                    <h3>Episode 2</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Pengambilan Keputusan yang Bertanggung Jawab</p>
+                <!-- Comic Episodes Grid -->
+                <div class="story-grid">
+                    
+                    <!-- Episode 1 (Available) -->
+                    <article class="comic-scrap-card" id="ep-1" style="background: #fffde6;">
+                        <div class="comic-cover-box">
+                            <span class="tape tape-pink" style="position: absolute; top: -10px; left: 10px; font-size: 0.75rem; z-index: 2;">RUTE 01</span>
+                            <img src="assets/comics/Komik%201.png" alt="Cover Episode 1">
+                        </div>
+                        <h3 style="font-size: 1.6rem; margin: 0.2rem 0 0.5rem 0;">Episode 1: Mengenali Emosi</h3>
+                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; line-height: 1.5; flex-grow: 1; margin-bottom: 1.2rem;">
+                            Saat salah paham terjadi di koridor sekolah! Ikuti bagaimana Zuruki belajar mengenali sinyal kemarahan dan memilih bersikap tenang.
+                        </p>
+                        <div>
+                            <a href="assets/comics/1%20Memahami%20dan%20Mengenali%20Emosi%20bersama%20teman.pdf" target="_blank" class="btn btn-small" style="background: var(--sun); width: 100%; text-align: center; display: block; padding: 0.6rem 1rem;">
+                                Buka Komik Episode 1 📖
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Episode 2 (Locked / Upcoming) -->
+                    <article class="comic-scrap-card locked-story" id="ep-2" style="background: #e6f9ff;">
+                        <div class="comic-cover-box">
+                            <span class="tape tape-cyan" style="position: absolute; top: -10px; left: 10px; font-size: 0.75rem; z-index: 2;">RUTE 02</span>
+                            <img src="assets/comics/Komik%202.png" alt="Cover Episode 2">
+                        </div>
+                        <h3 style="font-size: 1.6rem; margin: 0.2rem 0 0.5rem 0; color: #444;">Episode 2: Pengambilan Keputusan</h3>
+                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 1.2rem;">
+                            Dilema moral di jam istirahat. Menguji keberanian untuk mengambil keputusan yang adil dan bertanggung jawab bagi semua pihak.
+                        </p>
+                        <div>
+                            <button type="button" class="btn btn-small" style="background: #ffffff; color: #666; width: 100%; border: 3px dashed var(--ink); cursor: pointer;" onclick="notifyEpisode(2)">
+                                Segera Rilis 🔒
+                            </button>
+                        </div>
+                    </article>
+
+                    <!-- Episode 3 (Locked / Upcoming) -->
+                    <article class="comic-scrap-card locked-story" id="ep-3" style="background: #fff0f5;">
+                        <div class="comic-cover-box">
+                            <span class="tape tape-lime" style="position: absolute; top: -10px; left: 10px; font-size: 0.75rem; z-index: 2;">RUTE 03</span>
+                            <img src="assets/comics/Komik%203.png" alt="Cover Episode 3">
+                        </div>
+                        <h3 style="font-size: 1.6rem; margin: 0.2rem 0 0.5rem 0; color: #444;">Episode 3: Sekolah Harmonis</h3>
+                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 1.2rem;">
+                            Langkah bersama seluruh warga Harmonia School menciptakan lingkungan kelas yang aman dari ejekan dan perundungan.
+                        </p>
+                        <div>
+                            <button type="button" class="btn btn-small" style="background: #ffffff; color: #666; width: 100%; border: 3px dashed var(--ink); cursor: pointer;" onclick="notifyEpisode(3)">
+                                Segera Rilis 🔒
+                            </button>
+                        </div>
+                    </article>
+
+                    <!-- Episode 4 (Locked / Upcoming) -->
+                    <article class="comic-scrap-card locked-story" id="ep-4" style="background: #f8f4ff;">
+                        <div class="comic-cover-box">
+                            <span class="tape tape-white" style="position: absolute; top: -10px; left: 10px; font-size: 0.75rem; z-index: 2;">RUTE 04</span>
+                            <img src="assets/comics/Komik%204.png" alt="Cover Episode 4">
+                        </div>
+                        <h3 style="font-size: 1.6rem; margin: 0.2rem 0 0.5rem 0; color: #444;">Episode 4: Saling Menghargai</h3>
+                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #555; line-height: 1.5; flex-grow: 1; margin-bottom: 1.2rem;">
+                            Puncak perjalanan empati! Menjadi pembela kawan sejati dan merayakan perbedaan sebagai kekuatan bersama.
+                        </p>
+                        <div>
+                            <button type="button" class="btn btn-small" style="background: #ffffff; color: #666; width: 100%; border: 3px dashed var(--ink); cursor: pointer;" onclick="notifyEpisode(4)">
+                                Segera Rilis 🔒
+                            </button>
+                        </div>
+                    </article>
+
                 </div>
 
-                <div class="dashboard-card glass-panel"
-                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div style="position:relative; display:inline-block;">
-                        <img src="assets/comics/Komik%203.png" alt="Cover Episode 3"
-                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
-                        <div
-                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                            🔒</div>
-                    </div>
-                    <h3>Episode 3</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Membangun Lingkungan Sekolah yang Harmonis</p>
+                <!-- Bottom Return Callout -->
+                <div style="margin-top: 3rem; text-align: center; padding: 2.2rem; background: #ffffff; border: 4px solid var(--ink); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; box-shadow: 6px 6px 0 var(--ink);">
+                    <h3 style="font-size: 1.8rem; margin: 0 0 0.6rem 0;">Siap Melanjutkan Permainan RPG?</h3>
+                    <p style="font-family: var(--mk); font-size: 1.1rem; color: #444; margin-bottom: 1.5rem;">
+                        Kembali ke halaman game untuk menjalankan misi simulasi interaktif di Harmonia School!
+                    </p>
+                    <a href="game.html" class="btn" style="background: var(--lime); padding: 0.7rem 2.2rem;">
+                        Kembali ke Misi Game RPG 🎮
+                    </a>
                 </div>
 
-                <div class="dashboard-card glass-panel"
-                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div style="position:relative; display:inline-block;">
-                        <img src="assets/comics/Komik%204.png" alt="Cover Episode 4"
-                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
-                        <div
-                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                            🔒</div>
-                    </div>
-                    <h3>Episode 4</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:1rem; font-weight:500;">Hentikan Bullying: Mari Saling Menghargai</p>
-                </div>
-
-                <div class="dashboard-card glass-panel"
-                    style="opacity: 0.7; background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.95)), url('https://images.unsplash.com/photo-1578070181910-f1e514afdd08?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div style="position:relative; display:inline-block;">
-                        <img src="assets/comics/Komik%205.png" alt="Cover Episode 5"
-                            style="width: 120px; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: grayscale(1) opacity(0.5);">
-                        <div
-                            style="position:absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                            🔒</div>
-                    </div>
-                    <h3>Episode 5</h3>
-                    <p style="color:#777; font-size:0.9rem;">Selesaikan episode sebelumnya untuk membuka.</p>
-                </div>
             </div>
         </main>
     </div>
@@ -182,7 +294,10 @@
             if(sidebar) sidebar.classList.toggle('active');
             if(overlay) overlay.classList.toggle('active');
         }
+
+        function notifyEpisode(ep) {
+            alert(`📦 Episode ${ep} sedang dalam tahap penyusunan oleh tim guru Harmonia!\n\nYuk baca Episode 1 terlebih dahulu dan selesaikan misi di Game RPG! ✨`);
+        }
     </script>
 </body>
-
 </html>

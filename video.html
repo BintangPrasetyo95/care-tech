@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Modul Digital</title>
+    <title>CareTech - Video Belajar</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
             </div>
 
             <div class="sidebar-section">
-                <h3 class="section-title">Menu Utama</h3>
+                <span class="section-title">Menu Utama</span>
                 <ul class="sidebar-menu">
                     <li class="menu-item ">
                         <a href="dashboard.html">
@@ -55,40 +55,44 @@
             </div>
 
             <div class="sidebar-section hiburan-section">
-                <h3 class="section-title">Eksplorasi</h3>
+                <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
+                    <li class="menu-item">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
                         </a>
                     </li>
-                    <li class="menu-item active">
-                        <a href="video.html">
-                            <span class="icon">📚</span>
-                            <span class="text">Video Pembelajaran</span>
-                        </a>
-                    </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown ">
+                    <li class="menu-item active">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown">
                         <a href="javascript:void(0)" class="dropdown-toggle"
                             onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
-                            <span class="text">Game</span>
+                            <span class="text">Game Zone</span>
                             <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">Pretest</a></li>
-                            <li><a href="game.html">Game</a></li>
-                            <li><a href="posttest.html">Posttest</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
             </div>
         </nav>
 
@@ -144,6 +148,23 @@
                         <p style="color: #4A5568; margin-bottom: 0.5rem;">Tips dan trik untuk menjadi siswa yang suportif dan peduli dengan sesama.</p>
                         <div style="background: #e2e8f0; width: 100%; padding-bottom: 56.25%; border-radius: 12px;"></div>
                     </div>
+                </div>
+
+                <!-- Next Step Card to Game Zone -->
+                <div class="dashboard-card glass-panel wide-card" style="text-align: center; background: #fffbe6; border: 3.5px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 2.2rem; transform: rotate(-0.5deg); position: relative; margin-top: 1rem;">
+                    <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(1deg); width: 140px; height: 26px; background: rgba(255, 229, 0, 0.9); border: 2px dashed rgba(0, 0, 0, 0.35); pointer-events: none;"></div>
+                    <span style="display: inline-block; font-family: var(--mono); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #555; margin-bottom: 0.4rem;">
+                        Tahap Belajar Berikutnya // Langkah 04
+                    </span>
+                    <h3 style="font-family: var(--imp); font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 0.2rem 0 0.6rem 0; color: var(--ink);">
+                        Sudah Menonton Video? Lanjut Mainkan Game RPG! 🎮
+                    </h3>
+                    <p style="font-family: var(--mk); font-weight: 700; font-size: 1.1rem; color: #333; max-width: 620px; margin: 0 auto 1.4rem auto;">
+                        Uji pemahaman dan latih pengambilan keputusanmu melalui petualangan interaktif Harmonia School RPG!
+                    </p>
+                    <a href="game.html" class="action-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-size: 1.05rem; font-weight: 800; padding: 0.85rem 2rem; background: var(--pink); color: #fff; border: 3.5px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); border-radius: 999px;">
+                        Mulai Main Game RPG Sekarang ➔
+                    </a>
                 </div>
             </div>
         </main>

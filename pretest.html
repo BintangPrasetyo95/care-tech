@@ -58,16 +58,10 @@
             <div class="sidebar-section hiburan-section">
                 <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="video.html">
-                            <span class="icon">🎬</span>
-                            <span class="text">Video Belajar</span>
+                    <li class="menu-item active">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest ★</span>
                         </a>
                     </li>
                     <li class="menu-item">
@@ -76,23 +70,29 @@
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown active-dropdown">
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown">
                         <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
                             <span class="text">Game Zone</span>
                             <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html" class="active-subitem">1. Pretest ★</a></li>
-                            <li><a href="game.html">2. Main Game</a></li>
-                            <li><a href="posttest.html">3. Posttest</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
 
             <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
-                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">CARDBOARD ED. 2026</p>
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
             </div>
         </nav>
 
@@ -104,7 +104,7 @@
                 <div class="greeting">
                     <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 01 // Evaluasi Awal</span>
                     <h1 id="welcome-message">Pretest Pembelajaran</h1>
-                    <p>Uji pemahamanmu sebelum memulai materi dan game simulasi.</p>
+                    <p>Uji pemahamanmu sebelum mempelajari modul digital dan materi belajar.</p>
                 </div>
                 <div class="user-profile">
                     <img class="avatar" src="./assets/profile.jpg" alt="Profile">
@@ -231,9 +231,8 @@
                     currentQ++;
                     renderQuestion();
                 }
-            } else {
-                alert('Hebat! Jawaban Pretest berhasil disimpan. Saatnya bermain game RPG Harmonia School!');
-                window.location.href = 'game.html';
+                alert('Hebat! Jawaban Pretest berhasil disimpan. Saatnya melanjutkan ke Modul Digital!');
+                window.location.href = 'modul.html';
             }
         }
 
