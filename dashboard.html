@@ -59,21 +59,21 @@
                 <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
                     <li class="menu-item">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="video.html">
-                            <span class="icon">🎬</span>
-                            <span class="text">Video Belajar</span>
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
                         </a>
                     </li>
                     <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
                         </a>
                     </li>
                     <li class="menu-item has-dropdown">
@@ -83,9 +83,8 @@
                             <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">1. Pretest</a></li>
-                            <li><a href="game.html">2. Main Game</a></li>
-                            <li><a href="posttest.html">3. Posttest</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -186,12 +185,12 @@
                         <span style="font-family: var(--mono); font-weight: bold; background: var(--sun); padding: 0.3rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px;">Semester Ganjil</span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.8rem;">
-                        <!-- Komik Card -->
-                        <div class="interactive-card" onclick="location.href='komik.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #fffde6 !important;">
-                            <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Komik Digital</h3>
-                            <div class="progress-sticker">0%</div>
-                            <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">5 Episode Tersedia</span>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.6rem;">
+                        <!-- Pretest Card (Sebelum Modul) -->
+                        <div class="interactive-card" onclick="location.href='pretest.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #fffde6 !important;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Pretest</h3>
+                            <div class="progress-sticker" style="background: var(--sun);">100%</div>
+                            <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">Evaluasi Awal</span>
                         </div>
 
                         <!-- Modul Card -->
@@ -201,62 +200,18 @@
                             <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">1 Dari 3 Modul Selesai</span>
                         </div>
 
+                        <!-- Video Card (Setelah Modul) -->
+                        <div class="interactive-card" onclick="location.href='video.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #fff5eb !important;">
+                            <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Video Belajar</h3>
+                            <div class="progress-sticker" style="background: var(--cy);">0%</div>
+                            <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">Video Materi Edukatif</span>
+                        </div>
+
                         <!-- Game Card -->
                         <div class="interactive-card" onclick="location.href='game.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #ffe6f2 !important;">
                             <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Game RPG</h3>
                             <div class="progress-sticker" style="background: var(--pink); color: #fff;">0%</div>
-                            <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">Harmonia School</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Komik Digital List -->
-                <div class="dashboard-card wide-card">
-                    <span class="tape tape-pink">Episode Komik</span>
-                    <h2>Daftar Komik Digital</h2>
-                    <p style="font-family: var(--mono); margin-bottom: 1.8rem;">Cerita seru tentang pertemanan, empati, dan keberanian!</p>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.8rem;">
-                        <!-- Episode 1 (Available) -->
-                        <div class="interactive-card comic-card">
-                            <span class="tape tape-cyan" style="font-size: 0.8rem; margin-bottom: 0.8rem;">Terbuka ★</span>
-                            <img src="assets/comics/Komik%201.png" alt="Cover Episode 1" style="width: 130px; height: auto; margin-bottom: 1rem;">
-                            <h3 style="font-size: 1.5rem; margin: 0.4rem 0;">Episode 1</h3>
-                            <p style="font-size: 0.95rem; margin-bottom: 1.2rem; color: #333;">Memahami dan Mengenali Emosi bersama teman</p>
-                            <button class="btn-small" onclick="window.open('assets/comics/1%20Memahami%20dan%20Mengenali%20Emosi%20bersama%20teman.pdf', '_blank')">Baca Komik 📖</button>
-                        </div>
-
-                        <!-- Episode 2 (Locked) -->
-                        <div class="comic-card locked">
-                            <span class="tape tape-white" style="font-size: 0.8rem; margin-bottom: 0.8rem;">Terkunci</span>
-                            <div style="position: relative; display: inline-block;">
-                                <img src="assets/comics/Komik%202.png" alt="Cover Episode 2" style="width: 130px; height: auto; margin-bottom: 1rem; opacity: 0.4;">
-                                <div class="lock-badge">🔒</div>
-                            </div>
-                            <h3 style="font-size: 1.5rem; margin: 0.4rem 0;">Episode 2</h3>
-                            <p style="font-size: 0.95rem; color: #666;">Pengambilan Keputusan yang Bertanggung Jawab</p>
-                        </div>
-
-                        <!-- Episode 3 (Locked) -->
-                        <div class="comic-card locked">
-                            <span class="tape tape-white" style="font-size: 0.8rem; margin-bottom: 0.8rem;">Terkunci</span>
-                            <div style="position: relative; display: inline-block;">
-                                <img src="assets/comics/Komik%203.png" alt="Cover Episode 3" style="width: 130px; height: auto; margin-bottom: 1rem; opacity: 0.4;">
-                                <div class="lock-badge">🔒</div>
-                            </div>
-                            <h3 style="font-size: 1.5rem; margin: 0.4rem 0;">Episode 3</h3>
-                            <p style="font-size: 0.95rem; color: #666;">Membangun Lingkungan Sekolah yang Harmonis</p>
-                        </div>
-
-                        <!-- Episode 4 (Locked) -->
-                        <div class="comic-card locked">
-                            <span class="tape tape-white" style="font-size: 0.8rem; margin-bottom: 0.8rem;">Terkunci</span>
-                            <div style="position: relative; display: inline-block;">
-                                <img src="assets/comics/Komik%204.png" alt="Cover Episode 4" style="width: 130px; height: auto; margin-bottom: 1rem; opacity: 0.4;">
-                                <div class="lock-badge">🔒</div>
-                            </div>
-                            <h3 style="font-size: 1.5rem; margin: 0.4rem 0;">Episode 4</h3>
-                            <p style="font-size: 0.95rem; color: #666;">Hentikan Bullying: Mari Saling Menghargai</p>
+                            <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">Harmonia School &amp; Cerita</span>
                         </div>
                     </div>
                 </div>
