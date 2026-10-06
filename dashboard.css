@@ -464,9 +464,33 @@ h2.tape, .tape-heading {
     transform: rotate(0.5deg);
 }
 
-/* Avatar Styled as Round Sticker */
+/* Avatar Styled as Round Sticker & Dropdown Menu */
 .user-profile {
     position: relative;
+    z-index: 100;
+}
+
+.avatar-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    outline: none;
+    line-height: 0;
+}
+
+.avatar-btn:focus-visible .avatar {
+    outline: 3.5px dashed var(--pink);
+    outline-offset: 6px;
+}
+
+.avatar-btn:hover .avatar {
+    transform: scale(1.08) rotate(-4deg);
 }
 
 .avatar {
@@ -478,10 +502,113 @@ h2.tape, .tape-heading {
     box-shadow: 0 0 0 4px #ffffff, 0 0 0 8px var(--ink), 6px 6px 0 8px var(--ink);
     transform: rotate(3deg);
     transition: transform 0.2s ease;
+    cursor: pointer;
 }
 
 .avatar:hover {
     transform: scale(1.08) rotate(-4deg);
+}
+
+/* Profile Dropdown (Cardboard Cosmos) */
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+    min-width: 220px;
+    max-width: calc(100vw - 32px);
+    background: var(--paper-warm, #fffdf8);
+    border: 3.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 1rem 0.9rem 0.75rem;
+    z-index: 1000;
+    display: none;
+    text-align: left;
+    transform-origin: top right;
+    animation: dropdownPop 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes dropdownPop {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.profile-dropdown.show {
+    display: block;
+}
+
+.dropdown-tape {
+    font-size: 0.7rem !important;
+    padding: 0.15rem 0.6rem !important;
+    margin-bottom: 0.4rem !important;
+    display: inline-block;
+}
+
+.dropdown-student-name {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.12rem;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.dropdown-student-meta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #555555;
+}
+
+.profile-dropdown-divider {
+    height: 0;
+    border-top: 2.5px dashed var(--ink);
+    margin: 0.75rem 0 0.65rem 0;
+}
+
+.profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--ink);
+    text-decoration: none;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+}
+
+.profile-dropdown-item:last-child {
+    margin-bottom: 0;
+}
+
+.profile-dropdown-item:hover {
+    background: #ffffff;
+    border-color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: translate(-1px, -1px);
+}
+
+.profile-dropdown-item.logout-item {
+    color: #dc2626;
+}
+
+.profile-dropdown-item.logout-item:hover {
+    background: var(--pink);
+    color: #ffffff;
+    border-color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
 }
 
 /* ==========================================================================

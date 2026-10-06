@@ -108,7 +108,21 @@
                     <p>Siap untuk berpetualang dan belajar hari ini?</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
+                        <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    </button>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="tape tape-lime dropdown-tape">AKUN SISWA</span>
+                            <div class="dropdown-student-name">Zuruki</div>
+                            <div class="dropdown-student-meta">Kelas V-A // Harmonia</div>
+                        </div>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="index.html" class="profile-dropdown-item logout-item" onclick="handleLogout(event)">
+                            <span>🚪</span>
+                            <span>Keluar / Logout</span>
+                        </a>
+                    </div>
                 </div>
             </header>
 
@@ -280,5 +294,6 @@
             if(overlay) overlay.classList.toggle('active');
         }
     </script>
+    <script src="dropdown.js"></script>
 </body>
 </html>
