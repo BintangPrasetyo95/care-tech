@@ -1,23 +1,371 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Modul Digital</title>
+    <title>CareTech - Modul Digital (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
-</head>
+    <style>
+        /* ==========================================================================
+           MINIMALIST BUT CHAOTIC ZINE MODULE STYLES (NO BADGES)
+           ========================================================================== */
 
+        .chaos-container {
+            max-width: 940px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        /* Chaotic Zine Card */
+        .zine-card {
+            position: relative;
+            background: #ffffff;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 8px 8px 0 var(--ink);
+            padding: 2.4rem 2.6rem;
+            transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+        }
+
+        /* Asymmetric tilts for each card */
+        .zine-card:nth-child(1) {
+            transform: rotate(-1.6deg);
+        }
+        .zine-card:nth-child(2) {
+            transform: rotate(2deg);
+            border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+        }
+        .zine-card:nth-child(3) {
+            transform: rotate(-2.3deg);
+        }
+        .zine-card:nth-child(4) {
+            transform: rotate(1.5deg);
+            background: #fdfbf7;
+            border-radius: 225px 20px 245px 15px/15px 245px 20px 225px;
+        }
+        .zine-card:nth-child(5) {
+            transform: rotate(-1.2deg);
+            background: #fcfaf4;
+        }
+
+        .zine-card:hover {
+            transform: scale(1.015) rotate(0deg) !important;
+            box-shadow: 12px 12px 0 var(--ink) !important;
+        }
+
+        /* Cutout Stencil Numbers (Oversized, crooked, poking out) */
+        .zine-num {
+            position: absolute;
+            top: -24px;
+            right: 28px;
+            background: var(--sun);
+            color: var(--ink);
+            border: 3.5px solid var(--ink);
+            box-shadow: 4px 4px 0 var(--ink);
+            font: 900 2rem/1 var(--imp);
+            padding: 0.35rem 1rem;
+            transform: rotate(5deg);
+            letter-spacing: 0.04em;
+            z-index: 4;
+            user-select: none;
+        }
+
+        .zine-card:nth-child(2) .zine-num {
+            background: var(--lime);
+            transform: rotate(-6deg);
+            left: 28px;
+            right: auto;
+        }
+        .zine-card:nth-child(3) .zine-num {
+            background: var(--pink);
+            color: #ffffff;
+            transform: rotate(4deg);
+        }
+        .zine-card:nth-child(4) .zine-num {
+            background: var(--cy);
+            color: var(--ink);
+            transform: rotate(-5deg);
+            left: 28px;
+            right: auto;
+        }
+        .zine-card:nth-child(5) .zine-num {
+            background: #ffffff;
+            transform: rotate(6deg);
+        }
+
+        /* Torn Duct Tape Strips pinned haphazardly */
+        .tape-corner {
+            position: absolute;
+            top: -14px;
+            left: 45px;
+            width: 120px;
+            height: 28px;
+            background: rgba(255, 229, 0, 0.9);
+            border: 2px dashed rgba(0, 0, 0, 0.35);
+            transform: rotate(-5deg);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .zine-card:nth-child(2) .tape-corner {
+            left: auto;
+            right: 50px;
+            background: rgba(0, 229, 255, 0.88);
+            transform: rotate(6deg);
+        }
+        .zine-card:nth-child(3) .tape-corner {
+            background: rgba(57, 255, 20, 0.88);
+            transform: rotate(-4deg);
+        }
+        .zine-card:nth-child(4) .tape-corner {
+            left: auto;
+            right: 45px;
+            background: rgba(255, 46, 147, 0.85);
+            transform: rotate(5deg);
+        }
+        .zine-card:nth-child(5) .tape-corner {
+            background: rgba(255, 255, 255, 0.92);
+            transform: rotate(-7deg);
+        }
+
+        /* Module Flex Layout */
+        .zine-layout {
+            display: flex;
+            gap: 2.4rem;
+            align-items: flex-start;
+        }
+
+        /* Cover Image Frame */
+        .zine-cover-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .zine-cover-img {
+            width: 155px;
+            height: auto;
+            border: 4px solid var(--ink);
+            border-radius: 6px;
+            box-shadow: 6px 6px 0 var(--ink);
+            transform: rotate(-3deg);
+            transition: transform 0.25s ease;
+            background: #ffffff;
+            display: block;
+        }
+
+        .zine-card:hover .zine-cover-img {
+            transform: rotate(2deg) scale(1.05);
+        }
+
+        .cover-tape-pin {
+            position: absolute;
+            top: -10px;
+            left: -12px;
+            width: 52px;
+            height: 22px;
+            background: rgba(255, 46, 147, 0.88);
+            border: 1px dashed rgba(0, 0, 0, 0.35);
+            transform: rotate(-35deg);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .zine-content {
+            flex: 1;
+        }
+
+        .zine-tagline {
+            display: inline-block;
+            font: 700 0.82rem var(--mono);
+            letter-spacing: 0.08em;
+            color: #555;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+        }
+
+        .zine-title {
+            font: 400 clamp(1.9rem, 3.8vw, 2.5rem)/1.1 var(--imp);
+            letter-spacing: 0.02em;
+            margin: 0.2rem 0 0.8rem 0;
+            color: var(--ink);
+        }
+
+        .zine-desc {
+            font: 700 1.15rem/1.65 var(--mk);
+            color: #222;
+            margin: 0 0 1.2rem 0;
+        }
+
+        /* Clean Fold-out Notes (Ruled Paper) */
+        .zine-toggle-notes {
+            background: none;
+            border: none;
+            font: 700 0.95rem var(--mono);
+            color: var(--ink);
+            cursor: pointer;
+            padding: 0.2rem 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: underline wavy var(--pink) 2px;
+            text-underline-offset: 4px;
+            margin-bottom: 1.3rem;
+            transition: transform 0.15s ease, color 0.15s ease;
+        }
+
+        .zine-toggle-notes:hover {
+            transform: scale(1.04) rotate(-1.5deg);
+            color: var(--pink);
+        }
+
+        .zine-notes-drawer {
+            display: none;
+            background: repeating-linear-gradient(0deg, transparent 0 27px, rgba(0, 110, 220, 0.2) 27px 29px), #fffdf5;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.2rem 1.6rem;
+            margin-bottom: 1.4rem;
+            transform: rotate(-0.5deg);
+        }
+
+        .zine-notes-drawer.open {
+            display: block;
+            animation: unfoldNotes 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        @keyframes unfoldNotes {
+            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1) rotate(-0.5deg); }
+        }
+
+        .zine-notes-drawer ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            font-family: var(--mk);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .zine-notes-drawer li {
+            margin-bottom: 0.4rem;
+        }
+
+        /* Brutalist Action Buttons */
+        .chaos-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 2.2rem;
+            background: var(--sun);
+            color: var(--ink);
+            border: 4px solid var(--ink);
+            font: 400 1.55rem var(--imp);
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            transform: rotate(-2deg);
+            box-shadow: 6px 6px 0 var(--ink);
+            transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+            cursor: pointer;
+        }
+
+        .chaos-action-btn:hover {
+            background: var(--lime);
+            transform: rotate(2deg) scale(1.06);
+            box-shadow: 8px 8px 0 var(--ink);
+        }
+
+        .chaos-action-btn:active {
+            transform: translate(4px, 4px) rotate(-2deg);
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        .chaos-action-btn.btn-pink {
+            background: var(--pink);
+            color: #ffffff;
+        }
+        .chaos-action-btn.btn-pink:hover {
+            background: var(--sun);
+            color: var(--ink);
+        }
+
+        .chaos-action-btn.btn-cyan {
+            background: var(--cy);
+        }
+        .chaos-action-btn.btn-cyan:hover {
+            background: var(--pink);
+            color: #ffffff;
+        }
+
+        .chaos-action-btn.btn-draft {
+            background: #ffffff;
+            color: #666666;
+            border: 3.5px dashed var(--ink);
+            box-shadow: 4px 4px 0 var(--ink);
+            transform: rotate(1.5deg);
+            cursor: pointer;
+        }
+        .chaos-action-btn.btn-draft:hover {
+            background: #f1f5f9;
+            transform: scale(1.03) rotate(-1deg);
+        }
+        .chaos-action-btn.btn-draft:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
+        /* Draft Warning Strip (Card 4 & 5) */
+        .draft-notice {
+            display: inline-block;
+            margin-bottom: 0.6rem;
+            padding: 0.25rem 0.8rem;
+            background: #ffe500;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
+            font: 700 0.85rem var(--mono);
+            transform: rotate(-2deg);
+            letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 768px) {
+            .zine-layout {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+            .zine-cover-img {
+                width: 130px;
+            }
+            .zine-card {
+                padding: 2.2rem 1.5rem;
+            }
+            .zine-num {
+                top: -18px;
+                font-size: 1.6rem;
+                padding: 0.25rem 0.75rem;
+            }
+        }
+    </style>
+</head>
 <body>
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:8%;left:15%"></b>
+        <b class="star" style="top:25%;right:10%;color:var(--cy);animation-delay:-0.5s"></b>
+        <b class="star" style="top:65%;left:18%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:85%;right:18%;color:var(--lime);animation-delay:-0.8s"></b>
+        <i class="deb tp" style="left:5%;top:35%"></i>
+        <i class="deb sc" style="right:6%;top:52%;animation-delay:-1.4s"></i>
+        <i class="deb bl" style="left:8%;bottom:12%;animation-delay:-2.1s"></i>
+    </div>
+
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
+    <div class="dashboard-container" style="position: relative; z-index: 1;">
+        <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
@@ -25,27 +373,27 @@
             </div>
 
             <div class="sidebar-section">
-                <h3 class="section-title">Menu Utama</h3>
+                <span class="section-title">Menu Utama</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="dashboard.html">
                             <span class="icon">🏠</span>
                             <span class="text">Beranda</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="jurnal.html">
                             <span class="icon">📓</span>
                             <span class="text">Jurnal Harian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="penilaian.html">
                             <span class="icon">⭐️</span>
                             <span class="text">Penilaian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="chat.html">
                             <span class="icon">🤖</span>
                             <span class="text">ESA AI</span>
@@ -55,18 +403,18 @@
             </div>
 
             <div class="sidebar-section hiburan-section">
-                <h3 class="section-title">Eksplorasi</h3>
+                <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="komik.html">
                             <span class="icon">📖</span>
                             <span class="text">Komik Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="video.html">
-                            <span class="icon">📚</span>
-                            <span class="text">Video Pembelajaran</span>
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
                         </a>
                     </li>
                     <li class="menu-item active">
@@ -75,20 +423,23 @@
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown ">
-                        <a href="javascript:void(0)" class="dropdown-toggle"
-                            onclick="this.parentElement.classList.toggle('active-dropdown')">
+                    <li class="menu-item has-dropdown">
+                        <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
-                            <span class="text">Game</span>
-                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                            <span class="text">Game Zone</span>
+                            <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">Pretest</a></li>
-                            <li><a href="game.html">Game</a></li>
-                            <li><a href="posttest.html">Posttest</a></li>
+                            <li><a href="pretest.html">1. Pretest</a></li>
+                            <li><a href="game.html">2. Main Game</a></li>
+                            <li><a href="posttest.html">3. Posttest</a></li>
                         </ul>
                     </li>
                 </ul>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">CARDBOARD ED. 2026</p>
             </div>
         </nav>
 
@@ -97,81 +448,215 @@
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
+                    <span class="tape tape-sun" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Ruang Baca Siswa</span>
                     <h1>Modul Digital</h1>
-                    <p>Materi pembelajaran interaktif.</p>
+                    <p>Buku saku anti-perundungan & empati. Baca santai, bebas pilih!</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar"
-                        src="./assets/profile.jpg"
-                        alt="Profile">
+                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
                 </div>
             </header>
 
-            <div class="content-grid" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div class="dashboard-card glass-panel wide-card"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
-                    <div style="display:flex; align-items:center; gap:2rem;">
-                        <img src="assets/module/Modul%201.png" alt="Cover Modul 1"
-                            style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
-                        <div>
-                            <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Mengenali dan Memahami Emosi</h3>
-                            <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Pelajari cara mengenali dan mengelola emosimu dengan baik.</p>
-                            <a href="assets/module/1%20Modul%20Pembelajaran%20Mengenali%20dan%20Memahami%20Emosi.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
-                        </div>
-                    </div>
-                </div>
+            <!-- Minimalist but Chaotic Module Feed -->
+            <div class="chaos-container">
 
-                <div class="dashboard-card glass-panel wide-card"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
-                    <div style="display:flex; align-items:center; gap:2rem;">
-                        <img src="assets/module/Modul%202.png" alt="Cover Modul 2"
-                            style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
-                        <div>
-                            <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Pencegahan dan Penanganan Perundungan</h3>
-                            <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Cara membangun lingkungan yang aman dan harmonis.</p>
-                            <a href="assets/module/2%20Modul%20Pembelajaran%20Pencegahan%20dan%20Penanganan%20Perundungan.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
-                        </div>
-                    </div>
-                </div>
+                <!-- =========================================================
+                     MODULE 01
+                     ========================================================= -->
+                <article class="zine-card" id="modul-1">
+                    <div class="zine-num">01</div>
+                    <div class="tape-corner"></div>
 
-                <div class="dashboard-card glass-panel wide-card"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
-                    <div style="display:flex; align-items:center; gap:2rem;">
-                        <img src="assets/module/Modul%203.png" alt="Cover Modul 3"
-                            style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
-                        <div>
-                            <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Modul Pembelajaran Empati dan Kepedulian Sosial</h3>
-                            <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Membangun rasa kepedulian terhadap sesama.</p>
-                            <a href="assets/module/3%20Modul%20Pembelajaran%20Empati%20dan%20Kepedulian%20Sosial.pdf" target="_blank" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
+                    <div class="zine-layout">
+                        <div class="zine-cover-wrap">
+                            <div class="cover-tape-pin"></div>
+                            <img class="zine-cover-img" src="assets/module/Modul%201.png" alt="Cover Modul 1">
                         </div>
-                    </div>
-                </div>
 
-                <div class="dashboard-card glass-panel wide-card"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1499209974431-9dddcece7f88?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
-                    <div style="display:flex; align-items:center; gap:2rem;">
-                        <img src="assets/module/Modul%204.png" alt="Cover Modul 4"
-                            style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
-                        <div>
-                            <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Refleksi Diri dan Perspektif Sosial</h3>
-                            <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Membangun rasa kepedulian terhadap sesama.</p>
-                            <a href="" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
-                        </div>
-                    </div>
-                </div>
+                        <div class="zine-content">
+                            <span class="zine-tagline">// EMOSI &amp; KESADARAN DIRI</span>
+                            <h2 class="zine-title">Mengenali dan Memahami Emosi</h2>
+                            <p class="zine-desc">
+                                Kenali sinyal emosi di tubuhmu! Mengapa kita bisa senang, marah, atau sedih, dan bagaimana cara menjadi nakhoda atas perasaan kita sendiri.
+                            </p>
 
-                <div class="dashboard-card glass-panel wide-card"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center; color: white; border: none;">
-                    <div style="display:flex; align-items:center; gap:2rem;">
-                        <img src="assets/module/Modul%205.png" alt="Cover Modul 5"
-                            style="width: 120px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
-                        <div>
-                            <h3 style="color: white; margin-top: 0; font-size:1.4rem; margin-bottom:0.5rem;">Membangun Lingkungan Sekolah Yang Harmonis</h3>
-                            <p style="color:#eee; margin-bottom:1rem; font-size:0.95rem;">Membangun rasa kepedulian terhadap sesama.</p>
-                            <a href="" class="btn-small" style="background:var(--primary-color); border:none; color:white;">Mulai Belajar</a>
+                            <!-- Simple Ruled Note Accordion -->
+                            <button class="zine-toggle-notes" type="button" onclick="toggleNotes('notes-1', this)">
+                                ▾ Intip Ringkasan Cepat
+                            </button>
+                            <div class="zine-notes-drawer" id="notes-1">
+                                <ul>
+                                    <li><strong>Roda Emosi:</strong> Tidak ada emosi yang "salah", semua membawa pesan penting untuk dirimu.</li>
+                                    <li><strong>Sinyal Tubuh:</strong> Sadari detak jantung dan rahang saat emosi mulai naik.</li>
+                                    <li><strong>Napas 60 Detik:</strong> Tarik napas dalam 4 hitungan, tahan, dan hembuskan perlahan.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <a href="assets/module/1%20Modul%20Pembelajaran%20Mengenali%20dan%20Memahami%20Emosi.pdf" target="_blank" class="chaos-action-btn">
+                                    BACA MODUL ➔
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </article>
+
+                <!-- =========================================================
+                     MODULE 02
+                     ========================================================= -->
+                <article class="zine-card" id="modul-2">
+                    <div class="zine-num">02</div>
+                    <div class="tape-corner"></div>
+
+                    <div class="zine-layout">
+                        <div class="zine-cover-wrap">
+                            <div class="cover-tape-pin" style="background: var(--cy);"></div>
+                            <img class="zine-cover-img" src="assets/module/Modul%202.png" alt="Cover Modul 2">
+                        </div>
+
+                        <div class="zine-content">
+                            <span class="zine-tagline">// AKSI ANTI-BULLYING</span>
+                            <h2 class="zine-title">Pencegahan &amp; Penanganan Perundungan</h2>
+                            <p class="zine-desc">
+                                Jadilah pembela kawan (*Upstander*)! Pelajari cara aman menghentikan ejekan, merangkul teman yang sendirian, dan membangun lingkungan aman.
+                            </p>
+
+                            <button class="zine-toggle-notes" type="button" onclick="toggleNotes('notes-2', this)">
+                                ▾ Intip Ringkasan Cepat
+                            </button>
+                            <div class="zine-notes-drawer" id="notes-2">
+                                <ul>
+                                    <li><strong>Candaan vs Bullying:</strong> Candaan menyenangkan semua pihak; bullying membuat satu pihak tersakiti.</li>
+                                    <li><strong>Strategi 4T:</strong> Tetap tenang, Tegur dengan tegas, Temani kawan, Tindak lanjuti ke guru.</li>
+                                    <li><strong>Bukan Penonton Pasif:</strong> Diam saat melihat perundungan sama saja membiarkannya terjadi.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <a href="assets/module/2%20Modul%20Pembelajaran%20Pencegahan%20dan%20Penanganan%20Perundungan.pdf" target="_blank" class="chaos-action-btn btn-cyan">
+                                    BACA MODUL ➔
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- =========================================================
+                     MODULE 03
+                     ========================================================= -->
+                <article class="zine-card" id="modul-3">
+                    <div class="zine-num">03</div>
+                    <div class="tape-corner"></div>
+
+                    <div class="zine-layout">
+                        <div class="zine-cover-wrap">
+                            <div class="cover-tape-pin" style="background: var(--sun);"></div>
+                            <img class="zine-cover-img" src="assets/module/Modul%203.png" alt="Cover Modul 3">
+                        </div>
+
+                        <div class="zine-content">
+                            <span class="zine-tagline">// KEPEDULIAN SOSIAL</span>
+                            <h2 class="zine-title">Empati dan Kepedulian Sosial</h2>
+                            <p class="zine-desc">
+                                Memakai kacamata orang lain! Rasakan betapa berharganya sapaan hangat, mendengarkan tanpa memotong, dan aksi kebaikan sederhana setiap hari.
+                            </p>
+
+                            <button class="zine-toggle-notes" type="button" onclick="toggleNotes('notes-3', this)">
+                                ▾ Intip Ringkasan Cepat
+                            </button>
+                            <div class="zine-notes-drawer" id="notes-3">
+                                <ul>
+                                    <li><strong>Kacamata Empati:</strong> Membayangkan berada di posisi teman sebelum berbicara atau bertindak.</li>
+                                    <li><strong>Mendengarkan Aktif:</strong> Berikan perhatian penuh tanpa terburu-buru menghakimi.</li>
+                                    <li><strong>Sentuhan Kecil:</strong> Senyuman atau ajakan bermain bisa mengubah hari buruk seseorang.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <a href="assets/module/3%20Modul%20Pembelajaran%20Empati%20dan%20Kepedulian%20Sosial.pdf" target="_blank" class="chaos-action-btn btn-pink">
+                                    BACA MODUL ➔
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- =========================================================
+                     MODULE 04 (Draft / Upcoming)
+                     ========================================================= -->
+                <article class="zine-card" id="modul-4">
+                    <div class="zine-num">04</div>
+                    <div class="tape-corner"></div>
+
+                    <div class="zine-layout">
+                        <div class="zine-cover-wrap" style="filter: grayscale(0.5); opacity: 0.85;">
+                            <img class="zine-cover-img" src="assets/module/Modul%204.png" alt="Cover Modul 4">
+                        </div>
+
+                        <div class="zine-content">
+                            <span class="draft-notice">⚠ SEDANG DISUSUN GURU</span>
+                            <h2 class="zine-title" style="color: #444;">Refleksi Diri &amp; Perspektif Sosial</h2>
+                            <p class="zine-desc" style="color: #555;">
+                                Menyelami cara kita berpikir dan bertindak. Bagaimana mengambil keputusan yang adil, jujur, serta bertanggung jawab terhadap teman-teman.
+                            </p>
+
+                            <button class="zine-toggle-notes" type="button" onclick="toggleNotes('notes-4', this)">
+                                ▾ Intip Bocoran Topik
+                            </button>
+                            <div class="zine-notes-drawer" id="notes-4">
+                                <ul>
+                                    <li><strong>Uji Keputusan:</strong> *"Apakah tindakanku ini adil dan tidak menyudutkan orang lain?"*</li>
+                                    <li><strong>Keberanian Minta Maaf:</strong> Mengakui kesalahan secara tulus tanpa menyalahkan pihak lain.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <button type="button" class="chaos-action-btn btn-draft" onclick="notifyDraft(4)">
+                                    DRAF BELUM TERBIT 🔒
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- =========================================================
+                     MODULE 05 (Draft / Upcoming)
+                     ========================================================= -->
+                <article class="zine-card" id="modul-5">
+                    <div class="zine-num">05</div>
+                    <div class="tape-corner"></div>
+
+                    <div class="zine-layout">
+                        <div class="zine-cover-wrap" style="filter: grayscale(0.5); opacity: 0.85;">
+                            <img class="zine-cover-img" src="assets/module/Modul%205.png" alt="Cover Modul 5">
+                        </div>
+
+                        <div class="zine-content">
+                            <span class="draft-notice">⚠ SEDANG DISUSUN GURU</span>
+                            <h2 class="zine-title" style="color: #444;">Membangun Lingkungan Sekolah Harmonis</h2>
+                            <p class="zine-desc" style="color: #555;">
+                                Satukan seluruh energi positif! Cara bersama mewujudkan ruang kelas yang aman, inklusif, saling menghargai, dan bebas dari rasa cemas.
+                            </p>
+
+                            <button class="zine-toggle-notes" type="button" onclick="toggleNotes('notes-5', this)">
+                                ▾ Intip Bocoran Topik
+                            </button>
+                            <div class="zine-notes-drawer" id="notes-5">
+                                <ul>
+                                    <li><strong>Deklarasi Sahabat:</strong> Komitmen bersama untuk menjaga rasa aman di kelas.</li>
+                                    <li><strong>Merayakan Perbedaan:</strong> Keragaman sifat dan minat sebagai keunikan bersama.</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <button type="button" class="chaos-action-btn btn-draft" onclick="notifyDraft(5)">
+                                    DRAF BELUM TERBIT 🔒
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
             </div>
         </main>
     </div>
@@ -183,7 +668,23 @@
             if(sidebar) sidebar.classList.toggle('active');
             if(overlay) overlay.classList.toggle('active');
         }
+
+        // Clean Ruled Notes Drawer Toggle
+        function toggleNotes(id, btn) {
+            const drawer = document.getElementById(id);
+            if (!drawer) return;
+
+            drawer.classList.toggle('open');
+            if (drawer.classList.contains('open')) {
+                btn.innerHTML = '▴ Tutup Ringkasan';
+            } else {
+                btn.innerHTML = '▾ Intip Ringkasan Cepat';
+            }
+        }
+
+        function notifyDraft(num) {
+            alert(`📦 Modul ${num} masih dalam proses penyusunan oleh tim guru Harmonia!\n\nSilakan baca dan tuntaskan Modul 01 sampai Modul 03 terlebih dahulu! ✨`);
+        }
     </script>
 </body>
-
 </html>

@@ -3,54 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Refleksi Diri</title>
+    <title>CareTech - Refleksi Diri (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="reflection.css">
 </head>
 <body>
-    <div class="background-shapes">
-        <div class="shape circle1"></div>
-        <div class="shape circle2"></div>
-        <div class="shape circle3"></div>
-        <div class="shape circle4"></div>
+    <!-- Floating Space & Paper Junk Decorations -->
+    <div class="bg-decorations" aria-hidden="true">
+        <b class="star" style="top:8%;left:12%"></b>
+        <b class="star" style="top:22%;right:15%;color:var(--cy);animation-delay:-0.4s"></b>
+        <b class="star" style="top:74%;left:8%;color:var(--pink);animation-delay:-1.1s"></b>
+        <b class="star" style="top:85%;right:18%;color:var(--lime);animation-delay:-0.7s"></b>
+        <b class="star" style="top:45%;right:6%;color:var(--sun)"></b>
+        <i class="deb tp" style="left:5%;top:38%"></i>
+        <i class="deb sc" style="right:7%;top:58%;animation-delay:-1.5s"></i>
+        <i class="deb cp" style="left:8%;bottom:12%;animation-delay:-0.8s"></i>
+        <i class="deb bl" style="right:10%;top:14%;animation-delay:-2.2s"></i>
     </div>
 
     <div class="reflection-container">
-        <div class="glass-card">
-            <h2>Halo!</h2>
-            <p>Sebelum kita mulai, yuk ceritakan bagaimana keadaanmu hari ini.</p>
+        <!-- Cardboard Clipboard Backing -->
+        <div class="clipboard-backing" aria-hidden="true"></div>
+        <div class="clipboard-clip" aria-hidden="true"></div>
+
+        <!-- Scrapbook Card -->
+        <div class="scrapbook-card mk">
+            <span class="stamp-badge">HARIAN! ★</span>
+            <p class="tape">CareTech // Refleksi Diri</p>
+            <h2>Halo Teman!</h2>
+            <p class="intro-text">Sebelum berpetualang, ceritakan kabarmu hari ini ya!</p>
             
+            <div class="step-indicator" id="step-badge">
+                <span>SOAL 1 DARI 3</span>
+            </div>
+
             <form id="reflection-form">
                 <!-- Question 1 -->
                 <div class="question-block active" id="q1">
                     <h3>Bagaimana perasaanmu hari ini?</h3>
                     <div class="emoji-options">
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="feeling" value="senang" required>
                             <span class="emoji">😃</span>
                             <span class="label">Senang</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="feeling" value="biasa">
                             <span class="emoji">😐</span>
-                            <span class="label">Biasa Saja</span>
+                            <span class="label">Biasa</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="feeling" value="sedih">
                             <span class="emoji">😔</span>
                             <span class="label">Sedih</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="feeling" value="marah">
                             <span class="emoji">😠</span>
                             <span class="label">Marah</span>
                         </label>
                     </div>
                     <div class="textarea-container">
-                        <textarea name="feeling_notes" rows="3" placeholder="Boleh ceritakan lebih lanjut di sini ya... (opsional)" class="custom-textarea"></textarea>
+                        <textarea name="feeling_notes" rows="3" placeholder="Tuliskan ceritamu di sini... (opsional ya!)" class="custom-textarea mk-alt"></textarea>
                     </div>
                 </div>
 
@@ -58,17 +72,17 @@
                 <div class="question-block" id="q2">
                     <h3>Seberapa bersemangat kamu untuk belajar?</h3>
                     <div class="emoji-options">
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="energy" value="sangat_semangat" required>
                             <span class="emoji">🚀</span>
-                            <span class="label">Sangat Semangat!</span>
+                            <span class="label">Super!</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="energy" value="semangat">
                             <span class="emoji">👍</span>
                             <span class="label">Semangat</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="energy" value="kurang">
                             <span class="emoji">🥱</span>
                             <span class="label">Kurang</span>
@@ -80,12 +94,12 @@
                 <div class="question-block" id="q3">
                     <h3>Apakah kamu sudah sarapan / makan?</h3>
                     <div class="emoji-options">
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="food" value="sudah" required>
                             <span class="emoji">🥪</span>
-                            <span class="label">Sudah</span>
+                            <span class="label">Sudah!</span>
                         </label>
-                        <label class="emoji-option">
+                        <label class="emoji-option mk">
                             <input type="radio" name="food" value="belum">
                             <span class="emoji">🍽️</span>
                             <span class="label">Belum</span>
@@ -95,21 +109,23 @@
 
                 <!-- Navigation -->
                 <div class="navigation-buttons">
-                    <button type="button" id="btn-prev" class="btn btn-secondary" style="display: none;">Kembali</button>
-                    <button type="button" id="btn-next" class="btn btn-primary">Lanjut</button>
-                    <button type="submit" id="btn-submit" class="btn btn-primary" style="display: none;">Selesai & Ke Dashboard</button>
+                    <button type="button" id="btn-prev" class="btn btn-secondary mk" style="display: none;">◀ Kembali</button>
+                    <button type="button" id="btn-next" class="btn btn-primary mk">Lanjut ▶</button>
+                    <button type="submit" id="btn-submit" class="btn btn-submit mk" style="display: none;">Selesai &amp; Ke Dashboard 🚀</button>
                 </div>
             </form>
+
+            <p class="footer-note">P.S. Jawabanmu aman dan hanya untuk evaluasi kebaikanmu!</p>
         </div>
     </div>
 
     <script>
-        // Simple logic for the step-by-step form
         const questions = document.querySelectorAll('.question-block');
         const btnPrev = document.getElementById('btn-prev');
         const btnNext = document.getElementById('btn-next');
         const btnSubmit = document.getElementById('btn-submit');
         const form = document.getElementById('reflection-form');
+        const stepBadge = document.getElementById('step-badge');
         
         let currentStep = 0;
 
@@ -120,6 +136,10 @@
                     q.classList.add('active');
                 }
             });
+
+            if (stepBadge) {
+                stepBadge.innerHTML = `<span>SOAL ${currentStep + 1} DARI ${questions.length}</span>`;
+            }
 
             btnPrev.style.display = currentStep > 0 ? 'inline-block' : 'none';
             
@@ -133,7 +153,6 @@
         }
 
         btnNext.addEventListener('click', () => {
-            // Validate if option selected before proceeding
             const currentInputs = questions[currentStep].querySelectorAll('input[type="radio"]');
             const isChecked = Array.from(currentInputs).some(radio => radio.checked);
             
@@ -143,7 +162,7 @@
                     updateForm();
                 }
             } else {
-                alert("Tolong pilih salah satu ya! 😊");
+                alert("Tolong pilih salah satu stiker ya! 😊");
             }
         });
 
@@ -157,7 +176,6 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            // Collect data
             const formData = new FormData(form);
             const reflectionData = {
                 feeling: formData.get('feeling'),
@@ -167,14 +185,14 @@
                 date: new Date().toISOString()
             };
             
-            // Store locally (simulate sending to teacher/backend)
             let allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
             allReflections.push(reflectionData);
             localStorage.setItem('caretech_reflections', JSON.stringify(allReflections));
 
-            // Redirect to dashboard
             window.location.href = 'dashboard.html';
         });
+
+        updateForm();
     </script>
 </body>
 </html>
