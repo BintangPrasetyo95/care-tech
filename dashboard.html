@@ -113,25 +113,14 @@
             </header>
 
             <div class="content-grid">
-                <!-- Reflection Status Sticky Note (Taped Alert) -->
-                <div class="wide-card" id="reflection-status-container">
-                    <div id="reflection-status">
-                        <!-- Injected via JavaScript below -->
-                    </div>
-                </div>
-
                 <!-- Top Wide Greeting & Stats Card -->
                 <div class="dashboard-card wide-card profile-card">
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.8rem;">
-                        <div style="display: flex; align-items: center; gap: 1.5rem;">
-                            <img src="./assets/profile.jpg" class="profile-avatar-large" alt="Avatar">
-                            <div>
-                                <span class="tape tape-pink" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Siswa Aktif</span>
-                                <h2 style="font-size: 2.3rem; margin: 0.2rem 0;">Selamat datang, Zuruki!</h2>
-                                <p style="font-family: var(--mono); font-weight: 700; color: #333;">Harmonia School // Kelas V-A</p>
-                            </div>
+                    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.8rem;">
+                        <img src="./assets/profile.jpg" class="profile-avatar-large" alt="Avatar">
+                        <div>
+                            <h2 class="tape tape-pink tape-heading" style="margin-bottom: 0.3rem;">Selamat datang, Zuruki!</h2>
+                            <p style="font-family: var(--mono); font-weight: 700; color: #333;">Harmonia School // Kelas V-A</p>
                         </div>
-                        <a href="reflection.html" class="btn btn-small" style="background: var(--pink); color: #fff;">Refleksi Baru ★</a>
                     </div>
 
                     <!-- Stats Row -->
@@ -153,17 +142,15 @@
 
                 <!-- Alur Evaluasi & Permainan (Core Progression Flow) -->
                 <div class="dashboard-card wide-card" style="background: var(--paper-warm) !important;">
-                    <div style="text-align: center; margin-bottom: 1.5rem;">
-                        <span class="tape tape-pink">Jalur Pembelajaran</span>
-                        <h2>Alur Evaluasi &amp; Permainan</h2>
-                        <p style="font-family: var(--mono); font-size: 0.95rem; color: #444;">Selesaikan tahapan berurutan dari Pretest, Game RPG, hingga Posttest!</p>
+                    <div style="text-align: center; margin-bottom: 1.8rem;">
+                        <h2 class="tape tape-cyan tape-heading">Alur Evaluasi &amp; Permainan</h2>
                     </div>
 
                     <div class="flow-container">
                         <!-- Step 1: Pretest -->
                         <a href="pretest.html" class="flow-card step-1">
-                            <span class="step-badge">TAHAP 01</span>
-                            <h4>1. Pretest</h4>
+                            <span class="step-num">01</span>
+                            <h4>Pretest</h4>
                             <p>Uji kemampuan awal sebelum bermain</p>
                             <span class="btn-small" style="margin-top: 1.2rem; background: var(--pink); color: #fff;">Mulai Tes ➔</span>
                         </a>
@@ -172,8 +159,8 @@
 
                         <!-- Step 2: Game -->
                         <a href="game.html" class="flow-card step-2">
-                            <span class="step-badge" style="background: var(--lime); color: var(--ink);">TAHAP 02</span>
-                            <h4>2. Game RPG</h4>
+                            <span class="step-num">02</span>
+                            <h4>Game RPG</h4>
                             <p>Mainkan simulasi anti-bullying Harmonia</p>
                             <span class="btn-small" style="margin-top: 1.2rem; background: var(--sun);">Buka Game 🎮</span>
                         </a>
@@ -182,8 +169,8 @@
 
                         <!-- Step 3: Posttest -->
                         <a href="posttest.html" class="flow-card step-3">
-                            <span class="step-badge" style="background: var(--cy); color: var(--ink);">TAHAP 03</span>
-                            <h4>3. Posttest</h4>
+                            <span class="step-num">03</span>
+                            <h4>Posttest</h4>
                             <p>Evaluasi hasil akhir &amp; pemahamanmu</p>
                             <span class="btn-small" style="margin-top: 1.2rem; background: var(--lime);">Uji Akhir ★</span>
                         </a>
@@ -194,8 +181,7 @@
                 <div class="dashboard-card wide-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <span class="tape tape-cyan">Capaian Belajar</span>
-                            <h2 style="margin: 0;">Progress Pembelajaran</h2>
+                            <h2 class="tape tape-lime tape-heading" style="margin: 0;">Progress Pembelajaran</h2>
                         </div>
                         <span style="font-family: var(--mono); font-weight: bold; background: var(--sun); padding: 0.3rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px;">Semester Ganjil</span>
                     </div>
@@ -203,7 +189,6 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.8rem;">
                         <!-- Komik Card -->
                         <div class="interactive-card" onclick="location.href='komik.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #fffde6 !important;">
-                            <span class="tape tape-pink" style="font-size: 0.85rem; margin-bottom: 1rem;">Bacaan Bergambar</span>
                             <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Komik Digital</h3>
                             <div class="progress-sticker">0%</div>
                             <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">5 Episode Tersedia</span>
@@ -211,7 +196,6 @@
 
                         <!-- Modul Card -->
                         <div class="interactive-card" onclick="location.href='modul.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #e6f9ff !important;">
-                            <span class="tape tape-cyan" style="font-size: 0.85rem; margin-bottom: 1rem;">Materi Interaktif</span>
                             <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Modul Digital</h3>
                             <div class="progress-sticker" style="background: var(--lime);">25%</div>
                             <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">1 Dari 3 Modul Selesai</span>
@@ -219,7 +203,6 @@
 
                         <!-- Game Card -->
                         <div class="interactive-card" onclick="location.href='game.html'" style="height: 270px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem; background: #ffe6f2 !important;">
-                            <span class="tape tape-lime" style="font-size: 0.85rem; margin-bottom: 1rem;">Simulasi Karakter</span>
                             <h3 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Game RPG</h3>
                             <div class="progress-sticker" style="background: var(--pink); color: #fff;">0%</div>
                             <span style="font-family: var(--mono); font-size: 0.9rem; margin-top: 1rem; color: #555;">Harmonia School</span>
@@ -323,48 +306,7 @@
         </main>
     </div>
 
-    <!-- Script for Reflection Status Notification -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const reflectionStatusDiv = document.getElementById('reflection-status');
-            if (!reflectionStatusDiv) return;
-            
-            const allReflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
-            
-            if (allReflections.length > 0) {
-                const latest = allReflections[allReflections.length - 1];
-                let emoji = "😐";
-                if(latest.feeling === "senang") emoji = "😃";
-                if(latest.feeling === "sedih") emoji = "😔";
-                if(latest.feeling === "marah") emoji = "😠";
-
-                reflectionStatusDiv.innerHTML = `
-                    <div class="note mk" style="background: var(--paper-warm); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.2rem; transform: rotate(-0.8deg);">
-                        <div style="display: flex; align-items: center; gap: 1.2rem;">
-                            <span class="status-emoji" style="font-size: 3rem;">${emoji}</span>
-                            <div>
-                                <span class="tape tape-pink" style="margin-bottom: 0.3rem; font-size: 0.85rem;">Status Refleksi Terkini</span>
-                                <h3 style="margin: 0; font-size: 1.6rem;">Perasaanmu: <strong>${latest.feeling.toUpperCase()}</strong></h3>
-                                <p style="font-family: var(--mono); font-size: 0.95rem; margin-top: 0.3rem; color: #555;">Terima kasih sudah berbagi perasaanmu dengan jujur hari ini!</p>
-                            </div>
-                        </div>
-                        <a href="reflection.html" class="btn btn-small" style="background: var(--sun);">Perbarui Refleksi ✏️</a>
-                    </div>
-                `;
-            } else {
-                reflectionStatusDiv.innerHTML = `
-                    <div class="note mk" style="background: var(--sun); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.2rem; transform: rotate(-1.2deg);">
-                        <div>
-                            <span class="tape tape-pink" style="font-size: 0.85rem; margin-bottom: 0.3rem;">Penting Hari Ini!</span>
-                            <h3 style="margin: 0; font-size: 1.6rem;">Kamu belum mengisi Refleksi Diri!</h3>
-                            <p style="font-family: var(--mono); font-size: 0.95rem; margin-top: 0.3rem; color: #222;">Hanya butuh 1 menit untuk menceritakan perasaanmu sebelum beraktivitas.</p>
-                        </div>
-                        <a href="reflection.html" class="btn btn-small" style="background: var(--pink); color: #fff;">Isi Refleksi Sekarang 🚀</a>
-                    </div>
-                `;
-            }
-        });
-
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
