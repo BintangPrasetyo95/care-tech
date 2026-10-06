@@ -131,18 +131,9 @@
                         </button>
                     </div>
 
-                    <!-- Mood Sticker Legend Bar -->
-                    <div class="cal-legend-bar">
-                        <span style="font-family: var(--imp); font-size: 1.1rem; margin-right: 0.5rem; letter-spacing: 0.05em;">STEMPEL EMOSI:</span>
-                        <span class="legend-tag senang">😃 Senang</span>
-                        <span class="legend-tag biasa">😐 Biasa</span>
-                        <span class="legend-tag sedih">😔 Sedih</span>
-                        <span class="legend-tag marah">😠 Marah</span>
-                    </div>
-
                     <!-- Weekday Tags (7 Columns) -->
                     <div class="cal-weekdays">
-                        <div class="cal-weekday-tag sunday">Ahad</div>
+                        <div class="cal-weekday-tag sunday">Min</div>
                         <div class="cal-weekday-tag">Sen</div>
                         <div class="cal-weekday-tag">Sel</div>
                         <div class="cal-weekday-tag">Rab</div>
@@ -177,6 +168,52 @@
 
                     <div id="details-content">
                         <!-- Details injected via script -->
+                    </div>
+                </div>
+
+                <!-- Feedback Mingguan Dari Guru (Same as Penilaian) -->
+                <div class="dashboard-card wide-card mk-alt" style="background: #ffffff !important; margin-top: 2.2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <span class="tape tape-pink">SURAT DARI GURU</span>
+                            <h2 class="tape tape-lime tape-heading" style="margin: 0.2rem 0;">Feedback Mingguan</h2>
+                            <p style="font-family: var(--mono); color: #444; font-size: 0.95rem;">
+                                Bimbingan, apresiasi, dan catatan refleksi jurnal dari guru pembimbing untuk perkembangan karaktermu.
+                            </p>
+                        </div>
+                        <span style="font-family: var(--imp); font-size: 1.2rem; background: var(--lime); border: 3px solid var(--ink); padding: 0.3rem 1rem; border-radius: 8px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(2deg);">
+                            DIPERIKSA GURU ✓
+                        </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
+                        <!-- Minggu 1 -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <h3 style="font-size: 1.6rem; margin: 0;">Minggu 1</h3>
+                                <span class="tape tape-sun" style="font-size: 0.8rem; margin: 0;">12 Jul - 16 Jul</span>
+                            </div>
+                            <div style="background: repeating-linear-gradient(transparent, transparent 29px, rgba(0, 229, 255, 0.25) 29px, rgba(0, 229, 255, 0.25) 31px), #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 1rem; font-family: var(--mk); font-size: 1.15rem; line-height: 1.8; color: #222;">
+                                "Perkembangan rasa empati Zuruki sudah sangat bagus! Kamu menunjukkan sikap berani untuk mendengarkan teman di kelas dan aktif berdiskusi. Pertahankan semangat hebat ini ya!"
+                            </div>
+                            <div style="margin-top: 1rem; text-align: right; font-family: var(--mono); font-weight: bold; font-size: 0.85rem; color: #555;">
+                                — Ibu Guru Rina, S.Pd.
+                            </div>
+                        </div>
+
+                        <!-- Minggu 2 -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <h3 style="font-size: 1.6rem; margin: 0;">Minggu 2</h3>
+                                <span class="tape tape-white" style="font-size: 0.8rem; margin: 0;">19 Jul - 23 Jul</span>
+                            </div>
+                            <div style="background: repeating-linear-gradient(transparent, transparent 29px, rgba(255, 46, 147, 0.2) 29px, rgba(255, 46, 147, 0.2) 31px), #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 1rem; font-family: var(--mk); font-size: 1.15rem; line-height: 1.8; color: #222;">
+                                "Catatan refleksimu menunjukkan kedewasaan dalam mengelola emosi. Senang melihatmu bisa tetap tenang dan mencari solusi positif saat menghadapi situasi sulit."
+                            </div>
+                            <div style="margin-top: 1rem; text-align: right; font-family: var(--mono); font-weight: bold; font-size: 0.85rem; color: #555;">
+                                — Ibu Guru Rina, S.Pd.
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -276,7 +313,6 @@
 
                         html += `
                             <div class="cal-emoji-wrap">${emoji}</div>
-                            <div class="cal-mood-text">${entry.feeling}</div>
                         `;
 
                         cellDiv.addEventListener('click', () => {

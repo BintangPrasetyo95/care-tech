@@ -341,6 +341,11 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 22
+                    }
+                },
                 plugins: {
                     legend: {
                         display: false
@@ -356,7 +361,7 @@
                 scales: {
                     y: {
                         min: 1,
-                        max: 4,
+                        max: 4.6,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.1)',
                             lineWidth: 2
@@ -364,7 +369,7 @@
                         ticks: {
                             stepSize: 1,
                             callback: function(value) {
-                                return moodLabels[value] || value;
+                                return moodLabels[value] || '';
                             },
                             font: {
                                 size: 12,
@@ -378,7 +383,26 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [{
+                id: 'pointValueLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    const meta = chart.getDatasetMeta(0);
+                    meta.data.forEach((point, index) => {
+                        const val = chart.data.datasets[0].data[index];
+                        if (val !== null && val !== undefined) {
+                            ctx.save();
+                            ctx.font = 'bold 12px "Courier New", Courier, monospace';
+                            ctx.fillStyle = '#000000';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(val, point.x, point.y - 7);
+                            ctx.restore();
+                        }
+                    });
+                }
+            }]
         });
 
         // 2. Grafik Pretest & Posttest (Bar Graph)
@@ -414,6 +438,11 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 22
+                    }
+                },
                 plugins: {
                     legend: {
                         position: 'top',
@@ -429,7 +458,7 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100,
+                        max: 110,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.1)',
                             lineWidth: 2
@@ -437,7 +466,7 @@
                         ticks: {
                             stepSize: 20,
                             callback: function(value) {
-                                return value + ' Pts';
+                                return value <= 100 ? value + ' Pts' : '';
                             }
                         }
                     },
@@ -447,7 +476,28 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [{
+                id: 'barValueLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        meta.data.forEach((bar, index) => {
+                            const val = dataset.data[index];
+                            if (val !== null && val !== undefined) {
+                                ctx.save();
+                                ctx.font = 'bold 13px "Courier New", Courier, monospace';
+                                ctx.fillStyle = '#000000';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+                                ctx.fillText(val, bar.x, bar.y - 4);
+                                ctx.restore();
+                            }
+                        });
+                    });
+                }
+            }]
         });
 
         // Dynamic Posttest score detection from localStorage

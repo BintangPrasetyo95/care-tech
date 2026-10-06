@@ -159,6 +159,22 @@ h2.tape, .tape-heading {
     box-shadow: 10px 10px 0 var(--ink);
 }
 
+.teacher-note-card {
+    background: var(--paper-warm);
+    border: 4px solid var(--ink);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    padding: 1.8rem;
+    box-shadow: 6px 6px 0 var(--ink);
+    position: relative;
+    margin-bottom: 1.2rem;
+    transform: rotate(-0.5deg);
+}
+
+.teacher-note-card:nth-child(even) {
+    transform: rotate(1deg);
+    background: #fffbef;
+}
+
 .note::before {
     content: '';
     position: absolute;
