@@ -138,8 +138,10 @@ class WorldScene extends Phaser.Scene {
         }
       } else if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
+        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch(e){}
       } else if (action === 'complete_level2') {
         this.registry.set('level2_complete', true);
+        try { localStorage.setItem('caretech_scenario_2', 'true'); } catch(e){}
       } else if (action === 'found_evidence_phone') {
         this.registry.set('evidence_phone', true);
         this._checkLevel3Ready();
@@ -148,9 +150,11 @@ class WorldScene extends Phaser.Scene {
         this._checkLevel3Ready();
       } else if (action === 'complete_level3') {
         this.registry.set('level3_complete', true);
+        try { localStorage.setItem('caretech_scenario_3', 'true'); } catch(e){}
       } else if (['build_vent_corner', 'build_appreciation_box', 'build_peer_support'].includes(action)) {
         this.registry.set('built_project', action);
         this.registry.set('level4_complete', true);
+        try { localStorage.setItem('caretech_scenario_4', 'true'); } catch(e){}
         
         // Find the initiative board and update its state so it doesn't prompt again
         const board = this.npcs.find(n => n.key === 'initiative_board');
@@ -175,6 +179,7 @@ class WorldScene extends Phaser.Scene {
         });
       } else if (action === 'complete_level5') {
         this.registry.set('level5_complete', true);
+        try { localStorage.setItem('caretech_scenario_5', 'true'); } catch(e){}
         this.registry.set('qte_active', false);
         this.scene.get('UI').stopQTETimer();
         if (this.qteArrow) this.qteArrow.destroy();
