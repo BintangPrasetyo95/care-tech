@@ -254,6 +254,160 @@
             width: 100%;
             position: relative;
         }
+
+        /* Responsive Breakpoints for Chat */
+        @media (max-width: 768px) {
+            .chat-page-wrapper {
+                padding: 0.75rem 0.5rem !important;
+            }
+
+            .chat-terminal {
+                height: calc(100dvh - 120px) !important;
+                min-height: 480px !important;
+                transform: none !important;
+                border-width: 4px !important;
+                box-shadow: 6px 6px 0 var(--ink) !important;
+                border-radius: 18px !important;
+            }
+
+            .chat-terminal::before {
+                display: none;
+            }
+
+            .chat-header-scrapbook {
+                padding: 0.8rem 0.85rem;
+                gap: 0.6rem;
+            }
+
+            .chat-header-scrapbook h3 {
+                font-size: 1.2rem !important;
+            }
+
+            .esa-bot-avatar {
+                width: 42px;
+                height: 42px;
+                font-size: 1.6rem;
+            }
+
+            .chat-messages-stream {
+                padding: 1rem 0.75rem;
+                gap: 0.9rem;
+            }
+
+            .msg-bubble {
+                max-width: 88%;
+                padding: 0.85rem 1rem;
+                font-size: 1rem;
+                border-width: 2.5px;
+                box-shadow: 3px 3px 0 var(--ink);
+                transform: none !important;
+            }
+
+            .curhat-chips-bar {
+                padding: 0.6rem 0.8rem;
+                gap: 0.5rem;
+            }
+
+            .chip-tag {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .chat-input-bar {
+                padding: 0.75rem 0.8rem;
+                gap: 0.5rem;
+            }
+
+            .chat-scrapbook-input {
+                padding: 0.65rem 0.85rem;
+                font-size: 0.95rem;
+                border-width: 2.5px;
+            }
+
+            #btn-send {
+                padding: 0.65rem 1rem !important;
+                font-size: 0.95rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-page-wrapper {
+                padding: 0.5rem 0.35rem !important;
+            }
+
+            .chat-terminal {
+                border-width: 3px !important;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-radius: 14px !important;
+                min-height: 420px !important;
+            }
+
+            .chat-header-scrapbook {
+                padding: 0.65rem 0.6rem;
+            }
+
+            .chat-header-scrapbook h3 {
+                font-size: 1.05rem !important;
+            }
+
+            .esa-bot-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 1.35rem;
+                border-width: 2px;
+            }
+
+            .chat-header-scrapbook .btn-small {
+                padding: 0.3rem 0.6rem !important;
+                font-size: 0.78rem !important;
+            }
+
+            .msg-bubble {
+                max-width: 92%;
+                padding: 0.75rem 0.8rem;
+                font-size: 0.92rem;
+            }
+
+            .ai-avatar-mini {
+                width: 30px;
+                height: 30px;
+                font-size: 1.1rem;
+            }
+
+            .curhat-chips-bar {
+                padding: 0.45rem 0.5rem;
+            }
+
+            .chat-input-bar {
+                padding: 0.5rem 0.5rem;
+            }
+
+            .chat-scrapbook-input {
+                padding: 0.55rem 0.7rem;
+                font-size: 0.9rem;
+            }
+
+            #btn-send {
+                padding: 0.55rem 0.8rem !important;
+                font-size: 0.88rem !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .chat-header-scrapbook h3 {
+                font-size: 0.95rem !important;
+            }
+
+            .msg-bubble {
+                max-width: 95%;
+                font-size: 0.88rem;
+                padding: 0.65rem 0.7rem;
+            }
+
+            .chat-scrapbook-input {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -375,7 +529,7 @@
                 </div>
             </header>
 
-            <div style="padding: 1.5rem; height: 100%;">
+            <div class="chat-page-wrapper" style="padding: 1.5rem; height: 100%;">
                 
                 <!-- The Cardboard Walkie-Talkie Terminal -->
                 <div class="chat-terminal mk">

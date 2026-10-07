@@ -6,6 +6,34 @@
     <title>CareTech - Pretest (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        @media (max-width: 600px) {
+            #question-text {
+                font-size: 1.05rem !important;
+                padding: 1rem 0.85rem !important;
+                border-width: 2.5px !important;
+            }
+            .quiz-nav-row {
+                flex-direction: column-reverse !important;
+                gap: 0.75rem !important;
+            }
+            .quiz-nav-row .btn {
+                width: 100% !important;
+                box-sizing: border-box;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 360px) {
+            #question-text {
+                font-size: 0.95rem !important;
+                padding: 0.85rem 0.65rem !important;
+            }
+            #quiz-container {
+                padding: 1rem 0.65rem !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Floating Space & Paper Junk Background Decorations -->
@@ -151,7 +179,7 @@
                         <div id="options-container" style="display: flex; flex-direction: column; gap: 12px;">
                         </div>
                         
-                        <div style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div class="quiz-nav-row" style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                             <a href="dashboard.html" class="btn btn-small" style="background: #ffffff;">◀ Kembali ke Beranda</a>
                             <button id="btn-next" class="btn btn-next mk" onclick="nextQuestion()">Selanjutnya ➔</button>
                         </div>

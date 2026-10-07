@@ -7,6 +7,14 @@
   <title>CARE-TECH: Harmonia School</title>
   <link rel="icon" href="assets/logo-care-tech.png" />
   <style>
+    @font-face {
+      font-family: 'GROBOLD';
+      src: local('GROBOLD'), local('Grobold'), url('assets/fonts/GROBOLD.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* ── Reset & full-bleed canvas ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -36,10 +44,11 @@
       visibility: hidden;
     }
     #preloader h1 {
+      font-family: 'GROBOLD', 'Grobold', sans-serif;
       font-size: 2.2rem; 
       color: #3b65c7; 
-      font-weight: 300;
-      letter-spacing: 0.1em;
+      font-weight: 400;
+      letter-spacing: 0.05em;
       margin-bottom: 0.5rem;
     }
     #preloader h1 span { 
@@ -82,7 +91,7 @@
       flex-direction: column; align-items: center; justify-content: center;
       color: white; text-align: center;
     }
-    #mobile-start-overlay h2 { font-size: 2rem; margin-bottom: 1rem; color: #38bdf8; }
+    #mobile-start-overlay h2 { font-family: 'GROBOLD', 'Grobold', sans-serif; font-size: 2rem; margin-bottom: 1rem; color: #38bdf8; }
     #mobile-start-overlay button {
       padding: 1rem 2rem; font-size: 1.5rem; background: #2cb67d; color: white;
       border: none; border-radius: 8px; font-weight: bold; cursor: pointer;

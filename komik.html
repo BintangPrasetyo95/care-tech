@@ -74,6 +74,60 @@
             filter: grayscale(0.5);
             opacity: 0.8;
         }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .story-grid {
+                gap: 1.4rem;
+            }
+
+            .comic-scrap-card {
+                padding: 1.4rem 1.1rem;
+                transform: none !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+            }
+
+            .comic-scrap-card:nth-child(even), .comic-scrap-card:nth-child(odd) {
+                transform: none !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .story-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .comic-scrap-card {
+                padding: 1.2rem 0.85rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-radius: 16px !important;
+            }
+
+            .comic-scrap-card h3 {
+                font-size: 1.3rem !important;
+            }
+
+            .comic-cover-box img {
+                width: 110px;
+                transform: none !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .comic-scrap-card {
+                padding: 1rem 0.7rem;
+            }
+
+            .comic-scrap-card h3 {
+                font-size: 1.15rem !important;
+            }
+
+            .comic-cover-box img {
+                width: 95px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -204,7 +258,7 @@
                 <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2.2rem; transform: rotate(-0.5deg);">
                     <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
                         <span style="font-size: 3rem; filter: drop-shadow(3px 3px 0 var(--ink));">📖</span>
-                        <div style="flex: 1; min-width: 260px;">
+                        <div style="flex: 1; min-width: 0;">
                             <h2 style="font-size: 2rem; margin: 0 0 0.4rem 0;">Tentang Rute Cerita Alternatif</h2>
                             <p style="font-family: var(--mk); font-size: 1.15rem; color: #222; line-height: 1.6; margin: 0;">
                                 Rute cerita ini menghadirkan sudut pandang mendalam dari setiap karakter yang kamu temui di game RPG. Baca komik visual untuk memahami latar belakang emosi mereka dan cara terbaik menjadi teman yang suportif!
