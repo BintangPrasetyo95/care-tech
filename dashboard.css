@@ -296,6 +296,36 @@ h2.tape, .tape-heading {
     margin: 0;
 }
 
+.sidebar-close-btn {
+    display: none;
+    margin-left: auto;
+    background: var(--pink);
+    color: #ffffff;
+    border: 2.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.sidebar-close-btn:hover {
+    background: var(--sun);
+    color: var(--ink);
+    transform: scale(1.08);
+}
+
+.sidebar-close-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
 .sidebar-section {
     margin-bottom: 2rem;
     display: flex;
@@ -1225,31 +1255,45 @@ tr:last-child td {
 }
 
 @media (max-width: 900px) {
+    .dashboard-container {
+        position: static !important;
+        z-index: auto !important;
+    }
+
     .sidebar {
-        position: fixed;
+        position: fixed !important;
         left: -320px;
         top: 0;
         bottom: 0;
         width: min(290px, 85vw);
         max-width: 85vw;
-        z-index: 2000;
+        height: 100% !important;
+        height: 100dvh !important;
+        z-index: 2000 !important;
         transition: left 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-        box-shadow: 10px 0 0 var(--ink);
+        box-shadow: 10px 0 0 var(--ink) !important;
+        background: #f8efe0 !important;
+        pointer-events: auto !important;
+        -webkit-overflow-scrolling: touch;
     }
 
     .sidebar.active {
-        left: 0;
+        left: 0 !important;
     }
 
     .sidebar-overlay {
-        display: block;
+        display: block !important;
         pointer-events: none;
-        z-index: 1999;
+        z-index: 1999 !important;
     }
 
     .sidebar-overlay.active {
-        opacity: 1;
-        pointer-events: auto;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    .sidebar-close-btn {
+        display: flex;
     }
 
     .mobile-menu-btn {
