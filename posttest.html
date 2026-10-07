@@ -226,6 +226,157 @@
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 var(--ink);
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .posttest-container {
+                padding: 1.2rem 0.8rem 2.5rem;
+            }
+
+            .qa-hero-card {
+                padding: 1.8rem 1.2rem !important;
+                border-width: 3.5px !important;
+                box-shadow: 6px 6px 0 var(--ink) !important;
+                border-radius: 18px !important;
+            }
+
+            .section-card {
+                padding: 1.4rem 1.1rem;
+                border-width: 3px;
+                box-shadow: 5px 5px 0 var(--ink);
+            }
+
+            .finish-card {
+                padding: 1.8rem 1.2rem;
+                box-shadow: 5px 5px 0 var(--ink);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .posttest-container {
+                padding: 0.9rem 0.5rem 2rem;
+            }
+
+            .qa-hero-card {
+                padding: 1.4rem 0.9rem !important;
+                border-width: 3px !important;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+            }
+
+            .qa-question-title {
+                font-size: 1.7rem;
+            }
+
+            .qa-answer-box {
+                padding: 1rem 0.85rem;
+                border-left-width: 6px;
+            }
+
+            .qa-answer-title {
+                font-size: 1.2rem;
+            }
+
+            .qa-answer-text {
+                font-size: 0.98rem;
+            }
+
+            .section-card {
+                padding: 1.2rem 0.85rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+
+            .section-header-title {
+                font-size: 1.5rem;
+            }
+
+            .components-grid {
+                grid-template-columns: 1fr;
+                gap: 0.9rem;
+            }
+
+            .step-item {
+                gap: 0.8rem;
+                padding: 0.9rem 0.8rem;
+            }
+
+            .step-badge {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+
+            .step-title {
+                font-size: 1.05rem;
+            }
+
+            .step-desc {
+                font-size: 0.92rem;
+            }
+
+            .finish-card {
+                padding: 1.4rem 0.9rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+
+            .finish-title {
+                font-size: 1.7rem;
+            }
+
+            .finish-desc {
+                font-size: 0.98rem;
+            }
+
+            .btn-finish-neuro {
+                width: 100%;
+                justify-content: center;
+                box-sizing: border-box;
+                font-size: 1.1rem;
+                padding: 0.75rem 1rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .posttest-container {
+                padding: 0.75rem 0.35rem 1.8rem;
+            }
+
+            .qa-hero-card {
+                padding: 1.2rem 0.75rem !important;
+            }
+
+            .qa-question-title {
+                font-size: 1.45rem;
+            }
+
+            .qa-answer-title {
+                font-size: 1.1rem;
+            }
+
+            .qa-answer-text {
+                font-size: 0.9rem;
+            }
+
+            .section-header-title {
+                font-size: 1.35rem;
+            }
+
+            .finish-title {
+                font-size: 1.45rem;
+            }
+
+            .finish-desc {
+                font-size: 0.9rem;
+            }
+
+            .btn-finish-neuro {
+                font-size: 1rem;
+                padding: 0.65rem 0.8rem;
+            }
+        }
     </style>
 </head>
 
@@ -239,12 +390,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">

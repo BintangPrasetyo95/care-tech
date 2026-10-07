@@ -29,6 +29,135 @@
             text-align: left;
             box-shadow: 4px 4px 0 var(--ink);
         }
+
+        .game-hero-card {
+            background: var(--paper-warm) !important;
+            text-align: center;
+            padding: 2.8rem 2rem !important;
+            margin-bottom: 2rem;
+        }
+
+        .alt-story-card {
+            margin-top: 2.5rem;
+            background: #fffde6;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 2rem;
+            position: relative;
+            transform: rotate(-0.8deg);
+            text-align: left;
+        }
+
+        .alt-story-inner {
+            display: flex;
+            gap: 1.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .alt-story-content {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .game-hero-card {
+                padding: 2rem 1.2rem !important;
+            }
+
+            .alt-story-card {
+                padding: 1.5rem 1.1rem;
+                transform: none !important;
+            }
+
+            .alt-story-inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.2rem;
+            }
+
+            .alt-story-content {
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-hero-card {
+                padding: 1.4rem 0.85rem !important;
+                border-width: 3px !important;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-radius: 16px !important;
+            }
+
+            .game-hero-card h2 {
+                font-size: 1.7rem !important;
+            }
+
+            .mission-box {
+                padding: 1rem 0.75rem;
+                border-width: 3px;
+                box-shadow: 3px 3px 0 var(--ink);
+            }
+
+            .mission-box p {
+                font-size: 0.95rem !important;
+            }
+
+            .key-badge {
+                font-size: 0.9rem;
+                padding: 0.2rem 0.5rem;
+                border-width: 2px;
+            }
+
+            .alt-story-card {
+                padding: 1.2rem 0.8rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+                border-radius: 14px !important;
+            }
+
+            .alt-story-card h3 {
+                font-size: 1.35rem !important;
+            }
+
+            .alt-story-card img {
+                width: 110px !important;
+                transform: none !important;
+            }
+
+            .btn-start {
+                width: 100%;
+                font-size: 1.15rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .alt-story-content .btn, .next-step-row .btn {
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+                display: block;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .game-hero-card h2 {
+                font-size: 1.45rem !important;
+            }
+
+            .game-hero-card p {
+                font-size: 0.92rem !important;
+            }
+
+            .alt-story-card h3 {
+                font-size: 1.2rem !important;
+            }
+
+            .alt-story-card img {
+                width: 95px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -41,12 +170,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">
@@ -150,11 +280,11 @@
             </header>
 
             <div class="content-grid" style="display: block; max-width: 860px; margin: 0 auto;">
-                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; text-align: center; padding: 3rem 2rem !important; margin-bottom: 2rem;">
+                <div class="dashboard-card mk game-hero-card">
                     
                     <span class="tape tape-pink" style="font-size: 1.1rem; margin-bottom: 1.5rem;">BERKAS MISI RAHASIA</span>
                     
-                    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 260px; display: block; margin: 0 auto 1.5rem auto; filter: drop-shadow(4px 4px 0 var(--ink)); transform: rotate(-1.5deg);">
+                    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 260px; width: 100%; display: block; margin: 0 auto 1.5rem auto; filter: drop-shadow(4px 4px 0 var(--ink)); transform: rotate(-1.5deg);">
                     
                     <h2 style="font-size: 2.6rem; margin-bottom: 0.6rem;">Selamat Datang di Harmonia School!</h2>
                     <p style="font-size: 1.15rem; color: #333; line-height: 1.6; max-width: 680px; margin: 0 auto 1.8rem auto;">
@@ -180,14 +310,14 @@
                     </div>
 
                     <!-- Alternate Game Story Card (Komik Cerita Petualangan) -->
-                    <div style="margin-top: 2.5rem; background: #fffde6; border: 4px solid var(--ink); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; box-shadow: 6px 6px 0 var(--ink); padding: 2rem; position: relative; transform: rotate(-0.8deg); text-align: left;">
+                    <div class="alt-story-card">
                         <span class="tape tape-pink" style="margin-bottom: 0.8rem; font-size: 0.85rem;">RUTE KHUSUS // BUKU CERITA</span>
                         
-                        <div style="display: flex; gap: 1.8rem; align-items: center; flex-wrap: wrap;">
+                        <div class="alt-story-inner">
                             <div style="flex-shrink: 0; position: relative;">
                                 <img src="assets/comics/Komik%201.png" alt="Cover Cerita Alternatif" style="width: 135px; height: auto; border: 3.5px solid var(--ink); border-radius: 8px; box-shadow: 5px 5px 0 var(--ink); transform: rotate(-3deg); background: #fff;">
                             </div>
-                            <div style="flex: 1; min-width: 260px;">
+                            <div class="alt-story-content">
                                 <h3 style="font-size: 2rem; margin: 0 0 0.4rem 0;">Alternate Game Story</h3>
                                 <p style="font-family: var(--mk); font-size: 1.15rem; color: #222; line-height: 1.6; margin: 0 0 1.2rem 0;">
                                     Ingin menikmati alur cerita karakter Harmonia School dari sudut pandang komik bergambar? Masuki cerita alternatif untuk mendalami kisah persahabatan mereka!
@@ -200,7 +330,7 @@
                     </div>
 
                     <!-- Next Step Teaser to Posttest -->
-                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 4px dashed var(--ink); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div class="next-step-row" style="margin-top: 3rem; padding-top: 2rem; border-top: 4px dashed var(--ink); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                         <div style="text-align: left;">
                             <span class="tape tape-yellow" style="font-size: 0.8rem; margin-bottom: 0.3rem;">Langkah Selanjutnya</span>
                             <h4 style="font-size: 1.4rem; margin: 0;">Sudah selesai berpetualang di game?</h4>

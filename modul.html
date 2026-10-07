@@ -332,21 +332,119 @@
         }
 
         @media (max-width: 768px) {
+            .chaos-container {
+                padding: 1.2rem 0.8rem 3rem;
+                gap: 2.2rem;
+            }
+            .zine-card {
+                padding: 2rem 1.4rem 1.6rem;
+                transform: none !important;
+                box-shadow: 6px 6px 0 var(--ink) !important;
+            }
             .zine-layout {
                 flex-direction: column !important;
                 align-items: center !important;
                 text-align: center !important;
+                gap: 1.5rem;
             }
             .zine-cover-img {
                 width: 130px;
+                transform: none !important;
             }
-            .zine-card {
-                padding: 2.2rem 1.5rem;
+            .cover-tape-pin {
+                display: none;
             }
             .zine-num {
-                top: -18px;
-                font-size: 1.6rem;
+                top: -16px;
+                font-size: 1.5rem;
                 padding: 0.25rem 0.75rem;
+                transform: none !important;
+            }
+            .tape-corner {
+                width: 90px;
+                height: 22px;
+                top: -10px;
+            }
+            .chaos-action-btn {
+                transform: none !important;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                font-size: 1.3rem;
+                padding: 0.7rem 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chaos-container {
+                padding: 0.9rem 0.5rem 2.5rem;
+                gap: 1.8rem;
+            }
+            .zine-card {
+                padding: 1.8rem 0.9rem 1.3rem;
+                border-width: 3.5px;
+                box-shadow: 4.5px 4.5px 0 var(--ink) !important;
+                border-radius: 16px !important;
+            }
+            .zine-cover-img {
+                width: 110px;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+            .zine-num {
+                top: -14px;
+                font-size: 1.25rem;
+                padding: 0.2rem 0.6rem;
+                border-width: 2.5px;
+                box-shadow: 2.5px 2.5px 0 var(--ink);
+            }
+            .tape-corner {
+                width: 70px;
+                height: 18px;
+            }
+            .zine-title {
+                font-size: 1.65rem !important;
+                line-height: 1.15;
+            }
+            .zine-desc {
+                font-size: 0.95rem;
+                line-height: 1.55;
+            }
+            .zine-notes-drawer {
+                padding: 0.8rem 0.9rem;
+                transform: none !important;
+            }
+            .zine-notes-drawer ul {
+                font-size: 0.9rem;
+                padding-left: 1rem;
+            }
+            .chaos-action-btn {
+                width: 100%;
+                justify-content: center;
+                box-sizing: border-box;
+                font-size: 1.15rem;
+                padding: 0.65rem 1rem;
+                border-width: 3px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .chaos-container {
+                padding: 0.75rem 0.35rem 2rem;
+                gap: 1.5rem;
+            }
+            .zine-card {
+                padding: 1.6rem 0.75rem 1.1rem;
+                border-width: 3px;
+                box-shadow: 3.5px 3.5px 0 var(--ink) !important;
+            }
+            .zine-title {
+                font-size: 1.45rem !important;
+            }
+            .zine-desc {
+                font-size: 0.88rem;
+            }
+            .chaos-action-btn {
+                font-size: 1.05rem;
+                padding: 0.6rem 0.8rem;
             }
         }
     </style>
@@ -364,12 +462,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
 
             <div class="sidebar-section">

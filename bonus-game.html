@@ -169,6 +169,74 @@
             transform: scale(1.02) rotate(0deg);
             box-shadow: 10px 10px 0 var(--ink);
         }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .bonus-grid {
+                gap: 1.4rem;
+            }
+
+            .game-card {
+                padding: 1.4rem 1.1rem;
+                transform: none !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+            }
+
+            .game-card:nth-child(even), .game-card:nth-child(odd) {
+                transform: none !important;
+            }
+
+            .add-game-slot {
+                transform: none !important;
+                padding: 1.6rem 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bonus-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .game-card {
+                padding: 1.2rem 0.85rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-radius: 16px !important;
+            }
+
+            .game-card h3 {
+                font-size: 1.3rem !important;
+            }
+
+            .game-thumbnail {
+                height: 110px;
+            }
+
+            .btn-coming-soon {
+                font-size: 0.88rem;
+                padding: 0.6rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .game-card {
+                padding: 1rem 0.7rem;
+            }
+
+            .game-card h3 {
+                font-size: 1.15rem !important;
+            }
+
+            .game-thumbnail {
+                height: 95px;
+            }
+
+            .status-pill {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.65rem;
+            }
+        }
     </style>
 </head>
 
@@ -184,12 +252,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
 
             <div class="sidebar-section">

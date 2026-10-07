@@ -49,6 +49,132 @@
             transform: rotate(1deg);
             background: #fffbef;
         }
+
+        .teacher-notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .chart-wrapper-journal {
+            position: relative;
+            height: 280px;
+            width: 100%;
+            background: #fffdf5;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            box-sizing: border-box;
+        }
+
+        .chart-wrapper-prepost {
+            position: relative;
+            height: 320px;
+            width: 100%;
+            background: #ffffff;
+            border: 4px solid var(--ink);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 6px 6px 0 var(--ink);
+            box-sizing: border-box;
+        }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .content-grid > .dashboard-card {
+                flex: 1 1 100% !important;
+                min-width: 0 !important;
+            }
+
+            .teacher-notes-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .teacher-note-card {
+                padding: 1.3rem 1.1rem;
+                transform: none !important;
+            }
+
+            .teacher-note-card:nth-child(even) {
+                transform: none !important;
+            }
+
+            .chart-wrapper-journal {
+                height: 240px;
+            }
+
+            .chart-wrapper-prepost {
+                height: 260px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .score-badge-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 1rem 0.85rem;
+                transform: none !important;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-width: 3px !important;
+            }
+
+            .score-badge-card:nth-child(even), .score-badge-card:nth-child(odd) {
+                transform: none !important;
+            }
+
+            .score-value {
+                font-size: 1.8rem;
+                align-self: flex-end;
+            }
+
+            .teacher-note-card {
+                padding: 1.1rem 0.85rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+
+            .content-grid {
+                gap: 1rem !important;
+            }
+
+            .chart-wrapper-journal {
+                height: 210px;
+                padding: 8px;
+            }
+
+            .chart-wrapper-prepost {
+                height: 220px;
+                padding: 8px;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .score-badge-card {
+                padding: 0.85rem 0.65rem;
+            }
+
+            .score-value {
+                font-size: 1.5rem;
+            }
+
+            .score-badge-card h4 {
+                font-size: 1.15rem !important;
+            }
+
+            .chart-wrapper-journal {
+                height: 190px;
+            }
+
+            .chart-wrapper-prepost {
+                height: 200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -63,12 +189,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">
@@ -231,11 +358,11 @@
                         Perkembangan suasana hati yang kamu rekam setiap hari.
                     </p>
                     
-                    <div style="position: relative; height: 280px; width: 100%; background: #fffdf5; border: 3px solid var(--ink); border-radius: 12px; padding: 12px; box-shadow: 4px 4px 0 var(--ink);">
+                    <div class="chart-wrapper-journal">
                         <canvas id="journalGraph"></canvas>
                     </div>
 
-                    <div style="margin-top: 1.2rem; display: flex; justify-content: space-around; font-family: var(--mono); font-size: 0.85rem; font-weight: bold;">
+                    <div style="margin-top: 1.2rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 0.4rem; font-family: var(--mono); font-size: 0.85rem; font-weight: bold;">
                         <span>😃 4: Happy</span>
                         <span>😐 3: Normal</span>
                         <span>😔 2: Sad</span>
@@ -260,7 +387,7 @@
                         </span>
                     </div>
 
-                    <div style="position: relative; height: 320px; width: 100%; background: #ffffff; border: 4px solid var(--ink); border-radius: 16px; padding: 16px; box-shadow: 6px 6px 0 var(--ink);">
+                    <div class="chart-wrapper-prepost">
                         <canvas id="prepostGraph"></canvas>
                     </div>
                 </div>
@@ -282,7 +409,7 @@
                         </span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
+                    <div class="teacher-notes-grid">
                         <!-- Minggu 1 -->
                         <div class="teacher-note-card">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">

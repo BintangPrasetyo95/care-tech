@@ -6,6 +6,26 @@
     <title>CareTech - Jurnal Harian (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .teacher-notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .teacher-notes-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .teacher-notes-grid {
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Floating Space & Paper Junk Background Decorations -->
@@ -19,12 +39,13 @@
     </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="dashboard-container" style="position: relative; z-index: 1;">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">
@@ -126,7 +147,7 @@
                 </div>
             </header>
 
-            <div class="content-grid" style="display: block; max-width: 1040px; margin: 0 auto; padding: 2rem 1.5rem;">
+            <div class="content-grid" style="display: block; max-width: 1040px; margin: 0 auto;">
                 <!-- Main Cardboard Calendar Board -->
                 <div class="calendar-board mk">
                     
@@ -200,7 +221,7 @@
                         </span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
+                    <div class="teacher-notes-grid">
                         <!-- Minggu 1 -->
                         <div class="teacher-note-card">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">

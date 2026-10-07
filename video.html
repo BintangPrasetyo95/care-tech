@@ -12,6 +12,70 @@
         href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .video-next-card {
+            text-align: center;
+            background: #fffbe6;
+            border: 3.5px solid var(--ink);
+            box-shadow: 8px 8px 0 var(--ink);
+            padding: 2.2rem;
+            transform: rotate(-0.5deg);
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .video-next-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 800;
+            padding: 0.85rem 2rem;
+            background: var(--pink);
+            color: #fff;
+            border: 3.5px solid var(--ink);
+            box-shadow: 5px 5px 0 var(--ink);
+            border-radius: 999px;
+            transition: all 0.15s ease;
+        }
+
+        .video-next-btn:hover {
+            background: var(--lime);
+            color: var(--ink);
+            transform: scale(1.03);
+        }
+
+        @media (max-width: 600px) {
+            .video-next-card {
+                padding: 1.5rem 1rem !important;
+                transform: none !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+                border-width: 3px !important;
+            }
+
+            .video-next-btn {
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 0.95rem;
+                padding: 0.75rem 1rem;
+                border-width: 3px;
+                box-shadow: 3.5px 3.5px 0 var(--ink);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .video-next-card {
+                padding: 1.2rem 0.75rem !important;
+            }
+
+            .video-next-btn {
+                font-size: 0.88rem;
+                padding: 0.65rem 0.8rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -22,6 +86,7 @@
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
 
             <div class="sidebar-section">
@@ -163,7 +228,7 @@
                 </div>
 
                 <!-- Next Step Card to Game Zone -->
-                <div class="dashboard-card glass-panel wide-card" style="text-align: center; background: #fffbe6; border: 3.5px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 2.2rem; transform: rotate(-0.5deg); position: relative; margin-top: 1rem;">
+                <div class="dashboard-card glass-panel wide-card video-next-card">
                     <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(1deg); width: 140px; height: 26px; background: rgba(255, 229, 0, 0.9); border: 2px dashed rgba(0, 0, 0, 0.35); pointer-events: none;"></div>
                     <span style="display: inline-block; font-family: var(--mono); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #555; margin-bottom: 0.4rem;">
                         Tahap Belajar Berikutnya // Langkah 04
@@ -174,7 +239,7 @@
                     <p style="font-family: var(--mk); font-weight: 700; font-size: 1.1rem; color: #333; max-width: 620px; margin: 0 auto 1.4rem auto;">
                         Uji pemahaman dan latih pengambilan keputusanmu melalui petualangan interaktif Harmonia School RPG!
                     </p>
-                    <a href="game.html" class="action-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-size: 1.05rem; font-weight: 800; padding: 0.85rem 2rem; background: var(--pink); color: #fff; border: 3.5px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); border-radius: 999px;">
+                    <a href="game.html" class="action-btn video-next-btn">
                         Mulai Main Game RPG Sekarang ➔
                     </a>
                 </div>

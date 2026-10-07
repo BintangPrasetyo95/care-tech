@@ -3,6 +3,14 @@
    CareTech Scrapbook & Cardboard Theme
    ========================================================================== */
 
+@font-face {
+    font-family: 'GROBOLD';
+    src: local('GROBOLD'), local('Grobold'), url('assets/fonts/GROBOLD.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     --ink: #000000;
     --pink: #ff2e93;
@@ -20,7 +28,8 @@
 
     --mk: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
     --mono: 'Courier New', Courier, monospace;
-    --imp: Impact, 'Arial Black', sans-serif;
+    --imp: 'GROBOLD', 'Grobold', sans-serif;
+    --title-font: 'GROBOLD', 'Grobold', sans-serif;
 }
 
 * {
@@ -31,6 +40,7 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
@@ -526,21 +536,193 @@ h3 {
 
 /* Responsiveness */
 @media (max-width: 600px) {
+    body {
+        padding: 1.5rem 0.8rem 2.5rem;
+    }
+
+    .clipboard-backing {
+        inset: -8px -6px;
+        border-width: 3.5px;
+        box-shadow: 6px 6px 0 var(--ink);
+        transform: none !important;
+    }
+
+    .clipboard-clip {
+        width: 110px;
+        height: 32px;
+        top: -18px;
+        border-width: 3px;
+    }
+
+    .clipboard-clip::after {
+        width: 55px;
+        height: 8px;
+    }
+
     .scrapbook-card {
-        padding: 2.2rem 1.2rem;
+        padding: 2.2rem 1.2rem 1.6rem;
+        transform: none !important;
+        border-width: 3.5px;
+        box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    .stamp-badge {
+        font-size: 1rem;
+        padding: 0.25rem 0.7rem;
+        top: -14px;
+        right: 12px;
+        transform: rotate(4deg);
+    }
+
+    .scrapbook-card h2 {
+        font-size: 2rem;
+    }
+
+    .question-block h3 {
+        font-size: 1.25rem;
+    }
+
+    .emoji-options {
+        gap: 0.65rem;
     }
 
     .emoji-option {
-        width: 85px;
-        padding: 0.8rem 0.4rem;
+        width: 76px;
+        padding: 0.7rem 0.35rem;
+        border-width: 2.5px;
+        box-shadow: 3px 3px 0 var(--ink);
+        transform: none !important;
+    }
+
+    .emoji-option:hover {
+        transform: none !important;
+    }
+
+    .emoji-option:has(input[type="radio"]:checked) {
+        transform: scale(1.05) !important;
+        box-shadow: 0 0 0 3px #ffffff, 0 0 0 6px var(--ink), 4px 5px 0 6px var(--ink) !important;
     }
 
     .emoji {
-        font-size: 2.4rem;
+        font-size: 2.1rem;
+    }
+
+    .emoji-option .label {
+        font-size: 0.85rem;
+    }
+
+    .navigation-buttons {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
     }
 
     .btn {
-        padding: 0.6rem 1.4rem;
-        font-size: 1.3rem;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        padding: 0.7rem 1.2rem;
+        font-size: 1.25rem;
+        transform: none !important;
+        margin: 0 !important;
+        box-shadow: 4px 4px 0 var(--ink);
+        border-width: 3.5px;
+    }
+
+    .btn-secondary:hover, .btn-primary:hover, .btn-submit:hover {
+        transform: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1.2rem 0.6rem 2rem;
+    }
+
+    .scrapbook-card {
+        padding: 1.9rem 0.95rem 1.4rem;
+        border-radius: 16px !important;
+    }
+
+    .clipboard-backing {
+        inset: -6px -5px;
+        border-radius: 18px;
+    }
+
+    .scrapbook-card h2 {
+        font-size: 1.75rem;
+    }
+
+    .intro-text {
+        font-size: 0.95rem;
+    }
+
+    .question-block h3 {
+        font-size: 1.15rem;
+    }
+
+    .emoji-options {
+        gap: 0.5rem;
+    }
+
+    .emoji-option {
+        width: 68px;
+        padding: 0.6rem 0.25rem;
+        border-radius: 12px !important;
+    }
+
+    .emoji {
+        font-size: 1.85rem;
+    }
+
+    .emoji-option .label {
+        font-size: 0.78rem;
+    }
+
+    .custom-textarea {
+        padding: 0.8rem;
+        font-size: 0.98rem;
+        border-width: 3px;
+    }
+
+    .btn {
+        font-size: 1.12rem;
+        padding: 0.65rem 1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    body {
+        padding: 0.9rem 0.4rem 1.6rem;
+    }
+
+    .scrapbook-card {
+        padding: 1.7rem 0.75rem 1.2rem;
+    }
+
+    .clipboard-backing {
+        inset: -4px -3px;
+        box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .scrapbook-card h2 {
+        font-size: 1.55rem;
+    }
+
+    .emoji-options {
+        gap: 0.4rem;
+    }
+
+    .emoji-option {
+        width: 62px;
+        padding: 0.5rem 0.2rem;
+    }
+
+    .emoji {
+        font-size: 1.65rem;
+    }
+
+    .btn {
+        font-size: 1.05rem;
+        padding: 0.6rem 0.85rem;
     }
 }
