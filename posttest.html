@@ -1,12 +1,234 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareTech - Posttest (NeuroAdventure)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        /* ==========================================================================
+           POSTTEST - SIMPLE NEUROADVENTURE EXPLANATION
+           ========================================================================== */
+
+        .posttest-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        /* Question & Answer Hero Card */
+        .qa-hero-card {
+            background: var(--paper-warm) !important;
+            border: 4px solid var(--ink) !important;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px !important;
+            box-shadow: 8px 8px 0 var(--ink) !important;
+            padding: 2.2rem 2rem !important;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .qa-question-title {
+            font-family: var(--imp);
+            font-size: clamp(2rem, 4.5vw, 2.7rem);
+            color: var(--ink);
+            line-height: 1.15;
+            margin: 0.6rem 0 1.2rem;
+            letter-spacing: 0.02em;
+        }
+
+        .qa-answer-box {
+            background: #ffffff;
+            border: 3.5px solid var(--ink);
+            border-left: 10px solid var(--pink);
+            border-radius: 14px;
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.4rem 1.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .qa-answer-title {
+            font-family: var(--imp);
+            font-size: 1.45rem;
+            color: var(--pink);
+            margin: 0.3rem 0 0.5rem 0;
+            line-height: 1.2;
+        }
+
+        .qa-answer-text {
+            font-family: var(--mk);
+            font-size: 1.12rem;
+            line-height: 1.65;
+            color: #222;
+            margin: 0;
+        }
+
+        /* Kit Components Grid */
+        .section-card {
+            background: #ffffff;
+            border: 3.5px solid var(--ink);
+            border-radius: 16px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 1.8rem 1.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header-title {
+            font-family: var(--imp);
+            font-size: 1.85rem;
+            color: var(--ink);
+            margin: 0.4rem 0 1.2rem;
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .component-card {
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.4rem 1.3rem;
+            transition: transform 0.15s ease;
+        }
+
+        .component-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--ink);
+        }
+
+        .component-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .component-title {
+            font-family: var(--imp);
+            font-size: 1.25rem;
+            color: var(--ink);
+            margin: 0.2rem 0 0.4rem;
+            line-height: 1.2;
+        }
+
+        .component-desc {
+            font-family: var(--mk);
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* How to Play Steps */
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.1rem;
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-badge {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            background: var(--sun);
+            border: 3px solid var(--ink);
+            border-radius: 50%;
+            box-shadow: 2px 2px 0 var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--imp);
+            font-size: 1.4rem;
+            color: var(--ink);
+        }
+
+        .step-title {
+            font-family: var(--imp);
+            font-size: 1.2rem;
+            color: var(--ink);
+            margin: 0 0 0.25rem 0;
+            line-height: 1.2;
+        }
+
+        .step-desc {
+            font-family: var(--mk);
+            font-size: 1.02rem;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Finish Card */
+        .finish-card {
+            background: var(--lime);
+            border: 4px solid var(--ink);
+            border-radius: 18px;
+            box-shadow: 7px 7px 0 var(--ink);
+            padding: 2.2rem 1.8rem;
+            text-align: center;
+        }
+
+        .finish-title {
+            font-family: var(--imp);
+            font-size: 2.1rem;
+            color: var(--ink);
+            margin: 0.4rem 0 0.4rem;
+        }
+
+        .finish-desc {
+            font-family: var(--mk);
+            font-size: 1.12rem;
+            color: #222;
+            max-width: 600px;
+            margin: 0 auto 1.4rem;
+            line-height: 1.5;
+        }
+
+        .btn-finish-neuro {
+            background: var(--pink);
+            color: #ffffff;
+            font-family: var(--imp);
+            font-size: 1.35rem;
+            letter-spacing: 0.03em;
+            padding: 0.9rem 2rem;
+            border: 3.5px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 5px 5px 0 var(--ink);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-finish-neuro:hover {
+            background: var(--sun);
+            color: var(--ink);
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--ink);
+        }
+
+        .btn-finish-neuro:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+    </style>
 </head>
+
 <body>
     <!-- Floating Space & Paper Junk Background Decorations -->
     <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
@@ -102,9 +324,9 @@
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
-                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 05 // Evaluasi Akhir</span>
+                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 05 // Board Game Non-Digital</span>
                     <h1 id="welcome-message">Posttest (NeuroAdventure)</h1>
-                    <p>Uji seberapa jauh pemahamanmu setelah belajar materi dan berpetualang di NeuroAdventure.</p>
+                    <p>Panduan ringkas cara bermain Adventure Harmony Board bersama kelompok.</p>
                 </div>
                 <div class="user-profile">
                     <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
@@ -125,145 +347,140 @@
                 </div>
             </header>
 
-            <div class="content-grid" style="display: block; max-width: 900px; margin: 0 auto;">
-                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2rem;">
-                    
-                    <!-- Top Ribbon Header -->
-                    <div style="text-align: center; margin-bottom: 2.2rem;">
-                        <span class="tape tape-lime" style="font-size: 1.05rem;">LEMBAR UJIAN POSTTEST (NEUROADVENTURE)</span>
-                        <h2 style="font-size: 2.4rem; margin: 0.5rem 0 0.4rem;">Evaluasi Capaian Akhir</h2>
-                        <p style="font-family: var(--mono); color: #444; font-size: 0.95rem;">Jawablah pertanyaan berikut dengan jujur sesuai pemahaman mendalammu.</p>
-                    </div>
+            <div class="posttest-container">
 
-                    <!-- The Quiz Card -->
-                    <div id="quiz-container" class="mk-alt">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
-                            <span class="tape tape-cyan" style="margin-bottom: 0; font-size: 0.9rem;">
-                                PERTANYAAN <span id="current-q">1</span> DARI <span id="total-q">4</span>
-                            </span>
-                            <span style="font-family: var(--mono); font-weight: bold; background: var(--sun); padding: 0.3rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px;">
-                                Final Challenge
-                            </span>
+                <!-- 1. Pertanyaan Awal & Jawabannya -->
+                <div class="qa-hero-card">
+                    <span class="tape tape-sun" style="font-size: 0.88rem;">PERTANYAAN BESAR 🤔</span>
+                    <h2 class="qa-question-title">"Setelah harmonia game, kita ngapain?"</h2>
+
+                    <div class="qa-answer-box">
+                        <span class="tape tape-lime" style="font-size: 0.78rem; margin-bottom: 0.35rem;">JAWABANNYA 💡</span>
+                        <h3 class="qa-answer-title">Kita Bermain NeuroAdventure: Adventure Harmony Board! 🎲</h3>
+                        <p class="qa-answer-text">
+                            <strong>Adventure Harmony Board</strong> merupakan media pembelajaran kolaboratif non-digital berupa <strong>board game kelompok (4–5 siswa)</strong> yang berfungsi sebagai ruang simulasi sosial dan pemecahan masalah secara nyata (<em>problem solving</em>).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Komponen Utama Kit Permainan (Fisik) -->
+                <div class="section-card">
+                    <span class="tape tape-pink" style="font-size: 0.82rem;">KIT PERMAINAN</span>
+                    <h3 class="section-header-title">Komponen Utama Kit Permainan (Fisik) 📦</h3>
+
+                    <div class="components-grid">
+                        <!-- Papan Utama -->
+                        <div class="component-card">
+                            <div class="component-icon">🗺️</div>
+                            <h4 class="component-title">Papan Utama (The Map of Harmonia)</h4>
+                            <p class="component-desc">
+                                Lintasan petak sekolah yang dilewati tim secara bersama-sama (kolaboratif, bukan saling tanding).
+                            </p>
                         </div>
-                        
-                        <div id="question-text" style="font-family: var(--mk); font-size: 1.2rem; margin-bottom: 1.8rem; color: var(--ink); line-height: 1.6; font-weight: 700; background: #ffffff; padding: 1.4rem; border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
-                        </div>
-                        
-                        <div id="options-container" style="display: flex; flex-direction: column; gap: 12px;">
-                        </div>
-                        
-                        <div style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                            <a href="dashboard.html" class="btn btn-small" style="background: #ffffff;">◀ Ke Dashboard</a>
-                            <button id="btn-next" class="btn btn-next mk" onclick="nextQuestion()">Selanjutnya ➔</button>
+
+                        <!-- Dek Kartu Kasus -->
+                        <div class="component-card">
+                            <div class="component-icon">🃏</div>
+                            <h4 class="component-title">Dek Kartu Kasus (Social Dilemma Cards)</h4>
+                            <p class="component-desc">
+                                Kartu skenario yang memuat studi kasus konflik dunia nyata anak sekolah untuk diselesaikan bersama tim.
+                            </p>
                         </div>
                     </div>
                 </div>
+
+                <!-- 3. Cara Mainnya (Simple: Just How The Game Works) -->
+                <div class="section-card">
+                    <span class="tape tape-cyan" style="font-size: 0.82rem;">CARA MAINNYA 🎲</span>
+                    <h3 class="section-header-title">Bagaimana Cara Mainnya?</h3>
+
+                    <!-- Langkah 1 -->
+                    <div class="step-item">
+                        <div class="step-badge">1</div>
+                        <div>
+                            <h4 class="step-title">Bentuk Kelompok 4–5 Siswa</h4>
+                            <p class="step-desc">
+                                Buat kelompok beranggotakan 4–5 siswa, lalu letakkan pion tim bersama di petak <strong>START</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 2 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--lime);">2</div>
+                        <div>
+                            <h4 class="step-title">Lempar Dadu &amp; Maju Bersama</h4>
+                            <p class="step-desc">
+                                Siswa bergantian melempar dadu. Seluruh kelompok melangkah maju bersama sesuai angka dadu yang keluar.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 3 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--pink); color: #fff;">3</div>
+                        <div>
+                            <h4 class="step-title">Ambil Kartu Kasus</h4>
+                            <p class="step-desc">
+                                Kalau pion berhenti di petak <strong>KARTU</strong>, ambil 1 kartu kasus yang berisi cerita masalah nyata anak sekolah (misalnya ejekan / perundungan).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 4 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--cy);">4</div>
+                        <div>
+                            <h4 class="step-title">Diskusikan ➔ Putuskan ➔ Praktikkan (Role-Play)!</h4>
+                            <p class="step-desc">
+                                Tidak ada pilihan A/B/C! Tim berdiskusi menentukan solusi terbaik, lalu bagi peran untuk <strong>memperagakan (role-play ±1 menit)</strong> tindakan nyata menolong teman (<em>upstander</em>).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 5 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--orange); color: #fff;">5</div>
+                        <div>
+                            <h4 class="step-title">Kumpulkan Poin Harmoni</h4>
+                            <p class="step-desc">
+                                Jawab 3 pertanyaan refleksi bersama: masalahnya apa, perasaan korban bagaimana, dan mengapa tindakan kalian membantu. Dapatkan <strong>Poin Harmoni (+6 Poin)</strong> untuk kelompok!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Tombol Selesai & Lanjut ke Bonus Game -->
+                <div class="finish-card">
+                    <span class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0.4rem;">SIAP BERMAIN DI KELAS! 🚀</span>
+                    <h3 class="finish-title">Sudah Paham Cara Mainnya?</h3>
+                    <p class="finish-desc">
+                        Sekarang kamu sudah siap memainkan Adventure Harmony Board secara fisik di kelas! Klik tombol di bawah untuk membuka Zona Bonus Game.
+                    </p>
+
+                    <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="game.html" class="btn btn-small" style="background: #ffffff; padding: 0.85rem 1.6rem;">
+                            ◀ Kembali ke Game
+                        </a>
+                        <button onclick="finishNeuroAdventure()" class="btn-finish-neuro">
+                            Selesai &amp; Buka Bonus Game 🎁 ➔
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
 
     <script>
-        const questions = [
-            {
-                type: "mcq",
-                text: "<strong>Kasus:</strong> Rian melihat nilai ujiannya kurang memuaskan. Ia langsung mengepalkan tangan, wajahnya terlihat cemberut, dan ia membentak temannya yang mencoba mengajaknya berbicara.<br><br>Berdasarkan konsep pengelolaan emosi, tindakan Rian menunjukkan bahwa....",
-                options: [
-                    "A. Emosi marah yang dirasakan Rian adalah sesuatu yang salah dan tidak boleh terjadi.",
-                    "B. Rian belum mampu mengelola respons emosinya sehingga rasa kecewa berubah menjadi perilaku yang dapat menyakiti orang lain.",
-                    "C. Rian memiliki empati yang tinggi karena menunjukkan perasaannya secara terbuka.",
-                    "D. Teman Rian bersalah karena mencoba berbicara ketika Rian sedang marah."
-                ]
-            },
-            {
-                type: "mcq",
-                text: "<strong>Pernyataan:</strong> \"Empati membuat kita memahami perasaan orang lain, sedangkan kepedulian mendorong kita untuk melakukan kebaikan nyata.\"<br><br>Pernyataan reflektif tersebut bermakna bahwa....",
-                options: [
-                    "A. Empati akan lebih bermakna apabila diwujudkan melalui tindakan kepedulian sosial yang nyata kepada orang lain.",
-                    "B. Kepedulian sosial dapat dilakukan tanpa perlu memahami perasaan orang yang dibantu.",
-                    "C. Kita hanya perlu membantu orang yang sedang merasa senang agar bantuan diterima dengan baik.",
-                    "D. Memahami perasaan orang lain lebih penting daripada melakukan tindakan untuk membantu."
-                ]
-            },
-            {
-                type: "essay",
-                text: "<strong>Kasus Empati:</strong> Saat jam istirahat, Siti melihat temannya, Maya, duduk sendirian di sudut kelas dengan wajah sedih. Setelah ditanya, Maya bercerita bahwa ia merasa kecewa karena beberapa teman tidak mengikutsertakannya dalam kegiatan kelompok. Siti memahami bahwa Maya merasa sedih dan tidak dihargai. Siti kemudian mengajak Maya berbicara, memberikan dukungan, dan membantu mengajak teman-teman lainnya agar lebih menerima Maya dalam kelompok.<br><br><strong>Pertanyaan:</strong><br>1. Menurut kamu, apa perasaan yang mungkin dirasakan oleh Maya? Jelaskan alasanmu!<br>2. Sikap apa yang ditunjukkan oleh Siti dalam cerita tersebut? Jelaskan hubungan antara empati dan kepedulian berdasarkan tindakan Siti!"
-            },
-            {
-                type: "essay",
-                text: "<strong>Kasus Bullying:</strong> Andi adalah siswa kelas V yang sering diejek oleh beberapa teman karena memiliki cara berbicara yang berbeda. Awalnya Andi mencoba mengabaikannya, tetapi lama-kelamaan ia merasa sedih, kehilangan percaya diri, dan mulai tidak ingin mengikuti kegiatan di kelas. Suatu hari, Riko melihat kejadian tersebut. Riko ingin membantu Andi, tetapi ia juga takut akan ikut diejek oleh teman-temannya.<br><br><strong>Pertanyaan:</strong><br>1. Menurut kamu, bagaimana perasaan yang mungkin dialami oleh Andi? Jelaskan dampak dari perundungan terhadap kesehatan mental seseorang!<br>2. Jika kamu menjadi Riko, tindakan apa yang dapat kamu lakukan untuk membantu Andi dengan cara yang tepat dan aman?"
-            }
-        ];
-
-        let currentQ = 0;
-
-        function renderQuestion() {
-            const q = questions[currentQ];
-            document.getElementById('current-q').textContent = currentQ + 1;
-            document.getElementById('total-q').textContent = questions.length;
-            document.getElementById('question-text').innerHTML = q.text;
-            
-            const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = '';
-            
-            if (q.type === 'mcq') {
-                q.options.forEach((opt, index) => {
-                    optsContainer.innerHTML += `
-                        <label class="quiz-option mk-alt">
-                            <input type="radio" name="answer" value="${index}">
-                            <span>${opt}</span>
-                        </label>
-                    `;
-                });
-            } else if (q.type === 'essay') {
-                optsContainer.innerHTML += `
-                    <textarea placeholder="Tuliskan jawaban analisismu di sini secara lengkap..."></textarea>
-                `;
-            }
-
-            if (currentQ === questions.length - 1) {
-                document.getElementById('btn-next').textContent = 'Selesai & Kumpulkan! ★';
-                document.getElementById('btn-next').style.background = 'var(--pink)';
-                document.getElementById('btn-next').style.color = '#fff';
-            } else {
-                document.getElementById('btn-next').textContent = 'Selanjutnya ➔';
-                document.getElementById('btn-next').style.background = 'var(--sun)';
-                document.getElementById('btn-next').style.color = 'var(--ink)';
-            }
+        // Selesai memahami NeuroAdventure & Buka Bonus Game
+        function finishNeuroAdventure() {
+            localStorage.setItem('caretech_posttest_completed', 'true');
+            alert('LUAR BIASA! 🎉\nKamu telah memahami cara bermain NeuroAdventure: Adventure Harmony Board!\n\nSeluruh Zona Bonus Game kini telah TERBUKA (UNLOCKED)!');
+            window.location.href = 'bonus-game.html';
         }
 
-        function nextQuestion() {
-            if (currentQ < questions.length - 1) {
-                let valid = true;
-                if (questions[currentQ].type === 'mcq') {
-                    const selected = document.querySelector('input[name="answer"]:checked');
-                    if (!selected) {
-                        alert('Silakan pilih salah satu jawaban ya! 😊');
-                        valid = false;
-                    }
-                } else if (questions[currentQ].type === 'essay') {
-                    const txt = document.querySelector('textarea').value;
-                    if (txt.trim().length === 0) {
-                        alert('Silakan tuliskan jawaban esaimu terlebih dahulu ya! 😊');
-                        valid = false;
-                    }
-                }
-
-                if (valid) {
-                    currentQ++;
-                    renderQuestion();
-                }
-            } else {
-                // Save completion status
-                localStorage.setItem('caretech_posttest_completed', 'true');
-                alert('LUAR BIASA! 🎉\nSemua soal Posttest (NeuroAdventure) berhasil kamu selesaikan dengan sangat baik!\nBonus Game dan Skenario Ekstra kini telah TERBUKA (UNLOCKED)!');
-                window.location.href = 'bonus-game.html';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderQuestion();
-        });
-
+        // Toggle mobile sidebar
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -273,4 +490,5 @@
     </script>
     <script src="dropdown.js"></script>
 </body>
+
 </html>
