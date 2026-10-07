@@ -9,86 +9,161 @@
     <link rel="stylesheet" href="dashboard.css">
     <style>
         /* ==========================================================================
-           POSTTEST (NEUROADVENTURE: ADVENTURE HARMONY BOARD) STYLES
+           POSTTEST - SIMPLE NEUROADVENTURE EXPLANATION
            ========================================================================== */
-        
-        .neuro-hero-card {
-            background: var(--paper-warm) !important;
-            border: 4.5px solid var(--ink) !important;
-            box-shadow: 8px 8px 0 var(--ink) !important;
-            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px !important;
-            padding: 2.5rem 2.2rem !important;
-            position: relative;
-            margin-bottom: 2.2rem;
+
+        .posttest-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
         }
 
-        .hero-quote-box {
+        /* Question & Answer Hero Card */
+        .qa-hero-card {
+            background: var(--paper-warm) !important;
+            border: 4px solid var(--ink) !important;
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px !important;
+            box-shadow: 8px 8px 0 var(--ink) !important;
+            padding: 2.2rem 2rem !important;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .qa-question-title {
+            font-family: var(--imp);
+            font-size: clamp(2rem, 4.5vw, 2.7rem);
+            color: var(--ink);
+            line-height: 1.15;
+            margin: 0.6rem 0 1.2rem;
+            letter-spacing: 0.02em;
+        }
+
+        .qa-answer-box {
             background: #ffffff;
             border: 3.5px solid var(--ink);
             border-left: 10px solid var(--pink);
-            border-radius: 12px;
+            border-radius: 14px;
             box-shadow: 4px 4px 0 var(--ink);
             padding: 1.4rem 1.6rem;
-            margin: 1.4rem 0 1.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .qa-answer-title {
+            font-family: var(--imp);
+            font-size: 1.45rem;
+            color: var(--pink);
+            margin: 0.3rem 0 0.5rem 0;
+            line-height: 1.2;
+        }
+
+        .qa-answer-text {
             font-family: var(--mk);
-            font-size: 1.25rem;
-            line-height: 1.6;
-            color: var(--ink);
+            font-size: 1.12rem;
+            line-height: 1.65;
+            color: #222;
+            margin: 0;
         }
 
-        .hero-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin-top: 1rem;
-        }
-
-        /* Physical Components Grid */
-        .components-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin: 1.5rem 0 2.2rem;
-        }
-
-        .component-card {
+        /* Kit Components Grid */
+        .section-card {
             background: #ffffff;
             border: 3.5px solid var(--ink);
             border-radius: 16px;
-            box-shadow: 5px 5px 0 var(--ink);
-            padding: 1.6rem 1.4rem;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
-            position: relative;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 1.8rem 1.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header-title {
+            font-family: var(--imp);
+            font-size: 1.85rem;
+            color: var(--ink);
+            margin: 0.4rem 0 1.2rem;
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .component-card {
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.4rem 1.3rem;
+            transition: transform 0.15s ease;
         }
 
         .component-card:hover {
-            transform: translate(-3px, -3px);
-            box-shadow: 8px 8px 0 var(--ink);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--ink);
         }
 
-        .component-icon-badge {
-            width: 58px;
-            height: 58px;
-            background: var(--sun);
-            border: 3px solid var(--ink);
-            border-radius: 12px;
-            box-shadow: 3px 3px 0 var(--ink);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        .component-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.4rem;
         }
 
         .component-title {
             font-family: var(--imp);
-            font-size: 1.45rem;
+            font-size: 1.25rem;
             color: var(--ink);
-            margin: 0.3rem 0 0.5rem;
+            margin: 0.2rem 0 0.4rem;
             line-height: 1.2;
         }
 
         .component-desc {
+            font-family: var(--mk);
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* How to Play Steps */
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.1rem;
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-badge {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            background: var(--sun);
+            border: 3px solid var(--ink);
+            border-radius: 50%;
+            box-shadow: 2px 2px 0 var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--imp);
+            font-size: 1.4rem;
+            color: var(--ink);
+        }
+
+        .step-title {
+            font-family: var(--imp);
+            font-size: 1.2rem;
+            color: var(--ink);
+            margin: 0 0 0.25rem 0;
+            line-height: 1.2;
+        }
+
+        .step-desc {
             font-family: var(--mk);
             font-size: 1.02rem;
             color: #333;
@@ -96,264 +171,55 @@
             margin: 0;
         }
 
-        /* 5 CASEL Pillars Tab & Card Styling */
-        .casel-section {
-            background: var(--paper-warm);
-            border: 4px solid var(--ink);
-            border-radius: 20px;
-            box-shadow: 7px 7px 0 var(--ink);
-            padding: 2.2rem 2rem;
-            margin-bottom: 2.2rem;
-        }
-
-        .casel-tabs {
-            display: flex;
-            gap: 0.7rem;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .casel-tab-btn {
-            background: #ffffff;
-            border: 3px solid var(--ink);
-            border-radius: 10px;
-            box-shadow: 3px 3px 0 var(--ink);
-            padding: 0.55rem 1.1rem;
-            font-family: var(--mono);
-            font-weight: 800;
-            font-size: 0.88rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .casel-tab-btn:hover {
-            background: var(--sun);
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 var(--ink);
-        }
-
-        .casel-tab-btn.active {
-            background: var(--pink);
-            color: #ffffff;
-            transform: translate(1px, 1px);
-            box-shadow: 2px 2px 0 var(--ink);
-        }
-
-        .casel-panel {
-            display: none;
-            background: #ffffff;
-            border: 3.5px solid var(--ink);
-            border-radius: 14px;
-            box-shadow: 5px 5px 0 var(--ink);
-            padding: 1.6rem 1.8rem;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .casel-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .topic-badges-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-            gap: 0.75rem;
-            margin-top: 1.2rem;
-        }
-
-        .topic-badge-item {
-            background: var(--paper-warm);
-            border: 2px solid var(--ink);
-            border-radius: 8px;
-            padding: 0.55rem 0.8rem;
-            font-family: var(--mono);
-            font-weight: 700;
-            font-size: 0.86rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 2px 2px 0 var(--ink);
-        }
-
-        /* How to Play Timeline Steps */
-        .step-card {
-            background: #ffffff;
-            border: 3.5px solid var(--ink);
-            border-radius: 14px;
-            box-shadow: 5px 5px 0 var(--ink);
-            padding: 1.4rem 1.6rem;
-            margin-bottom: 1.2rem;
-            display: flex;
-            gap: 1.4rem;
-            align-items: flex-start;
-        }
-
-        .step-num-circle {
-            flex-shrink: 0;
-            width: 50px;
-            height: 50px;
+        /* Finish Card */
+        .finish-card {
             background: var(--lime);
-            border: 3.5px solid var(--ink);
-            border-radius: 50%;
-            box-shadow: 3px 3px 0 var(--ink);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--imp);
-            font-size: 1.6rem;
-            color: var(--ink);
-        }
-
-        .step-body h4 {
-            font-family: var(--imp);
-            font-size: 1.35rem;
-            color: var(--ink);
-            margin: 0 0 0.4rem 0;
-        }
-
-        .step-body p {
-            font-family: var(--mk);
-            font-size: 1.05rem;
-            color: #333;
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        /* 5-Step Card Formula */
-        .card-formula-strip {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.8rem;
-            margin: 1.2rem 0;
-        }
-
-        .formula-box {
-            background: var(--paper-warm);
-            border: 2.5px solid var(--ink);
-            border-radius: 10px;
-            padding: 0.8rem 0.6rem;
-            text-align: center;
-            box-shadow: 3px 3px 0 var(--ink);
-        }
-
-        .formula-box strong {
-            display: block;
-            font-family: var(--imp);
-            font-size: 1.15rem;
-            color: var(--ink);
-            margin-bottom: 0.2rem;
-        }
-
-        .formula-box span {
-            font-family: var(--mono);
-            font-size: 0.78rem;
-            color: #555;
-            font-weight: 700;
-        }
-
-        /* Interactive Case Simulation Example */
-        .case-sample-card {
-            background: #fffde6;
             border: 4px solid var(--ink);
             border-radius: 18px;
             box-shadow: 7px 7px 0 var(--ink);
-            padding: 2.2rem 2rem;
-            position: relative;
-            margin-bottom: 2.2rem;
-        }
-
-        .roleplay-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1rem;
-            margin: 1.2rem 0;
-        }
-
-        .roleplay-card {
-            background: #ffffff;
-            border: 2.5px solid var(--ink);
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 3px 3px 0 var(--ink);
-        }
-
-        .roleplay-card h5 {
-            font-family: var(--mono);
-            font-size: 0.92rem;
-            font-weight: 900;
-            margin: 0 0 0.4rem 0;
-            color: var(--ink);
-        }
-
-        .roleplay-card p {
-            font-family: var(--mk);
-            font-size: 0.95rem;
-            color: #333;
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        .scoring-pill-box {
-            background: #ffffff;
-            border: 3px solid var(--ink);
-            border-radius: 12px;
-            box-shadow: 4px 4px 0 var(--ink);
-            padding: 1.2rem 1.4rem;
-            margin-top: 1.2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .scoring-item {
-            font-family: var(--mono);
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: var(--ink);
-        }
-
-        /* Next Step Action Ribbon */
-        .finish-banner {
-            background: var(--lime);
-            border: 4.5px solid var(--ink);
-            border-radius: 20px;
-            box-shadow: 8px 8px 0 var(--ink);
-            padding: 2.4rem 2rem;
+            padding: 2.2rem 1.8rem;
             text-align: center;
-            position: relative;
-            margin-top: 2.5rem;
+        }
+
+        .finish-title {
+            font-family: var(--imp);
+            font-size: 2.1rem;
+            color: var(--ink);
+            margin: 0.4rem 0 0.4rem;
+        }
+
+        .finish-desc {
+            font-family: var(--mk);
+            font-size: 1.12rem;
+            color: #222;
+            max-width: 600px;
+            margin: 0 auto 1.4rem;
+            line-height: 1.5;
         }
 
         .btn-finish-neuro {
             background: var(--pink);
             color: #ffffff;
             font-family: var(--imp);
-            font-size: 1.45rem;
-            letter-spacing: 0.04em;
-            padding: 1rem 2.2rem;
-            border: 4px solid var(--ink);
-            border-radius: 14px;
-            box-shadow: 6px 6px 0 var(--ink);
+            font-size: 1.35rem;
+            letter-spacing: 0.03em;
+            padding: 0.9rem 2rem;
+            border: 3.5px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 5px 5px 0 var(--ink);
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.5rem;
             transition: all 0.15s ease;
-            margin: 0.6rem 0.5rem;
         }
 
         .btn-finish-neuro:hover {
             background: var(--sun);
             color: var(--ink);
-            transform: translate(-3px, -3px);
-            box-shadow: 9px 9px 0 var(--ink);
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--ink);
         }
 
         .btn-finish-neuro:active {
@@ -460,7 +326,7 @@
                 <div class="greeting">
                     <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 05 // Board Game Non-Digital</span>
                     <h1 id="welcome-message">Posttest (NeuroAdventure)</h1>
-                    <p>Mengenal Adventure Harmony Board: Simulasi Sosial & Pemecahan Masalah Nyata.</p>
+                    <p>Panduan ringkas cara bermain Adventure Harmony Board bersama kelompok.</p>
                 </div>
                 <div class="user-profile">
                     <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
@@ -481,394 +347,120 @@
                 </div>
             </header>
 
-            <div class="content-grid" style="display: block; max-width: 1040px; margin: 0 auto; padding: 2.2rem 1.8rem;">
-                
-                <!-- 1. Hero Card: Pengenalan NeuroAdventure -->
-                <div class="neuro-hero-card mk">
-                    <span class="tape tape-lime" style="font-size: 1.05rem;">PANDUAN MEDIA NON-DIGITAL</span>
-                    <h2 style="font-size: 2.5rem; margin: 0.6rem 0 0.4rem; font-family: var(--imp); color: var(--ink);">
-                        NeuroAdventure: Adventure Harmony Board 🎲
-                    </h2>
-                    <p style="font-family: var(--mono); color: #555; font-size: 0.95rem; font-weight: 700;">
-                        Kit Permainan Fisik Kolaboratif untuk Penguatan Karakter & Empati Anak Sekolah
-                    </p>
+            <div class="posttest-container">
 
-                    <div class="hero-quote-box">
-                        “<strong>Adventure Harmony Board</strong> merupakan media pembelajaran kolaboratif non-digital berupa <em>board game</em> kelompok (4–5 siswa) yang berfungsi sebagai ruang simulasi sosial dan pemecahan masalah secara nyata (<em>problem solving</em>).”
-                    </div>
+                <!-- 1. Pertanyaan Awal & Jawabannya -->
+                <div class="qa-hero-card">
+                    <span class="tape tape-sun" style="font-size: 0.88rem;">PERTANYAAN BESAR 🤔</span>
+                    <h2 class="qa-question-title">"Setelah harmonia game, kita ngapain?"</h2>
 
-                    <div class="hero-tags-container">
-                        <span class="tape tape-cyan">🤝 100% Kolaboratif (Bukan Saling Tanding)</span>
-                        <span class="tape tape-sun">👥 Kelompok 4–5 Siswa</span>
-                        <span class="tape tape-pink">🎭 Simulasi Role-Play Nyata</span>
-                        <span class="tape tape-lime">⭐ Poin Harmoni Tim</span>
-                        <span class="tape tape-orange">🧠 5 Pilar CASEL (SEL)</span>
+                    <div class="qa-answer-box">
+                        <span class="tape tape-lime" style="font-size: 0.78rem; margin-bottom: 0.35rem;">JAWABANNYA 💡</span>
+                        <h3 class="qa-answer-title">Kita Bermain NeuroAdventure: Adventure Harmony Board! 🎲</h3>
+                        <p class="qa-answer-text">
+                            <strong>Adventure Harmony Board</strong> merupakan media pembelajaran kolaboratif non-digital berupa <strong>board game kelompok (4–5 siswa)</strong> yang berfungsi sebagai ruang simulasi sosial dan pemecahan masalah secara nyata (<em>problem solving</em>).
+                        </p>
                     </div>
                 </div>
 
                 <!-- 2. Komponen Utama Kit Permainan (Fisik) -->
-                <div style="margin-bottom: 2.5rem;">
-                    <div style="margin-bottom: 1.2rem;">
-                        <span class="tape tape-pink" style="font-size: 0.88rem;">KIT BOARD GAME</span>
-                        <h3 style="font-family: var(--imp); font-size: 2rem; margin: 0.4rem 0 0.2rem;">
-                            Komponen Utama Kit Permainan (Fisik) 📦
-                        </h3>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #444; margin: 0;">
-                            Setiap kelompok mendapatkan satu kit lengkap yang terdiri dari komponen fisik berikut:
-                        </p>
-                    </div>
+                <div class="section-card">
+                    <span class="tape tape-pink" style="font-size: 0.82rem;">KIT PERMAINAN</span>
+                    <h3 class="section-header-title">Komponen Utama Kit Permainan (Fisik) 📦</h3>
 
                     <div class="components-grid">
-                        <!-- Komponen 1: Papan Utama -->
+                        <!-- Papan Utama -->
                         <div class="component-card">
-                            <div class="component-icon-badge" style="background: var(--lime);">🗺️</div>
-                            <span class="tape tape-cyan" style="font-size: 0.75rem; margin-bottom: 0.4rem;">PAPAN PERMAINAN</span>
+                            <div class="component-icon">🗺️</div>
                             <h4 class="component-title">Papan Utama (The Map of Harmonia)</h4>
                             <p class="component-desc">
-                                Lintasan petak sekolah yang dilewati tim secara bersama-sama (kolaboratif, bukan saling tanding). Memetakan lingkungan nyata sekolah: Gerbang, Lapangan, Koridor, Perpustakaan, Kantin, dan Ruang Kelas.
+                                Lintasan petak sekolah yang dilewati tim secara bersama-sama (kolaboratif, bukan saling tanding).
                             </p>
                         </div>
 
-                        <!-- Komponen 2: Dek Kartu Kasus -->
+                        <!-- Dek Kartu Kasus -->
                         <div class="component-card">
-                            <div class="component-icon-badge" style="background: var(--pink); color: #fff;">🃏</div>
-                            <span class="tape tape-pink" style="font-size: 0.75rem; margin-bottom: 0.4rem;">50 KARTU TANTANGAN</span>
+                            <div class="component-icon">🃏</div>
                             <h4 class="component-title">Dek Kartu Kasus (Social Dilemma Cards)</h4>
                             <p class="component-desc">
-                                Kartu skenario yang memuat studi kasus konflik dunia nyata anak sekolah. Tanpa pilihan ganda A/B/C — mengharuskan siswa berdiskusi, merumuskan aksi, dan memperagakan solusi secara langsung.
-                            </p>
-                        </div>
-
-                        <!-- Komponen 3: Dadu & Pion Tim -->
-                        <div class="component-card">
-                            <div class="component-icon-badge" style="background: var(--sun);">🎲</div>
-                            <span class="tape tape-sun" style="font-size: 0.75rem; margin-bottom: 0.4rem;">SATU LANGKAH BERSAMA</span>
-                            <h4 class="component-title">Dadu Harmoni & Pion Regu</h4>
-                            <p class="component-desc">
-                                Dadu penentu langkah regu dan 1 pion bersama per kelompok. Seluruh anggota regu berada di petak yang sama — melambangkan bahwa harmoni sekolah dicapai melalui kerja sama, bukan bersaing.
-                            </p>
-                        </div>
-
-                        <!-- Komponen 4: Lembar Skor Poin Harmoni -->
-                        <div class="component-card">
-                            <div class="component-icon-badge" style="background: var(--cy);">⭐</div>
-                            <span class="tape tape-lime" style="font-size: 0.75rem; margin-bottom: 0.4rem;">EVALUASI FORMATIF</span>
-                            <h4 class="component-title">Lembar Poin Harmoni & Refleksi</h4>
-                            <p class="component-desc">
-                                Lembar catatan penilaian kelompok. Tim memperoleh Poin Harmoni saat berhasil mengidentifikasi emosi, merespons dengan empati, dan memperagakan sikap *upstander* yang aman.
+                                Kartu skenario yang memuat studi kasus konflik dunia nyata anak sekolah untuk diselesaikan bersama tim.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. 5 Pilar CASEL & 5 Level Dek Kartu (50 Kasus) -->
-                <div class="casel-section">
-                    <div style="margin-bottom: 1.4rem;">
-                        <span class="tape tape-cyan">FRAMEWORK PEMBELAJARAN EMOSIONAL</span>
-                        <h3 style="font-family: var(--imp); font-size: 2.1rem; margin: 0.4rem 0 0.3rem;">
-                            5 Pilar CASEL & 50 Kartu Kasus 🧠
-                        </h3>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #444; margin: 0;">
-                            Kartu skenario terbagi ke dalam 5 Level berdasarkan kompetensi Social & Emotional Learning (SEL):
-                        </p>
-                    </div>
+                <!-- 3. Cara Mainnya (Simple: Just How The Game Works) -->
+                <div class="section-card">
+                    <span class="tape tape-cyan" style="font-size: 0.82rem;">CARA MAINNYA 🎲</span>
+                    <h3 class="section-header-title">Bagaimana Cara Mainnya?</h3>
 
-                    <!-- Tabs Button -->
-                    <div class="casel-tabs">
-                        <button class="casel-tab-btn active" onclick="switchCaselTab(1)">Level 1: Self-Awareness</button>
-                        <button class="casel-tab-btn" onclick="switchCaselTab(2)">Level 2: Self-Management</button>
-                        <button class="casel-tab-btn" onclick="switchCaselTab(3)">Level 3: Social Awareness</button>
-                        <button class="casel-tab-btn" onclick="switchCaselTab(4)">Level 4: Relationship Skills</button>
-                        <button class="casel-tab-btn" onclick="switchCaselTab(5)">Level 5: Decision-Making</button>
-                    </div>
-
-                    <!-- Panel 1: Self-Awareness -->
-                    <div class="casel-panel active" id="casel-panel-1">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <h4 style="font-family: var(--imp); font-size: 1.5rem; margin: 0; color: var(--ink);">
-                                Level 1: Self-Awareness (Kesadaran Diri)
-                            </h4>
-                            <span class="tape tape-lime" style="font-size: 0.78rem;">10 KARTU KASUS</span>
-                        </div>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0.6rem 0 1rem; line-height: 1.5;">
-                            Fokus: Mengenali dan memahami emosi sendiri, menghubungkan pikiran dengan perasaan, serta membaca sinyal tubuh saat menghadapi situasi tidak nyaman.
-                        </p>
-                        <div class="topic-badges-grid">
-                            <div class="topic-badge-item"><span>1.</span> Kenali Emosi</div>
-                            <div class="topic-badge-item"><span>2.</span> Nama Emosiku</div>
-                            <div class="topic-badge-item"><span>3.</span> Kepercayaan Diriku</div>
-                            <div class="topic-badge-item"><span>4.</span> Tantangan Diriku</div>
-                            <div class="topic-badge-item"><span>5.</span> Pikiran dan Perasaan</div>
-                            <div class="topic-badge-item"><span>6.</span> Kekuatan Diriku</div>
-                            <div class="topic-badge-item"><span>7.</span> Penyebab Emosi</div>
-                            <div class="topic-badge-item"><span>8.</span> Seberapa Kuat Emosiku</div>
-                            <div class="topic-badge-item"><span>9.</span> Kebutuhan Diriku</div>
-                            <div class="topic-badge-item"><span>10.</span> Sinyal Tubuhku</div>
-                        </div>
-                    </div>
-
-                    <!-- Panel 2: Self-Management -->
-                    <div class="casel-panel" id="casel-panel-2">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <h4 style="font-family: var(--imp); font-size: 1.5rem; margin: 0; color: var(--ink);">
-                                Level 2: Self-Management (Manajemen Diri)
-                            </h4>
-                            <span class="tape tape-sun" style="font-size: 0.78rem;">10 KARTU KASUS</span>
-                        </div>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0.6rem 0 1rem; line-height: 1.5;">
-                            Fokus: Mengendalikan reaksi emosi impulsif, teknik menenangkan diri dari amarah atau stres, serta mengarahkan perilaku ke arah yang konstruktif.
-                        </p>
-                        <div class="topic-badges-grid">
-                            <div class="topic-badge-item"><span>1.</span> Mengendalikan Emosi</div>
-                            <div class="topic-badge-item"><span>2.</span> Menenangkan Diri</div>
-                            <div class="topic-badge-item"><span>3.</span> Mengatur Pikiran</div>
-                            <div class="topic-badge-item"><span>4.</span> Mengatur Perilaku</div>
-                            <div class="topic-badge-item"><span>5.</span> Menghadapi Stres</div>
-                            <div class="topic-badge-item"><span>6.</span> Mengatasi Rasa Takut</div>
-                            <div class="topic-badge-item"><span>7.</span> Mengendalikan Amarah</div>
-                            <div class="topic-badge-item"><span>8.</span> Menentukan Tujuan</div>
-                            <div class="topic-badge-item"><span>9.</span> Mengatur Diri</div>
-                            <div class="topic-badge-item"><span>10.</span> Pantang Menyerah</div>
-                        </div>
-                    </div>
-
-                    <!-- Panel 3: Social Awareness -->
-                    <div class="casel-panel" id="casel-panel-3">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <h4 style="font-family: var(--imp); font-size: 1.5rem; margin: 0; color: var(--ink);">
-                                Level 3: Social Awareness (Kesadaran Sosial)
-                            </h4>
-                            <span class="tape tape-pink" style="font-size: 0.78rem;">10 KARTU KASUS</span>
-                        </div>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0.6rem 0 1rem; line-height: 1.5;">
-                            Fokus: Kemampuan membaca perasaan kawan, melihat dinamika dari sudut pandang korban, menghargai keberagaman, dan menunjukkan kepedulian tulus.
-                        </p>
-                        <div class="topic-badges-grid">
-                            <div class="topic-badge-item"><span>1.</span> Kenali Perasaan Orang Lain</div>
-                            <div class="topic-badge-item"><span>2.</span> Pahami Perasaan Teman</div>
-                            <div class="topic-badge-item"><span>3.</span> Belajar Berempati</div>
-                            <div class="topic-badge-item"><span>4.</span> Sudut Pandang Orang Lain</div>
-                            <div class="topic-badge-item"><span>5.</span> Peduli pada Orang Lain</div>
-                            <div class="topic-badge-item"><span>6.</span> Menghargai Perbedaan</div>
-                            <div class="topic-badge-item"><span>7.</span> Mengenali Kebutuhan Teman</div>
-                            <div class="topic-badge-item"><span>8.</span> Memahami Situasi Sosial</div>
-                            <div class="topic-badge-item"><span>9.</span> Menghargai Perasaan</div>
-                            <div class="topic-badge-item"><span>10.</span> Menunjukkan Kepedulian</div>
-                        </div>
-                    </div>
-
-                    <!-- Panel 4: Relationship Skills -->
-                    <div class="casel-panel" id="casel-panel-4">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <h4 style="font-family: var(--imp); font-size: 1.5rem; margin: 0; color: var(--ink);">
-                                Level 4: Relationship Skills (Keterampilan Berelasi)
-                            </h4>
-                            <span class="tape tape-cyan" style="font-size: 0.78rem;">10 KARTU KASUS</span>
-                        </div>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0.6rem 0 1rem; line-height: 1.5;">
-                            Fokus: Komunikasi asertif, mendengarkan aktif tanpa menghakimi, kerja sama tim, meminta bantuan guru/orang dewasa, dan penyelesaian konflik damai.
-                        </p>
-                        <div class="topic-badges-grid">
-                            <div class="topic-badge-item"><span>1.</span> Komunikasi Asertif</div>
-                            <div class="topic-badge-item"><span>2.</span> Mendengarkan Aktif</div>
-                            <div class="topic-badge-item"><span>3.</span> Bekerja Sama</div>
-                            <div class="topic-badge-item"><span>4.</span> Mengungkapkan Perasaan</div>
-                            <div class="topic-badge-item"><span>5.</span> Meminta Bantuan</div>
-                            <div class="topic-badge-item"><span>6.</span> Memberikan Bantuan</div>
-                            <div class="topic-badge-item"><span>7.</span> Menghargai Teman</div>
-                            <div class="topic-badge-item"><span>8.</span> Menyelesaikan Konflik</div>
-                            <div class="topic-badge-item"><span>9.</span> Meminta Maaf</div>
-                            <div class="topic-badge-item"><span>10.</span> Memberikan Apresiasi</div>
-                        </div>
-                    </div>
-
-                    <!-- Panel 5: Responsible Decision-Making -->
-                    <div class="casel-panel" id="casel-panel-5">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <h4 style="font-family: var(--imp); font-size: 1.5rem; margin: 0; color: var(--ink);">
-                                Level 5: Responsible Decision-Making (Keputusan Bertanggung Jawab)
-                            </h4>
-                            <span class="tape tape-orange" style="font-size: 0.78rem;">10 KARTU KASUS</span>
-                        </div>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0.6rem 0 1rem; line-height: 1.5;">
-                            Fokus: Mengidentifikasi masalah etika, menganalisis konsekuensi jangka panjang tindakan kita, berani menolak ajakan perundungan, dan bertanggung jawab.
-                        </p>
-                        <div class="topic-badges-grid">
-                            <div class="topic-badge-item"><span>1.</span> Kenali Masalah</div>
-                            <div class="topic-badge-item"><span>2.</span> Pikirkan Pilihan Solusi</div>
-                            <div class="topic-badge-item"><span>3.</span> Pertimbangkan Akibat</div>
-                            <div class="topic-badge-item"><span>4.</span> Pilih yang Tepat</div>
-                            <div class="topic-badge-item"><span>5.</span> Aman atau Tidak?</div>
-                            <div class="topic-badge-item"><span>6.</span> Baik atau Buruk?</div>
-                            <div class="topic-badge-item"><span>7.</span> Berani Berkata Tidak</div>
-                            <div class="topic-badge-item"><span>8.</span> Pikir Sebelum Bertindak</div>
-                            <div class="topic-badge-item"><span>9.</span> Belajar dari Kesalahan</div>
-                            <div class="topic-badge-item"><span>10.</span> Bertanggung Jawab</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Alur & Cara Bermain (How to Play) -->
-                <div style="margin-bottom: 2.5rem;">
-                    <div style="margin-bottom: 1.4rem;">
-                        <span class="tape tape-lime">ATURAN & MEKANISME</span>
-                        <h3 style="font-family: var(--imp); font-size: 2.1rem; margin: 0.4rem 0 0.3rem;">
-                            Alur & Cara Bermain Adventure Harmony Board 🎯
-                        </h3>
-                        <p style="font-family: var(--mk); font-size: 1.05rem; color: #444; margin: 0;">
-                            Langkah sistematis memainkan kit fisik di ruang kelas bersama kelompok:
-                        </p>
-                    </div>
-
-                    <!-- Step 1 -->
-                    <div class="step-card">
-                        <div class="step-num-circle">1</div>
-                        <div class="step-body">
-                            <h4>Bentuk Kelompok & Mulai dari Petak START</h4>
-                            <p>Bentuk kelompok beranggotakan <strong>4–5 siswa</strong>. Letakkan pion regu bersama di petak <strong>START</strong> pada Papan The Map of Harmonia.</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="step-card">
-                        <div class="step-num-circle" style="background: var(--sun);">2</div>
-                        <div class="step-body">
-                            <h4>Lempar Dadu & Maju Bersama</h4>
-                            <p>Siswa pertama melempar Dadu Harmoni (misal keluar angka 4). Pion regu melangkah maju 4 petak bersama-sama. Tidak ada persaingan antar anggota tim!</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="step-card">
-                        <div class="step-num-circle" style="background: var(--pink); color: #fff;">3</div>
-                        <div class="step-body">
-                            <h4>Berhenti di Petak Kartu ➔ Ambil Kartu Skenario</h4>
-                            <p>Jika pion mendarat pada petak <strong>KARTU</strong>, ambil salah satu kartu dari dek sesuai level yang sedang dilalui (misalnya Kartu Level 1: Kasus Perundungan).</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 4 -->
-                    <div class="step-card">
-                        <div class="step-num-circle" style="background: var(--cy);">4</div>
-                        <div class="step-body">
-                            <h4>Format Terstruktur 5 Langkah Kartu (Tanpa Pilihan A/B/C!)</h4>
-                            <p>Setiap kartu mewajibkan kelompok melewati siklus pemecahan masalah secara utuh:</p>
-                            
-                            <div class="card-formula-strip">
-                                <div class="formula-box">
-                                    <strong style="color: var(--pink);">SITUASI</strong>
-                                    <span>Cerita Masalah Nyata</span>
-                                </div>
-                                <div class="formula-box">
-                                    <strong style="color: var(--sun);">TANTANGAN</strong>
-                                    <span>Misi Kelompok</span>
-                                </div>
-                                <div class="formula-box">
-                                    <strong style="color: var(--cy);">DISKUSI</strong>
-                                    <span>Mengapa Pilih Cara Itu</span>
-                                </div>
-                                <div class="formula-box">
-                                    <strong style="color: var(--lime);">AKSI</strong>
-                                    <span>Praktik / Role-Play</span>
-                                </div>
-                                <div class="formula-box">
-                                    <strong style="color: var(--purple);">REFLEKSI</strong>
-                                    <span>Pelajaran Berharga</span>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.95rem; color: #555; margin-top: 0.6rem;">
-                                Formula baku ini memastikan 50 kartu tetap terarah: <em>Baca ➔ Diskusi ➔ Putuskan ➔ Praktikkan ➔ Refleksi</em>.
+                    <!-- Langkah 1 -->
+                    <div class="step-item">
+                        <div class="step-badge">1</div>
+                        <div>
+                            <h4 class="step-title">Bentuk Kelompok 4–5 Siswa</h4>
+                            <p class="step-desc">
+                                Buat kelompok beranggotakan 4–5 siswa, lalu letakkan pion tim bersama di petak <strong>START</strong>.
                             </p>
                         </div>
                     </div>
 
-                    <!-- Step 5 -->
-                    <div class="step-card">
-                        <div class="step-num-circle" style="background: var(--orange); color: #fff;">5</div>
-                        <div class="step-body">
-                            <h4>Role-Play Nyata & Refleksi 3 Pertanyaan</h4>
-                            <p>Kelompok membagi peran dan memperagakan respons nyata (±1 menit). Setelah itu, kelompok mendiskusikan 3 pertanyaan kunci: <em>(1) Apa masalahnya? (2) Bagaimana perasaan teman? (3) Mengapa tindakan kita membantu?</em></p>
+                    <!-- Langkah 2 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--lime);">2</div>
+                        <div>
+                            <h4 class="step-title">Lempar Dadu &amp; Maju Bersama</h4>
+                            <p class="step-desc">
+                                Siswa bergantian melempar dadu. Seluruh kelompok melangkah maju bersama sesuai angka dadu yang keluar.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 3 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--pink); color: #fff;">3</div>
+                        <div>
+                            <h4 class="step-title">Ambil Kartu Kasus</h4>
+                            <p class="step-desc">
+                                Kalau pion berhenti di petak <strong>KARTU</strong>, ambil 1 kartu kasus yang berisi cerita masalah nyata anak sekolah (misalnya ejekan / perundungan).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 4 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--cy);">4</div>
+                        <div>
+                            <h4 class="step-title">Diskusikan ➔ Putuskan ➔ Praktikkan (Role-Play)!</h4>
+                            <p class="step-desc">
+                                Tidak ada pilihan A/B/C! Tim berdiskusi menentukan solusi terbaik, lalu bagi peran untuk <strong>memperagakan (role-play ±1 menit)</strong> tindakan nyata menolong teman (<em>upstander</em>).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 5 -->
+                    <div class="step-item">
+                        <div class="step-badge" style="background: var(--orange); color: #fff;">5</div>
+                        <div>
+                            <h4 class="step-title">Kumpulkan Poin Harmoni</h4>
+                            <p class="step-desc">
+                                Jawab 3 pertanyaan refleksi bersama: masalahnya apa, perasaan korban bagaimana, dan mengapa tindakan kalian membantu. Dapatkan <strong>Poin Harmoni (+6 Poin)</strong> untuk kelompok!
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 5. Contoh Nyata Kartu Kasus Level 1 (Simulasi Interaktif) -->
-                <div class="case-sample-card">
-                    <span class="tape tape-pink" style="font-size: 0.85rem;">CONTOH SIMULASI KARTU FISIK</span>
-                    <h3 style="font-family: var(--imp); font-size: 2.2rem; margin: 0.4rem 0 0.3rem;">
-                        Contoh Kartu Kasus: Level 1 — “Hentikan Ejekan” 🎭
-                    </h3>
-                    
-                    <div style="background: #ffffff; border: 3px solid var(--ink); border-radius: 12px; padding: 1.2rem 1.4rem; box-shadow: 4px 4px 0 var(--ink); margin: 1.2rem 0;">
-                        <p style="font-family: var(--mono); font-size: 0.9rem; font-weight: 800; color: var(--pink); margin-bottom: 0.3rem;">SITUASI DI KANTIN:</p>
-                        <p style="font-family: var(--mk); font-size: 1.15rem; line-height: 1.6; color: var(--ink); margin: 0;">
-                            “Saat jam istirahat, kamu melihat seorang teman diejek oleh dua siswa lain karena bentuk tubuhnya. Temanmu terlihat sedih dan hanya diam menundukkan kepala.”
-                        </p>
-                        <div style="margin-top: 0.8rem; border-top: 2px dashed #ddd; padding-top: 0.6rem;">
-                            <strong style="font-family: var(--mono); font-size: 0.88rem; color: #333;">TANTANGAN KELOMPOK:</strong>
-                            <span style="font-family: var(--mk); font-size: 1.05rem; color: var(--ink);"> Peragakan apa yang akan kelompok kalian lakukan jika melihat kejadian tersebut!</span>
-                        </div>
-                    </div>
-
-                    <h4 style="font-family: var(--imp); font-size: 1.4rem; margin: 1.2rem 0 0.4rem;">
-                        Peragaan Praktik Role-Play (Simulasi 4 Siswa):
-                    </h4>
-                    
-                    <div class="roleplay-grid">
-                        <div class="roleplay-card">
-                            <h5>👤 SISWA 1 (Teman Korban)</h5>
-                            <p>Duduk menunduk dan merasa sedih/tertekan karena ejekan.</p>
-                        </div>
-                        <div class="roleplay-card">
-                            <h5>👥 SISWA 2 &amp; 3 (Pengejek)</h5>
-                            <p>Melontarkan kata-kata ejekan yang membuat situasi tidak nyaman.</p>
-                        </div>
-                        <div class="roleplay-card" style="border-color: var(--pink); background: #fff0f7;">
-                            <h5 style="color: var(--pink);">🛡️ SISWA 4 (Upstander Pelindung)</h5>
-                            <p><strong>Bersuara:</strong> “Jangan mengejek dia! Itu bisa bikin dia sedih. Ayo berhenti!”<br><strong>Mendukung:</strong> “Kamu nggak apa-apa? Kita bisa lapor guru kalau kamu butuh.”</p>
-                        </div>
-                    </div>
-
-                    <!-- Scoring Breakdown -->
-                    <div class="scoring-pill-box">
-                        <div style="font-family: var(--imp); font-size: 1.2rem; color: var(--ink);">
-                            Sistem Poin Harmoni:
-                        </div>
-                        <div class="scoring-item">✅ Kenali Masalah <span style="color: #16a34a;">(+1)</span></div>
-                        <div class="scoring-item">❤️ Tunjukkan Empati <span style="color: #16a34a;">(+1)</span></div>
-                        <div class="scoring-item">🛡️ Respons Aman <span style="color: #16a34a;">(+2)</span></div>
-                        <div class="scoring-item">🎭 Praktik Role-play <span style="color: #16a34a;">(+2)</span></div>
-                        <div style="background: var(--lime); padding: 0.4rem 0.9rem; border: 2.5px solid var(--ink); border-radius: 8px; font-family: var(--imp); font-size: 1.1rem;">
-                            TOTAL: +6 POIN ★
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Hubungan Media Fisik dengan Ekosistem CareTech -->
-                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2rem;">
-                    <span class="tape tape-sun">SINERGI DIGITAL & NON-DIGITAL</span>
-                    <h3 style="font-family: var(--imp); font-size: 2rem; margin: 0.5rem 0 0.3rem;">
-                        Hubungan CareTech Digital &amp; NeuroAdventure Fisik 🤝
-                    </h3>
-                    <p style="font-family: var(--mk); font-size: 1.1rem; line-height: 1.7; color: #333;">
-                        <strong>CareTech Game RPG Digital</strong> membekali siswa dengan pemahaman emosional, sudut pandang karakter, dan empati melalui alur interaktif di layar komputer/gawai. Sedangkan <strong>NeuroAdventure (Adventure Harmony Board)</strong> memindahkan pemahaman tersebut ke dunia fisik nyata: melatih siswa berkomunikasi tatap muka, berani menjadi <em>upstander</em>, dan menyelesaikan konflik nyata di lingkungan sekolah secara harmonis!
-                    </p>
-                </div>
-
-                <!-- 7. Finish & Next Step Banner -->
-                <div class="finish-banner">
-                    <span class="tape tape-white" style="font-size: 0.95rem; margin-bottom: 0.6rem;">MISI TAHAP 05 SELESAI</span>
-                    <h3 style="font-family: var(--imp); font-size: 2.5rem; margin: 0.3rem 0 0.5rem; color: var(--ink);">
-                        Siap Menghidupkan Nilai Harmoni? 🎉
-                    </h3>
-                    <p style="font-family: var(--mk); font-size: 1.2rem; color: #222; max-width: 680px; margin: 0 auto 1.5rem;">
-                        Kamu telah memahami konsep, komponen, dan cara bermain NeuroAdventure. Lanjutkan ke Zona Bonus Game untuk mencoba mini game seru lainnya!
+                <!-- 4. Tombol Selesai & Lanjut ke Bonus Game -->
+                <div class="finish-card">
+                    <span class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0.4rem;">SIAP BERMAIN DI KELAS! 🚀</span>
+                    <h3 class="finish-title">Sudah Paham Cara Mainnya?</h3>
+                    <p class="finish-desc">
+                        Sekarang kamu sudah siap memainkan Adventure Harmony Board secara fisik di kelas! Klik tombol di bawah untuk membuka Zona Bonus Game.
                     </p>
 
-                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-                        <a href="game.html" class="btn btn-small" style="background: #ffffff; padding: 0.9rem 1.8rem; font-size: 1.05rem;">
-                            ◀ Kembali ke Game RPG
+                    <div style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="game.html" class="btn btn-small" style="background: #ffffff; padding: 0.85rem 1.6rem;">
+                            ◀ Kembali ke Game
                         </a>
                         <button onclick="finishNeuroAdventure()" class="btn-finish-neuro">
                             Selesai &amp; Buka Bonus Game 🎁 ➔
@@ -881,33 +473,10 @@
     </div>
 
     <script>
-        // Switch between 5 CASEL Panels
-        function switchCaselTab(levelNum) {
-            // Update tabs
-            const tabs = document.querySelectorAll('.casel-tab-btn');
-            tabs.forEach((tab, index) => {
-                if (index === levelNum - 1) {
-                    tab.classList.add('active');
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-
-            // Update panels
-            const panels = document.querySelectorAll('.casel-panel');
-            panels.forEach((panel, index) => {
-                if (index === levelNum - 1) {
-                    panel.classList.add('active');
-                } else {
-                    panel.classList.remove('active');
-                }
-            });
-        }
-
-        // Finish NeuroAdventure exploration and unlock Bonus Games
+        // Selesai memahami NeuroAdventure & Buka Bonus Game
         function finishNeuroAdventure() {
             localStorage.setItem('caretech_posttest_completed', 'true');
-            alert('LUAR BIASA! 🎉\nKamu telah resmi menyelesaikan pembelajaran NeuroAdventure: Adventure Harmony Board!\n\nSeluruh Zona Bonus Game kini telah TERBUKA (UNLOCKED)!');
+            alert('LUAR BIASA! 🎉\nKamu telah memahami cara bermain NeuroAdventure: Adventure Harmony Board!\n\nSeluruh Zona Bonus Game kini telah TERBUKA (UNLOCKED)!');
             window.location.href = 'bonus-game.html';
         }
 
