@@ -213,7 +213,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    // this._drawDebugGrid(mapW, mapH);
+    this._drawDebugGrid(mapW, mapH);
   }
 
   _checkLevel3Ready() {
