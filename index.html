@@ -77,9 +77,9 @@
             </div>
         </div>
 
-        <!-- Atmosphere Cloud Path (3-Tier Scalloped Paper Cloud Horizon) -->
+        <!-- Atmosphere Cloud Path (3-Tier Scalloped Paper Cloud Horizon & Atmospheric Glow) -->
         <div class="atmosphere-cloud-path" aria-hidden="true">
-            <!-- Atmospheric Space Glow: Smooth gradient from deep cosmic galaxy to the clouds -->
+            <!-- Upper Atmospheric Space Glow -->
             <div class="atmosphere-space-glow"></div>
 
             <!-- Drifting Hand-Cut Paper Clouds along the Horizon -->
@@ -113,7 +113,7 @@
                     d="M 0,90 C 50,68 110,58 170,72 C 230,48 310,42 380,62 C 450,40 530,38 600,58 C 670,36 750,35 830,55 C 910,38 980,42 1050,65 C 1120,42 1200,45 1270,68 C 1330,52 1390,58 1440,78 L 1440,120 L 0,120 Z" />
             </svg>
 
-            <!-- Cloud Bottom Mist Gradient: Seamless paper diffusion into Section 2 Cardboard -->
+            <!-- Bottom mist blending cloud base into Section 2 Cardboard background -->
             <div class="cloud-bottom-mist"></div>
         </div>
     </section>
@@ -174,124 +174,127 @@
                 </div>
             </div>
 
-            <!-- Features 4-Cards Grid: Alur Perjalanan Tanpa Button -->
-            <div class="features-retro-grid">
-                <!-- Floating Craft Birds along Cards Grid Margins -->
-                <svg class="craft-bird bird-grid-float-left" viewBox="0 0 60 40" fill="none" aria-hidden="true">
+            <!-- Features 4-Cards Grid with Craft Paper Birds -->
+            <div class="features-retro-grid-wrapper">
+                <!-- Floating Ambient Birds in Grid Margins -->
+                <svg class="craft-bird bird-grid-float-left" width="56" height="38" viewBox="0 0 60 40" fill="none" aria-hidden="true">
                     <path d="M 6,6 C 16,8 26,10 34,12 C 38,10 44,9 49,11 L 56,12 L 48,16 C 46,21 40,24 34,23 L 16,36 L 22,27 L 14,26 C 18,22 24,18 28,15 C 20,13 12,10 6,6 Z"
-                          fill="#ffffff" stroke="#000000" stroke-width="2.6" stroke-linejoin="round"/>
+                          fill="#ffffff" stroke="#000000" stroke-width="2.5" stroke-linejoin="round" />
+                    <path d="M 32,13 C 25,17 20,20 16,21" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" />
                     <circle cx="48" cy="13" r="1.5" fill="#000000"/>
                 </svg>
-                <svg class="craft-bird bird-grid-float-right" viewBox="0 0 64 44" fill="none" aria-hidden="true">
+                <svg class="craft-bird bird-grid-float-right" width="58" height="40" viewBox="0 0 64 44" fill="none" aria-hidden="true">
                     <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#bae6fd" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
                     <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
                     <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
                     <circle cx="48" cy="19" r="1.8" fill="#000000"/>
                 </svg>
 
-                <!-- 01. Refleksi Diri -->
-                <div class="retro-feature-card card-reflection">
-                    <!-- Craft Paper Bird Perched on Card 1 -->
-                    <svg class="craft-bird bird-on-card bird-card-1" viewBox="0 0 64 44" fill="none" aria-hidden="true">
-                        <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#bae6fd" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
-                        <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
-                        <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
-                        <circle cx="48" cy="19" r="1.8" fill="#000000"/>
-                    </svg>
-                    <span class="tape tape-pink card-washi-tape">LANGKAH 01</span>
-                    <div class="feature-card-header">
-                        <span class="feature-number-badge">TAHAP 01</span>
-                        <div class="feature-card-icon">🪞</div>
+                <div class="features-retro-grid">
+                    <!-- 01. Refleksi Diri -->
+                    <div class="retro-feature-card card-reflection">
+                        <span class="tape tape-pink card-washi-tape">LANGKAH 01</span>
+                        <!-- Perched Craft Bird on Card 1 -->
+                        <svg class="craft-bird bird-card-1" width="56" height="38" viewBox="0 0 64 44" fill="none" aria-hidden="true">
+                            <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#bae6fd" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                            <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                            <circle cx="48" cy="19" r="1.8" fill="#000000"/>
+                        </svg>
+                        <div class="feature-card-header">
+                            <span class="feature-number-badge">TAHAP 01</span>
+                            <div class="feature-card-icon">🪞</div>
+                        </div>
+                        <h3 class="feature-card-title">Refleksi Diri &amp; Cek Emosi</h3>
+                        <p class="feature-card-text">
+                            Siswa mengawali petualangan dengan check-in emosi harian. Di sini, kamu diajak mengenali suasana hati, perasaan saat ini, dan kesiapan diri sebelum memulai kegiatan dalam ruang yang aman, nyaman, dan rahasia.
+                        </p>
+                        <div class="feature-flow-tag">
+                            <span class="flow-tag-num">01</span>
+                            <span class="flow-tag-label">Langkah Awal: Kesadaran &amp; Regulasi Emosi</span>
+                        </div>
                     </div>
-                    <h3 class="feature-card-title">Refleksi Diri &amp; Cek Emosi</h3>
-                    <p class="feature-card-text">
-                        Siswa mengawali petualangan dengan check-in emosi harian. Di sini, kamu diajak mengenali suasana hati, perasaan saat ini, dan kesiapan diri sebelum memulai kegiatan dalam ruang yang aman, nyaman, dan rahasia.
-                    </p>
-                    <div class="feature-flow-tag">
-                        <span class="flow-tag-num">01</span>
-                        <span class="flow-tag-label">Langkah Awal: Kesadaran &amp; Regulasi Emosi</span>
-                    </div>
-                </div>
 
-                <!-- 02. Pelajari Modul & Materi -->
-                <div class="retro-feature-card card-module">
-                    <!-- Craft Paper Bird Hovering above Card 2 -->
-                    <svg class="craft-bird bird-on-card bird-card-2" viewBox="0 0 60 40" fill="none" aria-hidden="true">
-                        <path d="M 6,6 C 16,8 26,10 34,12 C 38,10 44,9 49,11 L 56,12 L 48,16 C 46,21 40,24 34,23 L 16,36 L 22,27 L 14,26 C 18,22 24,18 28,15 C 20,13 12,10 6,6 Z"
-                              fill="#fffdf5" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
-                        <path d="M 32,13 C 25,17 20,20 16,21" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="48" cy="13" r="1.6" fill="#000000"/>
-                    </svg>
-                    <span class="tape tape-lime card-washi-tape">LANGKAH 02</span>
-                    <div class="feature-card-header">
-                        <span class="feature-number-badge">TAHAP 02</span>
-                        <div class="feature-card-icon">📚</div>
+                    <!-- 02. Pelajari Modul & Materi -->
+                    <div class="retro-feature-card card-module">
+                        <span class="tape tape-lime card-washi-tape">LANGKAH 02</span>
+                        <!-- Perched Craft Swallow on Card 2 -->
+                        <svg class="craft-bird bird-card-2" width="54" height="36" viewBox="0 0 60 40" fill="none" aria-hidden="true">
+                            <path d="M 6,6 C 16,8 26,10 34,12 C 38,10 44,9 49,11 L 56,12 L 48,16 C 46,21 40,24 34,23 L 16,36 L 22,27 L 14,26 C 18,22 24,18 28,15 C 20,13 12,10 6,6 Z"
+                                  fill="#fffdf5" stroke="#000000" stroke-width="2.8" stroke-linejoin="round" />
+                            <path d="M 32,13 C 25,17 20,20 16,21" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="48" cy="13" r="1.5" fill="#000000"/>
+                        </svg>
+                        <div class="feature-card-header">
+                            <span class="feature-number-badge">TAHAP 02</span>
+                            <div class="feature-card-icon">📚</div>
+                        </div>
+                        <h3 class="feature-card-title">Pelajari Modul &amp; Cerita</h3>
+                        <p class="feature-card-text">
+                            Pahami konsep penting seputar kesehatan mental, cara mengelola emosi, serta pencegahan perundungan (bullying) lewat modul digital interaktif, video edukatif, dan komik cerita bergambar yang menarik.
+                        </p>
+                        <div class="feature-flow-tag">
+                            <span class="flow-tag-num">02</span>
+                            <span class="flow-tag-label">Pondasi: Pemahaman Teori &amp; Empati</span>
+                        </div>
                     </div>
-                    <h3 class="feature-card-title">Pelajari Modul &amp; Cerita</h3>
-                    <p class="feature-card-text">
-                        Pahami konsep penting seputar kesehatan mental, cara mengelola emosi, serta pencegahan perundungan (bullying) lewat modul digital interaktif, video edukatif, dan komik cerita bergambar yang menarik.
-                    </p>
-                    <div class="feature-flow-tag">
-                        <span class="flow-tag-num">02</span>
-                        <span class="flow-tag-label">Pondasi: Pemahaman Teori &amp; Empati</span>
-                    </div>
-                </div>
 
-                <!-- 03. Simulasi Game RPG Harmonia -->
-                <div class="retro-feature-card card-game">
-                    <!-- Craft Paper Bird Fluttering near Card 3 -->
-                    <svg class="craft-bird bird-on-card bird-card-3" viewBox="0 0 54 36" fill="none" aria-hidden="true">
-                        <path d="M 4,14 L 20,22 L 26,36 L 30,22 L 48,10 L 36,18 L 32,12 L 24,16 Z"
-                              fill="#ffffff" stroke="#000000" stroke-width="2.6" stroke-linejoin="round"/>
-                        <circle cx="40" cy="13" r="1.5" fill="#000000"/>
-                    </svg>
-                    <span class="tape tape-cyan card-washi-tape">LANGKAH 03</span>
-                    <div class="feature-card-header">
-                        <span class="feature-number-badge">TAHAP 03</span>
-                        <div class="feature-card-icon">🎮</div>
+                    <!-- 03. Simulasi Game RPG Harmonia -->
+                    <div class="retro-feature-card card-game">
+                        <span class="tape tape-cyan card-washi-tape">LANGKAH 03</span>
+                        <!-- Perched Craft Origami Crane on Card 3 -->
+                        <svg class="craft-bird bird-card-3" width="50" height="34" viewBox="0 0 54 38" fill="none" aria-hidden="true">
+                            <path d="M 4,14 L 20,22 L 26,36 L 30,22 L 48,10 L 36,18 L 32,12 L 24,16 Z" fill="#fffdf5" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+                            <circle cx="44" cy="12" r="1.5" fill="#000000"/>
+                        </svg>
+                        <div class="feature-card-header">
+                            <span class="feature-number-badge">TAHAP 03</span>
+                            <div class="feature-card-icon">🎮</div>
+                        </div>
+                        <h3 class="feature-card-title">Simulasi Game RPG Harmonia</h3>
+                        <p class="feature-card-text">
+                            Masuki dunia sekolah Harmonia untuk mempraktikkan respon bijak secara langsung. Pemain menghadapi beragam situasi sosial nyata, mengambil keputusan tepat, dan belajar menjadi upstander yang berani membela teman.
+                        </p>
+                        <div class="feature-flow-tag">
+                            <span class="flow-tag-num">03</span>
+                            <span class="flow-tag-label">Aksi Nyata: Simulasi Petualangan Interaktif</span>
+                        </div>
                     </div>
-                    <h3 class="feature-card-title">Simulasi Game RPG Harmonia</h3>
-                    <p class="feature-card-text">
-                        Masuki dunia sekolah Harmonia untuk mempraktikkan respon bijak secara langsung. Pemain menghadapi beragam situasi sosial nyata, mengambil keputusan tepat, dan belajar menjadi upstander yang berani membela teman.
-                    </p>
-                    <div class="feature-flow-tag">
-                        <span class="flow-tag-num">03</span>
-                        <span class="flow-tag-label">Aksi Nyata: Simulasi Petualangan Interaktif</span>
-                    </div>
-                </div>
 
-                <!-- 04. Evaluasi & Jurnal Harian -->
-                <div class="retro-feature-card card-journal">
-                    <!-- Craft Paper Bird Perched on Card 4 -->
-                    <svg class="craft-bird bird-on-card bird-card-4" viewBox="0 0 64 44" fill="none" aria-hidden="true">
-                        <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#bae6fd" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
-                        <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
-                        <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
-                        <circle cx="48" cy="19" r="1.8" fill="#000000"/>
-                    </svg>
-                    <span class="tape tape-yellow card-washi-tape">LANGKAH 04</span>
-                    <div class="feature-card-header">
-                        <span class="feature-number-badge">TAHAP 04</span>
-                        <div class="feature-card-icon">📓</div>
-                    </div>
-                    <h3 class="feature-card-title">Evaluasi &amp; Jurnal Harian</h3>
-                    <p class="feature-card-text">
-                        Ukur pemahaman hasil belajarmu lewat evaluasi seru (posttest), curahkan cerita dan perkembangan perasaan di jurnal harian siswa, serta dapatkan pendampingan teman AI (ESA AI) kapan saja.
-                    </p>
-                    <div class="feature-flow-tag">
-                        <span class="flow-tag-num">04</span>
-                        <span class="flow-tag-label">Refleksi Akhir: Evaluasi &amp; Catatan Perkembangan</span>
+                    <!-- 04. Evaluasi & Jurnal Harian -->
+                    <div class="retro-feature-card card-journal">
+                        <span class="tape tape-yellow card-washi-tape">LANGKAH 04</span>
+                        <!-- Perched Craft Bird with Pink Wing on Card 4 -->
+                        <svg class="craft-bird bird-card-4" width="56" height="38" viewBox="0 0 64 44" fill="none" aria-hidden="true">
+                            <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#fbcfe8" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                            <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                            <circle cx="48" cy="19" r="1.8" fill="#000000"/>
+                        </svg>
+                        <div class="feature-card-header">
+                            <span class="feature-number-badge">TAHAP 04</span>
+                            <div class="feature-card-icon">📓</div>
+                        </div>
+                        <h3 class="feature-card-title">Evaluasi &amp; Jurnal Harian</h3>
+                        <p class="feature-card-text">
+                            Ukur pemahaman hasil belajarmu lewat evaluasi seru (posttest), curahkan cerita dan perkembangan perasaan di jurnal harian siswa, serta dapatkan pendampingan teman AI (ESA AI) kapan saja.
+                        </p>
+                        <div class="feature-flow-tag">
+                            <span class="flow-tag-num">04</span>
+                            <span class="flow-tag-label">Refleksi Akhir: Evaluasi &amp; Catatan Perkembangan</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Reminder Note: Landing Page Only Starts Reflection -->
             <div class="flow-footer-reminder note">
-                <!-- Craft Paper Bird Perched on Reminder Note -->
-                <svg class="craft-bird bird-reminder-note" viewBox="0 0 60 40" fill="none" aria-hidden="true">
-                    <path d="M 6,6 C 16,8 26,10 34,12 C 38,10 44,9 49,11 L 56,12 L 48,16 C 46,21 40,24 34,23 L 16,36 L 22,27 L 14,26 C 18,22 24,18 28,15 C 20,13 12,10 6,6 Z"
-                          fill="#ffffff" stroke="#000000" stroke-width="2.6" stroke-linejoin="round"/>
-                    <circle cx="48" cy="13" r="1.5" fill="#000000"/>
+                <!-- Perched Craft Bird on Sticky Note -->
+                <svg class="craft-bird bird-reminder-note" width="56" height="38" viewBox="0 0 64 44" fill="none" aria-hidden="true">
+                    <path d="M 24,18 L 38,3 C 35,9 37,15 42,17 Z" fill="#fef08a" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M 10,34 C 15,28 22,23 30,21 C 38,19 46,19 55,16 C 52,21 47,25 41,27 C 34,29 28,30 22,35 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                    <path d="M 28,22 L 16,6 C 24,10 30,14 35,21 Z" fill="#ffffff" stroke="#000000" stroke-width="2.8" stroke-linejoin="round"/>
+                    <circle cx="48" cy="19" r="1.8" fill="#000000"/>
                 </svg>
                 <span class="reminder-icon">🚀</span>
                 <span class="reminder-text">

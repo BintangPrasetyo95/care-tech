@@ -28,13 +28,9 @@
     --purple: #9b5cff;
     --red: #ff3b30;
 
-    /* Light Blue Sky Cardboard & Paper Palette */
-    --cardboard: #cdebfd;
-    --cardboard-dark: #b8e0fa;
-    --cardboard-tan: #e5d9c5;
-    --sky-craft: #cdebfd;
-    --sky-craft-light: #e2f4ff;
-    --sky-craft-deep: #8ecef9;
+    /* Cardboard & Paper Palette */
+    --cardboard: #e5d9c5;
+    --cardboard-dark: #d8c7ad;
     --kraft: #c8964f;
     --kraft-dark: #8a5a24;
     --kraft-light: #dfb274;
@@ -90,14 +86,14 @@ body {
     overflow-x: hidden;
     position: relative;
     min-height: 100vh;
-    /* Light Blue Sky Cardboard/Craft Notebook Background */
+    /* The Authentic Cardboard Cosmos Background */
     background:
-        linear-gradient(90deg, transparent 0 62px, rgba(244, 63, 94, 0.45) 62px 65px, transparent 65px),
-        linear-gradient(112deg, transparent 0 31%, rgba(14, 116, 144, 0.08) 31% 31.3%, transparent 31.3%),
-        linear-gradient(64deg, transparent 0 66%, rgba(255, 255, 255, 0.5) 66% 66.4%, transparent 66.4%),
-        repeating-linear-gradient(0deg, transparent 0 33px, rgba(14, 116, 144, 0.22) 33px 35px),
-        radial-gradient(rgba(14, 116, 144, 0.16) 1px, transparent 1.6px) 0 0/8px 10px,
-        radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 2px) 3px 4px/12px 14px,
+        linear-gradient(90deg, transparent 0 62px, rgba(230, 30, 70, 0.55) 62px 65px, transparent 65px),
+        linear-gradient(112deg, transparent 0 31%, rgba(60, 30, 0, 0.1) 31% 31.3%, transparent 31.3%),
+        linear-gradient(64deg, transparent 0 66%, rgba(255, 255, 255, 0.45) 66% 66.4%, transparent 66.4%),
+        repeating-linear-gradient(0deg, transparent 0 33px, rgba(40, 110, 220, 0.3) 33px 35px),
+        radial-gradient(rgba(90, 55, 15, 0.25) 1px, transparent 1.6px) 0 0/7px 9px,
+        radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 2px) 3px 4px/11px 13px,
         var(--cardboard);
 }
 
@@ -325,7 +321,7 @@ h2.tape, .tape-heading {
     width: 100%;
     height: 100vh;
     min-height: 620px;
-    /* Deep Indigo Ink-Stained Craft Night Sky Galaxy */
+    /* Deep Indigo Ink-Stained Craft Night Sky */
     background:
         radial-gradient(circle at 50% 50%, rgba(200, 150, 79, 0.15) 0%, rgba(26, 21, 38, 0.92) 65%, #151120 100%),
         repeating-linear-gradient(0deg, transparent 0 33px, rgba(255, 255, 255, 0.04) 33px 35px),
@@ -447,7 +443,7 @@ h2.tape, .tape-heading {
     }
 }
 
-/* Rotating 2D Pixel Globe (Clean Floating Planet in Space) */
+/* Rotating 2D Pixel Globe Floating Planet */
 .pixel-globe-canvas {
     width: min(98vh, 98vw);
     height: min(98vh, 98vw);
@@ -462,7 +458,7 @@ h2.tape, .tape-heading {
     border: none;
     box-shadow: none;
     background: transparent;
-    filter: drop-shadow(0 24px 50px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 55px rgba(56, 189, 248, 0.45));
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45));
     position: relative;
 }
 
@@ -612,34 +608,31 @@ h2.tape, .tape-heading {
 }
 
 /* --------------------------------------------------------------------------
-   ATMOSPHERE CLOUD PATH (3-TIER SCALLOPED PAPER CLOUD HORIZON)
+   ATMOSPHERE CLOUD PATH (3-TIER SCALLOPED PAPER CLOUDS & SEAMLESS TRANSITION)
    -------------------------------------------------------------------------- */
 .atmosphere-cloud-path {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: clamp(120px, 16vh, 170px);
+    height: clamp(120px, 16vh, 175px);
     z-index: 25;
     pointer-events: none;
     overflow: visible;
 }
 
-/* Atmospheric Horizon Glow: Seamless transition from dark galaxy space into the clouds */
+/* Atmosphere glow blending space darkness into upper cloud limb */
 .atmosphere-space-glow {
     position: absolute;
-    bottom: 0;
+    top: -65px;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        to bottom,
+    height: 120px;
+    background: linear-gradient(to bottom,
         transparent 0%,
-        rgba(21, 17, 32, 0) 15%,
-        rgba(30, 58, 138, 0.45) 45%,
-        rgba(2, 132, 199, 0.65) 70%,
-        rgba(186, 230, 253, 0.95) 100%
-    );
+        rgba(56, 189, 248, 0.12) 35%,
+        rgba(186, 230, 253, 0.35) 70%,
+        rgba(255, 255, 255, 0.5) 100%);
     pointer-events: none;
     z-index: 1;
 }
@@ -651,25 +644,7 @@ h2.tape, .tape-heading {
     width: 100%;
     height: 100%;
     display: block;
-    filter: drop-shadow(0 -4px 0 rgba(0, 0, 0, 0.25));
-    z-index: 2;
-}
-
-/* Cloud Base Mist Gradient: Smooth seamless diffusion from white paper clouds into light blue cardboard */
-.cloud-bottom-mist {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 48px;
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 1) 0%,
-        rgba(255, 255, 255, 0.85) 30%,
-        rgba(205, 235, 253, 0.7) 70%,
-        var(--cardboard) 100%
-    );
-    pointer-events: none;
+    filter: drop-shadow(0 -4px 0 rgba(0, 0, 0, 0.28));
     z-index: 3;
 }
 
@@ -691,8 +666,24 @@ h2.tape, .tape-heading {
 .cloud-path-front {
     fill: #ffffff;
     stroke: var(--ink);
-    stroke-width: 4px;
+    stroke-width: 3.5px;
     stroke-linejoin: round;
+}
+
+/* Bottom mist blending cloud base into Section 2 Cardboard background */
+.cloud-bottom-mist {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 38px;
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.45) 30%,
+        rgba(229, 217, 197, 0.75) 70%,
+        var(--cardboard) 100%);
+    pointer-events: none;
+    z-index: 5;
 }
 
 /* --------------------------------------------------------------------------
@@ -703,13 +694,13 @@ h2.tape, .tape-heading {
     display: block;
     filter: drop-shadow(4px 4px 0 var(--ink));
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
 }
 
 .cloud-drift-1 {
     width: 145px;
     height: auto;
-    bottom: 45px;
+    bottom: 50px;
     left: -180px;
     animation: cloudMove 34s linear infinite;
     animation-delay: -5s;
@@ -718,7 +709,7 @@ h2.tape, .tape-heading {
 .cloud-drift-2 {
     width: 185px;
     height: auto;
-    bottom: 65px;
+    bottom: 70px;
     left: -220px;
     animation: cloudMove 46s linear infinite;
     animation-delay: -18s;
@@ -727,7 +718,7 @@ h2.tape, .tape-heading {
 .cloud-drift-3 {
     width: 115px;
     height: auto;
-    bottom: 30px;
+    bottom: 35px;
     left: -150px;
     animation: cloudMove 28s linear infinite;
     animation-delay: -10s;
@@ -736,7 +727,7 @@ h2.tape, .tape-heading {
 .cloud-drift-4 {
     width: 155px;
     height: auto;
-    bottom: 75px;
+    bottom: 80px;
     left: -200px;
     animation: cloudMove 40s linear infinite;
     animation-delay: -26s;
@@ -747,158 +738,39 @@ h2.tape, .tape-heading {
     100% { transform: translateX(calc(100vw + 350px)); }
 }
 
-/* --------------------------------------------------------------------------
-   CRAFT PAPER BIRDS (BELOW THE CLOUDS & AROUND THE FEATURE CARDS)
-   -------------------------------------------------------------------------- */
-.craft-bird {
-    position: absolute;
-    display: block;
-    filter: drop-shadow(4px 4px 0 var(--ink));
-    pointer-events: none;
-    user-select: none;
-    will-change: transform;
-    z-index: 10;
-}
-
-/* Paper Bird Perched / Fluttering on Card 1 (Refleksi Diri) */
-.bird-card-1 {
-    width: clamp(48px, 4.5vw, 62px);
-    height: auto;
-    top: -26px;
-    right: 24px;
-    animation: birdPerchBob 4s ease-in-out infinite;
-    transform-origin: bottom center;
-}
-
-/* Paper Bird Hovering above Card 2 (Pelajari Modul) */
-.bird-card-2 {
-    width: clamp(45px, 4.2vw, 58px);
-    height: auto;
-    top: -28px;
-    right: 30px;
-    animation: birdPerchBob 4.8s ease-in-out infinite 0.8s;
-    transform-origin: bottom center;
-}
-
-/* Paper Bird Fluttering on Card 3 (Simulasi Game Harmonia) */
-.bird-card-3 {
-    width: clamp(44px, 4.2vw, 56px);
-    height: auto;
-    top: -24px;
-    right: 26px;
-    animation: birdPerchBob 5.2s ease-in-out infinite 1.4s;
-    transform-origin: bottom center;
-}
-
-/* Paper Bird Perched on Card 4 (Evaluasi & Jurnal) */
-.bird-card-4 {
-    width: clamp(46px, 4.4vw, 60px);
-    height: auto;
-    top: -25px;
-    right: 28px;
-    animation: birdPerchBob 4.5s ease-in-out infinite 2s;
-    transform-origin: bottom center;
-}
-
-/* Floating Bird on the Left of Cards Grid */
-.bird-grid-float-left {
-    width: clamp(48px, 4.5vw, 64px);
-    height: auto;
-    top: 45%;
-    left: -48px;
-    animation: birdHoverGlider 6s ease-in-out infinite 0.5s;
-    z-index: 5;
-}
-
-/* Floating Bird on the Right of Cards Grid */
-.bird-grid-float-right {
-    width: clamp(46px, 4.2vw, 60px);
-    height: auto;
-    top: 50%;
-    right: -48px;
-    animation: birdHoverGlider 7s ease-in-out infinite 1.8s;
-    z-index: 5;
-}
-
-/* Bird hovering on Reminder Note at the bottom */
-.bird-reminder-note {
-    width: clamp(42px, 4vw, 54px);
-    height: auto;
-    top: -24px;
-    left: 28px;
-    animation: birdPerchBob 5s ease-in-out infinite 1s;
-    z-index: 5;
-}
-
-@keyframes birdPerchBob {
-    0%, 100% {
-        transform: translateY(0) rotate(-1.5deg);
-    }
-    50% {
-        transform: translateY(-8px) rotate(3deg);
-    }
-}
-
-@keyframes birdHoverGlider {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    30% {
-        transform: translateY(-11px) rotate(3deg);
-    }
-    65% {
-        transform: translateY(6px) rotate(-2deg);
-    }
-    85% {
-        transform: translateY(-3px) rotate(1.5deg);
-    }
-}
-
-/* Interactive tactile scrapbook effect: Bird chirps and flutters when card is hovered */
-.retro-feature-card:hover .bird-on-card {
-    animation-duration: 1.2s;
-    filter: drop-shadow(6px 6px 0 var(--ink));
-    transform: scale(1.15) translateY(-10px) rotate(6deg) !important;
-}
-
-/* Responsive adjustment for floating side birds */
-@media (max-width: 900px) {
-    .bird-grid-float-left,
-    .bird-grid-float-right {
-        display: none !important;
-    }
-}
-
 /* ==========================================================================
    SECTION 2: SKY & FEATURES EXPLANATION (CARDBOARD NOTEBOOK PLAYGROUND)
    ========================================================================== */
 .sky-features-section {
     position: relative;
     width: 100%;
-    /* Light Blue Sky Cardboard/Craft Notebook Playground */
+    /* The Authentic Cardboard Cosmos Background */
     background:
-        linear-gradient(90deg, transparent 0 62px, rgba(244, 63, 94, 0.45) 62px 65px, transparent 65px),
-        linear-gradient(112deg, transparent 0 31%, rgba(14, 116, 144, 0.08) 31% 31.3%, transparent 31.3%),
-        linear-gradient(64deg, transparent 0 66%, rgba(255, 255, 255, 0.5) 66% 66.4%, transparent 66.4%),
-        repeating-linear-gradient(0deg, transparent 0 33px, rgba(14, 116, 144, 0.22) 33px 35px),
-        radial-gradient(rgba(14, 116, 144, 0.16) 1px, transparent 1.6px) 0 0/8px 10px,
-        radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 2px) 3px 4px/12px 14px,
+        linear-gradient(90deg, transparent 0 62px, rgba(230, 30, 70, 0.55) 62px 65px, transparent 65px),
+        linear-gradient(112deg, transparent 0 31%, rgba(60, 30, 0, 0.1) 31% 31.3%, transparent 31.3%),
+        linear-gradient(64deg, transparent 0 66%, rgba(255, 255, 255, 0.45) 66% 66.4%, transparent 66.4%),
+        repeating-linear-gradient(0deg, transparent 0 33px, rgba(40, 110, 220, 0.3) 33px 35px),
+        radial-gradient(rgba(90, 55, 15, 0.25) 1px, transparent 1.6px) 0 0/7px 9px,
+        radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 2px) 3px 4px/11px 13px,
         var(--cardboard);
     color: var(--ink);
-    padding: 6rem 1.5rem 6rem 1.5rem;
+    padding: 7rem 1.5rem 6rem 1.5rem;
     overflow: hidden;
     z-index: 25;
 }
 
-/* Subtle Cardboard Mist Transition at the top of Section 2 */
+/* Seamless top atmospheric mist blending from cloud base into cardboard */
 .sky-features-section::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 80px;
-    background: linear-gradient(to bottom, rgba(205, 235, 253, 0.8) 0%, transparent 100%);
+    height: 75px;
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(229, 217, 197, 0.2) 60%,
+        transparent 100%);
     pointer-events: none;
     z-index: 2;
 }
@@ -913,7 +785,7 @@ h2.tape, .tape-heading {
     overflow: hidden;
 }
 
-/* Gentle Floating Clouds in Section 2 Background */
+/* Gentle Floating Cutout Clouds in Section 2 Background */
 .sky-drift-cloud {
     position: absolute;
     display: block;
@@ -1275,6 +1147,143 @@ h2.tape, .tape-heading {
     box-shadow: 2px 2px 0 var(--ink);
 }
 
+/* --------------------------------------------------------------------------
+   CRAFT BIRDS (PAPER CUTOUT BIRDS AROUND CARDS IN SECTION 2)
+   -------------------------------------------------------------------------- */
+.craft-bird {
+    display: inline-block;
+    pointer-events: none;
+    filter: drop-shadow(3.5px 3.5px 0 var(--ink));
+    transition: transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* Perched birds on each feature card */
+.bird-card-1 {
+    position: absolute;
+    top: -24px;
+    right: 28px;
+    z-index: 12;
+    animation: birdPerchBob1 4.2s ease-in-out infinite;
+}
+
+.bird-card-2 {
+    position: absolute;
+    top: -22px;
+    right: 32px;
+    z-index: 12;
+    animation: birdPerchBob2 4.8s ease-in-out infinite 1.2s;
+}
+
+.bird-card-3 {
+    position: absolute;
+    top: -22px;
+    right: 26px;
+    z-index: 12;
+    animation: birdPerchBob3 3.8s ease-in-out infinite 0.7s;
+}
+
+.bird-card-4 {
+    position: absolute;
+    top: -24px;
+    right: 28px;
+    z-index: 12;
+    animation: birdPerchBob4 4.5s ease-in-out infinite 1.9s;
+}
+
+/* Card hover reaction: birds hop and flutter happily */
+.retro-feature-card:hover .bird-card-1 {
+    transform: translateY(-8px) rotate(14deg) scale(1.12);
+}
+
+.retro-feature-card:hover .bird-card-2 {
+    transform: translateY(-8px) rotate(2deg) scale(1.12);
+}
+
+.retro-feature-card:hover .bird-card-3 {
+    transform: translateY(-8px) rotate(12deg) scale(1.12);
+}
+
+.retro-feature-card:hover .bird-card-4 {
+    transform: translateY(-8px) rotate(-1deg) scale(1.12);
+}
+
+/* Floating ambient birds in grid margins */
+.features-retro-grid-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.bird-grid-float-left {
+    position: absolute;
+    top: 25%;
+    left: -55px;
+    z-index: 11;
+    animation: birdHoverGliderLeft 6s ease-in-out infinite;
+}
+
+.bird-grid-float-right {
+    position: absolute;
+    top: 55%;
+    right: -55px;
+    z-index: 11;
+    animation: birdHoverGliderRight 7s ease-in-out infinite 2s;
+}
+
+/* Perched bird on Reminder Note */
+.bird-reminder-note {
+    position: absolute;
+    top: -24px;
+    right: 24px;
+    z-index: 12;
+    animation: birdPerchBobNote 5s ease-in-out infinite 0.5s;
+}
+
+.flow-footer-reminder:hover .bird-reminder-note {
+    transform: translateY(-6px) rotate(10deg) scale(1.1);
+}
+
+@keyframes birdPerchBob1 {
+    0%, 100% { transform: translateY(0) rotate(8deg); }
+    50% { transform: translateY(-4px) rotate(11deg); }
+}
+
+@keyframes birdPerchBob2 {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-4px) rotate(-2deg); }
+}
+
+@keyframes birdPerchBob3 {
+    0%, 100% { transform: translateY(0) rotate(6deg); }
+    50% { transform: translateY(-4px) rotate(9deg); }
+}
+
+@keyframes birdPerchBob4 {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50% { transform: translateY(-4px) rotate(-3deg); }
+}
+
+@keyframes birdPerchBobNote {
+    0%, 100% { transform: translateY(0) rotate(5deg); }
+    50% { transform: translateY(-4px) rotate(8deg); }
+}
+
+@keyframes birdHoverGliderLeft {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+@keyframes birdHoverGliderRight {
+    0%, 100% { transform: translateY(0) rotate(4deg); }
+    50% { transform: translateY(-12px) rotate(-3deg); }
+}
+
+@media (max-width: 1280px) {
+    .bird-grid-float-left,
+    .bird-grid-float-right {
+        display: none;
+    }
+}
+
 /* ==========================================================================
    SECTION 3: MULTI-LAYERED GRASS & FOOTER LANDSCAPE (CRAFT HILLS & CARDBOARD BASE)
    ========================================================================== */
@@ -1585,8 +1594,8 @@ h2.tape, .tape-heading {
     }
 
     .pixel-globe-canvas {
-        width: min(520px, 90vw, 64vh);
-        height: min(520px, 90vw, 64vh);
+        width: min(530px, 90vw, 65vh);
+        height: min(530px, 90vw, 65vh);
     }
 
     .features-retro-grid {
@@ -1647,8 +1656,10 @@ h2.tape, .tape-heading {
     }
 
     .pixel-globe-canvas {
-        width: min(370px, 92vw, 58vh);
-        height: min(370px, 92vw, 58vh);
+        width: min(380px, 92vw, 58vh);
+        height: min(380px, 92vw, 58vh);
+        box-shadow: none;
+        border: none;
     }
 
     .features-main-title {
@@ -1722,11 +1733,11 @@ h2.tape, .tape-heading {
     .btn-arrow-icon,
     .caretech-brand-logo,
     .pixel-cloud,
+    .paper-cloud-drift,
+    .craft-bird,
     .pixel-flower,
     .pixel-grass-tuft,
-    .paper-cloud-drift,
     .sky-drift-cloud,
-    .craft-bird,
     .deb {
         animation: none !important;
     }
