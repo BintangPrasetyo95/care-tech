@@ -3,102 +3,638 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Selamat Datang!</title>
+    <title>CareTech - Platform Kesehatan Mental Interaktif</title>
     <link rel="icon" href="assets/logo-care-tech.png">
+
+    <!-- Fonts: Retro 8-bit Pixel Font & Clean Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Gamified Stylesheet -->
     <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <div class="background-shapes">
-        <div class="shape circle1"></div>
-        <div class="shape circle2"></div>
-        <div class="shape circle3"></div>
-        <div class="shape circle4"></div>
-    </div>
+    <!-- Retro CRT scanlines overlay -->
+    <div class="scanlines-overlay" aria-hidden="true"></div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="nav-logo">
-        <span class="nav-brand">CareTech</span>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero-section">
-        <div class="hero-content">
-            <h1>Pentingnya Menjaga Kesehatan Mental</h1>
-            <p>Kesehatan mental sama pentingnya dengan kesehatan fisik. Mari mulai perjalananmu untuk mengenali diri sendiri lebih baik, mengelola emosi, dan meraih ketenangan pikiran bersama CareTech.</p>
-            <a href="login.html" class="btn-start">Mulai Refleksi</a>
-        </div>
-    </header>
-
-    <!-- Features Section -->
-    <section class="features-section">
-        <div class="features-header">
-            <div class="features-title-container">
-                <div class="bg-text">CARETECH</div>
-                <div class="subtitle">APA ITU CARETECH?</div>
-                <h2>CareTech adalah platform interaktif yang memungkinkan kamu untuk memantau dan menjaga kesehatan mental secara praktis dan menyenangkan.</h2>
-            </div>
-            <div class="features-desc-container">
-                <p>Dengan berbagai fitur menarik, kami menyediakan pengalaman yang aman, suportif, dan mudah diakses dari mana saja. Jelajahi berbagai modul, komik, dan jurnal untuk meningkatkan kesejahteraan emosionalmu sehari-hari.</p>
-            </div>
+    <!-- ===================================================================
+         SECTION 1: HERO COSMIC ARENA (GALAXY / SPACE THEME)
+         Layar Pertama: Globe di tengah layar dengan CareTech & Mulai Refleksi di tengah globe,
+         dan garis atmosfer mengisi 10% layar bawah saat first load
+         =================================================================== -->
+    <section class="hero-cosmic-section" id="hero-cosmos">
+        <!-- Canvas Starfield & Twinkling Stars (Galaxy Only) -->
+        <div class="space-background">
+            <canvas id="starfield-canvas" class="starfield-canvas" aria-hidden="true"></canvas>
+            <div class="css-pixel-stars" aria-hidden="true"></div>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-number">01.</div>
-                <h3>Refleksi Diri</h3>
-                <p>Kenali emosi dan keadaan mentalmu saat ini melalui pertanyaan-pertanyaan reflektif setiap harinya. Semua dilakukan dengan aman untuk meregulasi diri.</p>
+        <div class="cosmic-content-container">
+            <!-- 2D Pixel Art Globe Container (Centered with CareTech & Button in the center) -->
+            <div class="globe-stage-wrapper">
+                <div class="globe-floating-container">
+                    <!-- Rotating 2D Pixel Globe Canvas (64x64 grid constraint) -->
+                    <canvas id="pixel-globe" class="pixel-globe-canvas" width="64" height="64" aria-label="2D Pixel Art Rotating Globe"></canvas>
+
+                    <!-- CareTech & Mulai Refleksi Centered Directly Inside the Globe -->
+                    <div class="globe-center-overlay">
+                        <!-- CareTech Brand (Logo + GROBOLD Title) -->
+                        <div class="caretech-brand-wrapper">
+                            <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="caretech-brand-logo">
+                            <h1 class="caretech-brand-title">Care<span class="brand-tech-accent">Tech</span></h1>
+                        </div>
+
+                        <!-- Giant Chunky Purple Button: 'Mulai Refleksi' -->
+                        <div class="action-button-wrapper">
+                            <a href="login.html" class="btn-starfall-giant" id="btn-start-reflection">
+                                <span class="btn-arrow-icon" aria-hidden="true">▶</span>
+                                <span>Mulai Refleksi</span>
+                                <span class="btn-arrow-icon" aria-hidden="true">◀</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Ambient Space Shadow Below Globe -->
+                <div class="globe-space-shadow" aria-hidden="true"></div>
             </div>
-            <div class="feature-item">
-                <div class="feature-number">02.</div>
-                <h3>Jurnal Harian</h3>
-                <p>Catat perjalanan, cerita, dan perasaanmu untuk melihat perkembanganmu dari waktu ke waktu. Ini membantu memahami pola pikir secara real-time.</p>
+        </div>
+
+        <!-- Atmosphere Cloud Path filling the bottom 10% of the screen on first load (No separate straight line) -->
+        <div class="atmosphere-cloud-path" aria-hidden="true">
+            <!-- Drifting Retro Pixel Clouds along the cloud path -->
+            <div class="pixel-cloud cloud-drift-1"></div>
+            <div class="pixel-cloud cloud-drift-2"></div>
+            <div class="pixel-cloud cloud-drift-3"></div>
+            <div class="pixel-cloud cloud-drift-4"></div>
+
+            <!-- SVG Fluffy Cloud Bank Divider (The Cloud Path) -->
+            <svg class="cloud-bank-svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+                <path class="cloud-path-back" d="M0,25 C140,5 260,35 420,10 C580,0 720,30 880,12 C1040,0 1180,28 1320,8 C1390,2 1420,18 1440,20 L1440,100 L0,100 Z" fill="rgba(224,242,254,0.55)"/>
+                <path class="cloud-path-mid" d="M0,38 C160,16 320,45 490,22 C660,6 820,38 980,16 C1140,2 1290,32 1440,18 L1440,100 L0,100 Z" fill="rgba(240,249,255,0.82)"/>
+                <path class="cloud-path-front" d="M0,50 C120,32 250,56 400,35 C550,18 700,50 850,28 C1000,16 1160,45 1310,25 C1380,16 1420,28 1440,30 L1440,100 L0,100 Z" fill="#ffffff"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         SECTION 2: SKY & FEATURES EXPLANATION (LANGIT BIRU MUDA)
+         Penjelasan Lengkap Seperti di Index Pertama
+         =================================================================== -->
+    <section class="sky-features-section" id="penjelasan-caretech">
+        <!-- Daytime Floating & Drifting Clouds in Sky Gap -->
+        <div class="daytime-clouds-bg" aria-hidden="true">
+            <div class="sky-drift-cloud cloud-gap-1"></div>
+            <div class="sky-drift-cloud cloud-gap-2"></div>
+            <div class="sky-drift-cloud cloud-gap-3"></div>
+            <div class="sky-drift-cloud cloud-gap-4"></div>
+            <div class="sky-drift-cloud cloud-gap-5"></div>
+            <div class="sky-drift-cloud cloud-gap-6"></div>
+            <div class="day-cloud day-cloud-mid"></div>
+            <div class="day-cloud day-cloud-bottom"></div>
+        </div>
+
+        <div class="sky-content-wrapper">
+            <!-- Features Main Header -->
+            <div class="features-main-header">
+                <div class="header-retro-badge">
+                    <span class="badge-icon">★</span>
+                    <span>APA ITU CARETECH?</span>
+                    <span class="badge-icon">★</span>
+                </div>
+                <h2 class="features-main-title">
+                    CareTech adalah platform interaktif yang memungkinkan kamu untuk memantau dan menjaga kesehatan mental secara praktis dan menyenangkan.
+                </h2>
+                <p class="features-main-desc">
+                    Dengan berbagai fitur menarik, kami menyediakan pengalaman yang aman, suportif, dan mudah diakses dari mana saja. Jelajahi berbagai modul, komik, dan jurnal untuk meningkatkan kesejahteraan emosionalmu sehari-hari.
+                </p>
             </div>
-            <div class="feature-item">
-                <div class="feature-number">03.</div>
-                <h3>Materi &amp; Modul</h3>
-                <p>Pelajari berbagai materi dan teknik perawatan diri yang disusun khusus untuk menjaga kesehatan mental melalui pembelajaran interaktif yang mendetail.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-number">04.</div>
-                <h3>Komik &amp; Cerita</h3>
-                <p>Pahami berbagai situasi nyata dengan lebih mudah dan menyenangkan melalui cerita komik interaktif yang dapat diulang sebanyak mungkin tanpa batas.</p>
+
+            <!-- Features 4-Cards Grid -->
+            <div class="features-retro-grid">
+                <!-- 01. Refleksi Diri -->
+                <div class="retro-feature-card card-reflection">
+                    <div class="feature-card-header">
+                        <span class="feature-number-badge">01.</span>
+                        <div class="feature-card-icon">🪞</div>
+                    </div>
+                    <h3 class="feature-card-title">Refleksi Diri</h3>
+                    <p class="feature-card-text">
+                        Kenali emosi dan keadaan mentalmu saat ini melalui pertanyaan-pertanyaan reflektif setiap harinya. Semua dilakukan dengan aman untuk meregulasi diri.
+                    </p>
+                    <a href="reflection.html" class="feature-card-link">Buka Refleksi →</a>
+                </div>
+
+                <!-- 02. Jurnal Harian -->
+                <div class="retro-feature-card card-journal">
+                    <div class="feature-card-header">
+                        <span class="feature-number-badge">02.</span>
+                        <div class="feature-card-icon">📖</div>
+                    </div>
+                    <h3 class="feature-card-title">Jurnal Harian</h3>
+                    <p class="feature-card-text">
+                        Catat perjalanan, cerita, dan perasaanmu untuk melihat perkembanganmu dari waktu ke waktu. Ini membantu memahami pola pikir secara real-time.
+                    </p>
+                    <a href="jurnal.html" class="feature-card-link">Tulis Jurnal →</a>
+                </div>
+
+                <!-- 03. Materi & Modul -->
+                <div class="retro-feature-card card-module">
+                    <div class="feature-card-header">
+                        <span class="feature-number-badge">03.</span>
+                        <div class="feature-card-icon">📚</div>
+                    </div>
+                    <h3 class="feature-card-title">Materi &amp; Modul</h3>
+                    <p class="feature-card-text">
+                        Pelajari berbagai materi dan teknik perawatan diri yang disusun khusus untuk menjaga kesehatan mental melalui pembelajaran interaktif yang mendetail.
+                    </p>
+                    <a href="modul.html" class="feature-card-link">Pelajari Modul →</a>
+                </div>
+
+                <!-- 04. Komik & Cerita -->
+                <div class="retro-feature-card card-comic">
+                    <div class="feature-card-header">
+                        <span class="feature-number-badge">04.</span>
+                        <div class="feature-card-icon">🎨</div>
+                    </div>
+                    <h3 class="feature-card-title">Komik &amp; Cerita</h3>
+                    <p class="feature-card-text">
+                        Pahami berbagai situasi nyata dengan lebih mudah dan menyenangkan melalui cerita komik interaktif yang dapat diulang sebanyak mungkin tanpa batas.
+                    </p>
+                    <a href="komik.html" class="feature-card-link">Baca Komik →</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="modern-footer">
-        <div class="footer-top">
-            <div class="footer-left">
-                <div class="bg-text-footer">CARELIX</div>
-                <div class="subtitle-footer">HUBUNGI KAMI</div>
-                <h2 class="footer-title">Inovasi <span class="blue-text">CareTech</span> Siap Menjadi Transformasi Kesehatan Mental Daerah 3 T</h2>
-            </div>
-            <div class="footer-right">
-                <div class="footer-info-block">
-                    <h4>DIMANA KAMI BERADA?</h4>
-                    <p>Jalur dua Universitas Lampung,<br>Jalan Prof. Dr Jl. Prof. Dr. Ir.<br>Sumantri Brojonegoro No.1,<br>Kota Bandar Lampung, Lampung 35141</p>
-                </div>
-                <div class="footer-info-block">
-                    <h4>KONTAK</h4>
-                    <p>+62 821 8516 8851</p>
-                </div>
+    <!-- ===================================================================
+         SECTION 3: MULTI-LAYERED GRASS & FOOTER LANDSCAPE
+         Design rumput ber-layer: Jauh, Menengah, Dekat + Informasi Kontak Lengkap
+         =================================================================== -->
+    <footer class="layered-grass-footer" id="kontak-kami">
+        <!-- Multi-Layered Grass Hills SVG Landscape -->
+        <div class="grass-hills-wrapper" aria-hidden="true">
+            <!-- Layer 1: Rumput Jauh (Distant Rolling Hills / Pegunungan Jauh) -->
+            <svg class="grass-layer grass-layer-far" viewBox="0 0 1440 180" preserveAspectRatio="none">
+                <path d="M0,105 C240,45 460,115 720,60 C980,10 1200,85 1440,45 L1440,180 L0,180 Z" fill="#205c3b"/>
+            </svg>
+
+            <!-- Layer 2: Rumput Menengah (Midground Rolling Hills) -->
+            <svg class="grass-layer grass-layer-mid" viewBox="0 0 1440 180" preserveAspectRatio="none">
+                <path d="M0,85 C180,125 380,55 620,95 C860,135 1100,45 1300,85 C1380,98 1410,80 1440,75 L1440,180 L0,180 Z" fill="#2d7d4c"/>
+            </svg>
+
+            <!-- Layer 3: Rumput Dekat (Foreground Grass with Wildflowers) -->
+            <svg class="grass-layer grass-layer-near" viewBox="0 0 1440 180" preserveAspectRatio="none">
+                <path d="M0,65 C220,30 440,75 700,40 C960,10 1200,65 1440,30 L1440,180 L0,180 Z" fill="#3eb364"/>
+            </svg>
+
+            <!-- Pixel Flowers & Grass Tufts Layer resting on the foreground hill -->
+            <div class="pixel-meadow-details">
+                <span class="pixel-flower fl-1" style="left: 8%;">🌸</span>
+                <span class="pixel-grass-tuft gt-1" style="left: 15%;">🌾</span>
+                <span class="pixel-flower fl-2" style="left: 26%;">🌼</span>
+                <span class="pixel-flower fl-3" style="left: 42%;">🌷</span>
+                <span class="pixel-grass-tuft gt-2" style="left: 55%;">🌾</span>
+                <span class="pixel-flower fl-4" style="left: 68%;">🌻</span>
+                <span class="pixel-flower fl-5" style="left: 81%;">🌼</span>
+                <span class="pixel-grass-tuft gt-3" style="left: 92%;">🌾</span>
             </div>
         </div>
-        <div class="footer-divider"></div>
-        <div class="footer-bottom">
-            <div class="social-icons">
-                <a href="https://wa.me/6282185168851"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></a>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2026 CareTech. &middot; Semua hak cipta <span class="blue-text">dilindungi</span></p>
+
+        <!-- Footer Body / Ground Base Area -->
+        <div class="footer-earth-ground">
+            <div class="footer-container">
+                <!-- Top Section: Title & Details -->
+                <div class="footer-main-grid">
+                    <div class="footer-brand-info">
+                        <div class="footer-retro-badge">HUBUNGI KAMI</div>
+                        <h2 class="footer-headline">
+                            Inovasi <span class="headline-highlight">CareTech</span> Siap Menjadi Transformasi Kesehatan Mental Di Seluruh kalangan Pendidikan di Indonesia
+                        </h2>
+                    </div>
+
+                    <div class="footer-contact-blocks">
+                        <div class="contact-card">
+                            <h4 class="contact-card-title">
+                                <span class="card-title-icon">📍</span> DIMANA KAMI BERADA?
+                            </h4>
+                            <p class="contact-card-desc">
+                                Jalur dua Universitas Lampung,<br>
+                                Jalan Prof. Dr Jl. Prof. Dr. Ir.<br>
+                                Sumantri Brojonegoro No.1,<br>
+                                Kota Bandar Lampung, Lampung 35141
+                            </p>
+                        </div>
+
+                        <div class="contact-card">
+                            <h4 class="contact-card-title">
+                                <span class="card-title-icon">📞</span> KONTAK
+                            </h4>
+                            <p class="contact-card-desc">
+                                <a href="https://wa.me/6282185168851" target="_blank" rel="noopener noreferrer" class="contact-link">
+                                    +62 821 8516 8851
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-separator"></div>
+
+                <!-- Bottom Section: Social & Copyright -->
+                <div class="footer-bottom-bar">
+                    <div class="footer-social-group">
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/6282185168851" target="_blank" rel="noopener noreferrer" class="social-retro-btn" title="WhatsApp">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                            <span>WhatsApp</span>
+                        </a>
+                        <!-- Instagram -->
+                        <a href="#" class="social-retro-btn" title="Instagram">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                            <span>Instagram</span>
+                        </a>
+                    </div>
+
+                    <div class="footer-copyright-note">
+                        <p>&copy; 2026 CareTech. &middot; Semua hak cipta <span class="green-text">dilindungi</span></p>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- =======================================================================
+         RETRO PIXEL ENGINES:
+         1. 64x64 Grid-Constrained 2D Pixel Art Rotating Globe Generator
+         2. Sharp Pixel Square Starfield (Contained in Galaxy Section)
+         3. Retro 8-bit Audio Synthesizer for Interactive Sound Effects
+         ======================================================================= -->
+    <script>
+    (function () {
+        'use strict';
+
+        /* ---------------------------------------------------------------------
+           1. 2D PIXEL ART GLOBE ENGINE (64x64 GRID CONSTRAINT)
+           --------------------------------------------------------------------- */
+        const globeCanvas = document.getElementById('pixel-globe');
+        if (globeCanvas && globeCanvas.getContext) {
+            const ctx = globeCanvas.getContext('2d');
+            const SIZE = 64;
+            const RADIUS = 26;
+            const CX = 31.5;
+            const CY = 31.5;
+            const TOTAL_FRAMES = 36;
+            const FPS = 5; // Rotation speed reduced by 50%
+
+            // World Continent Geometry
+            const continents = [
+                // North America
+                [-125, 52, 24, 16], [-100, 48, 26, 18], [-80, 38, 20, 14],
+                [-95, 26, 14, 10], [-72, 45, 12, 10],
+                // Central America & Caribbean
+                [-85, 15, 10, 4], [-75, 20, 8, 3],
+                // Greenland
+                [-40, 72, 16, 9],
+                // South America
+                [-60, -6, 20, 16], [-55, -20, 18, 16], [-65, -38, 10, 14],
+                // Europe
+                [15, 52, 16, 12], [30, 58, 20, 12], [5, 45, 12, 10], [25, 40, 14, 8],
+                // Scandinavia & UK
+                [15, 64, 10, 8], [-3, 55, 6, 8],
+                // Africa
+                [20, 18, 24, 16], [22, -4, 20, 16], [24, -24, 14, 14], [46, -18, 5, 8],
+                // Asia
+                [60, 55, 28, 16], [90, 55, 32, 16], [120, 55, 28, 16],
+                [78, 22, 16, 12], [105, 34, 24, 16], [115, 24, 16, 12], [135, 45, 10, 14],
+                // Japan
+                [138, 36, 6, 12],
+                // Southeast Asia & Indonesian Archipelago
+                [102, 6, 8, 5], [106, -2, 12, 4], [115, -1, 10, 5], [121, 14, 6, 8], [132, -4, 12, 4],
+                // Australia & New Zealand
+                [134, -24, 18, 14], [145, -34, 8, 8], [172, -41, 6, 9]
+            ];
+
+            // Low-res pixel clouds
+            const clouds = [
+                [-110, 30, 14, 6], [-20, 45, 18, 7], [40, -10, 12, 5],
+                [100, 15, 16, 6], [160, -20, 20, 8], [-70, -35, 15, 6],
+                [80, 60, 22, 7], [-150, 50, 18, 7]
+            ];
+
+            function sampleGeography(lon, lat) {
+                if (lat < -60 || lat > 72) return 2; // Polar Ice
+                const organicNoise = Math.sin(lon * 0.15 * Math.PI / 180) * 2 + Math.cos(lat * 0.2 * Math.PI / 180) * 2;
+                for (let i = 0; i < continents.length; i++) {
+                    const feat = continents[i];
+                    let dlon = lon - feat[0];
+                    while (dlon > 180) dlon -= 360;
+                    while (dlon < -180) dlon += 360;
+                    const dx = dlon / feat[2];
+                    const dy = (lat - feat[1]) / feat[3];
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq <= 1.0 + organicNoise * 0.04) {
+                        if (distSq <= 0.28) return 3; // Mountain/Highland
+                        return 1; // Lush Land
+                    }
+                }
+                return 0; // Ocean
+            }
+
+            function sampleCloud(lon, lat, cloudRot) {
+                for (let i = 0; i < clouds.length; i++) {
+                    const c = clouds[i];
+                    let dlon = lon - (c[0] + cloudRot);
+                    while (dlon > 180) dlon -= 360;
+                    while (dlon < -180) dlon += 360;
+                    const dx = dlon / c[2];
+                    const dy = (lat - c[1]) / c[3];
+                    if (dx * dx + dy * dy <= 0.55) return true;
+                }
+                return false;
+            }
+
+            // Precompute 36 frames for smooth retro rendering
+            const precomputedFrames = [];
+            for (let f = 0; f < TOTAL_FRAMES; f++) {
+                const rotDeg = (f / TOTAL_FRAMES) * 360;
+                const cloudRot = rotDeg * 1.25;
+                const imgData = ctx.createImageData(SIZE, SIZE);
+                const data = imgData.data;
+
+                for (let y = 0; y < SIZE; y++) {
+                    const dy = y - CY;
+                    for (let x = 0; x < SIZE; x++) {
+                        const dx = x - CX;
+                        const dist = Math.hypot(dx, dy);
+                        const pixelIdx = (y * SIZE + x) * 4;
+
+                        // Outside sphere boundary
+                        if (dist > RADIUS + 0.6) {
+                            data[pixelIdx + 3] = 0;
+                            continue;
+                        }
+
+                        // Sharp 1-pixel retro sprite outline
+                        if (dist > RADIUS - 0.5) {
+                            data[pixelIdx] = 8;
+                            data[pixelIdx + 1] = 18;
+                            data[pixelIdx + 2] = 38;
+                            data[pixelIdx + 3] = 255;
+                            continue;
+                        }
+
+                        // Spherical projection
+                        const nx = dx / RADIUS;
+                        const ny = dy / RADIUS;
+                        const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+                        const lat = Math.asin(-ny) * 180 / Math.PI;
+                        let lon = (Math.atan2(nx, nz) * 180 / Math.PI + rotDeg) % 360;
+                        if (lon > 180) lon -= 360;
+                        if (lon < -180) lon += 360;
+
+                        const lightDot = -0.45 * nx - 0.45 * ny + 0.77 * nz;
+                        const isCloud = sampleCloud(lon, lat, cloudRot);
+                        const terrain = sampleGeography(lon, lat);
+
+                        let r, g, b;
+
+                        if (isCloud) {
+                            if (lightDot >= 0.2) {
+                                r = 255; g = 255; b = 255;
+                            } else {
+                                r = 195; g = 210; b = 245;
+                            }
+                        } else if (terrain === 2) {
+                            if (lightDot >= 0.2) {
+                                r = 245; g = 250; b = 255;
+                            } else {
+                                r = 175; g = 210; b = 240;
+                            }
+                        } else if (terrain === 3) {
+                            if (lightDot > 0.6) {
+                                r = 190; g = 242; b = 100;
+                            } else if (lightDot >= 0.2) {
+                                r = 132; g = 204; b = 22;
+                            } else {
+                                r = 63; g = 98; b = 18;
+                            }
+                        } else if (terrain === 1) {
+                            if (lightDot > 0.6) {
+                                r = 74; g = 222; b = 128;
+                            } else if (lightDot >= 0.2) {
+                                r = 34; g = 197; b = 94;
+                            } else if (lightDot >= 0.05) {
+                                r = 22; g = 163; b = 74;
+                            } else {
+                                r = 20; g = 83; b = 45;
+                            }
+                        } else {
+                            const specDist = Math.hypot(nx - (-0.35), ny - (-0.35));
+                            if (specDist < 0.12) {
+                                r = 255; g = 255; b = 255;
+                            } else if (specDist < 0.22) {
+                                r = 186; g = 230; b = 253;
+                            } else if (lightDot > 0.4) {
+                                r = 37; g = 99; b = 235;
+                            } else if (lightDot >= 0.15) {
+                                r = 30; g = 64; b = 175;
+                            } else {
+                                r = 15; g = 30; b = 80;
+                            }
+                        }
+
+                        if (dist > RADIUS - 1.5 && lightDot > 0.35) {
+                            r = 125; g = 211; b = 252;
+                        }
+
+                        data[pixelIdx] = r;
+                        data[pixelIdx + 1] = g;
+                        data[pixelIdx + 2] = b;
+                        data[pixelIdx + 3] = 255;
+                    }
+                }
+                precomputedFrames.push(imgData);
+            }
+
+            let currentFrameIndex = 0;
+            let lastTick = 0;
+            const frameDurationMs = 1000 / FPS;
+
+            function renderGlobe(timestamp) {
+                if (!lastTick) lastTick = timestamp;
+                const elapsed = timestamp - lastTick;
+
+                if (elapsed >= frameDurationMs) {
+                    ctx.putImageData(precomputedFrames[currentFrameIndex], 0, 0);
+                    currentFrameIndex = (currentFrameIndex + 1) % TOTAL_FRAMES;
+                    lastTick = timestamp;
+                }
+                requestAnimationFrame(renderGlobe);
+            }
+
+            ctx.putImageData(precomputedFrames[0], 0, 0);
+            requestAnimationFrame(renderGlobe);
+        }
+
+        /* ---------------------------------------------------------------------
+           2. SHARP PIXEL STARFIELD (BOUNDED TO HERO COSMIC SECTION)
+           --------------------------------------------------------------------- */
+        const starCanvas = document.getElementById('starfield-canvas');
+        if (starCanvas && starCanvas.getContext) {
+            const sCtx = starCanvas.getContext('2d');
+            let w, h;
+            const stars = [];
+            const numStars = 100;
+            const starPalette = ['#ffffff', '#fde047', '#38bdf8', '#c084fc', '#f472b6'];
+
+            function resizeStarfield() {
+                const heroSection = document.getElementById('hero-cosmos');
+                w = starCanvas.width = heroSection ? heroSection.clientWidth : window.innerWidth;
+                h = starCanvas.height = heroSection ? heroSection.clientHeight : window.innerHeight;
+            }
+            window.addEventListener('resize', resizeStarfield);
+            resizeStarfield();
+
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    size: Math.random() < 0.65 ? 2 : (Math.random() < 0.88 ? 3 : 4),
+                    color: starPalette[Math.floor(Math.random() * starPalette.length)],
+                    blinkSpeed: 0.02 + Math.random() * 0.04,
+                    blinkOffset: Math.random() * Math.PI * 2,
+                    isCross: Math.random() < 0.18
+                });
+            }
+
+            let shootingStar = null;
+            function maybeSpawnShootingStar() {
+                if (!shootingStar && Math.random() < 0.015) {
+                    shootingStar = {
+                        x: Math.random() * (w * 0.7),
+                        y: Math.random() * (h * 0.4),
+                        vx: 6 + Math.random() * 4,
+                        vy: 4 + Math.random() * 3,
+                        life: 0,
+                        maxLife: 35
+                    };
+                }
+            }
+
+            let starTime = 0;
+            function drawStarfield() {
+                sCtx.clearRect(0, 0, w, h);
+                starTime += 0.04;
+
+                for (let i = 0; i < stars.length; i++) {
+                    const st = stars[i];
+                    const sinVal = Math.sin(starTime * st.blinkSpeed * 25 + st.blinkOffset);
+                    const alpha = sinVal > 0.4 ? 1 : (sinVal > -0.4 ? 0.7 : 0.25);
+
+                    sCtx.fillStyle = st.color;
+                    sCtx.globalAlpha = alpha;
+
+                    if (st.isCross) {
+                        const s = st.size;
+                        sCtx.fillRect(st.x - s, st.y, s * 3, s);
+                        sCtx.fillRect(st.x, st.y - s, s, s * 3);
+                    } else {
+                        sCtx.fillRect(st.x, st.y, st.size, st.size);
+                    }
+                }
+
+                maybeSpawnShootingStar();
+                if (shootingStar) {
+                    shootingStar.life++;
+                    shootingStar.x += shootingStar.vx;
+                    shootingStar.y += shootingStar.vy;
+
+                    sCtx.globalAlpha = 1 - (shootingStar.life / shootingStar.maxLife);
+                    sCtx.fillStyle = '#ffffff';
+
+                    for (let s = 0; s < 5; s++) {
+                        const px = shootingStar.x - s * (shootingStar.vx * 0.8);
+                        const py = shootingStar.y - s * (shootingStar.vy * 0.8);
+                        sCtx.fillRect(Math.floor(px), Math.floor(py), 3, 3);
+                    }
+
+                    if (shootingStar.life >= shootingStar.maxLife) {
+                        shootingStar = null;
+                    }
+                }
+
+                sCtx.globalAlpha = 1.0;
+                requestAnimationFrame(drawStarfield);
+            }
+            requestAnimationFrame(drawStarfield);
+        }
+
+        /* ---------------------------------------------------------------------
+           3. RETRO AUDIO SYNTHESIZER (8-BIT SOUND FEEDBACK)
+           --------------------------------------------------------------------- */
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playBlip(freq, duration, type = 'square') {
+            const actx = getAudioContext();
+            if (!actx) return;
+            try {
+                const osc = actx.createOscillator();
+                const gain = actx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, actx.currentTime);
+                gain.gain.setValueAtTime(0.04, actx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(actx.destination);
+                osc.start();
+                osc.stop(actx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        // Attach power-up sound to giant button
+        const startBtn = document.getElementById('btn-start-reflection');
+        if (startBtn) {
+            startBtn.addEventListener('mouseenter', () => {
+                playBlip(659, 0.08, 'triangle');
+            });
+            startBtn.addEventListener('mousedown', () => {
+                const actx = getAudioContext();
+                if (!actx) return;
+                try {
+                    const freqs = [523, 659, 784, 1046];
+                    freqs.forEach((f, i) => {
+                        setTimeout(() => playBlip(f, 0.09, 'square'), i * 50);
+                    });
+                } catch (e) {}
+            });
+        }
+
+        // Feature cards audio
+        const cards = document.querySelectorAll('.retro-feature-card');
+        cards.forEach((card, idx) => {
+            card.addEventListener('mouseenter', () => {
+                const freqs = [440, 523, 587, 659];
+                playBlip(freqs[idx % freqs.length], 0.06, 'triangle');
+            });
+        });
+    })();
+    </script>
 </body>
 </html>
