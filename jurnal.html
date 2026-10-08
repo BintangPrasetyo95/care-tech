@@ -3,55 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Jurnal Harian</title>
+    <title>CareTech - Jurnal Harian (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
     <style>
-        .btn-calendar-nav {
-            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .teacher-notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.8rem;
         }
-        .btn-calendar-nav:hover {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-            color: #334155;
-            border-color: #94a3b8;
+
+        @media (max-width: 768px) {
+            .teacher-notes-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
         }
-        .btn-calendar-nav:active {
-            transform: translateY(1px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+
+        @media (max-width: 480px) {
+            .teacher-notes-grid {
+                gap: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:8%;left:22%"></b>
+        <b class="star" style="top:26%;right:12%;color:var(--cy);animation-delay:-0.5s"></b>
+        <b class="star" style="top:64%;left:14%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:84%;right:22%;color:var(--lime);animation-delay:-0.8s"></b>
+        <i class="deb tp" style="left:6%;top:34%"></i>
+        <i class="deb sc" style="right:8%;top:50%;animation-delay:-1.6s"></i>
+    </div>
+
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation (Cardboard Binder Rail) -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">
-                <h3 class="section-title">Menu Utama</h3>
+                <span class="section-title">Menu Utama</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="dashboard.html">
                             <span class="icon">🏠</span>
                             <span class="text">Beranda</span>
@@ -63,13 +63,13 @@
                             <span class="text">Jurnal Harian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="penilaian.html">
                             <span class="icon">⭐️</span>
                             <span class="text">Penilaian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="chat.html">
                             <span class="icon">🤖</span>
                             <span class="text">ESA AI</span>
@@ -79,82 +79,179 @@
             </div>
 
             <div class="sidebar-section hiburan-section">
-                <h3 class="section-title">Eksplorasi</h3>
+                <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
+                    <li class="menu-item">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
-                        <a href="video.html">
-                            <span class="icon">📚</span>
-                            <span class="text">Video Pembelajaran</span>
-                        </a>
-                    </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown ">
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown">
                         <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
-                            <span class="text">Game</span>
-                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                            <span class="text">Game Zone</span>
+                            <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html">Pretest</a></li>
-                            <li><a href="game.html">Game</a></li>
-                            <li><a href="posttest.html">Posttest</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
-</nav>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
+            </div>
+        </nav>
 
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
+                    <span class="tape tape-sun" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Buku Harian Siswa</span>
                     <h1>Jurnal Harian</h1>
-                    <p>Catatan perasaan dan refleksimu setiap hari.</p>
+                    <p>Kalender rekam jejak emosi dan refleksimu dari hari ke hari.</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
+                        <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    </button>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="tape tape-lime dropdown-tape">AKUN SISWA</span>
+                            <div class="dropdown-student-name">Zuruki</div>
+                            <div class="dropdown-student-meta">Kelas V-A // Harmonia</div>
+                        </div>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="index.html" class="profile-dropdown-item logout-item" onclick="handleLogout(event)">
+                            <span>🚪</span>
+                            <span>Keluar / Logout</span>
+                        </a>
+                    </div>
                 </div>
             </header>
 
-            <div class="content-grid">
-                <div class="dashboard-card wide-card glass-panel">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <button id="prev-month" class="btn-calendar-nav"><span>&larr;</span> Sebelumnya</button>
-                        <h2 id="calendar-title" style="margin: 0; color: var(--primary-color);">Bulan Tahun</h2>
-                        <button id="next-month" class="btn-calendar-nav">Selanjutnya <span>&rarr;</span></button>
-                    </div>
+            <div class="content-grid" style="display: block; max-width: 1040px; margin: 0 auto;">
+                <!-- Main Cardboard Calendar Board -->
+                <div class="calendar-board mk">
                     
-                    <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center; margin-bottom: 1rem;">
-                        <!-- Days of week -->
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Min</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sen</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sel</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Rab</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Kam</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Jum</div>
-                        <div style="font-weight: bold; color: #777; padding-bottom: 10px; border-bottom: 2px solid #eef2f5;">Sab</div>
-                        <!-- Dates will be injected here -->
+                    <!-- Calendar Header Bar with Month & Navigation -->
+                    <div class="calendar-header-bar">
+                        <button id="prev-month" class="btn-cal-nav" type="button">
+                            <span>◀</span> Bulan Lalu
+                        </button>
+                        
+                        <div class="calendar-title-wrapper">
+                            <h2 id="calendar-title" class="calendar-title-main">Bulan Tahun</h2>
+                        </div>
+                        
+                        <button id="next-month" class="btn-cal-nav" type="button">
+                            Bulan Depan <span>▶</span>
+                        </button>
+                    </div>
+
+                    <!-- Weekday Tags (7 Columns) -->
+                    <div class="cal-weekdays">
+                        <div class="cal-weekday-tag sunday">Min</div>
+                        <div class="cal-weekday-tag">Sen</div>
+                        <div class="cal-weekday-tag">Sel</div>
+                        <div class="cal-weekday-tag">Rab</div>
+                        <div class="cal-weekday-tag">Kam</div>
+                        <div class="cal-weekday-tag friday">Jum</div>
+                        <div class="cal-weekday-tag">Sab</div>
+                    </div>
+
+                    <!-- Calendar Dynamic Grid -->
+                    <div id="calendar-grid" class="calendar-grid-container">
+                        <!-- Dates dynamically injected here -->
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <p style="font-family: var(--mono); font-size: 0.95rem; color: #555; margin: 0;">
+                            💡 <em>Klik pada tanggal yang memiliki stiker emoji untuk membaca lembar catatan refleksimu!</em>
+                        </p>
                     </div>
                 </div>
 
-                <div class="dashboard-card wide-card glass-panel" id="jurnal-details" style="display: none; margin-top: 2rem; border-left: 5px solid var(--primary-color);">
-                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; border-bottom: 1px solid #eef2f5; padding-bottom: 0.5rem;" id="details-date">Tanggal</h3>
+                <!-- Scrapbook Detail Card (Opened Journal Note) -->
+                <div class="jurnal-details-card mk" id="jurnal-details" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">LEMBAR BUKU HARIAN</span>
+                            <h2 style="font-size: 2.2rem; margin: 0.2rem 0;" id="details-date">Tanggal Pilihan</h2>
+                        </div>
+                        <button type="button" class="btn btn-small" style="background: #ffffff; padding: 0.4rem 1rem;" onclick="closeDetails()">
+                            Tutup ✖
+                        </button>
+                    </div>
+
                     <div id="details-content">
-                        <!-- Details injected here -->
+                        <!-- Details injected via script -->
                     </div>
                 </div>
+
+                <!-- Feedback Mingguan Dari Guru (Same as Penilaian) -->
+                <div class="dashboard-card wide-card mk-alt" style="background: #ffffff !important; margin-top: 2.2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <span class="tape tape-pink">SURAT DARI GURU</span>
+                            <h2 class="tape tape-lime tape-heading" style="margin: 0.2rem 0;">Feedback Mingguan</h2>
+                            <p style="font-family: var(--mono); color: #444; font-size: 0.95rem;">
+                                Bimbingan, apresiasi, dan catatan refleksi jurnal dari guru pembimbing untuk perkembangan karaktermu.
+                            </p>
+                        </div>
+                        <span style="font-family: var(--imp); font-size: 1.2rem; background: var(--lime); border: 3px solid var(--ink); padding: 0.3rem 1rem; border-radius: 8px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(2deg);">
+                            DIPERIKSA GURU ✓
+                        </span>
+                    </div>
+
+                    <div class="teacher-notes-grid">
+                        <!-- Minggu 1 -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <h3 style="font-size: 1.6rem; margin: 0;">Minggu 1</h3>
+                                <span class="tape tape-sun" style="font-size: 0.8rem; margin: 0;">12 Jul - 16 Jul</span>
+                            </div>
+                            <div style="background: repeating-linear-gradient(transparent, transparent 29px, rgba(0, 229, 255, 0.25) 29px, rgba(0, 229, 255, 0.25) 31px), #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 1rem; font-family: var(--mk); font-size: 1.15rem; line-height: 1.8; color: #222;">
+                                "Perkembangan rasa empati Zuruki sudah sangat bagus! Kamu menunjukkan sikap berani untuk mendengarkan teman di kelas dan aktif berdiskusi. Pertahankan semangat hebat ini ya!"
+                            </div>
+                            <div style="margin-top: 1rem; text-align: right; font-family: var(--mono); font-weight: bold; font-size: 0.85rem; color: #555;">
+                                — Ibu Guru Rina, S.Pd.
+                            </div>
+                        </div>
+
+                        <!-- Minggu 2 -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <h3 style="font-size: 1.6rem; margin: 0;">Minggu 2</h3>
+                                <span class="tape tape-white" style="font-size: 0.8rem; margin: 0;">19 Jul - 23 Jul</span>
+                            </div>
+                            <div style="background: repeating-linear-gradient(transparent, transparent 29px, rgba(255, 46, 147, 0.2) 29px, rgba(255, 46, 147, 0.2) 31px), #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 1rem; font-family: var(--mk); font-size: 1.15rem; line-height: 1.8; color: #222;">
+                                "Catatan refleksimu menunjukkan kedewasaan dalam mengelola emosi. Senang melihatmu bisa tetap tenang dan mencari solusi positif saat menghadapi situasi sulit."
+                            </div>
+                            <div style="margin-top: 1rem; text-align: right; font-family: var(--mono); font-weight: bold; font-size: 0.85rem; color: #555;">
+                                — Ibu Guru Rina, S.Pd.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -167,21 +264,20 @@
                 const today = new Date();
                 const feelings = ["senang", "sedih", "marah", "biasa"];
                 const notes = [
-                    "Hari ini cukup menyenangkan dan produktif.", 
-                    "Sedikit sedih karena ada masalah kecil.", 
-                    "Agak kesal dengan tugas yang menumpuk.", 
-                    "Hari yang biasa saja, tidak ada yang spesial.",
-                    "Sangat gembira karena bertemu teman lama!",
-                    "Merasa lelah setelah seharian beraktivitas."
+                    "Hari ini seru banget! Aku berhasil membantu teman menyelesaikan tugas kelompok.", 
+                    "Sedikit merasa lelah dan sedih, tapi setelah istirahat jadi lebih tenang.", 
+                    "Sempat kesal karena ada salah paham, tapi kami bicarakan baik-baik.", 
+                    "Hari yang tenang dan menyenangkan di sekolah.",
+                    "Sangat gembira karena belajar modul baru bersama sahabat!",
+                    "Biasa saja hari ini, tetap bersyukur dan semangat."
                 ];
                 
-                // Generate data for the past 45 days up to today
+                // Generate sample history for the past 45 days
                 for (let i = 45; i >= 0; i--) {
                     const d = new Date(today);
                     d.setDate(today.getDate() - i);
                     
-                    // 85% chance to have an entry on any given day
-                    if (Math.random() > 0.15) {
+                    if (Math.random() > 0.2) {
                         allReflections.push({
                             date: d.toISOString(),
                             feeling: feelings[Math.floor(Math.random() * feelings.length)],
@@ -192,12 +288,12 @@
                 localStorage.setItem('caretech_reflections', JSON.stringify(allReflections));
             }
             
-            // Map entries by YYYY-MM-DD
+            // Map reflections by YYYY-MM-DD
             const reflectionsByDate = {};
             allReflections.forEach(ref => {
                 const d = new Date(ref.date);
                 const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                reflectionsByDate[dateKey] = ref; // store latest per day
+                reflectionsByDate[dateKey] = ref;
             });
 
             let currentDate = new Date();
@@ -213,79 +309,84 @@
                 const month = date.getMonth();
                 
                 calendarTitle.textContent = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-                
-                // Clear existing dates
-                const existingDates = calendarGrid.querySelectorAll('.cal-date');
-                existingDates.forEach(el => el.remove());
+                calendarGrid.innerHTML = '';
 
                 const firstDayIndex = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-                // Blank spaces for first row
-                for(let i = 0; i < firstDayIndex; i++) {
+                // Empty pad cells for first row offset
+                for (let i = 0; i < firstDayIndex; i++) {
                     const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'cal-date';
+                    emptyDiv.className = 'cal-cell empty-pad';
                     calendarGrid.appendChild(emptyDiv);
                 }
 
-                // Use local timezone to get today string to avoid UTC mismatches
                 const todayDate = new Date();
                 const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
 
-                for(let day = 1; day <= daysInMonth; day++) {
+                for (let day = 1; day <= daysInMonth; day++) {
                     const dKey = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                     const entry = reflectionsByDate[dKey];
-                    
-                    const dayDiv = document.createElement('div');
-                    dayDiv.className = 'cal-date';
-                    dayDiv.style.padding = '10px';
-                    dayDiv.style.border = '1px solid #eef2f5';
-                    dayDiv.style.borderRadius = '8px';
-                    dayDiv.style.minHeight = '70px';
-                    dayDiv.style.cursor = entry ? 'pointer' : 'default';
-                    dayDiv.style.background = entry ? '#eff6ff' : (dKey === todayStr ? '#fffbec' : '#fafafa');
-                    dayDiv.style.transition = 'transform 0.2s, box-shadow 0.2s';
-                    
-                    if (entry) {
-                        dayDiv.onmouseover = () => { dayDiv.style.transform = 'translateY(-2px)'; dayDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'; };
-                        dayDiv.onmouseout = () => { dayDiv.style.transform = 'translateY(0)'; dayDiv.style.boxShadow = 'none'; };
+                    const isToday = (dKey === todayStr);
+
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cal-cell' + (entry ? ' has-entry' : ' no-entry') + (isToday ? ' is-today' : '');
+
+                    let html = '';
+                    if (isToday) {
+                        html += `<span class="today-mini-stamp">HARI INI</span>`;
                     }
-                    
-                    let content = `<div style="font-weight: 500; font-size: 1.1rem; ${dKey === todayStr ? 'color: var(--primary-color);' : ''}">${day}</div>`;
-                    if(entry) {
+
+                    html += `<div class="cal-num">${day}</div>`;
+
+                    if (entry) {
                         let emoji = "😐";
-                        if(entry.feeling === "senang") emoji = "😃";
-                        if(entry.feeling === "sedih") emoji = "😔";
-                        if(entry.feeling === "marah") emoji = "😠";
-                        content += `<div style="font-size: 2rem; margin-top: 5px;">${emoji}</div>`;
-                        
-                        dayDiv.onclick = () => {
+                        let moodClass = "biasa";
+                        if (entry.feeling === "senang") { emoji = "😃"; moodClass = "senang"; }
+                        if (entry.feeling === "sedih") { emoji = "😔"; moodClass = "sedih"; }
+                        if (entry.feeling === "marah") { emoji = "😠"; moodClass = "marah"; }
+
+                        html += `
+                            <div class="cal-emoji-wrap">${emoji}</div>
+                        `;
+
+                        cellDiv.addEventListener('click', () => {
                             const longDate = new Date(year, month, day).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                             detailsDate.textContent = longDate;
-                            
-                            const notesHtml = entry.feeling_notes ? `<p style="margin-top:1rem; color:#444; padding: 1rem; background: rgba(255,255,255,0.7); border-radius: 8px; font-style: italic; font-size: 1.1rem;">"${entry.feeling_notes}"</p>` : '';
-                            
+
+                            const notesHtml = entry.feeling_notes ? `
+                                <div style="margin-top: 1.5rem; background: repeating-linear-gradient(transparent, transparent 29px, rgba(0, 229, 255, 0.3) 29px, rgba(0, 229, 255, 0.3) 31px), #ffffff; border: 3px solid var(--ink); border-radius: 12px; padding: 1.4rem; box-shadow: 4px 4px 0 var(--ink);">
+                                    <span class="tape tape-cyan" style="font-size: 0.8rem; margin-bottom: 0.6rem;">Catatan Refleksimu:</span>
+                                    <p style="font-family: var(--mk); font-size: 1.25rem; color: var(--ink); margin: 0; line-height: 1.8;">
+                                        "${entry.feeling_notes}"
+                                    </p>
+                                </div>
+                            ` : `
+                                <p style="font-family: var(--mono); color: #777; margin-top: 1rem;">Tidak ada catatan tertulis untuk hari ini.</p>
+                            `;
+
                             detailsContent.innerHTML = `
-                                <div style="display:flex; align-items:center; gap: 20px;">
-                                    <span style="font-size:4rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">${emoji}</span>
+                                <div style="display: flex; align-items: center; gap: 1.8rem; flex-wrap: wrap;">
+                                    <div style="font-size: 4.5rem; filter: drop-shadow(4px 4px 0 var(--ink)); transform: rotate(-3deg);">${emoji}</div>
                                     <div>
-                                        <p style="margin:0; color: #777; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Perasaan</p>
-                                        <p style="margin:0; font-size: 1.5rem; font-weight: bold; color: var(--text-color);">${entry.feeling.charAt(0).toUpperCase() + entry.feeling.slice(1)}</p>
+                                        <span class="tape tape-yellow" style="font-size: 0.85rem; margin-bottom: 0.4rem;">Perasaan Utama</span>
+                                        <h3 style="font-size: 2.2rem; margin: 0; text-transform: uppercase;">${entry.feeling}</h3>
+                                        <p style="font-family: var(--mono); font-size: 0.95rem; color: #555; margin-top: 0.3rem;">Tercatat aman di jurnal CareTech</p>
                                     </div>
+                                    <a href="reflection.html" class="btn btn-small" style="margin-left: auto; background: var(--sun);">
+                                        Isi Refleksi Baru ✏️
+                                    </a>
                                 </div>
                                 ${notesHtml}
                             `;
+
                             detailsCard.style.display = 'block';
-                            
-                            // Scroll to details
-                            detailsCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        };
-                    } else {
-                        dayDiv.style.color = '#bbb';
+                            detailsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        });
                     }
-                    
-                    dayDiv.innerHTML = content;
-                    calendarGrid.appendChild(dayDiv);
+
+                    cellDiv.innerHTML = html;
+                    calendarGrid.appendChild(cellDiv);
                 }
             };
 
@@ -303,9 +404,12 @@
                 renderCalendar(currentDate);
             });
         });
-    </script>
 
-    <script>
+        function closeDetails() {
+            const detailsCard = document.getElementById('jurnal-details');
+            if (detailsCard) detailsCard.style.display = 'none';
+        }
+
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -313,6 +417,6 @@
             if(overlay) overlay.classList.toggle('active');
         }
     </script>
+    <script src="dropdown.js"></script>
 </body>
 </html>
-

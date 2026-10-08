@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTech - Bonus Game Zone (Coming Soon)</title>
+    <link rel="icon" href="assets/logo-care-tech.png">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        /* ==========================================================================
+           BONUS GAME ZONE (COMING SOON) STYLES
+           ========================================================================== */
+        .bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .game-card {
+            background: #ffffff;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 7px 7px 0 var(--ink);
+            padding: 1.8rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease;
+        }
+
+        .game-card:nth-child(even) {
+            border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+            transform: rotate(1deg);
+        }
+
+        .game-card:nth-child(odd) {
+            transform: rotate(-1.2deg);
+        }
+
+        .game-card:hover {
+            transform: scale(1.025) rotate(0deg) !important;
+            box-shadow: 11px 11px 0 var(--ink) !important;
+        }
+
+        .game-thumbnail {
+            width: 100%;
+            height: 130px;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: #fffbef;
+        }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-block;
+            font-family: var(--mono);
+            font-weight: 900;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.9rem;
+            border: 2.5px solid var(--ink);
+            border-radius: 999px;
+            box-shadow: 3px 3px 0 var(--ink);
+            text-transform: uppercase;
+        }
+
+        .status-unlocked {
+            background: var(--lime);
+            color: var(--ink);
+            animation: popBadge 0.35s ease;
+        }
+
+        .status-locked {
+            background: #cbd5e1;
+            color: #475569;
+        }
+
+        @keyframes popBadge {
+            0% { transform: scale(0.85); }
+            50% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        .unlocked-banner {
+            margin-top: 0.9rem;
+            padding: 0.55rem 0.85rem;
+            background: #ecfdf5;
+            border: 2px dashed #059669;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .locked-banner {
+            margin-top: 0.9rem;
+            padding: 0.55rem 0.85rem;
+            background: #f1f5f9;
+            border: 2px dashed #94a3b8;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-coming-soon {
+            width: 100%;
+            background: #ffffff;
+            color: #475569;
+            border: 3px dashed var(--ink);
+            font-family: var(--mk);
+            font-weight: 900;
+            font-size: 0.95rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0 var(--ink);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-coming-soon:hover {
+            background: #fffde6;
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--ink);
+        }
+
+        .btn-coming-soon:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
+        /* Dashed New Slot Card */
+        .add-game-slot {
+            background: #fffdf5;
+            border: 4px dashed var(--ink);
+            border-radius: 20px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            transform: rotate(-0.5deg);
+        }
+
+        .add-game-slot:hover {
+            background: #fffde6;
+            transform: scale(1.02) rotate(0deg);
+            box-shadow: 10px 10px 0 var(--ink);
+        }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .bonus-grid {
+                gap: 1.4rem;
+            }
+
+            .game-card {
+                padding: 1.4rem 1.1rem;
+                transform: none !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+            }
+
+            .game-card:nth-child(even), .game-card:nth-child(odd) {
+                transform: none !important;
+            }
+
+            .add-game-slot {
+                transform: none !important;
+                padding: 1.6rem 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bonus-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .game-card {
+                padding: 1.2rem 0.85rem;
+                border-width: 3px;
+                box-shadow: 4px 4px 0 var(--ink) !important;
+                border-radius: 16px !important;
+            }
+
+            .game-card h3 {
+                font-size: 1.3rem !important;
+            }
+
+            .game-thumbnail {
+                height: 110px;
+            }
+
+            .btn-coming-soon {
+                font-size: 0.88rem;
+                padding: 0.6rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .game-card {
+                padding: 1rem 0.7rem;
+            }
+
+            .game-card h3 {
+                font-size: 1.15rem !important;
+            }
+
+            .game-thumbnail {
+                height: 95px;
+            }
+
+            .status-pill {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:12%;left:15%"></b>
+        <b class="star" style="top:25%;right:12%;color:var(--cy);animation-delay:-0.5s"></b>
+        <b class="star" style="top:68%;left:16%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:85%;right:20%;color:var(--lime);animation-delay:-0.8s"></b>
+        <i class="deb tp" style="left:5%;top:38%"></i>
+        <i class="deb sc" style="right:7%;top:55%;animation-delay:-1.4s"></i>
+    </div>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation (Cardboard Binder Rail) -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
+                <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="section-title">Menu Utama</span>
+                <ul class="sidebar-menu">
+                    <li class="menu-item">
+                        <a href="dashboard.html">
+                            <span class="icon">🏠</span>
+                            <span class="text">Beranda</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="jurnal.html">
+                            <span class="icon">📓</span>
+                            <span class="text">Jurnal Harian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="penilaian.html">
+                            <span class="icon">⭐️</span>
+                            <span class="text">Penilaian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="chat.html">
+                            <span class="icon">🤖</span>
+                            <span class="text">ESA AI</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section hiburan-section">
+                <span class="section-title">Eksplorasi</span>
+                <ul class="sidebar-menu">
+                    <li class="menu-item">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Modul Digital</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown active-dropdown">
+                        <a href="javascript:void(0)" class="dropdown-toggle"
+                            onclick="this.parentElement.classList.toggle('active-dropdown')">
+                            <span class="icon">🎮</span>
+                            <span class="text">Game Zone</span>
+                            <span class="dropdown-icon" style="margin-left: auto;">▼</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html" class="active-subitem">3. Bonus Game ★</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="greeting">
+                    <span class="tape tape-lime" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap Ekstra // Bonus Zone</span>
+                    <h1 id="welcome-message">Bonus Game Zone 🎮</h1>
+                    <p>Kumpulan game ekstra yang akan segera hadir! Selesaikan skenario petualanganmu untuk membuka akses (UNLOCKED).</p>
+                </div>
+                <div class="user-profile">
+                    <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
+                        <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    </button>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="tape tape-lime dropdown-tape">AKUN SISWA</span>
+                            <div class="dropdown-student-name">Zuruki</div>
+                            <div class="dropdown-student-meta">Kelas V-A // Harmonia</div>
+                        </div>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="index.html" class="profile-dropdown-item logout-item" onclick="handleLogout(event)">
+                            <span>🚪</span>
+                            <span>Keluar / Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-grid" style="display: block; max-width: 940px; margin: 0 auto;">
+
+                <!-- Developer / Customizer Information Banner -->
+                <div class="dashboard-card mk" style="background: #fffde6 !important; margin-bottom: 2rem; position: relative;">
+                    <div style="position: absolute; top: -14px; left: 30px; transform: rotate(-2deg);">
+                        <span class="tape tape-yellow" style="font-size: 0.85rem;">WADAH GAME BONUS // COMING SOON</span>
+                    </div>
+                    <div style="display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 2.6rem;">🚧</span>
+                        <div style="flex: 1; min-width: 250px;">
+                            <h3 style="font-size: 1.45rem; margin: 0 0 0.3rem 0;">Semua Game Bonus Sedang Disiapkan (Coming Soon)</h3>
+                            <p style="font-family: var(--mk); font-size: 1.05rem; color: #333; margin: 0; line-height: 1.5;">
+                                Halaman ini adalah tempat berkumpulnya game-game bonus yang nantinya Anda tambahkan. Setiap game bonus terhubung dengan penyelesaian skenario dan otomatis berstatus <strong>UNLOCKED</strong> saat skenario selesai!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Overview & Interactive Scenario Simulator -->
+                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2rem; position: relative;">
+                    <div style="position: absolute; top: -14px; left: 30px; transform: rotate(-3deg);">
+                        <span class="tape tape-pink" style="font-size: 0.85rem;">STATUS PENYELESAIAN SKENARIO</span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem; padding-bottom: 1.2rem; border-bottom: 3.5px dashed var(--ink);">
+                        <div>
+                            <h2 style="font-size: 2rem; margin: 0 0 0.2rem 0;">Status Akses Game Bonus</h2>
+                            <p style="font-family: var(--mono); color: #333; margin: 0; font-size: 0.92rem;">
+                                Saat skenario di game utama selesai, kartu game bonus terkait akan menampilkan teks status <strong style="color: #15803d; background: #dcfce7; padding: 0.1rem 0.5rem; border: 1.5px solid var(--ink); border-radius: 4px;">UNLOCKED</strong>.
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span id="unlocked-counter-badge" class="tape tape-lime" style="font-size: 1.15rem; font-family: var(--imp);">
+                                5 / 5 GAME UNLOCKED
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Toggle Buttons per Scenario -->
+                    <div style="margin-top: 1.2rem;">
+                        <span style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; color: #555; display: block; margin-bottom: 0.6rem;">
+                            SIMULASI PENYELESAIAN SKENARIO (KLIK UNTUK TES TAMPILAN UNLOCKED):
+                        </span>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-small" id="btn-toggle-s1" onclick="toggleScenario(1)" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                Skenario 1 (Taman)
+                            </button>
+                            <button type="button" class="btn btn-small" id="btn-toggle-s2" onclick="toggleScenario(2)" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                Skenario 2 (Koridor)
+                            </button>
+                            <button type="button" class="btn btn-small" id="btn-toggle-s3" onclick="toggleScenario(3)" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                Skenario 3 (Siber)
+                            </button>
+                            <button type="button" class="btn btn-small" id="btn-toggle-s4" onclick="toggleScenario(4)" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                Skenario 4 (Inisiatif)
+                            </button>
+                            <button type="button" class="btn btn-small" id="btn-toggle-s5" onclick="toggleScenario(5)" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                Skenario 5 (Kantin)
+                            </button>
+                            <button type="button" class="btn btn-small" onclick="unlockAllScenarios()" style="background: var(--lime); color: var(--ink); font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                ✨ Buka Semua
+                            </button>
+                            <button type="button" class="btn btn-small" onclick="resetScenarios()" style="background: #ffffff; color: #333; font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                                🔄 Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bonus Games Grid (All Coming Soon) -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem;">
+                        <span class="tape tape-cyan" style="font-size: 1.05rem;">DAFTAR SLOT GAME BONUS (COMING SOON)</span>
+                    </div>
+
+                    <div class="bonus-grid">
+
+                        <!-- GAME BONUS 01 -->
+                        <!-- [TEMPAT GAME BONUS 1: Nanti Anda sambungkan ke file game HTML di sini, misal: href="bonus-game-1.html"] -->
+                        <div class="game-card" id="card-game-1">
+                            <div>
+                                <div class="game-thumbnail" style="background: #e6f9ff;">
+                                    <span style="font-size: 3rem;">🎯</span>
+                                    <span class="tape tape-yellow" style="font-size: 0.75rem; position: absolute; bottom: 8px;">COMING SOON ⏳</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.8rem; color: #64748b;">GAME BONUS 01</span>
+                                    <span class="status-pill status-unlocked" id="pill-game-1">UNLOCKED</span>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin: 0 0 0.4rem 0;">Bonus Game 01</h3>
+                                <p style="font-family: var(--mk); font-size: 1.05rem; color: #475569; line-height: 1.5; margin: 0 0 0.8rem 0;">
+                                    [Slot Game Bonus 1] Terbuka setelah menyelesaikan <strong>Skenario 01 (Taman Harmonia)</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="unlocked-banner" id="banner-game-1">
+                                    <span>✨ Skenario 1 Selesai: <strong>UNLOCKED</strong></span>
+                                </div>
+                                <div style="margin-top: 1.2rem;">
+                                    <!-- Nanti sambungkan tautan game Anda di tombol ini -->
+                                    <button type="button" class="btn-coming-soon" onclick="notifyComingSoon(1, 'Bonus Game 01')">
+                                        🚧 COMING SOON 🔒
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME BONUS 02 -->
+                        <!-- [TEMPAT GAME BONUS 2: Nanti Anda sambungkan ke file game HTML di sini, misal: href="bonus-game-2.html"] -->
+                        <div class="game-card" id="card-game-2">
+                            <div>
+                                <div class="game-thumbnail" style="background: #fdf2f8;">
+                                    <span style="font-size: 3rem;">🃏</span>
+                                    <span class="tape tape-yellow" style="font-size: 0.75rem; position: absolute; bottom: 8px;">COMING SOON ⏳</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.8rem; color: #64748b;">GAME BONUS 02</span>
+                                    <span class="status-pill status-unlocked" id="pill-game-2">UNLOCKED</span>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin: 0 0 0.4rem 0;">Bonus Game 02</h3>
+                                <p style="font-family: var(--mk); font-size: 1.05rem; color: #475569; line-height: 1.5; margin: 0 0 0.8rem 0;">
+                                    [Slot Game Bonus 2] Terbuka setelah menyelesaikan <strong>Skenario 02 (Koridor Keberanian)</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="unlocked-banner" id="banner-game-2">
+                                    <span>✨ Skenario 2 Selesai: <strong>UNLOCKED</strong></span>
+                                </div>
+                                <div style="margin-top: 1.2rem;">
+                                    <!-- Nanti sambungkan tautan game Anda di tombol ini -->
+                                    <button type="button" class="btn-coming-soon" onclick="notifyComingSoon(2, 'Bonus Game 02')">
+                                        🚧 COMING SOON 🔒
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME BONUS 03 -->
+                        <!-- [TEMPAT GAME BONUS 3: Nanti Anda sambungkan ke file game HTML di sini, misal: href="bonus-game-3.html"] -->
+                        <div class="game-card" id="card-game-3">
+                            <div>
+                                <div class="game-thumbnail" style="background: #ecfdf5;">
+                                    <span style="font-size: 3rem;">🔍</span>
+                                    <span class="tape tape-yellow" style="font-size: 0.75rem; position: absolute; bottom: 8px;">COMING SOON ⏳</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.8rem; color: #64748b;">GAME BONUS 03</span>
+                                    <span class="status-pill status-unlocked" id="pill-game-3">UNLOCKED</span>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin: 0 0 0.4rem 0;">Bonus Game 03</h3>
+                                <p style="font-family: var(--mk); font-size: 1.05rem; color: #475569; line-height: 1.5; margin: 0 0 0.8rem 0;">
+                                    [Slot Game Bonus 3] Terbuka setelah menyelesaikan <strong>Skenario 03 (Investigasi Siber)</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="unlocked-banner" id="banner-game-3">
+                                    <span>✨ Skenario 3 Selesai: <strong>UNLOCKED</strong></span>
+                                </div>
+                                <div style="margin-top: 1.2rem;">
+                                    <!-- Nanti sambungkan tautan game Anda di tombol ini -->
+                                    <button type="button" class="btn-coming-soon" onclick="notifyComingSoon(3, 'Bonus Game 03')">
+                                        🚧 COMING SOON 🔒
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME BONUS 04 -->
+                        <!-- [TEMPAT GAME BONUS 4: Nanti Anda sambungkan ke file game HTML di sini, misal: href="bonus-game-4.html"] -->
+                        <div class="game-card" id="card-game-4">
+                            <div>
+                                <div class="game-thumbnail" style="background: #fffbeb;">
+                                    <span style="font-size: 3rem;">🏫</span>
+                                    <span class="tape tape-yellow" style="font-size: 0.75rem; position: absolute; bottom: 8px;">COMING SOON ⏳</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.8rem; color: #64748b;">GAME BONUS 04</span>
+                                    <span class="status-pill status-unlocked" id="pill-game-4">UNLOCKED</span>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin: 0 0 0.4rem 0;">Bonus Game 04</h3>
+                                <p style="font-family: var(--mk); font-size: 1.05rem; color: #475569; line-height: 1.5; margin: 0 0 0.8rem 0;">
+                                    [Slot Game Bonus 4] Terbuka setelah menyelesaikan <strong>Skenario 04 (Kotak Apresiasi)</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="unlocked-banner" id="banner-game-4">
+                                    <span>✨ Skenario 4 Selesai: <strong>UNLOCKED</strong></span>
+                                </div>
+                                <div style="margin-top: 1.2rem;">
+                                    <!-- Nanti sambungkan tautan game Anda di tombol ini -->
+                                    <button type="button" class="btn-coming-soon" onclick="notifyComingSoon(4, 'Bonus Game 04')">
+                                        🚧 COMING SOON 🔒
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME BONUS 05 -->
+                        <!-- [TEMPAT GAME BONUS 5: Nanti Anda sambungkan ke file game HTML di sini, misal: href="bonus-game-5.html"] -->
+                        <div class="game-card" id="card-game-5">
+                            <div>
+                                <div class="game-thumbnail" style="background: #f3e8ff;">
+                                    <span style="font-size: 3rem;">⚡</span>
+                                    <span class="tape tape-yellow" style="font-size: 0.75rem; position: absolute; bottom: 8px;">COMING SOON ⏳</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.8rem; color: #64748b;">GAME BONUS 05</span>
+                                    <span class="status-pill status-unlocked" id="pill-game-5">UNLOCKED</span>
+                                </div>
+                                <h3 style="font-size: 1.5rem; margin: 0 0 0.4rem 0;">Bonus Game 05</h3>
+                                <p style="font-family: var(--mk); font-size: 1.05rem; color: #475569; line-height: 1.5; margin: 0 0 0.8rem 0;">
+                                    [Slot Game Bonus 5] Terbuka setelah menyelesaikan <strong>Skenario 05 (Penyelamatan Kantin)</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="unlocked-banner" id="banner-game-5">
+                                    <span>✨ Skenario 5 Selesai: <strong>UNLOCKED</strong></span>
+                                </div>
+                                <div style="margin-top: 1.2rem;">
+                                    <!-- Nanti sambungkan tautan game Anda di tombol ini -->
+                                    <button type="button" class="btn-coming-soon" onclick="notifyComingSoon(5, 'Bonus Game 05')">
+                                        🚧 COMING SOON 🔒
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SLOT GAME BONUS BARU -->
+                        <div class="add-game-slot" onclick="promptAddNewGame()">
+                            <div style="font-size: 3rem; margin-bottom: 0.8rem;">➕</div>
+                            <span class="tape tape-lime" style="font-size: 0.9rem; margin-bottom: 0.6rem;">TAMBAH GAME BARU</span>
+                            <h3 style="font-size: 1.45rem; margin: 0 0 0.5rem 0;">Slot Game Bonus Baru</h3>
+                            <p style="font-family: var(--mk); font-size: 0.95rem; color: #555; max-width: 240px; margin: 0 0 1rem 0;">
+                                Tinggal duplikasi elemen kartu ini di HTML untuk menambahkan game bonus ke-6, ke-7, dst!
+                            </p>
+                            <span class="btn btn-small" style="background: var(--sun); font-size: 0.85rem;">
+                                + Pasang Game Baru
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Next Step Banner to Penilaian -->
+                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; text-align: center; padding: 2.2rem !important; margin-top: 2.5rem; transform: rotate(-0.5deg);">
+                    <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(1deg); width: 140px; height: 26px; background: rgba(255, 229, 0, 0.9); border: 2px dashed rgba(0, 0, 0, 0.35); pointer-events: none;"></div>
+                    <span style="font-family: var(--mono); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #555; display: block; margin-bottom: 0.4rem;">
+                        Tahap Evaluasi &amp; Rapor Akhir
+                    </span>
+                    <h3 style="font-size: 2.2rem; margin: 0 0 0.5rem 0;">Selesai Menjelajahi Zona Game Bonus? ⭐️</h3>
+                    <p style="font-family: var(--mk); font-size: 1.15rem; color: #333; max-width: 620px; margin: 0 auto 1.4rem auto;">
+                        Lihat evaluasi akhir nilai Pretest, Posttest (NeuroAdventure), grafik peningkatan, serta catatan guru di Halaman Penilaian!
+                    </p>
+                    <a href="penilaian.html" class="btn btn-small" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; padding: 0.85rem 2.2rem; background: var(--pink); color: #fff; text-decoration: none;">
+                        Lihat Rapor Penilaian Sekarang ➔
+                    </a>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
+
+        // =========================================================================
+        // SCENARIO UNLOCK STATE MANAGEMENT FOR BONUS GAMES
+        // =========================================================================
+        const SCENARIOS = [1, 2, 3, 4, 5];
+
+        function getScenarioState(num) {
+            const posttestDone = localStorage.getItem('caretech_posttest_completed') === 'true';
+            const specific = localStorage.getItem(`caretech_scenario_${num}`);
+            if (specific !== null) {
+                return specific === 'true';
+            }
+            // By default, if posttest is done all are unlocked; otherwise scenarios 1 & 2 are unlocked
+            return posttestDone || num <= 2;
+        }
+
+        function setScenarioState(num, val) {
+            localStorage.setItem(`caretech_scenario_${num}`, val ? 'true' : 'false');
+            renderBonusGames();
+        }
+
+        function toggleScenario(num) {
+            const cur = getScenarioState(num);
+            setScenarioState(num, !cur);
+        }
+
+        function unlockAllScenarios() {
+            SCENARIOS.forEach(num => localStorage.setItem(`caretech_scenario_${num}`, 'true'));
+            localStorage.setItem('caretech_posttest_completed', 'true');
+            renderBonusGames();
+            alert('🎉 Semua Skenario berhasil ditandai selesai! Seluruh Game Bonus kini berstatus UNLOCKED!');
+        }
+
+        function resetScenarios() {
+            SCENARIOS.forEach(num => localStorage.removeItem(`caretech_scenario_${num}`));
+            localStorage.removeItem('caretech_posttest_completed');
+            renderBonusGames();
+            alert('🔄 Status simulasi telah di-reset ke kondisi awal.');
+        }
+
+        function renderBonusGames() {
+            let unlockedCount = 0;
+
+            SCENARIOS.forEach(num => {
+                const isUnlocked = getScenarioState(num);
+                const pill = document.getElementById(`pill-game-${num}`);
+                const banner = document.getElementById(`banner-game-${num}`);
+                const btnToggle = document.getElementById(`btn-toggle-s${num}`);
+
+                if (btnToggle) {
+                    if (isUnlocked) {
+                        btnToggle.style.background = 'var(--lime)';
+                        btnToggle.style.color = 'var(--ink)';
+                        btnToggle.textContent = `Skenario ${num} (Selesai ✔)`;
+                    } else {
+                        btnToggle.style.background = '#e2e8f0';
+                        btnToggle.style.color = '#64748b';
+                        btnToggle.textContent = `Skenario ${num} (Belum ✗)`;
+                    }
+                }
+
+                if (isUnlocked) {
+                    unlockedCount++;
+                    if (pill) {
+                        pill.className = 'status-pill status-unlocked';
+                        pill.textContent = 'UNLOCKED';
+                    }
+                    if (banner) {
+                        banner.className = 'unlocked-banner';
+                        banner.innerHTML = `<span>✨ Skenario ${num} Selesai: <strong>UNLOCKED</strong> (Coming Soon)</span>`;
+                    }
+                } else {
+                    if (pill) {
+                        pill.className = 'status-pill status-locked';
+                        pill.textContent = 'LOCKED';
+                    }
+                    if (banner) {
+                        banner.className = 'locked-banner';
+                        banner.innerHTML = `<span>🔒 Selesaikan Skenario ${num} untuk membuka game ini</span>`;
+                    }
+                }
+            });
+
+            const counterBadge = document.getElementById('unlocked-counter-badge');
+            if (counterBadge) {
+                counterBadge.textContent = `${unlockedCount} / 5 GAME UNLOCKED`;
+                if (unlockedCount === 5) {
+                    counterBadge.style.background = 'var(--lime)';
+                    counterBadge.style.color = 'var(--ink)';
+                } else {
+                    counterBadge.style.background = 'var(--sun)';
+                    counterBadge.style.color = 'var(--ink)';
+                }
+            }
+        }
+
+        function notifyComingSoon(num, gameName) {
+            const isUnlocked = getScenarioState(num);
+            if (isUnlocked) {
+                alert(`🚧 ${gameName} sedang dalam proses penyiapan (COMING SOON)!\n\nStatus skenario sudah UNLOCKED. Nantinya Anda dapat menyambungkan tombol ini ke file HTML game yang sebenarnya.`);
+            } else {
+                alert(`🔒 ${gameName} masih TERKUNCI!\n\nSelesaikan Skenario 0${num} di game utama untuk membuka status UNLOCKED.`);
+            }
+        }
+
+        function promptAddNewGame() {
+            alert('🛠️ Slot Game Bonus Baru:\n\nDuplikasi elemen <div class="game-card"> di bonus-game.html dan tautkan dengan file game yang Anda inginkan!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBonusGames();
+        });
+    </script>
+    <script src="dropdown.js"></script>
+</body>
+
+</html>

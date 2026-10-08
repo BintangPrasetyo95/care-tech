@@ -3,15 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareTech - Pretest</title>
+    <title>CareTech - Pretest (Cardboard Cosmos)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        @media (max-width: 600px) {
+            #question-text {
+                font-size: 1.05rem !important;
+                padding: 1rem 0.85rem !important;
+                border-width: 2.5px !important;
+            }
+            .quiz-nav-row {
+                flex-direction: column-reverse !important;
+                gap: 0.75rem !important;
+            }
+            .quiz-nav-row .btn {
+                width: 100% !important;
+                box-sizing: border-box;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 360px) {
+            #question-text {
+                font-size: 0.95rem !important;
+                padding: 0.85rem 0.65rem !important;
+            }
+            #quiz-container {
+                padding: 1rem 0.65rem !important;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Solid background, no shapes -->
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:12%;left:18%"></b>
+        <b class="star" style="top:25%;right:10%;color:var(--cy);animation-delay:-0.6s"></b>
+        <b class="star" style="top:75%;left:12%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:85%;right:20%;color:var(--lime)"></b>
+    </div>
 
     <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="dashboard-container">
@@ -20,10 +51,11 @@
             <div class="sidebar-header">
                 <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
                 <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
             </div>
             
             <div class="sidebar-section">
-                <h3 class="section-title">Menu Utama</h3>
+                <span class="section-title">Menu Utama</span>
                 <ul class="sidebar-menu">
                     <li class="menu-item">
                         <a href="dashboard.html">
@@ -31,19 +63,19 @@
                             <span class="text">Beranda</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="jurnal.html">
                             <span class="icon">📓</span>
                             <span class="text">Jurnal Harian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="penilaian.html">
                             <span class="icon">⭐️</span>
                             <span class="text">Penilaian</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="chat.html">
                             <span class="icon">🤖</span>
                             <span class="text">ESA AI</span>
@@ -53,92 +85,108 @@
             </div>
 
             <div class="sidebar-section hiburan-section">
-                <h3 class="section-title">Eksplorasi</h3>
+                <span class="section-title">Eksplorasi</span>
                 <ul class="sidebar-menu">
-                    <li class="menu-item ">
-                        <a href="komik.html">
-                            <span class="icon">📖</span>
-                            <span class="text">Komik Digital</span>
+                    <li class="menu-item active">
+                        <a href="pretest.html">
+                            <span class="icon">📝</span>
+                            <span class="text">Pretest ★</span>
                         </a>
                     </li>
-                    <li class="menu-item ">
-                        <a href="video.html">
-                            <span class="icon">📚</span>
-                            <span class="text">Video Pembelajaran</span>
-                        </a>
-                    </li>
-                    <li class="menu-item ">
+                    <li class="menu-item">
                         <a href="modul.html">
                             <span class="icon">📚</span>
                             <span class="text">Modul Digital</span>
                         </a>
                     </li>
-                    <li class="menu-item has-dropdown active active-dropdown">
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Belajar</span>
+                        </a>
+                    </li>
+                    <li class="menu-item has-dropdown">
                         <a href="javascript:void(0)" class="dropdown-toggle" onclick="this.parentElement.classList.toggle('active-dropdown')">
                             <span class="icon">🎮</span>
-                            <span class="text">Game</span>
-                            <span class="dropdown-icon" style="margin-left: auto; font-size: 0.8rem;">▼</span>
+                            <span class="text">Game Zone</span>
+                            <span class="dropdown-icon" style="margin-left: auto;">▼</span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="pretest.html" class="active-subitem">Pretest</a></li>
-                            <li><a href="game.html">Game</a></li>
-                            <li><a href="posttest.html">Posttest</a></li>
+                            <li><a href="game.html">1. Main Game</a></li>
+                            <li><a href="posttest.html">2. Posttest (NeuroAdventure)</a></li>
+                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
-</nav>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
+            </div>
+        </nav>
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Top Header -->
             <header class="top-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                 <div class="greeting">
-                    <h1 id="welcome-message">Pretest</h1>
-                    <p>Uji pemahamanmu sebelum memulai materi dan game.</p>
+                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">Tahap 01 // Evaluasi Awal</span>
+                    <h1 id="welcome-message">Pretest Pembelajaran</h1>
+                    <p>Uji pemahamanmu sebelum mempelajari modul digital dan materi belajar.</p>
                 </div>
                 <div class="user-profile">
-                    <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
+                        <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    </button>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="tape tape-lime dropdown-tape">AKUN SISWA</span>
+                            <div class="dropdown-student-name">Zuruki</div>
+                            <div class="dropdown-student-meta">Kelas V-A // Harmonia</div>
+                        </div>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="index.html" class="profile-dropdown-item logout-item" onclick="handleLogout(event)">
+                            <span>🚪</span>
+                            <span>Keluar / Logout</span>
+                        </a>
+                    </div>
                 </div>
             </header>
 
-            
-            <div class="content-grid" style="display: block; padding: 1rem 2rem;">
-                <div class="dashboard-card glass-panel" style="max-width: 800px; margin: 0 auto;">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <h2 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 0.5rem;">Evaluasi Pretest</h2>
-                        <p style="color: #64748b;">Jawablah pertanyaan berikut dengan jujur sesuai dengan apa yang kamu pahami.</p>
+            <div class="content-grid" style="display: block; max-width: 900px; margin: 0 auto;">
+                <div class="dashboard-card mk" style="background: var(--paper-warm) !important; margin-bottom: 2rem;">
+                    <!-- Top Ribbon Header -->
+                    <div style="text-align: center; margin-bottom: 2.2rem;">
+                        <span class="tape tape-lime" style="font-size: 1.05rem;">LEMBAR UJIAN PRETEST</span>
+                        <h2 style="font-size: 2.4rem; margin: 0.5rem 0 0.4rem;">Evaluasi Kemampuan Awal</h2>
+                        <p style="font-family: var(--mono); color: #444; font-size: 0.95rem;">Jawablah dengan jujur sesuai apa yang kamu pahami saat ini!</p>
                     </div>
-                    
-                    <div id="quiz-container" style="background: rgba(255, 255, 255, 0.5); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.8);">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #94a3b8; font-weight: 600; font-size: 0.9rem;">
-                            <span>Pertanyaan <span id="current-q">1</span> dari <span id="total-q">3</span></span>
+
+                    <!-- The Quiz Card -->
+                    <div id="quiz-container" class="mk-alt">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;">
+                            <span class="tape tape-cyan" style="margin-bottom: 0; font-size: 0.9rem;">
+                                PERTANYAAN <span id="current-q">1</span> DARI <span id="total-q">3</span>
+                            </span>
+                            <span style="font-family: var(--mono); font-weight: bold; background: #fff; padding: 0.3rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px;">
+                                Pretest Mode
+                            </span>
                         </div>
                         
-                        <h3 id="question-text" style="font-size: 1.1rem; margin-bottom: 1.5rem; color: #1e293b; line-height: 1.5; font-weight: 500;"></h3>
-                        
-                        <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div id="question-text" style="font-family: var(--mk); font-size: 1.25rem; margin-bottom: 1.8rem; color: var(--ink); line-height: 1.6; font-weight: 700; background: #ffffff; padding: 1.4rem; border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
                         </div>
                         
-                        <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-                            <button id="btn-next" style="padding: 12px 30px; font-size: 1rem; font-weight: bold; color: white; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4); transition: transform 0.2s;" onclick="nextQuestion()">Selanjutnya ➔</button>
+                        <div id="options-container" style="display: flex; flex-direction: column; gap: 12px;">
+                        </div>
+                        
+                        <div class="quiz-nav-row" style="margin-top: 2.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <a href="dashboard.html" class="btn btn-small" style="background: #ffffff;">◀ Kembali ke Beranda</a>
+                            <button id="btn-next" class="btn btn-next mk" onclick="nextQuestion()">Selanjutnya ➔</button>
                         </div>
                     </div>
                 </div>
-                
-                <style>
-                    .quiz-option:hover {
-                        border-color: var(--primary-color) !important;
-                        background: #f0f9ff !important;
-                    }
-                    .quiz-option:has(input:checked) {
-                        border-color: var(--primary-color) !important;
-                        background: #e0f2fe !important;
-                        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
-                    }
-                </style>
             </div>
-
         </main>
     </div>
 
@@ -146,7 +194,7 @@
         const questions = [
             {
                 type: "mcq",
-                text: "Bima adalah siswa kelas V yang akhir-akhir ini terlihat lebih pendiam. Ia sering tidak ikut bermain bersama teman-temannya karena beberapa siswa mengejek cara bicaranya. Bima merasa sedih dan mulai tidak percaya diri untuk tampil di depan kelas. Berdasarkan situasi tersebut, apa dampak yang mungkin dialami Bima dan tindakan terbaik yang dapat dilakukan oleh teman-temannya?",
+                text: "<strong>Kasus:</strong> Bima adalah siswa kelas V yang akhir-akhir ini terlihat lebih pendiam. Ia sering tidak ikut bermain bersama teman-temannya karena beberapa siswa mengejek cara bicaranya. Bima merasa sedih dan mulai tidak percaya diri untuk tampil di depan kelas.<br><br>Berdasarkan situasi tersebut, apa dampak yang mungkin dialami Bima dan tindakan terbaik yang dapat dilakukan oleh teman-temannya?",
                 options: [
                     "A. Bima menjadi lebih kuat karena ejekan membuatnya terbiasa menghadapi masalah.",
                     "B. Bima dapat mengalami kehilangan rasa percaya diri, sehingga teman-temannya perlu mendukung dan menghentikan ejekan.",
@@ -156,7 +204,7 @@
             },
             {
                 type: "mcq",
-                text: "Saat bermain di sekolah, Sinta melihat seorang teman menangis karena diejek oleh beberapa siswa. Sinta ingin membantu, tetapi ia takut ikut menjadi sasaran ejekan. Menurutmu, keputusan yang paling menunjukkan sikap peduli terhadap kesehatan mental teman adalah....",
+                text: "<strong>Kasus:</strong> Saat bermain di sekolah, Sinta melihat seorang teman menangis karena diejek oleh beberapa siswa. Sinta ingin membantu, tetapi ia takut ikut menjadi sasaran ejekan.<br><br>Menurutmu, keputusan yang paling menunjukkan sikap peduli terhadap kesehatan mental teman adalah....",
                 options: [
                     "A. Membiarkan kejadian tersebut karena bukan masalahnya.",
                     "B. Ikut tertawa agar tidak dianggap berbeda oleh kelompoknya.",
@@ -166,7 +214,7 @@
             },
             {
                 type: "essay",
-                text: "Raka adalah siswa kelas VI yang biasanya aktif dan sering bermain bersama teman-temannya. Namun, beberapa minggu terakhir Raka terlihat lebih pendiam dan sering menyendiri. Hal ini terjadi karena beberapa temannya sering mengejek hasil gambarnya yang dianggap kurang bagus. Raka merasa sedih, malu, dan mulai takut untuk menunjukkan hasil karyanya kepada orang lain. Ia hanya memendam perasaannya sendiri karena khawatir akan semakin diejek.<br><br><strong>Pertanyaan:</strong><br>1. Menurut kamu, apa yang mungkin sedang dirasakan oleh Raka? Jelaskan alasanmu!<br>2. Jika kamu menjadi teman Raka, apa yang akan kamu lakukan untuk membantu Raka merasa lebih baik?"
+                text: "<strong>Refleksi Kasus:</strong> Raka adalah siswa kelas VI yang biasanya aktif dan sering bermain bersama teman-temannya. Namun, beberapa minggu terakhir Raka terlihat lebih pendiam dan sering menyendiri. Hal ini terjadi karena beberapa temannya sering mengejek hasil gambarnya yang dianggap kurang bagus. Raka merasa sedih, malu, dan mulai takut untuk menunjukkan hasil karyanya kepada orang lain.<br><br><strong>Pertanyaan:</strong><br>1. Menurut kamu, apa yang mungkin sedang dirasakan oleh Raka? Jelaskan alasanmu!<br>2. Jika kamu menjadi teman Raka, apa yang akan kamu lakukan untuk membantu Raka merasa lebih baik?"
             }
         ];
 
@@ -184,22 +232,24 @@
             if (q.type === 'mcq') {
                 q.options.forEach((opt, index) => {
                     optsContainer.innerHTML += `
-                        <label class="quiz-option" style="display: flex; align-items: center; padding: 15px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="radio" name="answer" value="${index}" style="margin-right: 15px; transform: scale(1.2);">
+                        <label class="quiz-option mk-alt">
+                            <input type="radio" name="answer" value="${index}">
                             <span>${opt}</span>
                         </label>
                     `;
                 });
             } else if (q.type === 'essay') {
                 optsContainer.innerHTML += `
-                    <textarea style="width: 100%; height: 150px; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 1rem; resize: vertical;" placeholder="Tuliskan jawabanmu di sini..."></textarea>
+                    <textarea placeholder="Tuliskan jawaban analisismu di sini secara lengkap..."></textarea>
                 `;
             }
 
             if (currentQ === questions.length - 1) {
-                document.getElementById('btn-next').textContent = 'Selesai ➔';
+                document.getElementById('btn-next').textContent = 'Selesai & Ke Game 🎮';
+                document.getElementById('btn-next').style.background = 'var(--lime)';
             } else {
                 document.getElementById('btn-next').textContent = 'Selanjutnya ➔';
+                document.getElementById('btn-next').style.background = 'var(--sun)';
             }
         }
 
@@ -209,13 +259,13 @@
                 if (questions[currentQ].type === 'mcq') {
                     const selected = document.querySelector('input[name="answer"]:checked');
                     if (!selected) {
-                        alert('Silakan pilih salah satu jawaban.');
+                        alert('Silakan pilih salah satu jawaban ya! 😊');
                         valid = false;
                     }
                 } else if (questions[currentQ].type === 'essay') {
                     const txt = document.querySelector('textarea').value;
                     if (txt.trim().length === 0) {
-                        alert('Silakan isi jawaban esai.');
+                        alert('Silakan tuliskan jawaban esaimu terlebih dahulu ya! 😊');
                         valid = false;
                     }
                 }
@@ -224,18 +274,15 @@
                     currentQ++;
                     renderQuestion();
                 }
-            } else {
-                alert('Jawaban berhasil disimpan!');
-                window.location.href = 'dashboard.html';
+                alert('Hebat! Jawaban Pretest berhasil disimpan. Saatnya melanjutkan ke Modul Digital!');
+                window.location.href = 'modul.html';
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             renderQuestion();
         });
-    </script>
 
-    <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -243,6 +290,6 @@
             if(overlay) overlay.classList.toggle('active');
         }
     </script>
+    <script src="dropdown.js"></script>
 </body>
 </html>
-

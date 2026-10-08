@@ -5,8 +5,8 @@
    A Stardew Valley-style 2D top-down anti-bullying narrative RPG.
    ─────────────────────────────────── */
 
-const TILE  = 32;          // logical tile size used everywhere
-const SCALE = 4;           // pixel-art up-scale factor (increased for full screen)
+const TILE  = 64;          // logical tile size used everywhere
+const SCALE = 2;           // pixel-art up-scale factor (decreased since sprites are larger)
 
 const config = {
   type   : Phaser.AUTO,

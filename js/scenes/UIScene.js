@@ -200,8 +200,8 @@ class UIScene extends Phaser.Scene {
         this._toggleSidebar();
         const world = this.scene.get('World');
         if (world && world._changeMap) {
-           const spawnX = lvl.key === 'garden' ? 20 * 32 + 16 : 10 * 32 + 16;
-           world._changeMap(lvl.key, spawnX, 7 * 32 + 16); 
+           const spawnX = lvl.key === 'garden' ? 20 * 64 + 32 : 10 * 64 + 32;
+           world._changeMap(lvl.key, spawnX, 7 * 64 + 32); 
         }
       });
       
