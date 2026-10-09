@@ -56,6 +56,11 @@ tiles = {
     'tree_0_0': (0,0,0,0), 'tree_0_1': (0,0,0,0), 'tree_0_2': (0,0,0,0),
     'tree_1_0': (0,0,0,0), 'tree_1_1': (0,0,0,0), 'tree_1_2': (0,0,0,0),
     'tree_2_0': (0,0,0,0), 'tree_2_1': (0,0,0,0), 'tree_2_2': (0,0,0,0),
+    'fountain_0_0': (0,0,0,0),
+    'fountain_1_0': (0,0,0,0),
+    'fountain_0_1': (0,0,0,0),
+    'fountain_1_1': (0,0,0,0),
+
     'dummy_42': (0,0,0,0),
     'grass_var1': (0,0,0,0),
     'grass_var2': (0,0,0,0),
@@ -94,6 +99,8 @@ try:
     garden_sheet = Image.open('assets/sprites/school_garden_sprites.png')
     pond_sheet = Image.open('assets/sprites/school_garden_pond_sprites.png')
     big_tree_sheet = Image.open('assets/sprites/big_tree.png')
+    fountain_sheet = Image.open('assets/sprites/water_fountain.png')
+
     grass_v1 = Image.open('assets/sprites/grass variant 1.png')
     grass_v2 = Image.open('assets/sprites/grass variant 2.png')
     bench_sheet = Image.open('assets/sprites/long_bench.png')
@@ -181,6 +188,11 @@ try:
         'tree_2_0': big_tree_sheet.crop((0*64, 2*64, 1*64, 3*64)),
         'tree_2_1': big_tree_sheet.crop((1*64, 2*64, 2*64, 3*64)),
         'tree_2_2': big_tree_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'fountain_0_0': fountain_sheet.crop((0, 0, 64, 64)),
+        'fountain_1_0': fountain_sheet.crop((64, 0, 128, 64)),
+        'fountain_0_1': fountain_sheet.crop((0, 64, 64, 128)),
+        'fountain_1_1': fountain_sheet.crop((64, 64, 128, 128)),
+
         'grass_var1': grass_v1,
         'grass_var2': grass_v2,
         'bench_0_0': bench_sheet.crop((0*64, 0*64, 1*64, 1*64)),

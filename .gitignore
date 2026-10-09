@@ -2,3 +2,4 @@
 /__pycache__
 .agents/hooks.json
 .cursor/hooks.json
+/scratch

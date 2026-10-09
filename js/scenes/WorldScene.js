@@ -26,7 +26,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Player ── */
     let defaultSpawnX = 10;
-    if (mapKey === 'garden') defaultSpawnX = 20;
+    if (mapKey === 'garden') defaultSpawnX = 14;
     
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
     const py = this.spawnY || 7 * TILE + TILE / 2;
@@ -472,68 +472,72 @@ class WorldScene extends Phaser.Scene {
   "tree_2_0": 55,
   "tree_2_1": 56,
   "tree_2_2": 57,
-  "dummy_42": 58,
-  "grass_var1": 59,
-  "grass_var2": 60,
-  "bench_0_0": 61,
-  "bench_0_1": 62,
-  "bench_0_2": 63,
-  "dummy_48": 64,
-  "dummy_49": 65,
-  "bench_1_0": 66,
-  "bench_1_1": 67,
-  "bench_1_2": 68,
-  "door_big_l": 69,
-  "door_big_r": 70,
-  "school_wall_tl": 71,
-  "school_wall_t": 72,
-  "school_wall_tr": 73,
-  "school_wall_l": 74,
-  "school_wall_c": 75,
-  "school_wall_r": 76,
-  "school_wall_bl": 77,
-  "school_wall_b": 78,
-  "school_wall_br": 79,
-  "school_wall_itl": 80,
-  "school_wall_itr": 81,
-  "school_wall_ibl": 82,
-  "school_wall_ibr": 83,
-  "school_floor": 84,
-  "school_floor2": 85,
-  "tc_0_0": 86,
-  "tc_0_1": 87,
-  "tc_0_2": 88,
-  "tc_1_0": 89,
-  "tc_1_1": 90,
-  "tc_1_2": 91,
-  "tc_2_0": 92,
-  "tc_2_1": 93,
-  "tc_2_2": 94,
-  "gw_t": 95,
-  "gw_b": 96,
-  "gw_l": 97,
-  "gw_r": 98,
-  "gw_lt": 99,
-  "gw_lb": 100,
-  "gw_rt": 101,
-  "gw_rb": 102,
-  "caf_srv_0_0": 103,
-  "caf_srv_0_1": 104,
-  "caf_srv_0_2": 105,
-  "caf_srv_0_3": 106,
-  "caf_srv_0_4": 107,
-  "caf_srv_0_5": 108,
-  "caf_srv_1_0": 109,
-  "caf_srv_1_1": 110,
-  "caf_srv_1_2": 111,
-  "caf_srv_1_3": 112,
-  "caf_srv_1_4": 113,
-  "caf_srv_1_5": 114,
-  "path_3_0": 115,
-  "path_1_0": 116
+  "fountain_0_0": 58,
+  "fountain_1_0": 59,
+  "fountain_0_1": 60,
+  "fountain_1_1": 61,
+  "dummy_42": 62,
+  "grass_var1": 63,
+  "grass_var2": 64,
+  "bench_0_0": 65,
+  "bench_0_1": 66,
+  "bench_0_2": 67,
+  "dummy_48": 68,
+  "dummy_49": 69,
+  "bench_1_0": 70,
+  "bench_1_1": 71,
+  "bench_1_2": 72,
+  "door_big_l": 73,
+  "door_big_r": 74,
+  "school_wall_tl": 75,
+  "school_wall_t": 76,
+  "school_wall_tr": 77,
+  "school_wall_l": 78,
+  "school_wall_c": 79,
+  "school_wall_r": 80,
+  "school_wall_bl": 81,
+  "school_wall_b": 82,
+  "school_wall_br": 83,
+  "school_wall_itl": 84,
+  "school_wall_itr": 85,
+  "school_wall_ibl": 86,
+  "school_wall_ibr": 87,
+  "school_floor": 88,
+  "school_floor2": 89,
+  "tc_0_0": 90,
+  "tc_0_1": 91,
+  "tc_0_2": 92,
+  "tc_1_0": 93,
+  "tc_1_1": 94,
+  "tc_1_2": 95,
+  "tc_2_0": 96,
+  "tc_2_1": 97,
+  "tc_2_2": 98,
+  "gw_t": 99,
+  "gw_b": 100,
+  "gw_l": 101,
+  "gw_r": 102,
+  "gw_lt": 103,
+  "gw_lb": 104,
+  "gw_rt": 105,
+  "gw_rb": 106,
+  "caf_srv_0_0": 107,
+  "caf_srv_0_1": 108,
+  "caf_srv_0_2": 109,
+  "caf_srv_0_3": 110,
+  "caf_srv_0_4": 111,
+  "caf_srv_0_5": 112,
+  "caf_srv_1_0": 113,
+  "caf_srv_1_1": 114,
+  "caf_srv_1_2": 115,
+  "caf_srv_1_3": 116,
+  "caf_srv_1_4": 117,
+  "caf_srv_1_5": 118,
+  "path_3_0": 119,
+  "path_1_0": 120
 };
     
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'water', 'water_1_3', 'water_2_2', 'water_2_3', 'water_3_1', 'water_0_0', 'water_1_1', 'water_1_4', 'water_2_0', 'water_2_4', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -569,8 +573,8 @@ class WorldScene extends Phaser.Scene {
             if (i >= objectLayers.length) return;
             const objId = TILE_IDS[objName];
             if (!objId) return;
-            if (objName.startsWith('water')) {
-              midLayer.putTileAt(objId, c, r);
+            if (objName.startsWith('water') || objName.startsWith('fountain')) {
+              midLayer2.putTileAt(objId, c, r);
             } else if (objName.startsWith('bench_1')) {
               midLayer.putTileAt(objId, c, r);
             } else if (objName.startsWith('bookshelf')) {
@@ -586,8 +590,8 @@ class WorldScene extends Phaser.Scene {
           });
         } else if (solidTiles.includes(groundName) || groundName.startsWith('door') || groundName.startsWith('bench') || groundName.startsWith('tree') || groundName === 'bookshelf_t') {
           // If it's a solid object OR a tall object that needs to be in front
-          if (groundName.startsWith('water')) {
-            midLayer.putTileAt(groundId, c, r);
+          if (groundName.startsWith('water') || groundName.startsWith('fountain')) {
+            midLayer2.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('bench_1')) {
             midLayer.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('bookshelf')) {
@@ -669,13 +673,14 @@ class WorldScene extends Phaser.Scene {
     // Set collision
     const collidableIds = solidTiles.map(name => TILE_IDS[name]).filter(id => id !== undefined);
     midLayer.setCollision(collidableIds);
+    midLayer2.setCollision(collidableIds);
     trunkLayer.setCollision(collidableIds);
     this.bookshelfTiers.forEach(t => t.layer.setCollision(collidableIds));
     this.bottomWallLayer.setCollision(collidableIds);
     objectLayers.forEach(layer => layer.setCollision(collidableIds));
 
     this.walls = [...objectLayers, trunkLayer, ...this.bookshelfTiers.map(t => t.layer), this.bottomWallLayer];
-    this.midWalls = midLayer;
+    this.midWalls = [midLayer, midLayer2];
 
     // Apply inverted BitmapMask to objectLayer to create a soft see-through hole for the player
     const radius = 40; // Smaller circle as requested
@@ -703,8 +708,8 @@ class WorldScene extends Phaser.Scene {
     // Draw off-screen doors and walls at r = -1 for garden transition
     if (mapKey === 'garden') {
       const yPos = -1 * TILE + TILE / 2;
-      const x10 = 20 * TILE + TILE / 2;
-      const x11 = 21 * TILE + TILE / 2;
+      const x10 = 14 * TILE + TILE / 2;
+      const x11 = 15 * TILE + TILE / 2;
       
       this.add.sprite(x10, yPos, 'tileset_sheet', TILE_IDS['door_big_l']).setDepth(1);
       this.add.sprite(x11, yPos, 'tileset_sheet', TILE_IDS['door_big_r']).setDepth(1);
@@ -772,110 +777,54 @@ class WorldScene extends Phaser.Scene {
     const W = 20, H = 15;
 
     if (key === 'garden') {
-      const gW = 40;
-      const m = Array.from({ length: H }, (_, r) =>
-        Array.from({ length: gW }, (_, c) => ((r + c) % 7 === 0 ? 'grass2' : 'grass'))
-      );
-      for (let c = 1; c < gW - 1; c++) { m[0][c] = 'gw_t'; m[H - 1][c] = 'gw_b'; }
-      for (let r = 1; r < H - 1; r++) { m[r][0] = 'gw_l'; m[r][gW - 1] = 'gw_r'; }
-      m[0][0] = 'gw_lt';
-      m[0][gW - 1] = 'gw_rt';
-      m[H - 1][0] = 'gw_lb';
-      m[H - 1][gW - 1] = 'gw_rb';
-      
-      const offset = 10;
-      for (let c = 2; c < 18; c++) { m[7][c + offset] = 'path'; m[8][c + offset] = 'path'; }
-      for (let r = 1; r < 7; r++) { m[r][10 + offset] = 'path'; m[r][11 + offset] = 'path'; }
-      m[7][2 + offset] = 'path_1_3';
-      m[8][2 + offset] = 'path_1_4';
-      for (let c = 3; c <= 9; c++) { m[7][c + offset] = 'path_2_2'; }
-      for (let c = 3; c <= 16; c++) { m[8][c + offset] = 'path_2_0'; }
-      
-      m[8][17 + offset] = 'path_2_4';
-      m[7][17 + offset] = 'path_2_3';
-      for (let c = 12; c <= 16; c++) { m[7][c + offset] = 'path_2_2'; }
-      for (let r = 0; r <= 6; r++) { m[r][10 + offset] = 'path_3_1'; }
-      for (let r = 0; r <= 6; r++) { m[r][11 + offset] = 'path_1_1'; }
-      m[7][10 + offset] = 'path_3_2';
-      m[7][11 + offset] = 'path_1_2';
-      
-      for (let r = 8; r <= 13; r++) {
-        m[r][5] = 'path_3_1';
-        m[r][6] = 'path_1_1';
+        const m = [
+  ['gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rb', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', ['path_2_0', 'fountain_0_0'], ['path_2_0', 'fountain_1_0'], 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'fountain_0_1', 'fountain_1_1', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_lb'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_4', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_1_3', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+  ['gw_lb', 'gw_lb', 'gw_lb', 'gw_lb', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0']
+];
+        
+        // Tree placement
+        const offset = 0; // Removing old offset logic
+        
+        const putBigTree = (r, c) => {
+          if (r+2 >= m.length || c+2 >= m[0].length) return;
+          putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
+          putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
+          putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
+        };
+        
+        const putObj = (r, c, name) => {
+          if (r >= 0 && r < m.length && c >= 0 && c < m[0].length) {
+            if (m[r][c] === 'grass' || m[r][c] === 'grass2' || m[r][c] === 'school_floor') {
+              m[r][c] = [m[r][c], name];
+            } else if (Array.isArray(m[r][c])) {
+              m[r][c].push(name);
+            } else {
+              m[r][c] = [m[r][c], name];
+            }
+          }
+        };
+
+        putBigTree(13, 2);
+        
+        return m;
       }
-      for (let r = 6; r <= 8; r++) {
-        m[r][4] = 'path_3_1';
-      }
-      m[9][4] = 'path_1_4';
-      m[9][5] = 'path_3_0';
-      m[7][5] = 'path_1_1';
-      m[8][5] = 'path_1_2';
-      m[8][6] = 'path_2_3';
-
-      m[5][4] = 'path_1_3';
-      for (let c = 5; c <= 10; c++) {
-        m[5][c] = 'path_2_2';
-      }
-      m[5][11] = 'path_2_3';
-
-      m[6][5] = 'path_1_0';
-      for (let c = 6; c <= 9; c++) {
-        m[6][c] = 'path_2_0';
-      }
-
-      m[6][10] = 'path_3_0';
-      m[7][10] = 'path_3_1';
-      m[8][10] = 'path_1_4';
-
-      m[6][11] = 'path_1_1';
-      m[7][11] = 'path_1_2';
-      m[8][11] = 'path_2_0';
-
-      m[7][12] = 'path_2_2';
-      m[8][12] = 'path_2_0';
-      
-      m[3][3 + offset] = 'grass_var1'; m[3][4 + offset] = 'grass_var2'; m[4][3 + offset] = 'grass_var1';
-      m[11][15 + offset] = 'grass_var2'; m[11][16 + offset] = 'grass_var1'; m[12][16 + offset] = 'grass_var2';
-      
-      const putObj = (r, c, obj) => {
-        if (Array.isArray(m[r][c])) {
-          m[r][c].push(obj);
-        } else {
-          m[r][c] = [m[r][c], obj];
-        }
-      };
-      
-      const putBigTree = (r, c) => {
-        putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
-        putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
-        putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
-      };
-      
-      putBigTree(2, 2 + offset); putBigTree(2, 17 + offset); putBigTree(10, 1 + offset); putBigTree(4, 15 + offset); putBigTree(10, 5 + offset);
-      putBigTree(6, 5 + offset); putBigTree(6, 14 + offset); putBigTree(9, 8 + offset); putBigTree(4, 8 + offset);
-      putBigTree(9, 15 + offset);
-
-      // New trees to fill the extra space
-      putBigTree(2, 2); putBigTree(5, 5); putBigTree(9, 1); putBigTree(4, 32); putBigTree(9, 35); putBigTree(1, 35);
-        putObj(10, 12 + offset, 'water_1_3'); putObj(10, 13 + offset, 'water_2_2'); putObj(10, 14 + offset, 'water_2_3');
-        putObj(11, 12 + offset, 'water_3_1'); putObj(11, 13 + offset, 'water_0_0'); putObj(11, 14 + offset, 'water_1_1');
-        putObj(12, 12 + offset, 'water_1_4'); putObj(12, 13 + offset, 'water_2_0'); putObj(12, 14 + offset, 'water_2_4');
-
-
-
-      const putBigBench = (r, c) => {
-        putObj(r-1, c, 'bench_0_0'); putObj(r-1, c+1, 'bench_0_1'); putObj(r-1, c+2, 'bench_0_2');
-        putObj(r, c, 'bench_1_0'); putObj(r, c+1, 'bench_1_1'); putObj(r, c+2, 'bench_1_2');
-      };
-
-      putBigBench(6, 3 + offset);
-      putBigBench(6, 12 + offset);
-      putBigBench(1, 6 + offset);
-      
-      return m;
-    }
-
-    if (key === 'corridor') {
+       {
       const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
       for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
       for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
@@ -1193,12 +1142,12 @@ class WorldScene extends Phaser.Scene {
     if (!this._transitionsCache) {
       this._transitionsCache = {
         garden: [
-          { fromX: 20, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
-          { fromX: 21, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+          { fromX: 14, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
+          { fromX: 15, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
         ],
         corridor: [
-          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 20, spawnY: 2  },
-          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 20, spawnY: 2  },
+          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 14, spawnY: 2  },
+          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 14, spawnY: 2  },
           { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
           { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
           { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
