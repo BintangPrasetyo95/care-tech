@@ -100,6 +100,16 @@ tiles = {
     'lib_tc_2_0': (0,0,0,0), 'lib_tc_2_1': (0,0,0,0), 'lib_tc_2_2': (0,0,0,0),
     'lib_desk_0_0': (0,0,0,0), 'lib_desk_0_1': (0,0,0,0), 'lib_desk_0_2': (0,0,0,0),
     'lib_desk_1_0': (0,0,0,0), 'lib_desk_1_1': (0,0,0,0), 'lib_desk_1_2': (0,0,0,0),
+    'canteen_tc_0_0': (0,0,0,0), 'canteen_tc_0_1': (0,0,0,0),
+    'canteen_tc_1_0': (0,0,0,0), 'canteen_tc_1_1': (0,0,0,0),
+    'canteen_tc_2_0': (0,0,0,0), 'canteen_tc_2_1': (0,0,0,0),
+    'sink': (0,0,0,0),
+    'trash_can': (0,0,0,0),
+    'caf_plat_0_0': (0,0,0,0), 'caf_plat_0_1': (0,0,0,0), 'caf_plat_0_2': (0,0,0,0), 'caf_plat_0_3': (0,0,0,0),
+    'caf_plat_1_0': (0,0,0,0), 'caf_plat_1_1': (0,0,0,0), 'caf_plat_1_2': (0,0,0,0), 'caf_plat_1_3': (0,0,0,0),
+    'caf_plat_2_0': (0,0,0,0), 'caf_plat_2_1': (0,0,0,0), 'caf_plat_2_2': (0,0,0,0), 'caf_plat_2_3': (0,0,0,0),
+    'caf_plat_3_0': (0,0,0,0), 'caf_plat_3_1': (0,0,0,0), 'caf_plat_3_2': (0,0,0,0), 'caf_plat_3_3': (0,0,0,0),
+    'caf_plat_4_0': (0,0,0,0), 'caf_plat_4_1': (0,0,0,0), 'caf_plat_4_2': (0,0,0,0), 'caf_plat_4_3': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -135,6 +145,10 @@ try:
     planter_v = Image.open('assets/sprites/concrete_planter_box_vertical.png')
     lib_tc_sheet = Image.open('assets/sprites/library_table_and_chair.png')
     lib_desk_sheet = Image.open('assets/sprites/library_desk.png')
+    canteen_tc_sheet = Image.open('assets/sprites/new assets/canteen_table_chair.png')
+    sink_img = Image.open('assets/sprites/new assets/sink.png').convert('RGBA')
+    trash_can_img = Image.open('assets/sprites/new assets/trash-can.png')
+    caf_plat_sheet = Image.open('assets/sprites/cafetaria_platform_sprites.png')
     custom_tiles = {
         'school_wall_tl': school_fw.crop((1*64, 0*64, 2*64, 1*64)),
         'school_wall_t': school_fw.crop((2*64, 0*64, 3*64, 1*64)),
@@ -261,6 +275,34 @@ try:
         'lib_desk_1_0': lib_desk_sheet.crop((0*64, 1*64, 1*64, 2*64)),
         'lib_desk_1_1': lib_desk_sheet.crop((1*64, 1*64, 2*64, 2*64)),
         'lib_desk_1_2': lib_desk_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'canteen_tc_0_0': canteen_tc_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'canteen_tc_0_1': canteen_tc_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'canteen_tc_1_0': canteen_tc_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'canteen_tc_1_1': canteen_tc_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'canteen_tc_2_0': canteen_tc_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'canteen_tc_2_1': canteen_tc_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'sink': sink_img,
+        'trash_can': trash_can_img,
+        'caf_plat_0_0': caf_plat_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'caf_plat_0_1': caf_plat_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'caf_plat_0_2': caf_plat_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'caf_plat_0_3': caf_plat_sheet.crop((3*64, 0*64, 4*64, 1*64)),
+        'caf_plat_1_0': caf_plat_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'caf_plat_1_1': caf_plat_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'caf_plat_1_2': caf_plat_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'caf_plat_1_3': caf_plat_sheet.crop((3*64, 1*64, 4*64, 2*64)),
+        'caf_plat_2_0': caf_plat_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'caf_plat_2_1': caf_plat_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'caf_plat_2_2': caf_plat_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'caf_plat_2_3': caf_plat_sheet.crop((3*64, 2*64, 4*64, 3*64)),
+        'caf_plat_3_0': caf_plat_sheet.crop((0*64, 3*64, 1*64, 4*64)),
+        'caf_plat_3_1': caf_plat_sheet.crop((1*64, 3*64, 2*64, 4*64)),
+        'caf_plat_3_2': caf_plat_sheet.crop((2*64, 3*64, 3*64, 4*64)),
+        'caf_plat_3_3': caf_plat_sheet.crop((3*64, 3*64, 4*64, 4*64)),
+        'caf_plat_4_0': caf_plat_sheet.crop((0*64, 4*64, 1*64, 5*64)),
+        'caf_plat_4_1': caf_plat_sheet.crop((1*64, 4*64, 2*64, 5*64)),
+        'caf_plat_4_2': caf_plat_sheet.crop((2*64, 4*64, 3*64, 5*64)),
+        'caf_plat_4_3': caf_plat_sheet.crop((3*64, 4*64, 4*64, 5*64)),
     }
 except Exception as e:
     import traceback
@@ -282,3 +324,7 @@ os.makedirs('assets/tilemaps', exist_ok=True)
 img.save('assets/sprites/tileset.png')
 
 print('Generated spritesheet successfully.')
+tile_ids = {name: i for i, name in enumerate(tile_names)}
+print("TILE_IDS_JSON_START")
+print(json.dumps(tile_ids, indent=2))
+print("TILE_IDS_JSON_END")

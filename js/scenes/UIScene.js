@@ -207,6 +207,7 @@ class UIScene extends Phaser.Scene {
            if (lvl.key === 'garden') { spawnX = 20 * 64 + 32; }
            else if (lvl.key === 'schoolyard') { spawnX = 21 * 64 + 32; spawnY = 13 * 64 + 32; }
            else if (lvl.key === 'library') { spawnX = 9 * 64 + 32; spawnY = 9 * 64 + 32; }
+           else if (lvl.key === 'cafeteria') { spawnX = 15 * 64 + 32; spawnY = 9 * 64 + 32; }
            world._changeMap(lvl.key, spawnX, spawnY); 
         }
       });
