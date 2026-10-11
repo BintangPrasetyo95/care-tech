@@ -30,6 +30,7 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'garden') defaultSpawnX = 14;
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
     if (mapKey === 'library') { defaultSpawnX = 9; defaultSpawnY = 9; }
+    if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
     
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
     const py = this.spawnY || defaultSpawnY * TILE + TILE / 2;
@@ -199,9 +200,8 @@ class WorldScene extends Phaser.Scene {
           this.tweens.chain({
             targets: bully.sprite,
             tweens: [
-              { y: 5 * TILE, duration: 800 }, // Move down clear of top tables
-              { x: 10 * TILE + (idx * 15), duration: 1200 }, // Move left towards the center aisle
-              { y: 15 * TILE, duration: 2500 } // Move down to exit
+              { y: 9 * TILE, duration: 1000 }, // Move down to central concourse
+              { x: 31 * TILE + (idx * 20), duration: 2200 } // Run out East exit to Schoolyard
             ],
             onComplete: () => {
               bully.sprite.destroy();
@@ -561,10 +561,38 @@ class WorldScene extends Phaser.Scene {
   "lib_desk_0_2": 141,
   "lib_desk_1_0": 142,
   "lib_desk_1_1": 143,
-  "lib_desk_1_2": 144
+  "lib_desk_1_2": 144,
+  "canteen_tc_0_0": 145,
+  "canteen_tc_0_1": 146,
+  "canteen_tc_1_0": 147,
+  "canteen_tc_1_1": 148,
+  "canteen_tc_2_0": 149,
+  "canteen_tc_2_1": 150,
+  "sink": 151,
+  "trash_can": 152,
+  "caf_plat_0_0": 153,
+  "caf_plat_0_1": 154,
+  "caf_plat_0_2": 155,
+  "caf_plat_0_3": 156,
+  "caf_plat_1_0": 157,
+  "caf_plat_1_1": 158,
+  "caf_plat_1_2": 159,
+  "caf_plat_1_3": 160,
+  "caf_plat_2_0": 161,
+  "caf_plat_2_1": 162,
+  "caf_plat_2_2": 163,
+  "caf_plat_2_3": 164,
+  "caf_plat_3_0": 165,
+  "caf_plat_3_1": 166,
+  "caf_plat_3_2": 167,
+  "caf_plat_3_3": 168,
+  "caf_plat_4_0": 169,
+  "caf_plat_4_1": 170,
+  "caf_plat_4_2": 171,
+  "caf_plat_4_3": 172
 };
     
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -619,7 +647,7 @@ class WorldScene extends Phaser.Scene {
           // If it's a solid object OR a tall object that needs to be in front
           if (groundName.startsWith('water') || groundName.startsWith('fountain')) {
             midLayer2.putTileAt(groundId, c, r);
-          } else if (groundName.startsWith('bench_1') || groundName.startsWith('planter') || groundName.startsWith('lib_tc') || groundName.startsWith('lib_desk_0')) {
+          } else if (groundName.startsWith('bench_1') || groundName.startsWith('planter') || groundName.startsWith('lib_tc') || groundName.startsWith('lib_desk_0') || groundName.startsWith('canteen_tc') || groundName === 'sink' || groundName === 'trash_can') {
             midLayer2.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('lib_desk_1')) {
             bottomWallLayer.putTileAt(groundId, c, r);
@@ -1018,34 +1046,27 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (key === 'cafeteria') {
-      const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
-      const tablePositions = [
-        // Left side (organic layout)
-        { r: 4, c: 3 }, { r: 7, c: 3 }, // Pushed together vertically
-        { r: 5, c: 8 }, 
-        { r: 9, c: 7 }, 
-        { r: 12, c: 4 }, { r: 12, c: 8 }, 
-        // Right side (organic layout)
-        { r: 3, c: 17 },
-        { r: 5, c: 14 }, { r: 5, c: 17 }, // Pushed together horizontally
-        { r: 8, c: 13 }, { r: 9, c: 17 },
-        { r: 12, c: 14 }, { r: 12, c: 17 }
+      const W = 31, H = 18;
+      const m = [
+        ['school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall'],
+        ['school_wall', 'sink', 'school_floor', 'school_floor2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'school_floor2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'school_floor2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'school_floor2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'school_floor2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'school_floor2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'school_floor2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2'],
+        ['school_wall', 'grass', 'school_floor2', 'school_floor', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'school_floor', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'school_floor', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'school_floor', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'school_floor', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'school_floor', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'school_floor', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor2', 'sink', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor2', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor2', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor2', 'school_floor', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor2', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor2', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor2', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor2', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'school_floor', 'school_floor2'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor', 'school_floor2', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'canteen_tc_0_0', 'canteen_tc_0_1', 'school_floor', 'school_floor', 'school_floor2', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor', 'school_floor2', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor2', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor2', 'canteen_tc_1_0', 'canteen_tc_1_1', 'school_floor', 'school_floor2', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor2', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor2', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor2', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor', 'school_floor2', 'trash_can', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor2', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor2', 'school_floor', 'canteen_tc_2_0', 'canteen_tc_2_1', 'school_floor2', 'school_floor', 'school_floor', 'school_floor'],
+        ['school_wall', 'grass', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2'],
+        ['school_wall', 'grass', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor'],
+        ['school_wall', 'trash_can', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor', 'school_floor', 'school_floor2', 'school_floor', 'school_floor'],
+        ['school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall', 'school_wall']
       ];
-      tablePositions.forEach(({ r, c }) => {
-        m[r - 1][c - 1] = 'tc_0_0'; m[r - 1][c] = 'tc_0_1'; m[r - 1][c + 1] = 'tc_0_2';
-        m[r][c - 1] = 'tc_1_0';     m[r][c] = 'tc_1_1';     m[r][c + 1] = 'tc_1_2';
-        m[r + 1][c - 1] = 'tc_2_0'; m[r + 1][c] = 'tc_2_1'; m[r + 1][c + 1] = 'tc_2_2';
-      });
-      for (let c = 2; c < 8; c++) {
-        m[0][c] = `caf_srv_0_${c - 2}`;
-        m[1][c] = `caf_srv_1_${c - 2}`;
-      }
-      for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r + c) % 4 === 0) m[r][c] = 'school_floor2';
-      }
-      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
       this._autotileSchoolWalls(m);
       return m;
     }
@@ -1358,8 +1379,8 @@ class WorldScene extends Phaser.Scene {
           { fromX: 22, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
           { fromX: 23, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
           // West to Cafeteria
-          { fromX: 0,  fromY: 13, toMap: 'cafeteria',  spawnX: 10, spawnY: 13 },
-          { fromX: 0,  fromY: 14, toMap: 'cafeteria',  spawnX: 10, spawnY: 13 },
+          { fromX: 0,  fromY: 13, toMap: 'cafeteria',  spawnX: 29, spawnY: 13 },
+          { fromX: 0,  fromY: 14, toMap: 'cafeteria',  spawnX: 29, spawnY: 14 },
           // East to Library
           { fromX: 42, fromY: 13, toMap: 'library',    spawnX: 1, spawnY: 9 },
           { fromX: 42, fromY: 14, toMap: 'library',    spawnX: 1, spawnY: 10 }
@@ -1380,8 +1401,8 @@ class WorldScene extends Phaser.Scene {
           { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
           { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
           { fromX: 16, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-          { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 },
-          { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
+          { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 29, spawnY: 13 },
+          { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 29, spawnY: 14 }
         ],
         classroom: [
           { fromX: 10, fromY: 14, toMap: 'schoolyard',  spawnX: 21, spawnY: 1 },
@@ -1392,8 +1413,16 @@ class WorldScene extends Phaser.Scene {
           { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
         ],
         cafeteria: [
-          { fromX: 10, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 11, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 }
+          // East to Schoolyard
+          { fromX: 30, fromY: 8,  toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 9,  toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 10, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 11, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 12, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 13, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 30, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 },
+          { fromX: 30, fromY: 15, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 },
+          { fromX: 30, fromY: 16, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 }
         ]
       };
     }
