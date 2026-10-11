@@ -71,6 +71,21 @@ class UIScene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
 
 
+    /* ══════════ Quest Banner (top-center) ══════════ */
+    this.questContainer = this.add.container(width / 2, -60).setScrollFactor(1).setDepth(300);
+    const questBg = this.add.graphics();
+    questBg.fillStyle(0x0f172a, 0.92);
+    questBg.fillRoundedRect(-140, -18, 280, 36, 10);
+    questBg.lineStyle(1.5, 0x38bdf8, 0.8);
+    questBg.strokeRoundedRect(-140, -18, 280, 36, 10);
+    this.questText = this.add.text(0, 0, 'QUEST: Ikuti Nabula ke perpustakaan.', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#38bdf8'
+    }).setOrigin(0.5);
+    this.questContainer.add([questBg, this.questText]);
+
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this.add.text(width / 2, height / 4, '', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
@@ -405,6 +420,46 @@ class UIScene extends Phaser.Scene {
   }
 
   /* ══════════ Public API ══════════ */
+
+  /** Start Level 1 transition: screen goes dark, then bright, then narrator dialog 001 appears */
+  startLevel1IntroTransition() {
+    this.cameras.main.fadeOut(800, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.time.delayedCall(400, () => {
+        this.cameras.main.fadeIn(800, 0, 0, 0);
+        this.cameras.main.once('camerafadeincomplete', () => {
+          this.startDialogue('lvl1_001_narrator');
+        });
+      });
+    });
+  }
+
+  /** Show top quest banner */
+  showQuestBanner(text, duration = 4000) {
+    if (this.questText) this.questText.setText(text);
+    if (!this.questContainer) return;
+    this.tweens.add({
+      targets: this.questContainer,
+      y: 45,
+      duration: 500,
+      ease: 'Back.easeOut'
+    });
+    if (duration > 0) {
+      this.time.delayedCall(duration, () => {
+        this.hideQuestBanner();
+      });
+    }
+  }
+
+  hideQuestBanner() {
+    if (!this.questContainer) return;
+    this.tweens.add({
+      targets: this.questContainer,
+      y: -60,
+      duration: 400,
+      ease: 'Power2'
+    });
+  }
 
   /** Start displaying a dialogue tree from the given node */
   startDialogue(nodeId) {

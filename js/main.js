@@ -40,6 +40,7 @@ const config = {
 
 /* ── Create the Phaser game instance ── */
 const game = new Phaser.Game(config);
+window.game = game;
 
 /* ── Global shared state ──
    Accessible from any scene via `this.registry`. */
