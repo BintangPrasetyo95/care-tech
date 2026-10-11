@@ -95,6 +95,11 @@ tiles = {
     'planter_v_0': (0,0,0,0),
     'planter_v_1': (0,0,0,0),
     'planter_v_2': (0,0,0,0),
+    'lib_tc_0_0': (0,0,0,0), 'lib_tc_0_1': (0,0,0,0), 'lib_tc_0_2': (0,0,0,0),
+    'lib_tc_1_0': (0,0,0,0), 'lib_tc_1_1': (0,0,0,0), 'lib_tc_1_2': (0,0,0,0),
+    'lib_tc_2_0': (0,0,0,0), 'lib_tc_2_1': (0,0,0,0), 'lib_tc_2_2': (0,0,0,0),
+    'lib_desk_0_0': (0,0,0,0), 'lib_desk_0_1': (0,0,0,0), 'lib_desk_0_2': (0,0,0,0),
+    'lib_desk_1_0': (0,0,0,0), 'lib_desk_1_1': (0,0,0,0), 'lib_desk_1_2': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -128,6 +133,8 @@ try:
     gw_rb = Image.open('assets/sprites/garden_walls/garden_wall_right_bottom.png')
     planter_h = Image.open('assets/sprites/concrete_planter_box_horizontal.png')
     planter_v = Image.open('assets/sprites/concrete_planter_box_vertical.png')
+    lib_tc_sheet = Image.open('assets/sprites/library_table_and_chair.png')
+    lib_desk_sheet = Image.open('assets/sprites/library_desk.png')
     custom_tiles = {
         'school_wall_tl': school_fw.crop((1*64, 0*64, 2*64, 1*64)),
         'school_wall_t': school_fw.crop((2*64, 0*64, 3*64, 1*64)),
@@ -239,6 +246,21 @@ try:
         'planter_v_0': planter_v.crop((0*64, 0*64, 1*64, 1*64)),
         'planter_v_1': planter_v.crop((0*64, 1*64, 1*64, 2*64)),
         'planter_v_2': planter_v.crop((0*64, 2*64, 1*64, 3*64)),
+        'lib_tc_0_0': lib_tc_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'lib_tc_0_1': lib_tc_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'lib_tc_0_2': lib_tc_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'lib_tc_1_0': lib_tc_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'lib_tc_1_1': lib_tc_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'lib_tc_1_2': lib_tc_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'lib_tc_2_0': lib_tc_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'lib_tc_2_1': lib_tc_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'lib_tc_2_2': lib_tc_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'lib_desk_0_0': lib_desk_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'lib_desk_0_1': lib_desk_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'lib_desk_0_2': lib_desk_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'lib_desk_1_0': lib_desk_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'lib_desk_1_1': lib_desk_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'lib_desk_1_2': lib_desk_sheet.crop((2*64, 1*64, 3*64, 2*64)),
     }
 except Exception as e:
     import traceback

@@ -175,6 +175,8 @@ class UIScene extends Phaser.Scene {
     this.sidebarContainer.add(this.levelListContainer);
 
     const levelInfos = [
+      { key: 'schoolyard', name: {en: 'Hub: Schoolyard', id: 'Pusat: Halaman Sekolah'} },
+      { key: 'library', name: {en: 'School Library', id: 'Perpustakaan Sekolah'} },
       { key: 'garden', name: {en: 'Level 1: Detective Emotion', id: 'Level 1: Detektif Emosi'} },
       { key: 'corridor', name: {en: 'Level 2: Empathy Rescue', id: 'Level 2: Penyelamatan Empati'} },
       { key: 'classroom', name: {en: 'Level 3: Mystery Case', id: 'Level 3: Kasus Misteri'} },
@@ -200,8 +202,12 @@ class UIScene extends Phaser.Scene {
         this._toggleSidebar();
         const world = this.scene.get('World');
         if (world && world._changeMap) {
-           const spawnX = lvl.key === 'garden' ? 20 * 64 + 32 : 10 * 64 + 32;
-           world._changeMap(lvl.key, spawnX, 7 * 64 + 32); 
+           let spawnX = 10 * 64 + 32;
+           let spawnY = 7 * 64 + 32;
+           if (lvl.key === 'garden') { spawnX = 20 * 64 + 32; }
+           else if (lvl.key === 'schoolyard') { spawnX = 21 * 64 + 32; spawnY = 13 * 64 + 32; }
+           else if (lvl.key === 'library') { spawnX = 9 * 64 + 32; spawnY = 9 * 64 + 32; }
+           world._changeMap(lvl.key, spawnX, spawnY); 
         }
       });
       
@@ -686,6 +692,7 @@ class UIScene extends Phaser.Scene {
     const names = {
       garden:     lang === 'en' ? 'Level 1: Detective Emotion\n(School Garden)' : 'Level 1: Detektif Emosi\n(Taman Sekolah)',
       schoolyard: lang === 'en' ? 'Schoolyard\n(Central Courtyard)' : 'Halaman Sekolah\n(Halaman Utama)',
+      library:    lang === 'en' ? 'School Library\n(Knowledge Hub)' : 'Perpustakaan\n(Pusat Pengetahuan)',
       corridor:   lang === 'en' ? 'Level 2: Empathy Rescue\n(Corridor & Library)' : 'Level 2: Penyelamatan Empati\n(Lorong & Perpustakaan)',
       classroom:  lang === 'en' ? 'Level 3: Mystery Case\n(Class Investigation)' : 'Level 3: Kasus Misteri\n(Investigasi Kelas)',
       auditorium: lang === 'en' ? 'Level 4: Harmony Builder\n(School Auditorium)' : 'Level 4: Pembangun Harmoni\n(Auditorium)',
