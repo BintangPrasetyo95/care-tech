@@ -337,5 +337,15 @@ const DIALOGUES = {
     portrait: null,
     text    : { en: '[ A neat classroom desk. Textbooks and pencils are arranged carefully. ]', id: '[ Meja kelas yang rapi. Buku pelajaran dan pensil tersusun rapi. ]' },
     next    : null
+  },
+
+  librarian_chat: {
+    speaker : { en: 'Librarian', id: 'Pustakawan' },
+    portrait: 'rani_neutral',
+    text    : { 
+      en: 'Welcome to Harmonia Library! Please keep your voice down so everyone can read in peace.', 
+      id: 'Selamat datang di Perpustakaan Harmonia! Harap tenang agar semua orang dapat membaca dengan nyaman.' 
+    },
+    next    : null
   }
 };

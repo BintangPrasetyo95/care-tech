@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Mengalihkan ke Studi Kasus CareTech...</title>
+    <script>
+        // Redirect to studi-kasus.html preserving all query parameters
+        const search = window.location.search || '';
+        const hash = window.location.hash || '';
+        window.location.replace('studi-kasus.html' + search + hash);
+    </script>
+</head>
+<body>
+    <p>Mengalihkan ke halaman studi kasus... <a href="studi-kasus.html">Klik di sini jika tidak beralih otomatis</a>.</p>
+</body>
+</html>
