@@ -27,6 +27,7 @@ class WorldScene extends Phaser.Scene {
     /* ── Player ── */
     let defaultSpawnX = 10;
     if (mapKey === 'garden') defaultSpawnX = 14;
+    if (mapKey === 'schoolyard') defaultSpawnX = 21;
     
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
     const py = this.spawnY || 7 * TILE + TILE / 2;
@@ -534,10 +535,19 @@ class WorldScene extends Phaser.Scene {
   "caf_srv_1_4": 117,
   "caf_srv_1_5": 118,
   "path_3_0": 119,
-  "path_1_0": 120
+  "path_1_0": 120,
+  "planter_h_0_0": 121,
+  "planter_h_0_1": 122,
+  "planter_h_0_2": 123,
+  "planter_h_1_0": 124,
+  "planter_h_1_1": 125,
+  "planter_h_1_2": 126,
+  "planter_v_0": 127,
+  "planter_v_1": 128,
+  "planter_v_2": 129
 };
     
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -551,7 +561,7 @@ class WorldScene extends Phaser.Scene {
         // ALWAYS put the base floor to prevent black spots
         // Deterministic hash with an 80% / 10% / 10% split
         let baseFloorId = TILE_IDS['school_floor'];
-        if (mapKey === 'garden') {
+        if (mapKey === 'garden' || mapKey === 'schoolyard') {
           const hashValue = (r * 37 + c * 17) % 100;
           if (hashValue < 80) {
             baseFloorId = TILE_IDS['grass'];
@@ -575,7 +585,7 @@ class WorldScene extends Phaser.Scene {
             if (!objId) return;
             if (objName.startsWith('water') || objName.startsWith('fountain')) {
               midLayer2.putTileAt(objId, c, r);
-            } else if (objName.startsWith('bench_1')) {
+            } else if (objName.startsWith('bench_1') || objName.startsWith('planter')) {
               midLayer2.putTileAt(objId, c, r);
             } else if (objName.startsWith('bookshelf')) {
               const targetRow = (objName === 'bookshelf_t') ? (r + 1) : r;
@@ -592,7 +602,7 @@ class WorldScene extends Phaser.Scene {
           // If it's a solid object OR a tall object that needs to be in front
           if (groundName.startsWith('water') || groundName.startsWith('fountain')) {
             midLayer2.putTileAt(groundId, c, r);
-          } else if (groundName.startsWith('bench_1')) {
+          } else if (groundName.startsWith('bench_1') || groundName.startsWith('planter')) {
             midLayer2.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('bookshelf')) {
             const targetRow = (groundName === 'bookshelf_t') ? (r + 1) : r;
@@ -706,7 +716,7 @@ class WorldScene extends Phaser.Scene {
     objectLayers.forEach(layer => layer.setMask(mask));
 
     // Draw off-screen doors and walls at r = -1 for garden transition
-    if (mapKey === 'garden') {
+    if (mapKey === 'garden' || mapKey === 'schoolyard') {
       const yPos = -1 * TILE + TILE / 2;
       const x10 = 14 * TILE + TILE / 2;
       const x11 = 15 * TILE + TILE / 2;
@@ -775,6 +785,83 @@ class WorldScene extends Phaser.Scene {
 
   _getMapData(key) {
     const W = 20, H = 15;
+
+    if (key === 'schoolyard') {
+      const m = [
+    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'],
+    ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass'],
+    ['path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_0', 'path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_1', 'grass'],
+    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
+    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_4', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_lb', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_1_1', 'grass'],
+    ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2'],
+    ['path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0'],
+    ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_4', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_2_4', 'grass'],
+    ['gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt']
+  ];
+
+      const putObj = (r, c, name) => {
+        if (r >= 0 && r < m.length && c >= 0 && c < m[0].length) {
+          if (Array.isArray(m[r][c])) {
+            m[r][c].push(name);
+          } else {
+            m[r][c] = [m[r][c], name];
+          }
+        }
+      };
+
+      const putBigTree = (r, c) => {
+        if (r+2 >= m.length || c+2 >= m[0].length) return;
+        putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
+        putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
+        putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
+      };
+
+      // Top tree row
+      for (const c of [2, 6, 10, 14, 18]) putBigTree(0, c);
+      // Bottom-right tree row
+      for (const c of [24, 28, 32, 36]) putBigTree(18, c);
+
+      // Horizontal planters (right side, 3-wide)
+      for (const c of [24, 28, 32, 36]) {
+        putObj(1, c, 'planter_h_0_0'); putObj(1, c+1, 'planter_h_0_1'); putObj(1, c+2, 'planter_h_0_2');
+        putObj(2, c, 'planter_h_1_0'); putObj(2, c+1, 'planter_h_1_1'); putObj(2, c+2, 'planter_h_1_2');
+      }
+
+      // Horizontal planters (left side, 2-wide modular caps)
+      for (const c of [1, 5, 9, 13, 17]) {
+        putObj(1, c, 'planter_h_0_0'); putObj(1, c+1, 'planter_h_0_2');
+        putObj(2, c, 'planter_h_1_0'); putObj(2, c+1, 'planter_h_1_2');
+      }
+
+      // Vertical planters (column 40, 3-tall)
+      for (const r of [4, 8, 16, 19]) {
+        putObj(r, 40, 'planter_v_0');
+        putObj(r+1, 40, 'planter_v_1');
+        putObj(r+2, 40, 'planter_v_2');
+      }
+
+      // Water fountain (right courtyard)
+      putObj(7, 37, 'fountain_0_0');
+      putObj(7, 38, 'fountain_1_0');
+      putObj(8, 37, 'fountain_0_1');
+      putObj(8, 38, 'fountain_1_1');
+
+      return m;
+    }
 
     if (key === 'garden') {
         const m = [
@@ -948,7 +1035,7 @@ class WorldScene extends Phaser.Scene {
 
   /* ────── NPC spawning per map ────── */
   _spawnNPCs(mapKey) {
-    if (mapKey === 'garden') {
+    if (mapKey === 'garden' || mapKey === 'schoolyard') {
       const offset = 10;
       if (!this.registry.get('level1_complete')) {
         // Nabula on the bench
@@ -1141,9 +1228,25 @@ class WorldScene extends Phaser.Scene {
   _getTransitions(mapKey) {
     if (!this._transitionsCache) {
       this._transitionsCache = {
+        schoolyard: [
+          // North to Classroom
+          { fromX: 21, fromY: 0,  toMap: 'classroom',  spawnX: 10, spawnY: 13 },
+          { fromX: 22, fromY: 0,  toMap: 'classroom',  spawnX: 10, spawnY: 13 },
+          // South to Garden
+          { fromX: 20, fromY: 22, toMap: 'garden',     spawnX: 14, spawnY: 1 },
+          { fromX: 21, fromY: 22, toMap: 'garden',     spawnX: 14, spawnY: 1 },
+          { fromX: 22, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
+          { fromX: 23, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
+          // West to Cafeteria
+          { fromX: 0,  fromY: 13, toMap: 'cafeteria',  spawnX: 10, spawnY: 13 },
+          { fromX: 0,  fromY: 14, toMap: 'cafeteria',  spawnX: 10, spawnY: 13 },
+          // East to Library / Corridor
+          { fromX: 42, fromY: 13, toMap: 'corridor',   spawnX: 10, spawnY: 13 },
+          { fromX: 42, fromY: 14, toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+        ],
         garden: [
-          { fromX: 14, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 },
-          { fromX: 15, fromY: 0,  toMap: 'corridor',   spawnX: 10, spawnY: 13 }
+          { fromX: 14, fromY: 0,  toMap: 'schoolyard', spawnX: 21, spawnY: 21 },
+          { fromX: 15, fromY: 0,  toMap: 'schoolyard', spawnX: 22, spawnY: 21 }
         ],
         corridor: [
           { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 14, spawnY: 2  },
@@ -1156,16 +1259,16 @@ class WorldScene extends Phaser.Scene {
           { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 10, spawnY: 13 }
         ],
         classroom: [
-          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  },
-          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 5,  spawnY: 2  }
+          { fromX: 10, fromY: 14, toMap: 'schoolyard',  spawnX: 21, spawnY: 1 },
+          { fromX: 11, fromY: 14, toMap: 'schoolyard',  spawnX: 22, spawnY: 1 }
         ],
         auditorium: [
           { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  },
           { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
         ],
         cafeteria: [
-          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 },
-          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 3,  spawnY: 12 }
+          { fromX: 10, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
+          { fromX: 11, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 }
         ]
       };
     }

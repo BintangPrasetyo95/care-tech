@@ -685,6 +685,7 @@ class UIScene extends Phaser.Scene {
     const mapKey = this.registry.get('currentMap');
     const names = {
       garden:     lang === 'en' ? 'Level 1: Detective Emotion\n(School Garden)' : 'Level 1: Detektif Emosi\n(Taman Sekolah)',
+      schoolyard: lang === 'en' ? 'Schoolyard\n(Central Courtyard)' : 'Halaman Sekolah\n(Halaman Utama)',
       corridor:   lang === 'en' ? 'Level 2: Empathy Rescue\n(Corridor & Library)' : 'Level 2: Penyelamatan Empati\n(Lorong & Perpustakaan)',
       classroom:  lang === 'en' ? 'Level 3: Mystery Case\n(Class Investigation)' : 'Level 3: Kasus Misteri\n(Investigasi Kelas)',
       auditorium: lang === 'en' ? 'Level 4: Harmony Builder\n(School Auditorium)' : 'Level 4: Pembangun Harmoni\n(Auditorium)',
