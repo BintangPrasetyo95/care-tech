@@ -45,7 +45,10 @@ class Player {
     const body = this.sprite.body;
     body.setVelocity(0);
 
-    // Freeze during dialogue
+    // Freeze during dialogue unless cutscene animation is active
+    if (this.isCutsceneActive) {
+      return;
+    }
     if (this.scene.registry.get('dialogueActive')) {
       this.sprite.anims.play('player_idle_' + this.facing, true);
       return;

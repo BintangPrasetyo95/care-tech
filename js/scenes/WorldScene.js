@@ -27,13 +27,13 @@ class WorldScene extends Phaser.Scene {
     /* ── Player ── */
     let defaultSpawnX = 10;
     let defaultSpawnY = 7;
-    if (mapKey === 'garden') defaultSpawnX = 14;
+    if (mapKey === 'garden') { defaultSpawnX = 14; defaultSpawnY = 3.5; }
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
     if (mapKey === 'library') { defaultSpawnX = 9; defaultSpawnY = 9; }
     if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
-    
+
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
-    const py = this.spawnY || defaultSpawnY * TILE + TILE / 2;
+    const py = this.spawnY || defaultSpawnY * TILE;
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
     this.physics.world.setBounds(0, 0, mapW * TILE, mapH * TILE);
@@ -78,7 +78,7 @@ class WorldScene extends Phaser.Scene {
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula) {
           nabula.clearEmotion();
-          
+
           nabula.emotionBubble = this.add.graphics();
           nabula.emotionBubble.fillStyle(0xffffff, 0.95);
           nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
@@ -86,7 +86,7 @@ class WorldScene extends Phaser.Scene {
 
           nabula.emotionText = this.add.text(0, 0, '😊', { fontSize: '12px' }).setOrigin(0.5, 0.45);
           nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
-          
+
           nabula.emotionOffset = 0;
           nabula.emotionTween = this.tweens.add({
             targets: nabula,
@@ -110,7 +110,7 @@ class WorldScene extends Phaser.Scene {
         if (nabula) {
           nabula.clearEmotion();
           nabula.dialogueId = 'nabula_found';
-          
+
           this.tweens.add({
             targets: nabula.sprite,
             x: 5 * TILE + TILE / 2,
@@ -142,10 +142,10 @@ class WorldScene extends Phaser.Scene {
         }
       } else if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
-        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch(e){}
+        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
       } else if (action === 'complete_level2') {
         this.registry.set('level2_complete', true);
-        try { localStorage.setItem('caretech_scenario_2', 'true'); } catch(e){}
+        try { localStorage.setItem('caretech_scenario_2', 'true'); } catch (e) { }
       } else if (action === 'found_evidence_phone') {
         this.registry.set('evidence_phone', true);
         this._checkLevel3Ready();
@@ -154,12 +154,12 @@ class WorldScene extends Phaser.Scene {
         this._checkLevel3Ready();
       } else if (action === 'complete_level3') {
         this.registry.set('level3_complete', true);
-        try { localStorage.setItem('caretech_scenario_3', 'true'); } catch(e){}
+        try { localStorage.setItem('caretech_scenario_3', 'true'); } catch (e) { }
       } else if (['build_vent_corner', 'build_appreciation_box', 'build_peer_support'].includes(action)) {
         this.registry.set('built_project', action);
         this.registry.set('level4_complete', true);
-        try { localStorage.setItem('caretech_scenario_4', 'true'); } catch(e){}
-        
+        try { localStorage.setItem('caretech_scenario_4', 'true'); } catch (e) { }
+
         // Find the initiative board and update its state so it doesn't prompt again
         const board = this.npcs.find(n => n.key === 'initiative_board');
         if (board) board.dialogueId = 'board_already_done';
@@ -167,31 +167,31 @@ class WorldScene extends Phaser.Scene {
         this.registry.set('qte_active', true);
         const victim = this.npcs.find(n => n.key === 'qte_victim');
         if (victim) victim.dialogueId = 'qte_success';
-        
+
         if (this.qteArrow) this.qteArrow.setVisible(true);
-        
+
         this.scene.get('UI').startQTETimer(20, () => {
           if (this.registry.get('qte_active')) {
             this.registry.set('qte_active', false);
             this.registry.set('dialogueActive', true);
-            
+
             const v = this.npcs.find(n => n.key === 'qte_victim');
             if (v) v.dialogueId = null;
-            
+
             this.scene.get('UI')._showNode('qte_fail');
           }
         });
       } else if (action === 'complete_level5') {
         this.registry.set('level5_complete', true);
-        try { localStorage.setItem('caretech_scenario_5', 'true'); } catch(e){}
+        try { localStorage.setItem('caretech_scenario_5', 'true'); } catch (e) { }
         this.registry.set('qte_active', false);
         this.scene.get('UI').stopQTETimer();
         if (this.qteArrow) this.qteArrow.destroy();
-        
+
         // Update victim dialogue to thank you
         const victim = this.npcs.find(n => n.key === 'qte_victim');
         if (victim) {
-            victim.dialogueId = 'victim_thanks';
+          victim.dialogueId = 'victim_thanks';
         }
 
         // Make the bullies walk out the door
@@ -209,10 +209,214 @@ class WorldScene extends Phaser.Scene {
             }
           });
         });
+      } else if (action === 'lvl1_start_walk') {
+        // Player is now free to walk in the garden
+        if (this.player && this.player.sprite) {
+          this.player.sprite.setVelocity(0, 0);
+        }
+      } else if (action === 'lvl1_camera_to_nakula') {
+        this.cameras.main.stopFollow();
+        this.tweens.add({
+          targets: this.cameras.main,
+          scrollX: this.player.sprite.x - this.cameras.main.width / 2,
+          scrollY: this.player.sprite.y - this.cameras.main.height / 2,
+          duration: 800,
+          ease: 'Sine.easeInOut',
+          onComplete: () => {
+            this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+          }
+        });
+      } else if (action === 'lvl1_005a_walk') {
+        // 005a-2: Nakula walks to Nabula automatically, camera follows
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && this.player) {
+          this.player.isCutsceneActive = true;
+          this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+
+          const targetX = nabula.sprite.x - 48; // Berdiri di sebelah kiri Nabula
+          const targetY = nabula.sprite.y;
+
+          // Tentukan arah hadap dan animasi jalan
+          const dx = targetX - this.player.sprite.x;
+          const dy = targetY - this.player.sprite.y;
+
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) {
+              this.player.facing = 'left';
+              this.player.sprite.setFlipX(true);
+            } else {
+              this.player.facing = 'right';
+              this.player.sprite.setFlipX(false);
+            }
+          } else {
+            this.player.facing = dy < 0 ? 'up' : 'down';
+            this.player.sprite.setFlipX(false);
+          }
+          this.player.sprite.anims.play('player_walk_' + this.player.facing, true);
+
+          this.tweens.add({
+            targets: this.player.sprite,
+            x: targetX,
+            y: targetY,
+            duration: 2200,
+            ease: 'Linear',
+            onComplete: () => {
+              this.player.facing = 'right';
+              this.player.sprite.setFlipX(false);
+              this.player.sprite.anims.play('player_idle_right', true);
+              this.player.isCutsceneActive = false;
+              // Auto-trigger 007 (006a: Nakula langsung menyapa tanpa tombol aksi)
+              this.time.delayedCall(300, () => {
+                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_005b_approach') {
+        // 005b-7a: Nakula kembali mendekati Nabula
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && this.player) {
+          this.player.isCutsceneActive = true;
+          this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+          const targetX = nabula.sprite.x - 48;
+          const targetY = nabula.sprite.y;
+
+          const dx = targetX - this.player.sprite.x;
+          if (dx < 0) {
+            this.player.facing = 'left';
+            this.player.sprite.setFlipX(true);
+          } else {
+            this.player.facing = 'right';
+            this.player.sprite.setFlipX(false);
+          }
+          this.player.sprite.anims.play('player_walk_' + this.player.facing, true);
+
+          this.tweens.add({
+            targets: this.player.sprite,
+            x: targetX,
+            y: targetY,
+            duration: 2200,
+            ease: 'Linear',
+            onComplete: () => {
+              this.player.facing = 'right';
+              this.player.sprite.setFlipX(false);
+              this.player.sprite.anims.play('player_idle_right', true);
+              this.player.isCutsceneActive = false;
+              this.time.delayedCall(300, () => {
+                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_005b_ignore_quest') {
+        // 005b-7b - 005b-9c: Nabula walks to library, 20s quest
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          nabula.sprite.setFlipX(false);
+          nabula.sprite.anims.play('nabula_walk_up', true);
+          this.tweens.add({
+            targets: nabula.sprite,
+            x: 14 * TILE + TILE / 2,
+            y: 0,
+            duration: 3500,
+            onComplete: () => {
+              nabula.sprite.setVisible(false);
+              const ui = this.scene.get('UI');
+              if (ui && ui.showQuestBanner) {
+                ui.showQuestBanner('QUEST (20s): Susul Nabula ke perpustakaan.', 20000);
+              }
+            }
+          });
+        }
+      } else if (action === 'lvl1_005c_enable_move') {
+        this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+      } else if (action === 'lvl1_012_nabula_leaves') {
+        // 012 & 012a: Nabula berdiri dan berjalan menuju perpustakaan.
+        // Nabula menghadap ke kanan, berjalan ke (14.5, 9), lalu berbelok ke atas menuju pintu perpustakaan (14.5, 0)
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          nabula.clearEmotion();
+          this.cameras.main.stopFollow();
+          this.cameras.main.startFollow(nabula.sprite, true, 0.08, 0.08);
+
+          // Langkah 1: Berjalan ke kanan menuju (14.5, 9)
+          nabula.sprite.setFlipX(false);
+          nabula.sprite.anims.play('nabula_walk_right', true);
+
+          const step1X = 15 * TILE;
+          const step1Y = 9 * TILE + TILE / 2;
+          const step2X = 15 * TILE;
+          const step2Y = 0; // Pintu perpustakaan di utara (15, 0)
+
+          this.tweens.chain({
+            targets: nabula.sprite,
+            tweens: [
+              {
+                x: step1X,
+                y: step1Y,
+                duration: 2200,
+                ease: 'Linear'
+              },
+              {
+                x: step2X,
+                y: step2Y,
+                duration: 3500,
+                ease: 'Linear',
+                onStart: () => {
+                  // Berbelok ke atas menuju pintu perpustakaan
+                  nabula.sprite.setFlipX(false);
+                  nabula.sprite.anims.play('nabula_walk_up', true);
+                }
+              }
+            ],
+            onComplete: () => {
+              // Nabula hilang dari map taman untuk sementara waktu sampai ID selanjutnya
+              this.registry.set('level1_nabula_left_garden', true);
+              nabula.dialogueId = null;
+              nabula.sprite.setActive(false).setVisible(false);
+              if (nabula.sprite.body) nabula.sprite.body.enable = false;
+              if (nabula.clearEmotion) nabula.clearEmotion();
+              if (nabula.indicator) nabula.indicator.destroy();
+              // 013: Kamera kembali menyorot Nakula
+              this.tweens.add({
+                targets: this.cameras.main,
+                scrollX: this.player.sprite.x - this.cameras.main.width / 2,
+                scrollY: this.player.sprite.y - this.cameras.main.height / 2,
+                duration: 1200,
+                ease: 'Sine.easeInOut',
+                onComplete: () => {
+                  this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+                  // 014: UI QUEST "Ikuti Nabula ke perpustakaan."
+                  const ui = this.scene.get('UI');
+                  if (ui && ui.showQuestBanner) {
+                    ui.showQuestBanner('QUEST: Ikuti Nabula ke perpustakaan.', 6000);
+                  }
+                  if (navigator.vibrate) navigator.vibrate(100);
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'vibrate_choice') {
+        if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+      } else if (action === 'vibrate_soft') {
+        if (navigator.vibrate) navigator.vibrate(60);
       }
     }, this);
+
+    /* ── Listen for Level 1 start from Level Select Modal ── */
+    this.game.events.on('start_level_1', () => {
+      const ui = this.scene.get('UI');
+      if (ui && ui.startLevel1IntroTransition) {
+        ui.startLevel1IntroTransition();
+      }
+    });
+
     this.events.on('shutdown', () => {
       this.registry.events.off('dialogue_action');
+      if (this.game && this.game.events) {
+        this.game.events.off('start_level_1');
+      }
     });
 
     /* ── Debug Grid (Row, Col) ── */
@@ -232,9 +436,9 @@ class WorldScene extends Phaser.Scene {
 
     // Trigger Level 5 (Cafeteria QTE)
     if (this.registry.get('currentMap') === 'cafeteria' &&
-        this.registry.get('level4_complete') &&
-        !this.registry.get('level5_triggered') &&
-        !this.registry.get('dialogueActive')) {
+      this.registry.get('level4_complete') &&
+      !this.registry.get('level5_triggered') &&
+      !this.registry.get('dialogueActive')) {
       if (this.player.sprite.y < 12 * TILE) {
         this.registry.set('level5_triggered', true);
         this.registry.set('dialogueActive', true);
@@ -248,15 +452,51 @@ class WorldScene extends Phaser.Scene {
     }
     this._updatePlayerMask();
 
+    /* ── Level 1 Proximity Trigger (003: 3 Blocks from Nabula) ── */
+    if (this.registry.get('currentMap') === 'garden' &&
+      !this.registry.get('level1_003_triggered') &&
+      !this.registry.get('dialogueActive')) {
+      const nabula = this.npcs.find(n => n.key === 'nabula');
+      if (nabula && this.player && this.player.sprite) {
+        const dx = this.player.sprite.x - nabula.sprite.x;
+        const dy = this.player.sprite.y - nabula.sprite.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // 3 blocks / tiles trigger (<= 3 * TILE = 192px)
+        if (dist <= 3 * TILE) {
+          this.registry.set('level1_003_triggered', true);
+          this.registry.set('dialogueActive', true);
+
+          // Stop player movement
+          this.player.sprite.setVelocity(0, 0);
+          this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+
+          // Kamera otomatis mengarah ke Nabula (003)
+          this.cameras.main.stopFollow();
+          this.tweens.add({
+            targets: this.cameras.main,
+            scrollX: nabula.sprite.x - this.cameras.main.width / 2,
+            scrollY: nabula.sprite.y - this.cameras.main.height / 2,
+            duration: 1000,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+              if (navigator.vibrate) navigator.vibrate(60);
+              this.scene.get('UI').startDialogue('lvl1_003_eca');
+            }
+          });
+        }
+      }
+    }
+
     /* ── Level 2 Auto-Trigger ── */
     if (this.registry.get('currentMap') === 'corridor' && this.registry.get('level1_complete') && !this.registry.get('level2_triggered')) {
       if (this.player.sprite.y < 9 * TILE && !this.registry.get('dialogueActive')) {
         this.registry.set('level2_triggered', true);
-        
+
         // Stop player movement
         this.player.sprite.setVelocity(0, 0);
         this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
-        
+
         // Start bully taunt dialogue
         this.scene.get('UI').startDialogue('bully_taunt');
       }
@@ -361,7 +601,7 @@ class WorldScene extends Phaser.Scene {
   _buildMap(mapKey, mapData) {
     const H = mapData.length;
     const W = mapData[0].length;
-    
+
     // Create an empty tilemap
     const map = this.make.tilemap({ tileWidth: TILE, tileHeight: TILE, width: W, height: H });
     const tileset = map.addTilesetImage('tileset', 'tileset');
@@ -374,7 +614,7 @@ class WorldScene extends Phaser.Scene {
     const trunkLayer = this.trunkLayer;
     this.bottomWallLayer = map.createBlankLayer('BottomWalls', tileset);
     const bottomWallLayer = this.bottomWallLayer;
-    
+
     groundLayer.setDepth(0);
     midLayer.setDepth(1);
     midLayer2.setDepth(2);
@@ -403,7 +643,7 @@ class WorldScene extends Phaser.Scene {
         zones: []
       });
     });
-    
+
     // We create multiple object layers to support trees overlapping trees
     const objectLayersTransparent = [];
     const objectLayers = [];
@@ -417,181 +657,181 @@ class WorldScene extends Phaser.Scene {
     this.treeCanopies = [];
 
     const TILE_IDS = {
-  "empty": 0,
-  "grass": 1,
-  "grass2": 2,
-  "path": 3,
-  "path2": 4,
-  "floor": 5,
-  "floor2": 6,
-  "door": 7,
-  "bench": 8,
-  "desk": 9,
-  "board": 10,
-  "chair": 11,
-  "table": 12,
-  "stage": 13,
-  "flower": 14,
-  "tree": 15,
-  "water_0_0": 16,
-  "water_1_0": 17,
-  "water_2_0": 18,
-  "water_3_0": 19,
-  "water_0_1": 20,
-  "water_1_1": 21,
-  "water_2_1": 22,
-  "water_3_1": 23,
-  "water_0_2": 24,
-  "water_1_2": 25,
-  "water_2_2": 26,
-  "water_3_2": 27,
-  "water_0_3": 28,
-  "water_1_3": 29,
-  "water_2_3": 30,
-  "water_3_3": 31,
-  "water_0_4": 32,
-  "water_1_4": 33,
-  "water_2_4": 34,
-  "water_3_4": 35,
-  "bookshelf": 36,
-  "bookshelf_t": 37,
-  "bookshelf_b": 38,
-  "path_1_3": 39,
-  "path_1_4": 40,
-  "path_2_2": 41,
-  "path_2_0": 42,
-  "path_2_4": 43,
-  "path_2_3": 44,
-  "path_3_1": 45,
-  "path_1_1": 46,
-  "path_3_2": 47,
-  "path_1_2": 48,
-  "tree_0_0": 49,
-  "tree_0_1": 50,
-  "tree_0_2": 51,
-  "tree_1_0": 52,
-  "tree_1_1": 53,
-  "tree_1_2": 54,
-  "tree_2_0": 55,
-  "tree_2_1": 56,
-  "tree_2_2": 57,
-  "fountain_0_0": 58,
-  "fountain_1_0": 59,
-  "fountain_0_1": 60,
-  "fountain_1_1": 61,
-  "dummy_42": 62,
-  "grass_var1": 63,
-  "grass_var2": 64,
-  "bench_0_0": 65,
-  "bench_0_1": 66,
-  "bench_0_2": 67,
-  "dummy_48": 68,
-  "dummy_49": 69,
-  "bench_1_0": 70,
-  "bench_1_1": 71,
-  "bench_1_2": 72,
-  "door_big_l": 73,
-  "door_big_r": 74,
-  "school_wall_tl": 75,
-  "school_wall_t": 76,
-  "school_wall_tr": 77,
-  "school_wall_l": 78,
-  "school_wall_c": 79,
-  "school_wall_r": 80,
-  "school_wall_bl": 81,
-  "school_wall_b": 82,
-  "school_wall_br": 83,
-  "school_wall_itl": 84,
-  "school_wall_itr": 85,
-  "school_wall_ibl": 86,
-  "school_wall_ibr": 87,
-  "school_floor": 88,
-  "school_floor2": 89,
-  "tc_0_0": 90,
-  "tc_0_1": 91,
-  "tc_0_2": 92,
-  "tc_1_0": 93,
-  "tc_1_1": 94,
-  "tc_1_2": 95,
-  "tc_2_0": 96,
-  "tc_2_1": 97,
-  "tc_2_2": 98,
-  "gw_t": 99,
-  "gw_b": 100,
-  "gw_l": 101,
-  "gw_r": 102,
-  "gw_lt": 103,
-  "gw_lb": 104,
-  "gw_rt": 105,
-  "gw_rb": 106,
-  "caf_srv_0_0": 107,
-  "caf_srv_0_1": 108,
-  "caf_srv_0_2": 109,
-  "caf_srv_0_3": 110,
-  "caf_srv_0_4": 111,
-  "caf_srv_0_5": 112,
-  "caf_srv_1_0": 113,
-  "caf_srv_1_1": 114,
-  "caf_srv_1_2": 115,
-  "caf_srv_1_3": 116,
-  "caf_srv_1_4": 117,
-  "caf_srv_1_5": 118,
-  "path_3_0": 119,
-  "path_1_0": 120,
-  "planter_h_0_0": 121,
-  "planter_h_0_1": 122,
-  "planter_h_0_2": 123,
-  "planter_h_1_0": 124,
-  "planter_h_1_1": 125,
-  "planter_h_1_2": 126,
-  "planter_v_0": 127,
-  "planter_v_1": 128,
-  "planter_v_2": 129,
-  "lib_tc_0_0": 130,
-  "lib_tc_0_1": 131,
-  "lib_tc_0_2": 132,
-  "lib_tc_1_0": 133,
-  "lib_tc_1_1": 134,
-  "lib_tc_1_2": 135,
-  "lib_tc_2_0": 136,
-  "lib_tc_2_1": 137,
-  "lib_tc_2_2": 138,
-  "lib_desk_0_0": 139,
-  "lib_desk_0_1": 140,
-  "lib_desk_0_2": 141,
-  "lib_desk_1_0": 142,
-  "lib_desk_1_1": 143,
-  "lib_desk_1_2": 144,
-  "canteen_tc_0_0": 145,
-  "canteen_tc_0_1": 146,
-  "canteen_tc_1_0": 147,
-  "canteen_tc_1_1": 148,
-  "canteen_tc_2_0": 149,
-  "canteen_tc_2_1": 150,
-  "sink": 151,
-  "trash_can": 152,
-  "caf_plat_0_0": 153,
-  "caf_plat_0_1": 154,
-  "caf_plat_0_2": 155,
-  "caf_plat_0_3": 156,
-  "caf_plat_1_0": 157,
-  "caf_plat_1_1": 158,
-  "caf_plat_1_2": 159,
-  "caf_plat_1_3": 160,
-  "caf_plat_2_0": 161,
-  "caf_plat_2_1": 162,
-  "caf_plat_2_2": 163,
-  "caf_plat_2_3": 164,
-  "caf_plat_3_0": 165,
-  "caf_plat_3_1": 166,
-  "caf_plat_3_2": 167,
-  "caf_plat_3_3": 168,
-  "caf_plat_4_0": 169,
-  "caf_plat_4_1": 170,
-  "caf_plat_4_2": 171,
-  "caf_plat_4_3": 172
-};
-    
+      "empty": 0,
+      "grass": 1,
+      "grass2": 2,
+      "path": 3,
+      "path2": 4,
+      "floor": 5,
+      "floor2": 6,
+      "door": 7,
+      "bench": 8,
+      "desk": 9,
+      "board": 10,
+      "chair": 11,
+      "table": 12,
+      "stage": 13,
+      "flower": 14,
+      "tree": 15,
+      "water_0_0": 16,
+      "water_1_0": 17,
+      "water_2_0": 18,
+      "water_3_0": 19,
+      "water_0_1": 20,
+      "water_1_1": 21,
+      "water_2_1": 22,
+      "water_3_1": 23,
+      "water_0_2": 24,
+      "water_1_2": 25,
+      "water_2_2": 26,
+      "water_3_2": 27,
+      "water_0_3": 28,
+      "water_1_3": 29,
+      "water_2_3": 30,
+      "water_3_3": 31,
+      "water_0_4": 32,
+      "water_1_4": 33,
+      "water_2_4": 34,
+      "water_3_4": 35,
+      "bookshelf": 36,
+      "bookshelf_t": 37,
+      "bookshelf_b": 38,
+      "path_1_3": 39,
+      "path_1_4": 40,
+      "path_2_2": 41,
+      "path_2_0": 42,
+      "path_2_4": 43,
+      "path_2_3": 44,
+      "path_3_1": 45,
+      "path_1_1": 46,
+      "path_3_2": 47,
+      "path_1_2": 48,
+      "tree_0_0": 49,
+      "tree_0_1": 50,
+      "tree_0_2": 51,
+      "tree_1_0": 52,
+      "tree_1_1": 53,
+      "tree_1_2": 54,
+      "tree_2_0": 55,
+      "tree_2_1": 56,
+      "tree_2_2": 57,
+      "fountain_0_0": 58,
+      "fountain_1_0": 59,
+      "fountain_0_1": 60,
+      "fountain_1_1": 61,
+      "dummy_42": 62,
+      "grass_var1": 63,
+      "grass_var2": 64,
+      "bench_0_0": 65,
+      "bench_0_1": 66,
+      "bench_0_2": 67,
+      "dummy_48": 68,
+      "dummy_49": 69,
+      "bench_1_0": 70,
+      "bench_1_1": 71,
+      "bench_1_2": 72,
+      "door_big_l": 73,
+      "door_big_r": 74,
+      "school_wall_tl": 75,
+      "school_wall_t": 76,
+      "school_wall_tr": 77,
+      "school_wall_l": 78,
+      "school_wall_c": 79,
+      "school_wall_r": 80,
+      "school_wall_bl": 81,
+      "school_wall_b": 82,
+      "school_wall_br": 83,
+      "school_wall_itl": 84,
+      "school_wall_itr": 85,
+      "school_wall_ibl": 86,
+      "school_wall_ibr": 87,
+      "school_floor": 88,
+      "school_floor2": 89,
+      "tc_0_0": 90,
+      "tc_0_1": 91,
+      "tc_0_2": 92,
+      "tc_1_0": 93,
+      "tc_1_1": 94,
+      "tc_1_2": 95,
+      "tc_2_0": 96,
+      "tc_2_1": 97,
+      "tc_2_2": 98,
+      "gw_t": 99,
+      "gw_b": 100,
+      "gw_l": 101,
+      "gw_r": 102,
+      "gw_lt": 103,
+      "gw_lb": 104,
+      "gw_rt": 105,
+      "gw_rb": 106,
+      "caf_srv_0_0": 107,
+      "caf_srv_0_1": 108,
+      "caf_srv_0_2": 109,
+      "caf_srv_0_3": 110,
+      "caf_srv_0_4": 111,
+      "caf_srv_0_5": 112,
+      "caf_srv_1_0": 113,
+      "caf_srv_1_1": 114,
+      "caf_srv_1_2": 115,
+      "caf_srv_1_3": 116,
+      "caf_srv_1_4": 117,
+      "caf_srv_1_5": 118,
+      "path_3_0": 119,
+      "path_1_0": 120,
+      "planter_h_0_0": 121,
+      "planter_h_0_1": 122,
+      "planter_h_0_2": 123,
+      "planter_h_1_0": 124,
+      "planter_h_1_1": 125,
+      "planter_h_1_2": 126,
+      "planter_v_0": 127,
+      "planter_v_1": 128,
+      "planter_v_2": 129,
+      "lib_tc_0_0": 130,
+      "lib_tc_0_1": 131,
+      "lib_tc_0_2": 132,
+      "lib_tc_1_0": 133,
+      "lib_tc_1_1": 134,
+      "lib_tc_1_2": 135,
+      "lib_tc_2_0": 136,
+      "lib_tc_2_1": 137,
+      "lib_tc_2_2": 138,
+      "lib_desk_0_0": 139,
+      "lib_desk_0_1": 140,
+      "lib_desk_0_2": 141,
+      "lib_desk_1_0": 142,
+      "lib_desk_1_1": 143,
+      "lib_desk_1_2": 144,
+      "canteen_tc_0_0": 145,
+      "canteen_tc_0_1": 146,
+      "canteen_tc_1_0": 147,
+      "canteen_tc_1_1": 148,
+      "canteen_tc_2_0": 149,
+      "canteen_tc_2_1": 150,
+      "sink": 151,
+      "trash_can": 152,
+      "caf_plat_0_0": 153,
+      "caf_plat_0_1": 154,
+      "caf_plat_0_2": 155,
+      "caf_plat_0_3": 156,
+      "caf_plat_1_0": 157,
+      "caf_plat_1_1": 158,
+      "caf_plat_1_2": 159,
+      "caf_plat_1_3": 160,
+      "caf_plat_2_0": 161,
+      "caf_plat_2_1": 162,
+      "caf_plat_2_2": 163,
+      "caf_plat_2_3": 164,
+      "caf_plat_3_0": 165,
+      "caf_plat_3_1": 166,
+      "caf_plat_3_2": 167,
+      "caf_plat_3_3": 168,
+      "caf_plat_4_0": 169,
+      "caf_plat_4_1": 170,
+      "caf_plat_4_2": 171,
+      "caf_plat_4_3": 172
+    };
+
     const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can'];
 
     // Populate the layers using the 2D array
@@ -602,7 +842,7 @@ class WorldScene extends Phaser.Scene {
         const objects = cell.slice(1);
 
         const groundId = TILE_IDS[groundName] || 0;
-        
+
         // ALWAYS put the base floor to prevent black spots
         // Deterministic hash with an 80% / 10% / 10% split
         let baseFloorId = TILE_IDS['school_floor'];
@@ -636,7 +876,7 @@ class WorldScene extends Phaser.Scene {
           if (groundId !== baseFloorId && groundName !== 'grass' && groundName !== 'grass2' && !groundName.startsWith('caf_plat_')) {
             midLayer.putTileAt(groundId, c, r);
           }
-          
+
           objects.forEach((objName, i) => {
             if (i >= objectLayers.length) return;
             const objId = TILE_IDS[objName];
@@ -768,7 +1008,7 @@ class WorldScene extends Phaser.Scene {
     if (!this.textures.exists('softCircle')) {
       this.textures.addCanvas('softCircle', canvas);
     }
-    
+
     this.playerMaskImage = this.make.image({ x: -1000, y: -1000, key: 'softCircle' }, false);
     this.playerMaskImage.setVisible(false);
     const mask = new Phaser.Display.Masks.BitmapMask(this, this.playerMaskImage);
@@ -780,34 +1020,34 @@ class WorldScene extends Phaser.Scene {
       const yPos = -1 * TILE + TILE / 2;
       const x10 = 14 * TILE + TILE / 2;
       const x11 = 15 * TILE + TILE / 2;
-      
+
       this.add.sprite(x10, yPos, 'tileset_sheet', TILE_IDS['door_big_l']).setDepth(1);
       this.add.sprite(x11, yPos, 'tileset_sheet', TILE_IDS['door_big_r']).setDepth(1);
     }
   }
 
   /* ────── Map data for each area (Human Readable 2D Arrays) ────── */
-  
+
   _autotileSchoolWalls(m) {
     const H = m.length;
     const W = m[0].length;
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
         if (m[r][c].startsWith('school_wall')) {
-          const topW = (r === 0 || m[r-1][c].startsWith('school_wall'));
-          const botW = (r === H-1 || m[r+1][c].startsWith('school_wall'));
-          const leftW = (c === 0 || m[r][c-1].startsWith('school_wall'));
-          const rightW = (c === W-1 || m[r][c+1].startsWith('school_wall'));
+          const topW = (r === 0 || m[r - 1][c].startsWith('school_wall'));
+          const botW = (r === H - 1 || m[r + 1][c].startsWith('school_wall'));
+          const leftW = (c === 0 || m[r][c - 1].startsWith('school_wall'));
+          const rightW = (c === W - 1 || m[r][c + 1].startsWith('school_wall'));
 
           if (!topW && botW && !leftW && rightW) m[r][c] = 'school_wall_tl';
           else if (!topW && botW && leftW && rightW) m[r][c] = 'school_wall_t';
           else if (!topW && botW && leftW && !rightW) m[r][c] = 'school_wall_tr';
           else if (topW && botW && !leftW && rightW) m[r][c] = 'school_wall_l';
           else if (topW && botW && leftW && rightW) {
-            const tlW = (r === 0 || c === 0 || m[r-1][c-1].startsWith('school_wall'));
-            const trW = (r === 0 || c === W-1 || m[r-1][c+1].startsWith('school_wall'));
-            const blW = (r === H-1 || c === 0 || m[r+1][c-1].startsWith('school_wall'));
-            const brW = (r === H-1 || c === W-1 || m[r+1][c+1].startsWith('school_wall'));
+            const tlW = (r === 0 || c === 0 || m[r - 1][c - 1].startsWith('school_wall'));
+            const trW = (r === 0 || c === W - 1 || m[r - 1][c + 1].startsWith('school_wall'));
+            const blW = (r === H - 1 || c === 0 || m[r + 1][c - 1].startsWith('school_wall'));
+            const brW = (r === H - 1 || c === W - 1 || m[r + 1][c + 1].startsWith('school_wall'));
             if (!tlW) m[r][c] = 'school_wall_itl';
             else if (!trW) m[r][c] = 'school_wall_itr';
             else if (!blW) m[r][c] = 'school_wall_ibl';
@@ -830,13 +1070,13 @@ class WorldScene extends Phaser.Scene {
     // Custom override: make walls beside doors look recessed
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
-        if (m[r][c] === 'door_big_l' && c + 1 < W && m[r][c+1] === 'door_big_r') {
+        if (m[r][c] === 'door_big_l' && c + 1 < W && m[r][c + 1] === 'door_big_r') {
           if (r === 0) {
-            if (c > 0) m[r][c-1] = 'school_wall_ibr';
-            if (c + 2 < W) m[r][c+2] = 'school_wall_ibl';
+            if (c > 0) m[r][c - 1] = 'school_wall_ibr';
+            if (c + 2 < W) m[r][c + 2] = 'school_wall_ibl';
           } else {
-            if (c > 0) m[r][c-1] = 'school_wall_itl';
-            if (c + 2 < W) m[r][c+2] = 'school_wall_itr';
+            if (c > 0) m[r][c - 1] = 'school_wall_itl';
+            if (c + 2 < W) m[r][c + 2] = 'school_wall_itr';
           }
         }
       }
@@ -848,30 +1088,30 @@ class WorldScene extends Phaser.Scene {
 
     if (key === 'schoolyard') {
       const m = [
-    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'],
-    ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass'],
-    ['path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_0', 'path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_1', 'grass'],
-    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
-    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_4', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_lb', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_1_1', 'grass'],
-    ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2'],
-    ['path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0'],
-    ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_4', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
-    ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_2_4', 'grass'],
-    ['gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt']
-  ];
+        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'],
+        ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass'],
+        ['path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_0', 'path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_1', 'grass'],
+        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
+        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_4', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_lb', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_1_1', 'grass'],
+        ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2'],
+        ['path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_0', 'path_2_0'],
+        ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_3_1', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path', 'path_1_1', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_4', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_2_4', 'grass'],
+        ['gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt']
+      ];
 
       const putObj = (r, c, name) => {
         if (r >= 0 && r < m.length && c >= 0 && c < m[0].length) {
@@ -884,10 +1124,10 @@ class WorldScene extends Phaser.Scene {
       };
 
       const putBigTree = (r, c) => {
-        if (r+2 >= m.length || c+2 >= m[0].length) return;
-        putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
-        putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
-        putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
+        if (r + 2 >= m.length || c + 2 >= m[0].length) return;
+        putObj(r, c, 'tree_0_0'); putObj(r, c + 1, 'tree_0_1'); putObj(r, c + 2, 'tree_0_2');
+        putObj(r + 1, c, 'tree_1_0'); putObj(r + 1, c + 1, 'tree_1_1'); putObj(r + 1, c + 2, 'tree_1_2');
+        putObj(r + 2, c, 'tree_2_0'); putObj(r + 2, c + 1, 'tree_2_1'); putObj(r + 2, c + 2, 'tree_2_2');
       };
 
       // Top tree row
@@ -897,21 +1137,21 @@ class WorldScene extends Phaser.Scene {
 
       // Horizontal planters (right side, 3-wide)
       for (const c of [24, 28, 32, 36]) {
-        putObj(1, c, 'planter_h_0_0'); putObj(1, c+1, 'planter_h_0_1'); putObj(1, c+2, 'planter_h_0_2');
-        putObj(2, c, 'planter_h_1_0'); putObj(2, c+1, 'planter_h_1_1'); putObj(2, c+2, 'planter_h_1_2');
+        putObj(1, c, 'planter_h_0_0'); putObj(1, c + 1, 'planter_h_0_1'); putObj(1, c + 2, 'planter_h_0_2');
+        putObj(2, c, 'planter_h_1_0'); putObj(2, c + 1, 'planter_h_1_1'); putObj(2, c + 2, 'planter_h_1_2');
       }
 
       // Horizontal planters (left side, 2-wide modular caps)
       for (const c of [1, 5, 9, 13, 17]) {
-        putObj(1, c, 'planter_h_0_0'); putObj(1, c+1, 'planter_h_0_2');
-        putObj(2, c, 'planter_h_1_0'); putObj(2, c+1, 'planter_h_1_2');
+        putObj(1, c, 'planter_h_0_0'); putObj(1, c + 1, 'planter_h_0_2');
+        putObj(2, c, 'planter_h_1_0'); putObj(2, c + 1, 'planter_h_1_2');
       }
 
       // Vertical planters (column 40, 3-tall)
       for (const r of [4, 8, 16, 19]) {
         putObj(r, 40, 'planter_v_0');
-        putObj(r+1, 40, 'planter_v_1');
-        putObj(r+2, 40, 'planter_v_2');
+        putObj(r + 1, 40, 'planter_v_1');
+        putObj(r + 2, 40, 'planter_v_2');
       }
 
       // Water fountain (right courtyard)
@@ -924,53 +1164,53 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (key === 'garden') {
-        const m = [
-  ['gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rb', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', ['path_2_0', 'fountain_0_0'], ['path_2_0', 'fountain_1_0'], 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'fountain_0_1', 'fountain_1_1', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_lb'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', ['path_2_2', 'bench_0_0'], ['path_2_2', 'bench_0_1'], ['path_3_2', 'bench_0_2'], 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', ['path_2_0', 'bench_1_0'], ['path_2_0', 'bench_1_1'], ['path_2_0', 'bench_1_2'], 'path_2_4', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_1_3', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
-  ['gw_lb', 'gw_lb', 'gw_lb', 'gw_lb', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0']
-];
-        
-        // Tree placement
-        const offset = 0; // Removing old offset logic
-        
-        const putBigTree = (r, c) => {
-          if (r+2 >= m.length || c+2 >= m[0].length) return;
-          putObj(r, c, 'tree_0_0'); putObj(r, c+1, 'tree_0_1'); putObj(r, c+2, 'tree_0_2');
-          putObj(r+1, c, 'tree_1_0'); putObj(r+1, c+1, 'tree_1_1'); putObj(r+1, c+2, 'tree_1_2');
-          putObj(r+2, c, 'tree_2_0'); putObj(r+2, c+1, 'tree_2_1'); putObj(r+2, c+2, 'tree_2_2');
-        };
-        
-        const putObj = (r, c, name) => {
-          if (r >= 0 && r < m.length && c >= 0 && c < m[0].length) {
-            if (m[r][c] === 'grass' || m[r][c] === 'grass2' || m[r][c] === 'school_floor') {
-              m[r][c] = [m[r][c], name];
-            } else if (Array.isArray(m[r][c])) {
-              m[r][c].push(name);
-            } else {
-              m[r][c] = [m[r][c], name];
-            }
-          }
-        };
+      const m = [
+        ['gw_lt', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rb', 'grass', 'path_3_1', 'path_1_1', 'grass', 'gw_lb', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_t', 'gw_rt'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', ['path_2_0', 'fountain_0_0'], ['path_2_0', 'fountain_1_0'], 'path_3_0', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_r'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'fountain_0_1', 'fountain_1_1', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'gw_lb'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_3', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', ['path_2_2', 'bench_0_0'], ['path_2_2', 'bench_0_1'], ['path_3_2', 'bench_0_2'], 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_0', 'path_2_0', 'path_2_0', 'path_2_0', 'path_2_0', ['path_2_0', 'bench_1_0'], ['path_2_0', 'bench_1_1'], ['path_2_0', 'bench_1_2'], 'path_2_4', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'water_1_3', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_1_3', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_2_2', 'water_3_2', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_l', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0'],
+        ['gw_lb', 'gw_lb', 'gw_lb', 'gw_lb', 'gw_rt', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'water_3_1', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0', 'water_0_0']
+      ];
 
-        putBigTree(13, 2);
-        
-        return m;
-      }
+      // Tree placement
+      const offset = 0; // Removing old offset logic
+
+      const putBigTree = (r, c) => {
+        if (r + 2 >= m.length || c + 2 >= m[0].length) return;
+        putObj(r, c, 'tree_0_0'); putObj(r, c + 1, 'tree_0_1'); putObj(r, c + 2, 'tree_0_2');
+        putObj(r + 1, c, 'tree_1_0'); putObj(r + 1, c + 1, 'tree_1_1'); putObj(r + 1, c + 2, 'tree_1_2');
+        putObj(r + 2, c, 'tree_2_0'); putObj(r + 2, c + 1, 'tree_2_1'); putObj(r + 2, c + 2, 'tree_2_2');
+      };
+
+      const putObj = (r, c, name) => {
+        if (r >= 0 && r < m.length && c >= 0 && c < m[0].length) {
+          if (m[r][c] === 'grass' || m[r][c] === 'grass2' || m[r][c] === 'school_floor') {
+            m[r][c] = [m[r][c], name];
+          } else if (Array.isArray(m[r][c])) {
+            m[r][c].push(name);
+          } else {
+            m[r][c] = [m[r][c], name];
+          }
+        }
+      };
+
+      putBigTree(13, 2);
+
+      return m;
+    }
 
     if (key === 'corridor') {
       const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
@@ -988,14 +1228,14 @@ class WorldScene extends Phaser.Scene {
       }
       m[7][4] = 'bookshelf_t'; m[8][4] = 'bookshelf_b';
       m[1][10] = 'board';
-      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r'; 
-      m[0][5]  = 'door_big_l'; m[0][6]  = 'door_big_r'; 
-      m[1][5]  = 'school_floor'; m[1][6]  = 'school_floor';
-      m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r'; 
+      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
+      m[0][5] = 'door_big_l'; m[0][6] = 'door_big_r';
+      m[1][5] = 'school_floor'; m[1][6] = 'school_floor';
+      m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r';
       m[1][15] = 'school_floor'; m[1][16] = 'school_floor';
       m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
       this._autotileSchoolWalls(m);
-      
+
       // Manual texture overrides for corridor
       m[0][4] = m[2][0];
       m[1][0] = m[2][0];
@@ -1013,7 +1253,7 @@ class WorldScene extends Phaser.Scene {
       m[0][9] = m[2][0];
       m[0][14] = m[2][0];
       m[0][19] = 'school_wall_c'; // Full wall tile
-      
+
       return m;
     }
 
@@ -1176,14 +1416,17 @@ class WorldScene extends Phaser.Scene {
 
   /* ────── NPC spawning per map ────── */
   _spawnNPCs(mapKey) {
-    if (mapKey === 'garden' || mapKey === 'schoolyard') {
-      const offset = 10;
-      if (!this.registry.get('level1_complete')) {
-        // Nabula on the bench
-        this.npcs.push(new NPC(this, (4 + offset) * TILE + TILE / 2, 6 * TILE + TILE / 2,
-          'nabula', 'player_intro', { name: 'Nabula', emotion: '😔' }));
+    if (mapKey === 'garden') {
+      if (!this.registry.get('level1_complete') && !this.registry.get('level1_nabula_left_garden')) {
+        // Nabula on (12, 9) tile with sad emotion, facing left
+        const nabula = new NPC(this, 12 * TILE + TILE / 2, 9 * TILE + TILE / 2,
+          'nabula', 'lvl1_007_nakula', { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.anims.play('nabula_idle_left', true);
+        nabula.sprite.setFlipX(true);
+        this.npcs.push(nabula);
       }
-      
+    } else if (mapKey === 'schoolyard') {
+      const offset = 10;
       // Generic NPC near the door
       this.npcs.push(new NPC(this, (7 + offset) * TILE + TILE / 2, 1 * TILE + TILE / 2,
         'student', null, { name: 'Student' }));
@@ -1198,7 +1441,7 @@ class WorldScene extends Phaser.Scene {
           'bully', 'bully_taunt', { name: 'Bully' }));
         this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 3 * TILE + TILE / 2,
           'bully', null, { name: 'Bully 2' }));
-        
+
         if (!this.registry.get('level2_triggered')) {
           // Nabula being mocked
           this.npcs.push(new NPC(this, 11 * TILE + TILE / 2, 4 * TILE + TILE / 2,
@@ -1209,7 +1452,7 @@ class WorldScene extends Phaser.Scene {
             'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
         }
       }
-      
+
       // Riko lurking (always there or maybe also needs level 1?)
       // Let's keep him there for ambient.
       this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 8 * TILE + TILE / 2,
@@ -1234,22 +1477,22 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'classroom') {
       this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'rani', 'rani_intro', { name: 'Teacher Rani' }));
-        
+
       if (this.registry.get('level2_complete')) {
         this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'nabula', 'nabula_safe', { name: 'Nabula' }));
       }
-        
+
       // The Witness
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'witness_intro', { name: 'Witness' }));
-        
+
       // The abandoned smartphone (evidence)
       const phone = new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
         'student', 'evidence_phone', { name: 'Smartphone', immovable: true });
       phone.sprite.setAlpha(0); // Invisible, but has interaction radius and pulse indicator
       this.npcs.push(phone);
-      
+
       // Also ensure if we enter the room and we already have both evidence, Rani's dialogue is ready
       this._checkLevel3Ready();
     }
@@ -1257,7 +1500,7 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'auditorium') {
       this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
-        
+
       // The Initiative Board (Middle board at row 1, col 10)
       const isBuilt = this.registry.get('level4_complete');
       const board = new NPC(this, 10 * TILE + TILE / 2, 1 * TILE + TILE / 2,
@@ -1272,21 +1515,21 @@ class WorldScene extends Phaser.Scene {
         'student', 'student_chat_2', { name: 'Student' }));
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
         'player', 'student_chat_1', { name: 'Nakula' }));
-        
+
       if (!this.registry.get('level5_complete')) {
         const vx = 11 * TILE + TILE / 2;
         const vy = 3 * TILE + TILE / 2;
-        
+
         const victim = new NPC(this, vx, vy,
           'student', null, { name: 'Victim', immovable: true });
         victim.key = 'qte_victim';
         this.npcs.push(victim);
-        
+
         // Surrounding bullies
         this.npcs.push(new NPC(this, vx - TILE, vy, 'bully', null, { name: 'Bully 1', immovable: true })); // Left
         this.npcs.push(new NPC(this, vx + TILE, vy, 'bully', null, { name: 'Bully 2', immovable: true })); // Right
         this.npcs.push(new NPC(this, vx, vy - TILE, 'bully', null, { name: 'Bully 3', immovable: true })); // Top
-          
+
         this.qteArrow = this.add.text(victim.sprite.x, victim.sprite.y - 40, '⬇', {
           fontFamily: 'sans-serif',
           fontSize: '32px',
@@ -1294,7 +1537,7 @@ class WorldScene extends Phaser.Scene {
           stroke: '#ffffff',
           strokeThickness: 4
         }).setOrigin(0.5).setDepth(200).setVisible(false);
-        
+
         this.tweens.add({
           targets: this.qteArrow,
           y: victim.sprite.y - 30,
@@ -1331,7 +1574,7 @@ class WorldScene extends Phaser.Scene {
     for (let i = 0; i < this.npcs.length; i++) {
       const npc = this.npcs[i];
       if (!npc.dialogueId) continue;
-      
+
       const dx = px - npc.sprite.x;
       const dy = py - npc.sprite.y;
       const distSq = dx * dx + dy * dy;
@@ -1383,58 +1626,58 @@ class WorldScene extends Phaser.Scene {
       this._transitionsCache = {
         schoolyard: [
           // North to Classroom
-          { fromX: 21, fromY: 0,  toMap: 'classroom',  spawnX: 10, spawnY: 13 },
-          { fromX: 22, fromY: 0,  toMap: 'classroom',  spawnX: 10, spawnY: 13 },
+          { fromX: 21, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
+          { fromX: 22, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
           // South to Garden
-          { fromX: 20, fromY: 22, toMap: 'garden',     spawnX: 14, spawnY: 1 },
-          { fromX: 21, fromY: 22, toMap: 'garden',     spawnX: 14, spawnY: 1 },
-          { fromX: 22, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
-          { fromX: 23, fromY: 22, toMap: 'garden',     spawnX: 15, spawnY: 1 },
+          { fromX: 20, fromY: 22, toMap: 'garden', spawnX: 14, spawnY: 1 },
+          { fromX: 21, fromY: 22, toMap: 'garden', spawnX: 14, spawnY: 1 },
+          { fromX: 22, fromY: 22, toMap: 'garden', spawnX: 15, spawnY: 1 },
+          { fromX: 23, fromY: 22, toMap: 'garden', spawnX: 15, spawnY: 1 },
           // West to Cafeteria
-          { fromX: 0,  fromY: 13, toMap: 'cafeteria',  spawnX: 29, spawnY: 13 },
-          { fromX: 0,  fromY: 14, toMap: 'cafeteria',  spawnX: 29, spawnY: 14 },
+          { fromX: 0, fromY: 13, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
+          { fromX: 0, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 14 },
           // East to Library
-          { fromX: 42, fromY: 13, toMap: 'library',    spawnX: 1, spawnY: 9 },
-          { fromX: 42, fromY: 14, toMap: 'library',    spawnX: 1, spawnY: 10 }
+          { fromX: 42, fromY: 13, toMap: 'library', spawnX: 1, spawnY: 9 },
+          { fromX: 42, fromY: 14, toMap: 'library', spawnX: 1, spawnY: 10 }
         ],
         library: [
           // West to Schoolyard
-          { fromX: 0, fromY: 9,  toMap: 'schoolyard', spawnX: 41, spawnY: 13 },
+          { fromX: 0, fromY: 9, toMap: 'schoolyard', spawnX: 41, spawnY: 13 },
           { fromX: 0, fromY: 10, toMap: 'schoolyard', spawnX: 41, spawnY: 14 }
         ],
         garden: [
-          { fromX: 14, fromY: 0,  toMap: 'schoolyard', spawnX: 21, spawnY: 21 },
-          { fromX: 15, fromY: 0,  toMap: 'schoolyard', spawnX: 22, spawnY: 21 }
+          { fromX: 14, fromY: 0, toMap: 'schoolyard', spawnX: 21, spawnY: 21 },
+          { fromX: 15, fromY: 0, toMap: 'schoolyard', spawnX: 22, spawnY: 21 }
         ],
         corridor: [
-          { fromX: 10, fromY: 14, toMap: 'garden',      spawnX: 14, spawnY: 2  },
-          { fromX: 11, fromY: 14, toMap: 'garden',      spawnX: 14, spawnY: 2  },
-          { fromX: 5,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
-          { fromX: 6,  fromY: 0,  toMap: 'classroom',   spawnX: 10, spawnY: 13 },
-          { fromX: 15, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-          { fromX: 16, fromY: 0,  toMap: 'auditorium',  spawnX: 10, spawnY: 13 },
-          { fromX: 3,  fromY: 14, toMap: 'cafeteria',   spawnX: 29, spawnY: 13 },
-          { fromX: 4,  fromY: 14, toMap: 'cafeteria',   spawnX: 29, spawnY: 14 }
+          { fromX: 10, fromY: 14, toMap: 'garden', spawnX: 14, spawnY: 2 },
+          { fromX: 11, fromY: 14, toMap: 'garden', spawnX: 14, spawnY: 2 },
+          { fromX: 5, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
+          { fromX: 6, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
+          { fromX: 15, fromY: 0, toMap: 'auditorium', spawnX: 10, spawnY: 13 },
+          { fromX: 16, fromY: 0, toMap: 'auditorium', spawnX: 10, spawnY: 13 },
+          { fromX: 3, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
+          { fromX: 4, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 14 }
         ],
         classroom: [
-          { fromX: 10, fromY: 14, toMap: 'schoolyard',  spawnX: 21, spawnY: 1 },
-          { fromX: 11, fromY: 14, toMap: 'schoolyard',  spawnX: 22, spawnY: 1 }
+          { fromX: 10, fromY: 14, toMap: 'schoolyard', spawnX: 21, spawnY: 1 },
+          { fromX: 11, fromY: 14, toMap: 'schoolyard', spawnX: 22, spawnY: 1 }
         ],
         auditorium: [
-          { fromX: 10, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  },
-          { fromX: 11, fromY: 14, toMap: 'corridor',    spawnX: 15, spawnY: 2  }
+          { fromX: 10, fromY: 14, toMap: 'corridor', spawnX: 15, spawnY: 2 },
+          { fromX: 11, fromY: 14, toMap: 'corridor', spawnX: 15, spawnY: 2 }
         ],
         cafeteria: [
           // East to Schoolyard
-          { fromX: 30, fromY: 8,  toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 9,  toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 10, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 11, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 12, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 13, toMap: 'schoolyard',  spawnX: 1,  spawnY: 13 },
-          { fromX: 30, fromY: 14, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 },
-          { fromX: 30, fromY: 15, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 },
-          { fromX: 30, fromY: 16, toMap: 'schoolyard',  spawnX: 1,  spawnY: 14 }
+          { fromX: 30, fromY: 8, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 9, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 10, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 11, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 12, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 13, toMap: 'schoolyard', spawnX: 1, spawnY: 13 },
+          { fromX: 30, fromY: 14, toMap: 'schoolyard', spawnX: 1, spawnY: 14 },
+          { fromX: 30, fromY: 15, toMap: 'schoolyard', spawnX: 1, spawnY: 14 },
+          { fromX: 30, fromY: 16, toMap: 'schoolyard', spawnX: 1, spawnY: 14 }
         ]
       };
     }

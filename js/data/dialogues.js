@@ -2,72 +2,200 @@ const DIALOGUES = {
 
   /* ══════════ Level 1 — Detective Emotion (School Garden) ══════════ */
 
-  player_intro: {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_happy',
+  // 001: Narator
+  lvl1_001_narrator: {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
     text    : { 
-      en: 'Hey, look — Nabula is sitting alone over there on that bench. She seems… off. What do you think?',
-      id: 'Hei, lihat — Nabula duduk sendirian di bangku sana. Dia tampak… murung. Bagaimana menurutmu?' 
+      en: 'The recess bell rings. Nakula is walking in the school garden.',
+      id: 'Bel istirahat berbunyi. Nakula berjalan di taman sekolah.' 
+    },
+    next    : null,
+    action  : 'lvl1_start_walk'
+  },
+
+  // 003: ECA trigger saat Nakula mendekat ke Nabula (<= 3 block)
+  lvl1_003_eca: {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_surprised',
+    text    : { 
+      en: 'Wait... someone looks like they are holding back tears over there.',
+      id: 'Eh, tunggu... sepertinya ada yang lagi menahan tangis di sana.' 
+    },
+    next    : 'lvl1_004_choice'
+  },
+
+  // 004: Pilihan Pemain
+  lvl1_004_choice: {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_neutral',
+    text    : { 
+      en: 'What should we do?',
+      id: 'Apa yang harus kita lakukan?' 
     },
     choices : [
-      { label: { en: 'It seems like Nabula is sad…', id: 'Sepertinya Nabula sedang sedih…' },       next: 'nabula_sad_ack',   harmonyDelta:  10, action: 'nabula_smile_anim' },
-      { label: { en: 'Maybe she just wants to be alone.', id: 'Mungkin dia hanya ingin sendirian.' },   next: 'nabula_alone_ack', harmonyDelta:   0 },
-      { label: { en: 'I don\'t really care.', id: 'Aku tidak peduli.' },               next: 'nabula_ignore',    harmonyDelta:  -5 },
-      { label: { en: 'Let\'s go talk to her right now!', id: 'Ayo kita bicara dengannya sekarang!' },    next: 'nabula_eager',     harmonyDelta:   5 }
+      { 
+        label: { en: '1. "Let\'s go talk to her." (+25)', id: '1. "Ayo kita bicara dengannya." (+25)' },
+        next : 'lvl1_005a_1',
+        harmonyDelta: 25,
+        action: 'vibrate_choice'
+      },
+      { 
+        label: { en: '2. "I don\'t care." (-35)', id: '2. "Aku nggak peduli." (-35)' },
+        next : 'lvl1_005b_1',
+        harmonyDelta: -35,
+        action: 'vibrate_choice'
+      },
+      { 
+        label: { en: '3. "Maybe it\'s just my imagination." (-10)', id: '3. "Mungkin cuma perasaanku aja." (-10)' },
+        next : 'lvl1_005c_1',
+        harmonyDelta: -10,
+        action: 'vibrate_choice'
+      }
     ]
   },
 
-  nabula_sad_ack: {
-    speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_smile',
-    text    : { en: '… you noticed? That… actually means a lot. Thank you.', id: '… kamu sadar? Itu… sangat berarti bagiku. Terima kasih.' },
-    next    : 'player_impressed'
-  },
-
-  player_impressed: {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_happy',
-    text    : { en: 'See? Sometimes just noticing someone\'s feelings is the first step. Nice one.', id: 'Lihat kan? Terkadang sekadar menyadari perasaan seseorang adalah langkah pertama. Bagus sekali.' },
-    next    : null,
-    action  : 'complete_level1'
-  },
-
-  nabula_alone_ack: {
-    speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_neutral',
-    text    : { en: '… yeah, I guess. Everyone needs space sometimes.', id: '… ya, kurasa. Setiap orang butuh ruang kadang-kadang.' },
-    next    : 'player_hmm'
-  },
-
-  player_hmm: {
+  /* ── 005a Branch ── */
+  'lvl1_005a_1': {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_neutral',
-    text    : { en: 'Hmm… I wonder if that\'s really what\'s going on though.', id: 'Hmm… Aku jadi bertanya-tanya apakah itu benar-benar yang terjadi.' },
+    text    : { en: 'Let\'s go talk to her.', id: 'Ayo kita bicara dengannya.' },
     next    : null,
-    action  : 'complete_level1'
+    action  : 'lvl1_005a_walk' // Camera backs to Nakula, Nakula auto-walks to Nabula, auto-trigger 007
   },
 
-  nabula_ignore: {
+  /* ── 005b Branch ── */
+  'lvl1_005b_1': {
     speaker : { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_sad',
-    text    : { en: 'Come on… we should at least check on her. What if something\'s wrong?', id: 'Ayolah… kita setidaknya harus memeriksanya. Bagaimana kalau ada apa-apa?' },
-    next    : null,
-    action  : 'complete_level1'
+    text    : { en: 'I don\'t care.', id: 'Aku nggak peduli.' },
+    next    : 'lvl1_005b_2'
   },
-
-  nabula_eager: {
+  'lvl1_005b_2': {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: 'Nabula is still sitting alone. Nobody approaches her.',
+      id: 'Nabula masih duduk sendirian. Tidak ada yang menghampirinya.' 
+    },
+    next    : 'lvl1_005b_3'
+  },
+  'lvl1_005b_3': {
     speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_surprised',
-    text    : { en: 'Oh! Hi… I wasn\'t expecting anyone to come over. That\'s… nice of you.', id: 'Oh! Hai… Aku tidak menyangka akan ada yang datang. Kalian… baik sekali.' },
-    next    : 'player_smiles'
+    portrait: 'nabula_sad',
+    text    : { 
+      en: '(mumbles softly) "Nobody notices I\'m sad..."',
+      id: '(bergumam pelan) "Nggak ada yang nyadar aku lagi sedih..."' 
+    },
+    next    : 'lvl1_005b_4'
+  },
+  'lvl1_005b_4': {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_sad',
+    text    : { 
+      en: 'Nakula... look, Nabula is still there. I can\'t stop thinking about her.',
+      id: 'Nakula... coba lihat deh, Nabula masih di sana. Aku jadi kepikiran terus, nih.' 
+    },
+    next    : 'lvl1_005b_6'
+  },
+  'lvl1_005b_6': {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_neutral',
+    text    : { 
+      en: 'Should we go back and help her?',
+      id: 'Apakah kita mau kembali membantunya?' 
+    },
+    choices : [
+      {
+        label: { en: '1. "Approach Nabula." (+10)', id: '1. "Hampiri Nabula." (+10)' },
+        next : null,
+        harmonyDelta: 10,
+        action: 'lvl1_005b_approach'
+      },
+      {
+        label: { en: '2. "Leave it, keep walking." (-10)', id: '2. "Biarkan saja, lanjut jalan." (-10)' },
+        next : null,
+        harmonyDelta: -10,
+        action: 'lvl1_005b_ignore_quest'
+      }
+    ]
   },
 
-  player_smiles: {
+  /* ── 005c Branch ── */
+  'lvl1_005c_1': {
     speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_happy',
-    text    : { en: 'That\'s the spirit! Being proactive about reaching out matters.', id: 'Itu baru semangat! Bersikap proaktif untuk menjangkau orang lain itu penting.' },
+    portrait: 'player_sad',
+    text    : { en: 'Maybe it\'s just my imagination.', id: 'Mungkin cuma perasaanku aja.' },
+    next    : 'lvl1_005c_2',
+    action  : 'lvl1_camera_to_nakula'
+  },
+  'lvl1_005c_2': {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_sad',
+    text    : { 
+      en: 'Hmm... are you sure? Even from here, she clearly looks like she\'s holding back tears. Won\'t you regret leaving her alone?',
+      id: 'Hmm... yakin? Soalnya dari sini aja kelihatan dia nahan tangis, lho. Nyesel nggak, kalau kita biarin aja?' 
+    },
+    next    : 'lvl1_005c_3'
+  },
+  'lvl1_005c_3': {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_neutral',
+    text    : { 
+      en: 'Well... you\'re right. We better go check on her.',
+      id: 'Eh... iya juga, ya. Mending kita cek deh.' 
+    },
     next    : null,
-    action  : 'complete_level1'
+    action  : 'lvl1_005c_enable_move'
+  },
+
+  /* ── 007 - 011: Dialog Nakula & Nabula ── */
+  lvl1_007_nakula: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_neutral',
+    text    : { en: 'Nabula?', id: 'Nabula?' },
+    next    : 'lvl1_008_nabula',
+    action  : 'vibrate_soft'
+  },
+  lvl1_008_nabula: {
+    speaker : { en: 'Nabula', id: 'Nabula' },
+    portrait: 'nabula_sad',
+    text    : { en: 'Oh... hai, Nakula.', id: 'Oh... hai, Nakula.' },
+    next    : 'lvl1_009_narrator'
+  },
+  lvl1_009_narrator: {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: 'Nabula quickly wipes her eyes and tries to smile, but her smile looks unusual.',
+      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum, tapi senyumnya kelihatan nggak biasa.' 
+    },
+    next    : 'lvl1_010_nakula'
+  },
+  lvl1_010_nakula: {
+    speaker : { en: 'Nakula', id: 'Nakula' },
+    portrait: 'player_sad',
+    text    : { en: 'Are you okay, Nabula?', id: 'Kamu nggak apa-apa, Nabula?' },
+    next    : 'lvl1_011_nabula'
+  },
+  lvl1_011_nabula: {
+    speaker : { en: 'Nabula', id: 'Nabula' },
+    portrait: 'nabula_sad',
+    text    : { 
+      en: 'I\'m okay... I just wanted to be alone for a bit.',
+      id: 'Aku nggak apa-apa, kok. Cuma... pengen sendirian aja tadi.' 
+    },
+    next    : 'lvl1_012_narrator'
+  },
+  lvl1_012_narrator: {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: 'Nabula stands and walks toward the library.',
+      id: 'Nabula berdiri dan berjalan menuju perpustakaan.' 
+    },
+    next    : null,
+    action  : 'lvl1_012_nabula_leaves' // Nabula turns right, walks to (14, 12.5), camera follows
   },
 
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */
