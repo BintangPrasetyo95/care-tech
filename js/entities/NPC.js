@@ -52,8 +52,12 @@ class NPC {
       this.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
 
       this.emotionText = scene.add.text(0, 0, opts.emotion, {
-        fontSize: '12px'
+        fontSize: '13px',
+        resolution: Math.max(window.devicePixelRatio || 1, 2)
       }).setOrigin(0.5, 0.45);
+      if (this.emotionText.texture) {
+        this.emotionText.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      }
 
       this.emotionContainer = scene.add.container(x, y - 35, [this.emotionBubble, this.emotionText])
         .setDepth(11);
