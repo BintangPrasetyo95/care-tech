@@ -562,7 +562,16 @@ class WorldScene extends Phaser.Scene {
 
   /* ────── Proximity indicator updates ────── */
   _updateProximity() {
-    if (this.registry.get('dialogueActive')) return;
+    if (this.registry.get('dialogueActive')) {
+      for (let i = 0; i < this.npcs.length; i++) {
+        this.npcs[i].setIndicatorVisible(false);
+      }
+      const uiScene = this.scene.get('UI');
+      if (uiScene && uiScene.setInteractPrompt) {
+        uiScene.setInteractPrompt(false);
+      }
+      return;
+    }
 
     let nearest = null;
     let nearestDistSq = (TILE * 1.8) * (TILE * 1.8);

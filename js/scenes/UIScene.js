@@ -378,57 +378,48 @@ class UIScene extends Phaser.Scene {
       yoyo: true, repeat: -1, duration: 500
     });
 
-    // ── Clickable option buttons (Attractive Interactive Choice Cards) ────────
+    // ── Clickable option buttons (Cards if wide, full-width rows if short) ────────
     this.optionButtons = [];
-    const optStartY = this._boxY + 54;
-    const optSpacing = 28;
-    const optBtnW = this._boxW - 28;
     const badgeColors = [0xffe500, 0x00e5ff, 0x39ff14, 0xff2e93];
 
     for (let i = 0; i < 4; i++) {
-      const btnContainer = this.add.container(this._boxX + 14, optStartY + i * optSpacing)
+      const btnContainer = this.add.container(0, 0)
         .setScrollFactor(1).setDepth(205).setVisible(false);
       
       const shadow = this.add.graphics();
-      shadow.fillStyle(0x000000, 1).fillRoundedRect(3, 3, optBtnW, 24, 6);
-      
       const bg = this.add.graphics();
-      const drawCardBg = (fillColor, borderColor = 0x000000) => {
-        bg.clear()
-          .fillStyle(fillColor, 1).fillRoundedRect(0, 0, optBtnW, 24, 6)
-          .lineStyle(2, borderColor, 1).strokeRoundedRect(0, 0, optBtnW, 24, 6);
-      };
-      drawCardBg(0xffffff);
-
       const numBadge = this.add.graphics();
-      numBadge.fillStyle(badgeColors[i], 1).fillRoundedRect(4, 3, 20, 18, 4)
-        .lineStyle(1.5, 0x000000, 1).strokeRoundedRect(4, 3, 20, 18, 4);
 
-      const numTxt = this.add.text(14, 12, `${i + 1}`, {
+      const numTxt = this.add.text(14, 13, `${i + 1}`, {
         fontFamily: '"GROBOLD", monospace',
         fontSize: '11px',
         color: '#000000',
         fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      const labelTxt = this.add.text(32, 12, '', {
+      const labelTxt = this.add.text(32, 13, '', {
         fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
         fontSize: '10.5px',
         fontStyle: 'bold',
-        color: '#000000',
-        wordWrap: { width: optBtnW - 54 }
+        color: '#000000'
       }).setOrigin(0, 0.5);
 
-      const arrowTxt = this.add.text(optBtnW - 14, 12, '▶', {
+      const arrowTxt = this.add.text(0, 13, '▶', {
         fontFamily: '"GROBOLD", monospace',
         fontSize: '10px',
         color: '#ff2e93',
         fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      const zone = this.add.zone(optBtnW / 2, 12, optBtnW, 24).setInteractive({ useHandCursor: true });
+      const zone = this.add.zone(0, 0, 100, 26).setInteractive({ useHandCursor: true });
 
       btnContainer.add([shadow, bg, numBadge, numTxt, labelTxt, arrowTxt, zone]);
+
+      const drawCardBg = (fillColor, borderColor = 0x000000) => {
+        bg.clear()
+          .fillStyle(fillColor, 1).fillRoundedRect(0, 0, optObj.cardW, optObj.cardH, 6)
+          .lineStyle(2, borderColor, 1).strokeRoundedRect(0, 0, optObj.cardW, optObj.cardH, 6);
+      };
 
       const optObj = {
         container: btnContainer,
@@ -440,14 +431,22 @@ class UIScene extends Phaser.Scene {
         labelTxt,
         arrowTxt,
         zone,
-        optBtnW,
-        updateWidth: (newW) => {
-          optObj.optBtnW = newW;
-          shadow.clear().fillStyle(0x000000, 1).fillRoundedRect(3, 3, newW, 24, 6);
+        cardW: 200,
+        cardH: 26,
+        updateDimensions: (newW, newH = 26) => {
+          optObj.cardW = newW;
+          optObj.cardH = newH;
+          shadow.clear().fillStyle(0x000000, 1).fillRoundedRect(3, 3, newW, newH, 6);
           drawCardBg(0xffffff);
-          arrowTxt.setX(newW - 14);
-          labelTxt.setStyle({ wordWrap: { width: newW - 54 } });
-          zone.setSize(newW, 24).setPosition(newW / 2, 12);
+
+          numBadge.clear()
+            .fillStyle(badgeColors[i], 1).fillRoundedRect(4, Math.floor((newH - 18) / 2), 20, 18, 4)
+            .lineStyle(1.5, 0x000000, 1).strokeRoundedRect(4, Math.floor((newH - 18) / 2), 20, 18, 4);
+
+          numTxt.setPosition(14, Math.floor(newH / 2));
+          labelTxt.setPosition(32, Math.floor(newH / 2)).setStyle({ wordWrap: { width: newW - 52 } });
+          arrowTxt.setPosition(newW - 14, Math.floor(newH / 2));
+          zone.setSize(newW, newH).setPosition(newW / 2, newH / 2);
         }
       };
 
@@ -543,12 +542,24 @@ class UIScene extends Phaser.Scene {
     this.dialogText.setStyle({ wordWrap: { width: this._boxW - 28 } });
     this.continueText.setPosition(this._boxX + this._boxW - 16, this._boxY + this._boxH - 14);
 
-    const optStartY = this._boxY + 54;
-    const optSpacing = 28;
-    const optBtnW = this._boxW - 28;
+    const isWide = this._boxW >= 560;
+    const textBottom = this.dialogText.y + this.dialogText.height;
+    const optStartY = Math.max(this._boxY + 50, textBottom + 10);
+
+    const cardGap = 10;
+    const singleCardW = this._boxW - 28;
+    const gridCardW = Math.floor((singleCardW - cardGap) / 2);
+    const cardW = isWide ? gridCardW : singleCardW;
+    const cardH = isWide ? 28 : 24;
+    const rowSpacing = isWide ? 34 : 28;
+
     this.optionButtons.forEach((opt, i) => {
-      opt.updateWidth(optBtnW);
-      opt.container.setPosition(this._boxX + 14, optStartY + i * optSpacing);
+      opt.updateDimensions(cardW, cardH);
+      const col = isWide ? (i % 2) : 0;
+      const row = isWide ? Math.floor(i / 2) : i;
+      const posX = isWide ? (this._boxX + 14 + col * (cardW + cardGap)) : (this._boxX + 14);
+      const posY = optStartY + row * rowSpacing;
+      opt.container.setPosition(posX, posY);
     });
   }
 
@@ -597,13 +608,27 @@ class UIScene extends Phaser.Scene {
   /** Start displaying a dialogue tree from the given node */
   startDialogue(nodeId) {
     this.registry.set('dialogueActive', true);
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.add('dialogue-active');
+    }
+    if (typeof window !== 'undefined') {
+      if (typeof window.setDialogueActive === 'function') {
+        window.setDialogueActive(true);
+      }
+      if (typeof window.resetJoystick === 'function') {
+        window.resetJoystick();
+      }
+    }
+    if (this.interactPrompt) {
+      this.interactPrompt.setAlpha(0);
+    }
     this._showNode(nodeId);
   }
 
   /** Show/hide the 'Press E' interaction prompt */
   setInteractPrompt(visible) {
     if (this.registry.get('dialogueActive')) {
-      this.interactPrompt.setAlpha(0);
+      if (this.interactPrompt) this.interactPrompt.setAlpha(0);
       return;
     }
     const target = visible ? 0.9 : 0;
@@ -652,10 +677,18 @@ class UIScene extends Phaser.Scene {
       this.portraitImage.setVisible(false);
     }
 
-    // ── Render option buttons INSIDE the box ────────
+    // ── Render option buttons: CARDS if dialogue width is long, full-width rows if short ──
     const choices = node.choices || [];
-    const optStartY = this._boxY + 54;
-    const optSpacing = 28;
+    const isWide = this._boxW >= 560;
+    const textBottom = this.dialogText.y + this.dialogText.height;
+    const optStartY = Math.max(this._boxY + 50, textBottom + 10);
+
+    const cardGap = 10;
+    const singleCardW = this._boxW - 28;
+    const gridCardW = Math.floor((singleCardW - cardGap) / 2);
+    const cardW = isWide ? gridCardW : singleCardW;
+    const cardH = isWide ? 28 : 24;
+    const rowSpacing = isWide ? 34 : 28;
 
     for (let i = 0; i < this.optionButtons.length; i++) {
       const opt = this.optionButtons[i];
@@ -663,12 +696,25 @@ class UIScene extends Phaser.Scene {
 
       if (i < choices.length) {
         const ch = choices[i];
-        const labelText = typeof ch.label === 'object' ? ch.label[lang] : ch.label;
+        let labelText = typeof ch.label === 'object' ? ch.label[lang] : ch.label;
+        // Strip score helpers (+25, -35, etc) and redundant leading index numbers (1. , 2. )
+        labelText = (labelText || '')
+          .replace(/\s*\([+-]\d+\)/g, '')
+          .replace(/^\d+\.\s*/, '')
+          .trim();
+
         opt.labelTxt.setText(labelText);
         opt.numTxt.setText(`${i + 1}`);
+        opt.updateDimensions(cardW, cardH);
         opt.drawCardBg(0xffffff);
+
+        const col = isWide ? (i % 2) : 0;
+        const row = isWide ? Math.floor(i / 2) : i;
+        const posX = isWide ? (this._boxX + 14 + col * (cardW + cardGap)) : (this._boxX + 14);
+        const posY = optStartY + row * rowSpacing;
+
         opt.container
-          .setPosition(this._boxX + 14, optStartY + i * optSpacing)
+          .setPosition(posX, posY)
           .setVisible(true);
 
         opt.zone.on('pointerdown', () => {
@@ -769,6 +815,13 @@ class UIScene extends Phaser.Scene {
     if (this._dialogueTimer) {
       this._dialogueTimer.destroy();
       this._dialogueTimer = null;
+    }
+
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.remove('dialogue-active');
+    }
+    if (typeof window !== 'undefined' && typeof window.setDialogueActive === 'function') {
+      window.setDialogueActive(false);
     }
 
     this.registry.set('dialogueActive', false);

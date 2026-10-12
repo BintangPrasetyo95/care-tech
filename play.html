@@ -147,13 +147,26 @@
     }
 
     /* ══════════ MENU PRIORITY OVERRIDE ══════════ */
-    /* When any menu, modal, or dialogue is open, menu has total priority: hide and disable touch controls */
-    body.menu-open #mobile-controls,
-    #level-select-modal:not(.hidden) ~ #mobile-controls,
-    #mobile-start-overlay:not(.hidden) ~ #mobile-controls,
-    #mobile-controls.dialogue-hidden {
+    /* When pause menu is open, touch events pass through to menu without moving analog */
+    body.menu-open #joystick-zone {
+      pointer-events: none !important;
+    }
+
+    /* ══════════ DIALOGUE STATE: ONLY THE ANALOG IS GONE ══════════ */
+    /* The analog joystick (zone, container, thumb) is gone ONLY in dialogue state.
+       The action button E remains visible and interactive so players can advance dialogues. */
+    body.dialogue-active #joystick-zone,
+    #mobile-controls.dialogue-active #joystick-zone,
+    body.dialogue-active #joystick-container,
+    #mobile-controls.dialogue-active #joystick-container {
       display: none !important;
       pointer-events: none !important;
+    }
+
+    body.dialogue-active #btn-action,
+    #mobile-controls.dialogue-active #btn-action {
+      display: flex !important;
+      pointer-events: auto !important;
     }
     
     /* ══════════ Dynamic Floating Analog Joystick & Action Button ══════════ */
@@ -593,7 +606,7 @@
         </div>
       </div>
     </div>
-    <div class="action-btn" id="btn-action">A</div>
+    <div class="action-btn" id="btn-action">E</div>
   </div>
 
   <!-- Pre-loader shown while scripts download -->
@@ -804,11 +817,13 @@
         }
       });
 
-      /* ── Action Button (A / Interaksi) ── */
+      /* ── Action Button (E / Interaksi) ── */
       const triggerAction = () => {
         window.virtualInput.actionJustDown = true;
-        const ev = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
-        window.dispatchEvent(ev);
+        const evE = new KeyboardEvent('keydown', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true });
+        window.dispatchEvent(evE);
+        const evSpace = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
+        window.dispatchEvent(evSpace);
         const evEnter = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
         window.dispatchEvent(evEnter);
       };
@@ -872,14 +887,12 @@
         });
       }
 
-      // Check saved preference on startup
+      // Check saved preference on startup (default: ON unless explicitly turned off)
       const savedAnalogMode = localStorage.getItem('caretech_analog_mode');
-      if (savedAnalogMode === 'on') {
-        window.setAnalogActive(true);
-      } else if (savedAnalogMode === 'off') {
+      if (savedAnalogMode === 'off') {
         window.setAnalogActive(false);
       } else {
-        updateLobbyAnalogBtn(window.isAnalogActive());
+        window.setAnalogActive(true);
       }
 
       // Shortcut F2 to toggle analog anytime
@@ -911,18 +924,30 @@
         });
       }
 
-      // Hide controls during dialogue
+      // Dialogue state sync: ONLY the analog is gone during dialogue state
+      const setDialogueActive = (active) => {
+        const isAct = !!active;
+        document.body.classList.toggle('dialogue-active', isAct);
+        const controls = document.getElementById('mobile-controls');
+        if (controls) {
+          controls.classList.toggle('dialogue-active', isAct);
+          controls.classList.remove('dialogue-hidden');
+        }
+        if (isAct && typeof resetJoystick === 'function') {
+          resetJoystick();
+        }
+      };
+
+      window.setDialogueActive = setDialogueActive;
+
       const checkDialogue = setInterval(() => {
         if (window.game && window.game.registry) {
           window.game.registry.events.on('changedata-dialogueActive', (parent, value) => {
-            const controls = document.getElementById('mobile-controls');
-            if (controls) {
-              controls.classList.toggle('dialogue-hidden', !!value);
-            }
+            setDialogueActive(value);
           });
           clearInterval(checkDialogue);
         }
-      }, 200);
+      }, 100);
     });
   </script>
 
