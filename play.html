@@ -1,27 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CARE-TECH: An anti-bullying narrative RPG set in Harmonia School. Build empathy, protect friends, and raise the Harmony Index." />
-  <title>CARE-TECH: Harmonia School</title>
+  <meta name="description" content="CARE-TECH: Game RPG naratif anti-perundungan di Harmonia School. Bangun empati, lindungi teman, dan tingkatkan Indeks Harmoni." />
+  <title>CareTech - Harmonia School RPG (Cardboard Cosmos)</title>
   <link rel="icon" href="assets/logo-care-tech.png" />
-  <style>
-    @font-face {
-      font-family: 'GROBOLD';
-      src: local('GROBOLD'), local('Grobold'), url('assets/fonts/GROBOLD.ttf') format('truetype');
-      font-weight: 100 900;
-      font-style: normal;
-      font-display: swap;
-    }
 
+  <!-- Fonts: Retro 8-bit Pixel Font & Clean Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Cardboard Cosmos Stylesheet -->
+  <link rel="stylesheet" href="dashboard.css">
+
+  <style>
     /* ── Reset & full-bleed canvas ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      background: #e8faff;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: var(--mk);
+      color: var(--ink);
     }
     canvas {
       display: block;
@@ -30,12 +31,53 @@
       image-rendering: crisp-edges;
     }
 
-    /* ══════════ Pre-game loading screen ══════════ */
+    /* ══════════ Floating Top Bar Quick Nav ══════════ */
+    .game-top-nav {
+      position: fixed;
+      top: 10px;
+      right: 14px;
+      z-index: 9980;
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+    .game-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.35rem 0.85rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: var(--ink);
+      text-decoration: none;
+      background: #ffffff;
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 3px 3px 0 var(--ink);
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .game-nav-btn:hover {
+      background: var(--sun);
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .game-nav-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+
+    /* ══════════ Pre-game loading screen (Cardboard Cosmos) ══════════ */
     #preloader {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, #ddecec 0%, #0f1011 100%);
+      background:
+        linear-gradient(90deg, transparent 0 62px, rgba(230, 30, 70, 0.4) 62px 65px, transparent 65px),
+        repeating-linear-gradient(0deg, transparent 0 33px, rgba(40, 110, 220, 0.2) 33px 35px),
+        var(--cardboard);
       z-index: 9999;
       transition: opacity 1.2s ease-in-out, visibility 1.2s;
     }
@@ -43,42 +85,46 @@
       opacity: 0; 
       visibility: hidden;
     }
-    #preloader h1 {
-      font-family: 'GROBOLD', 'Grobold', sans-serif;
-      font-size: 2.2rem; 
-      color: #3b65c7; 
-      font-weight: 400;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
+    .preloader-card {
+      background: #ffffff;
+      border: 4px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      transform: rotate(-0.8deg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #preloader h1 span { 
-      font-weight: 600;
-      background: linear-gradient(90deg, #0ea5e9, #2cb67d);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    #preloader p {
-      color: #64748b; font-size: 0.95rem; margin-bottom: 3rem;
-      font-weight: 400; letter-spacing: 0.05em;
+    .preloader-card img {
+      max-width: 250px;
+      width: 100%;
+      margin-bottom: 1.2rem;
+      filter: drop-shadow(4px 4px 0 var(--ink));
+      transform: rotate(-1.5deg);
     }
     
     .loader-orb {
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #38bdf8, #34d399);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 10px rgba(255,255,255,0.8);
-      animation: orbPulse 2s ease-in-out infinite alternate;
+      background: linear-gradient(135deg, var(--cy), var(--lime));
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      animation: orbPulse 1.4s ease-in-out infinite alternate;
+      margin-top: 0.5rem;
     }
     @keyframes orbPulse {
       0% {
-        transform: scale(0.95) translateY(0px);
-        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2), inset 0 0 8px rgba(255,255,255,0.6);
+        transform: scale(0.9) translateY(0px) rotate(0deg);
+        box-shadow: 3px 3px 0 var(--ink);
       }
       100% {
-        transform: scale(1.05) translateY(-5px);
-        box-shadow: 0 0 35px rgba(52, 211, 153, 0.5), inset 0 0 15px rgba(255,255,255,0.9);
+        transform: scale(1.1) translateY(-6px) rotate(15deg);
+        box-shadow: 7px 7px 0 var(--ink);
       }
     }
   
@@ -86,15 +132,33 @@
     #mobile-start-overlay {
       display: none;
       position: fixed; inset: 0;
-      background: rgba(15, 16, 17, 0.95);
+      background: rgba(229, 217, 197, 0.96);
       z-index: 10000;
       flex-direction: column; align-items: center; justify-content: center;
-      color: white; text-align: center;
+      padding: 1.5rem;
+      text-align: center;
     }
-    #mobile-start-overlay h2 { font-family: 'GROBOLD', 'Grobold', sans-serif; font-size: 2rem; margin-bottom: 1rem; color: #38bdf8; }
-    #mobile-start-overlay button {
-      padding: 1rem 2rem; font-size: 1.5rem; background: #2cb67d; color: white;
-      border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+    .mobile-overlay-box {
+      background: #ffffff;
+      border: 4px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      box-shadow: 7px 7px 0 var(--ink);
+      padding: 2.2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .mobile-overlay-box h2 {
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.2rem;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .mobile-overlay-box p {
+      font-family: var(--mk);
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 1.8rem;
     }
     @media (hover: none) and (pointer: coarse), (max-width: 900px) {
       #mobile-start-overlay:not(.hidden) { display: flex; }
@@ -109,44 +173,59 @@
     .mobile-active #mobile-controls { display: block; }
     
     .d-pad {
-      position: absolute; bottom: 20px; left: 20px;
+      position: absolute; bottom: 24px; left: 24px;
       width: 150px; height: 150px;
       pointer-events: auto;
     }
     .d-btn {
       position: absolute;
-      width: 50px; height: 50px;
-      background: rgba(255, 255, 255, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.5);
+      width: 48px; height: 48px;
+      background: #ffffff;
+      border: 3px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: white; font-weight: bold;
+      font-size: 22px; color: var(--ink); font-weight: 900;
       user-select: none; -webkit-user-select: none;
+      transition: transform 0.08s ease, background-color 0.08s;
     }
-    .d-btn:active, .action-btn:active { background: rgba(255, 255, 255, 0.6); }
+    .d-btn:active {
+      background: var(--sun);
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
     .d-up { top: 0; left: 50px; }
     .d-down { bottom: 0; left: 50px; }
     .d-left { top: 50px; left: 0; }
     .d-right { top: 50px; right: 0; }
     
     .action-btn {
-      position: absolute; bottom: 40px; right: 40px;
-      width: 80px; height: 80px;
-      background: rgba(44, 182, 125, 0.5);
-      border: 2px solid rgba(44, 182, 125, 0.8);
+      position: absolute; bottom: 44px; right: 36px;
+      width: 78px; height: 78px;
+      background: var(--lime);
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: white; font-weight: bold;
+      font-size: 26px; color: var(--ink); font-weight: 900;
+      font-family: 'GROBOLD', var(--imp);
       pointer-events: auto;
       user-select: none; -webkit-user-select: none;
+      transition: transform 0.08s ease;
+    }
+    .action-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 var(--ink);
+      background: #2fe00e;
     }
 
-    /* ══════════ Level Selection Screen Modal ══════════ */
+    /* ══════════ Level Selection Screen Modal (Cardboard Dossier) ══════════ */
     #level-select-modal {
       position: fixed; inset: 0;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.98) 100%);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background:
+        radial-gradient(circle at center, rgba(229, 217, 197, 0.94) 0%, rgba(200, 150, 79, 0.96) 100%);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       z-index: 9990;
       display: flex;
       flex-direction: column;
@@ -155,201 +234,318 @@
       padding: 1.5rem;
       opacity: 1;
       visibility: visible;
-      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+      overflow-y: auto;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
     }
     #level-select-modal.hidden {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
+    .level-select-board {
+      max-width: 1040px;
+      width: 100%;
+      text-align: center;
+      margin: auto;
+      padding: 1rem 0;
+    }
     .level-select-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.8rem;
+    }
+    .level-select-header img {
+      max-width: 240px;
+      filter: drop-shadow(4px 4px 0 var(--ink));
+      transform: rotate(-1.5deg);
+      margin-bottom: 0.8rem;
     }
     .level-select-header h1 {
-      font-family: 'GROBOLD', 'Grobold', sans-serif;
-      font-size: 2.2rem;
-      color: #38bdf8;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.6rem;
+      color: var(--ink);
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3rem;
+      text-shadow: 3px 3px 0 #ffffff;
     }
     .level-select-header p {
-      color: #94a3b8;
-      font-size: 1rem;
-      max-width: 480px;
+      color: #222;
+      font-family: var(--mk);
+      font-size: 1.12rem;
+      font-weight: 700;
+      max-width: 620px;
+      margin: 0 auto;
     }
     .level-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 1.25rem;
-      max-width: 1000px;
+      gap: 1.3rem;
+      max-width: 1020px;
       width: 100%;
-      margin-bottom: 2rem;
+      margin: 0 auto 2rem auto;
     }
-    @media (max-width: 860px) {
+    @media (max-width: 920px) {
       .level-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-    @media (max-width: 540px) {
+    @media (max-width: 580px) {
       .level-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .level-select-header h1 {
+        font-size: 1.9rem;
       }
     }
     .level-card {
       position: relative;
-      background: rgba(30, 41, 59, 0.7);
-      border: 2px solid rgba(56, 189, 248, 0.2);
-      border-radius: 16px;
+      background: #ffffff;
+      border: 3.5px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
       padding: 1.5rem 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: space-between;
       text-align: center;
-      color: white;
+      color: var(--ink);
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease, background 0.2s;
+      box-shadow: 6px 6px 0 var(--ink);
       user-select: none;
     }
+    .level-card:nth-child(even) {
+      border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+      transform: rotate(1.2deg);
+    }
+    .level-card:nth-child(odd) {
+      transform: rotate(-1.2deg);
+    }
     .level-card:not(.locked):hover {
-      transform: translateY(-6px) scale(1.02);
-      border-color: #38bdf8;
-      background: rgba(30, 41, 59, 0.95);
-      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
+      transform: translateY(-8px) scale(1.03) rotate(0deg) !important;
+      background: #fffdf5;
+      box-shadow: 10px 10px 0 var(--ink) !important;
     }
     .level-card.locked {
-      background: rgba(15, 23, 42, 0.6);
-      border-color: rgba(71, 85, 105, 0.3);
+      background: #f1ebd8;
+      border-color: #555555;
       color: #64748b;
       cursor: not-allowed;
-      filter: grayscale(0.8);
-      opacity: 0.65;
+      opacity: 0.85;
+      box-shadow: 4px 4px 0 #555555;
     }
     .level-num-badge {
-      font-family: 'GROBOLD', 'Grobold', sans-serif;
-      font-size: 2rem;
-      width: 52px;
-      height: 52px;
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.2rem;
+      width: 56px;
+      height: 56px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 0.8rem;
-      background: rgba(14, 165, 233, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: var(--sun);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      transform: rotate(-2deg);
     }
     .level-card.locked .level-num-badge {
-      background: rgba(51, 65, 85, 0.3);
+      background: #cbd5e1;
       color: #64748b;
-      border-color: rgba(71, 85, 105, 0.2);
+      border-color: #64748b;
+      box-shadow: 2px 2px 0 #64748b;
+      transform: none;
     }
     .level-title {
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 1.2rem;
       margin-bottom: 0.35rem;
-      color: #f8fafc;
+      color: var(--ink);
     }
     .level-card.locked .level-title {
-      color: #94a3b8;
+      color: #555555;
     }
     .level-sub {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      line-height: 1.3;
+      font-family: var(--mk);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #333333;
+      line-height: 1.35;
+      margin-bottom: 0.8rem;
+      min-height: 2.5rem;
     }
     .level-card.locked .level-sub {
       color: #64748b;
     }
     .lock-tag {
-      margin-top: 0.75rem;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: rgba(71, 85, 105, 0.35);
-      color: #94a3b8;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 900;
+      background: #e2e8f0;
+      color: #475569;
+      border: 2px dashed #64748b;
     }
     .play-tag {
-      margin-top: 0.75rem;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      background: rgba(44, 182, 125, 0.2);
-      color: #2cb67d;
-      border: 1px solid rgba(44, 182, 125, 0.4);
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 900;
+      background: var(--lime);
+      color: var(--ink);
+      border: 2.5px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      text-transform: uppercase;
+      transition: background 0.15s ease;
+    }
+    .play-tag:hover {
+      background: #2fe00e;
+    }
+
+    /* Bottom Navigation Row in Level Select */
+    .level-modal-nav {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .level-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-family: var(--mk);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: var(--paper-warm);
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 14px;
+      padding: 0.65rem 1.4rem;
+      transition: all 0.15s ease;
+    }
+    .level-nav-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 6px 6px 0 var(--ink);
+      background: #ffffff;
+    }
+    .level-nav-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .level-nav-btn.primary {
+      background: var(--sun);
     }
 
   </style>
 </head>
 <body>
 
-  <!-- Level Selection Modal (First screen shown when entering game) -->
+  <!-- Floating Space Background Stars -->
+  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;" aria-hidden="true">
+    <b class="star" style="top:10%;left:15%"></b>
+    <b class="star" style="top:26%;right:12%;color:var(--cy);animation-delay:-0.5s"></b>
+    <b class="star" style="top:70%;left:16%;color:var(--pink);animation-delay:-1.2s"></b>
+    <b class="star" style="top:84%;right:20%;color:var(--lime);animation-delay:-0.8s"></b>
+  </div>
+
+  <!-- Quick Floating In-Game Navigation -->
+  <div class="game-top-nav">
+    <a href="game.html" class="game-nav-btn" title="Kembali ke Panduan Game">
+      <span>⬅</span> <span>Menu Game</span>
+    </a>
+  </div>
+
+  <!-- Level Selection Modal (Cardboard Cosmos Dossier) -->
   <div id="level-select-modal">
-    <div class="level-select-header">
-      <img src="assets/logo-care-tech-with-text.png" alt="CARE-TECH" style="max-width: 220px; margin-bottom: 1rem;">
-      <h1>PILIH LEVEL</h1>
-      <p>Jelajahi sekolah Harmonia, tumbuhkan empati, dan bantu teman-temanmu mengatasi perundungan.</p>
-    </div>
+    <div class="level-select-board">
+      <span class="tape tape-pink" style="font-size: 0.95rem; margin-bottom: 0.8rem; transform: rotate(-1.5deg);">
+        ★ PAPAN MISI HARMONIA // CARE-TECH RPG ★
+      </span>
 
-    <div class="level-grid">
-      <!-- Level 1 (UNLOCKED) -->
-      <div class="level-card" id="btn-select-level-1" tabindex="0">
-        <div class="level-num-badge">1</div>
-        <div class="level-title">Level 1</div>
-        <div class="level-sub">Detektif Emosi<br>(Taman Sekolah)</div>
-        <div class="play-tag">▶ Mainkan</div>
+      <div class="level-select-header">
+        <img src="assets/logo-care-tech-with-text.png" alt="CARE-TECH">
+        <h1>PILIH LEVEL PETUALANGAN</h1>
+        <p>Jelajahi sekolah Harmonia, bangun empati, lindungi teman-temanmu, dan raih Indeks Harmoni tertinggi!</p>
       </div>
 
-      <!-- Level 2 (LOCKED) -->
-      <div class="level-card locked" title="Terkunci - Selesaikan Level 1">
-        <div class="level-num-badge">2</div>
-        <div class="level-title">Level 2</div>
-        <div class="level-sub">Penyelamatan Empati<br>(Lorong)</div>
-        <div class="lock-tag">🔒 Terkunci</div>
+      <div class="level-grid">
+        <!-- Level 1 (UNLOCKED) -->
+        <div class="level-card" id="btn-select-level-1" tabindex="0">
+          <div class="level-num-badge">1</div>
+          <div class="level-title">Level 1</div>
+          <div class="level-sub">Detektif Emosi<br>(Taman Sekolah)</div>
+          <div class="play-tag">▶ Mainkan</div>
+        </div>
+
+        <!-- Level 2 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 1">
+          <div class="level-num-badge">2</div>
+          <div class="level-title">Level 2</div>
+          <div class="level-sub">Penyelamatan Empati<br>(Lorong)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 3 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 2">
+          <div class="level-num-badge">3</div>
+          <div class="level-title">Level 3</div>
+          <div class="level-sub">Kasus Misteri<br>(Ruang Kelas)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 4 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 3">
+          <div class="level-num-badge">4</div>
+          <div class="level-title">Level 4</div>
+          <div class="level-sub">Pembangun Harmoni<br>(Auditorium)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 5 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 4">
+          <div class="level-num-badge">5</div>
+          <div class="level-title">Level 5</div>
+          <div class="level-sub">Tantangan Waktu X<br>(Kantin)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
       </div>
 
-      <!-- Level 3 (LOCKED) -->
-      <div class="level-card locked" title="Terkunci - Selesaikan Level 2">
-        <div class="level-num-badge">3</div>
-        <div class="level-title">Level 3</div>
-        <div class="level-sub">Kasus Misteri<br>(Ruang Kelas)</div>
-        <div class="lock-tag">🔒 Terkunci</div>
-      </div>
-
-      <!-- Level 4 (LOCKED) -->
-      <div class="level-card locked" title="Terkunci - Selesaikan Level 3">
-        <div class="level-num-badge">4</div>
-        <div class="level-title">Level 4</div>
-        <div class="level-sub">Pembangun Harmoni<br>(Auditorium)</div>
-        <div class="lock-tag">🔒 Terkunci</div>
-      </div>
-
-      <!-- Level 5 (LOCKED) -->
-      <div class="level-card locked" title="Terkunci - Selesaikan Level 4">
-        <div class="level-num-badge">5</div>
-        <div class="level-title">Level 5</div>
-        <div class="level-sub">Tantangan Waktu X<br>(Kantin)</div>
-        <div class="lock-tag">🔒 Terkunci</div>
+      <div class="level-modal-nav">
+        <a href="game.html" class="level-nav-btn">
+          <span>⬅</span> <span>Kembali ke Panduan Game</span>
+        </a>
+        <a href="dashboard.html" class="level-nav-btn primary">
+          <span>🏠</span> <span>Menu Utama Dashboard</span>
+        </a>
       </div>
     </div>
   </div>
 
+  <!-- Mobile Start Overlay -->
   <div id="mobile-start-overlay">
-    <h2>Mobile Mode</h2>
-    <p style="margin-bottom: 2rem;">Game requires Fullscreen and Landscape mode.</p>
-    <button id="btn-start-mobile">Play Game</button>
+    <div class="mobile-overlay-box">
+      <span class="tape tape-cyan" style="font-size: 0.85rem; margin-bottom: 0.8rem;">MODE MOBILE / SMARTPHONE</span>
+      <h2>Siap Bermain?</h2>
+      <p>Game memerlukan layar penuh (fullscreen) dan posisi landscape untuk pengalaman terbaik.</p>
+      <button id="btn-start-mobile" class="btn btn-start" style="font-size: 1.25rem; width: 100%;">
+        Mulai Game RPG! 🎮
+      </button>
+    </div>
   </div>
 
+  <!-- Touch Controls for Mobile -->
   <div id="mobile-controls">
     <div class="d-pad">
       <div class="d-btn d-up" data-dir="up">▲</div>
@@ -362,8 +558,13 @@
 
   <!-- Pre-loader shown while scripts download -->
   <div id="preloader">
-    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 300px; margin-bottom: 2rem;">
-    <div class="loader-orb"></div>
+    <div class="preloader-card">
+      <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo">
+      <span class="tape tape-lime" style="font-size: 1.05rem; margin-bottom: 1.2rem;">
+        MEMUAT DUNIA HARMONIA...
+      </span>
+      <div class="loader-orb"></div>
+    </div>
   </div>
 
   <!-- Phaser 3 engine (pinned version for reproducibility) -->
