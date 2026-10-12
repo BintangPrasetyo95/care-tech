@@ -8,6 +8,26 @@
 class UIScene extends Phaser.Scene {
   constructor() { super('UI'); }
 
+  _getUiResolution() {
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    const zoom = this.uiZoom || 1;
+    return Math.max(2, Math.ceil(zoom * dpr));
+  }
+
+  _createSharpText(x, y, text, style = {}) {
+    if (!this._allUiTexts) this._allUiTexts = [];
+    const res = this._getUiResolution();
+    const txt = this.add.text(Math.round(x), Math.round(y), text, {
+      ...style,
+      resolution: res
+    });
+    if (txt.texture) {
+      txt.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+    this._allUiTexts.push(txt);
+    return txt;
+  }
+
   create() {
     const rawWidth = this.scale.width;
     const rawHeight = this.scale.height;
@@ -34,9 +54,9 @@ class UIScene extends Phaser.Scene {
     this.harmonyPanel = this.add.rectangle(12, 8, 204, 34, 0xfffdf5)
       .setOrigin(0, 0).setStrokeStyle(3, 0x000000).setScrollFactor(1).setDepth(100);
     // Label
-    this.harmonyLabelTxt = this.add.text(18, 12, '♥ INDEKS HARMONI', {
+    this.harmonyLabelTxt = this._createSharpText(18, 12, '♥ INDEKS HARMONI', {
       fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
-      fontSize: '9.5px',
+      fontSize: '10.5px',
       fontStyle: 'bold',
       color: '#ff2e93',
       letterSpacing: 1
@@ -48,17 +68,17 @@ class UIScene extends Phaser.Scene {
     this.harmonyBar = this.add.rectangle(18, 29, 0, 8, 0x39ff14)
       .setOrigin(0, 0.5).setScrollFactor(1).setDepth(102);
     // Value text
-    this.harmonyTxt = this.add.text(113, 29, '', {
+    this.harmonyTxt = this._createSharpText(113, 29, '', {
       fontFamily: '"Courier New", Courier, monospace',
-      fontSize: '10px',
+      fontSize: '11px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(103);
 
     /* ══════════ Harmony Change Flash ══════════ */
-    this.harmonyFlash = this.add.text(224, 22, '', {
+    this.harmonyFlash = this._createSharpText(224, 22, '', {
       fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
-      fontSize: '15px',
+      fontSize: '16px',
       fontStyle: 'bold',
       color: '#39ff14',
       stroke: '#000000',
@@ -70,9 +90,9 @@ class UIScene extends Phaser.Scene {
       .setOrigin(1, 0).setScrollFactor(1).setDepth(99);
     this.clockPanel = this.add.rectangle(width - 12, 8, 88, 26, 0xfffde6)
       .setOrigin(1, 0).setStrokeStyle(2.5, 0x000000).setScrollFactor(1).setDepth(100);
-    this.clockTxt = this.add.text(width - 56, 21, '', {
+    this.clockTxt = this._createSharpText(width - 56, 21, '', {
       fontFamily: '"Courier New", Courier, monospace',
-      fontSize: '12px',
+      fontSize: '13px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
@@ -84,16 +104,16 @@ class UIScene extends Phaser.Scene {
     const questBg = this.add.graphics();
     questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
     questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
-    this.questText = this.add.text(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
+    this.questText = this._createSharpText(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
       fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
-      fontSize: '11px',
+      fontSize: '12px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5);
     this.questContainer.add([questShadow, questBg, this.questText]);
 
     /* ══════════ QTE Timer ══════════ */
-    this.qteTimerTxt = this.add.text(width / 2, height / 4, '', {
+    this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
       fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
@@ -113,8 +133,8 @@ class UIScene extends Phaser.Scene {
     };
     drawMenuBtn(0xffe500);
     
-    this.menuToggleTxt = this.add.text(12 + 39, 46 + 13, '☰ MENU', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#000000'
+    this.menuToggleTxt = this._createSharpText(12 + 39, 46 + 13, '☰ MENU', {
+      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '11.5px', fontStyle: 'bold', color: '#000000'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(102);
 
     this.menuToggleZone = this.add.zone(12 + 39, 46 + 13, 78, 26)
@@ -142,13 +162,13 @@ class UIScene extends Phaser.Scene {
     this.sidebarContainer.add(sidebarBg);
     
     this.sidebarContainer.add(
-      this.add.text(140, 36, 'CARE-TECH', {
+      this._createSharpText(140, 36, 'CARE-TECH', {
         fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 2
       }).setOrigin(0.5).setShadow(2, 2, '#000000', 0, false, true)
     );
     
     this.sidebarContainer.add(
-      this.add.text(140, 56, 'Harmonia School RPG', {
+      this._createSharpText(140, 56, 'Harmonia School RPG', {
         fontFamily: '"Courier New", Courier, monospace', fontSize: '11px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 1
       }).setOrigin(0.5).setShadow(1, 1, '#000000', 0, false, true)
     );
@@ -156,8 +176,8 @@ class UIScene extends Phaser.Scene {
     const divider = this.add.graphics().lineStyle(3, 0x000000, 1).lineBetween(30, 85, 250, 85);
     this.sidebarContainer.add(divider);
 
-    this.sidebarLevelText = this.add.text(140, 110, '', {
-      fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '11.5px', color: '#000000', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
+    this.sidebarLevelText = this._createSharpText(140, 110, '', {
+      fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '12px', color: '#000000', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
     }).setOrigin(0.5);
     this.sidebarContainer.add(this.sidebarLevelText);
 
@@ -173,8 +193,8 @@ class UIScene extends Phaser.Scene {
       };
       drawBg(defaultHex);
       
-      const txt = this.add.text(w / 2, h / 2, text, {
-        fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '12px', fontStyle: 'bold', color: txtColor
+      const txt = this._createSharpText(w / 2, h / 2, text, {
+        fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '12.5px', fontStyle: 'bold', color: txtColor
       }).setOrigin(0.5);
       
       btnGroup.add([shadow, bg, txt]);
@@ -258,8 +278,8 @@ class UIScene extends Phaser.Scene {
       };
       drawBg(0xffffff);
 
-      const btnTxt = this.add.text(140, i * 32 + 13, lvl.name['id'], {
-        fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '10.5px', color: '#000000', fontStyle: 'bold'
+      const btnTxt = this._createSharpText(140, i * 32 + 13, lvl.name['id'], {
+        fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '11px', color: '#000000', fontStyle: 'bold'
       }).setOrigin(0.5);
       
       const zone = this.add.zone(140, i * 32 + 13, 210, 26).setInteractive({ useHandCursor: true });
@@ -291,9 +311,9 @@ class UIScene extends Phaser.Scene {
     });
 
     /* ══════════ Interaction Prompt (Yellow Tape Badge) ══════════ */
-    this.interactPrompt = this.add.text(width / 2, height - 130, '★ TEKAN E / SPASI UNTUK BICARA ★', {
+    this.interactPrompt = this._createSharpText(width / 2, height - 130, '★ TEKAN E / SPASI UNTUK BICARA ★', {
       fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
-      fontSize: '11px',
+      fontSize: '11.5px',
       color: '#000000',
       backgroundColor: '#ffe500',
       padding: { x: 10, y: 5 }
@@ -340,9 +360,9 @@ class UIScene extends Phaser.Scene {
     ).setOrigin(0, 0).setStrokeStyle(2.5, 0x000000).setScrollFactor(1).setDepth(202).setVisible(false);
 
     // Speaker name
-    this.speakerTxt = this.add.text(this._boxX + 18, this._boxY - 12, '', {
+    this.speakerTxt = this._createSharpText(this._boxX + 18, this._boxY - 12, '', {
       fontFamily: '"GROBOLD", "Comic Sans MS", sans-serif',
-      fontSize: '11px',
+      fontSize: '12px',
       color: '#ffffff',
       fontStyle: 'bold',
     }).setScrollFactor(1).setDepth(203).setVisible(false);
@@ -353,19 +373,19 @@ class UIScene extends Phaser.Scene {
     ).setOrigin(0).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Dialog text (Comic ink style)
-    this.dialogText = this.add.text(this._boxX + 14, this._boxY + 22, '', {
+    this.dialogText = this._createSharpText(this._boxX + 14, this._boxY + 22, '', {
       fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
-      fontSize: '11px',
+      fontSize: '12.5px',
       fontStyle: 'bold',
       color: '#000000',
       wordWrap: { width: this._boxW - 28 },
-      lineSpacing: 3,
+      lineSpacing: 4,
     }).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Continue indicator (Pink retro pointer)
-    this.continueText = this.add.text(this._boxX + this._boxW - 16, this._boxY + this._boxH - 14, '▶', {
+    this.continueText = this._createSharpText(this._boxX + this._boxW - 16, this._boxY + this._boxH - 14, '▶', {
       fontFamily: '"GROBOLD", monospace',
-      fontSize: '13px',
+      fontSize: '14px',
       color: '#ff2e93',
       fontStyle: 'bold'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(202).setVisible(false);
@@ -390,23 +410,23 @@ class UIScene extends Phaser.Scene {
       const bg = this.add.graphics();
       const numBadge = this.add.graphics();
 
-      const numTxt = this.add.text(14, 13, `${i + 1}`, {
+      const numTxt = this._createSharpText(14, 13, `${i + 1}`, {
         fontFamily: '"GROBOLD", monospace',
-        fontSize: '11px',
+        fontSize: '12px',
         color: '#000000',
         fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      const labelTxt = this.add.text(32, 13, '', {
+      const labelTxt = this._createSharpText(32, 13, '', {
         fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
-        fontSize: '10.5px',
+        fontSize: '11.5px',
         fontStyle: 'bold',
         color: '#000000'
       }).setOrigin(0, 0.5);
 
-      const arrowTxt = this.add.text(0, 13, '▶', {
+      const arrowTxt = this._createSharpText(0, 13, '▶', {
         fontFamily: '"GROBOLD", monospace',
-        fontSize: '10px',
+        fontSize: '11px',
         color: '#ff2e93',
         fontStyle: 'bold'
       }).setOrigin(0.5);
@@ -507,6 +527,17 @@ class UIScene extends Phaser.Scene {
 
     this._effWidth = width;
     this._effHeight = height;
+
+    // Refresh resolution of all UI text objects for razor-sharp rendering at current zoom
+    const newRes = this._getUiResolution();
+    if (this._allUiTexts) {
+      this._allUiTexts.forEach(t => {
+        if (t && t.active && typeof t.setResolution === 'function') {
+          t.setResolution(newRes);
+          if (t.texture) t.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+        }
+      });
+    }
 
     // Clock
     this.clockPanelShadow.setPosition(width - 9, 11);
