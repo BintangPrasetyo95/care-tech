@@ -21,6 +21,7 @@
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
+      background: #e8e2d2;
       font-family: var(--mk);
       color: var(--ink);
     }
@@ -31,53 +32,12 @@
       image-rendering: crisp-edges;
     }
 
-    /* ══════════ Floating Top Bar Quick Nav ══════════ */
-    .game-top-nav {
-      position: fixed;
-      top: 10px;
-      right: 14px;
-      z-index: 9980;
-      display: flex;
-      gap: 8px;
-      pointer-events: auto;
-    }
-    .game-nav-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0.35rem 0.85rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      font-weight: 900;
-      color: var(--ink);
-      text-decoration: none;
-      background: #ffffff;
-      border: 2.5px solid var(--ink);
-      border-radius: 999px;
-      box-shadow: 3px 3px 0 var(--ink);
-      transition: all 0.15s ease;
-      cursor: pointer;
-      user-select: none;
-    }
-    .game-nav-btn:hover {
-      background: var(--sun);
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0 var(--ink);
-    }
-    .game-nav-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 1px 1px 0 var(--ink);
-    }
-
     /* ══════════ Pre-game loading screen (Cardboard Cosmos) ══════════ */
     #preloader {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background:
-        linear-gradient(90deg, transparent 0 62px, rgba(230, 30, 70, 0.4) 62px 65px, transparent 65px),
-        repeating-linear-gradient(0deg, transparent 0 33px, rgba(40, 110, 220, 0.2) 33px 35px),
-        var(--cardboard);
+      background: #ede6d4;
       z-index: 9999;
       transition: opacity 1.2s ease-in-out, visibility 1.2s;
     }
@@ -133,7 +93,7 @@
       display: none;
       position: fixed; inset: 0;
       background: rgba(229, 217, 197, 0.96);
-      z-index: 10000;
+      z-index: 20005;
       flex-direction: column; align-items: center; justify-content: center;
       padding: 1.5rem;
       text-align: center;
@@ -165,39 +125,106 @@
     }
     
     #mobile-controls {
-      display: none;
+      display: none !important;
       position: fixed; inset: 0;
       pointer-events: none;
-      z-index: 9998;
+      z-index: 1000;
     }
-    .mobile-active #mobile-controls { display: block; }
+    body.mobile-active #mobile-controls {
+      display: block !important;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #mobile-controls {
+        display: none !important;
+      }
+    }
+    /* Explicit analog trigger overrides (works on both desktop and mobile) */
+    body.analog-enabled #mobile-controls {
+      display: block !important;
+    }
+    body.analog-disabled #mobile-controls {
+      display: none !important;
+    }
+
+    /* ══════════ MENU PRIORITY OVERRIDE ══════════ */
+    /* When any menu, modal, or dialogue is open, menu has total priority: hide and disable touch controls */
+    body.menu-open #mobile-controls,
+    #level-select-modal:not(.hidden) ~ #mobile-controls,
+    #mobile-start-overlay:not(.hidden) ~ #mobile-controls,
+    #mobile-controls.dialogue-hidden {
+      display: none !important;
+      pointer-events: none !important;
+    }
     
-    .d-pad {
-      position: absolute; bottom: 24px; left: 24px;
-      width: 150px; height: 150px;
+    /* ══════════ Dynamic Floating Analog Joystick & Action Button ══════════ */
+    .joystick-zone {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 48vw;
+      height: calc(100vh - 80px);
+      max-height: 85vh;
       pointer-events: auto;
-    }
-    .d-btn {
-      position: absolute;
-      width: 48px; height: 48px;
-      background: #ffffff;
-      border: 3px solid var(--ink);
-      box-shadow: 3px 3px 0 var(--ink);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; color: var(--ink); font-weight: 900;
+      touch-action: none;
       user-select: none; -webkit-user-select: none;
-      transition: transform 0.08s ease, background-color 0.08s;
+      z-index: 1001;
     }
-    .d-btn:active {
+    .joystick-container {
+      position: fixed;
+      bottom: 24px; left: 24px;
+      width: 140px; height: 140px;
+      pointer-events: none;
+      touch-action: none;
+      user-select: none; -webkit-user-select: none;
+      opacity: 0.72;
+      transition: opacity 0.2s ease;
+      z-index: 1002;
+    }
+    .joystick-container.active {
+      opacity: 1;
+    }
+    .joystick-base {
+      position: relative;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .joystick-base::before {
+      content: '';
+      position: absolute;
+      width: 44px; height: 44px;
+      border: 2px dashed rgba(26, 26, 26, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .joystick-thumb {
+      width: 58px; height: 58px;
       background: var(--sun);
-      transform: translate(2px, 2px);
-      box-shadow: 1px 1px 0 var(--ink);
+      border: 3.5px solid var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+      border-radius: 50%;
+      position: absolute;
+      top: calc(50% - 29px);
+      left: calc(50% - 29px);
+      pointer-events: none;
+      transition: transform 0.12s ease-out;
+      display: flex; align-items: center; justify-content: center;
     }
-    .d-up { top: 0; left: 50px; }
-    .d-down { bottom: 0; left: 50px; }
-    .d-left { top: 50px; left: 0; }
-    .d-right { top: 50px; right: 0; }
+    .joystick-thumb::after {
+      content: '';
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(26, 26, 26, 0.15);
+      border: 1.5px solid rgba(26, 26, 26, 0.25);
+    }
+    .joystick-container.active .joystick-thumb {
+      background: #ffcc00;
+      transition: none;
+    }
     
     .action-btn {
       position: absolute; bottom: 44px; right: 36px;
@@ -222,11 +249,10 @@
     /* ══════════ Level Selection Screen Modal (Cardboard Dossier) ══════════ */
     #level-select-modal {
       position: fixed; inset: 0;
-      background:
-        radial-gradient(circle at center, rgba(229, 217, 197, 0.94) 0%, rgba(200, 150, 79, 0.96) 100%);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      z-index: 9990;
+      background: rgba(238, 230, 215, 0.97);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 20000;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -248,6 +274,69 @@
       text-align: center;
       margin: auto;
       padding: 1rem 0;
+    }
+    .level-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .level-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-family: var(--mk);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #ffffff;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 12px;
+      padding: 0.45rem 1.1rem;
+      transition: all 0.15s ease;
+    }
+    .level-back-btn:hover {
+      background: var(--sun);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .level-back-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .analog-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mk);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #ffffff;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 12px;
+      padding: 0.45rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: all 0.15s ease;
+    }
+    .analog-trigger-btn:hover {
+      background: var(--sun);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .analog-trigger-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .analog-trigger-btn.is-active {
+      background: var(--lime);
     }
     .level-select-header {
       text-align: center;
@@ -411,65 +500,24 @@
       background: #2fe00e;
     }
 
-    /* Bottom Navigation Row in Level Select */
-    .level-modal-nav {
-      display: flex;
-      gap: 1.2rem;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .level-nav-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      font-family: var(--mk);
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--ink);
-      background: var(--paper-warm);
-      border: 3px solid var(--ink);
-      box-shadow: 4px 4px 0 var(--ink);
-      border-radius: 14px;
-      padding: 0.65rem 1.4rem;
-      transition: all 0.15s ease;
-    }
-    .level-nav-btn:hover {
-      transform: translate(-1px, -1px);
-      box-shadow: 6px 6px 0 var(--ink);
-      background: #ffffff;
-    }
-    .level-nav-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 1px 1px 0 var(--ink);
-    }
-    .level-nav-btn.primary {
-      background: var(--sun);
-    }
-
   </style>
 </head>
 <body>
 
-  <!-- Floating Space Background Stars -->
-  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;" aria-hidden="true">
-    <b class="star" style="top:10%;left:15%"></b>
-    <b class="star" style="top:26%;right:12%;color:var(--cy);animation-delay:-0.5s"></b>
-    <b class="star" style="top:70%;left:16%;color:var(--pink);animation-delay:-1.2s"></b>
-    <b class="star" style="top:84%;right:20%;color:var(--lime);animation-delay:-0.8s"></b>
-  </div>
-
-  <!-- Quick Floating In-Game Navigation -->
-  <div class="game-top-nav">
-    <a href="game.html" class="game-nav-btn" title="Kembali ke Panduan Game">
-      <span>⬅</span> <span>Menu Game</span>
-    </a>
-  </div>
-
   <!-- Level Selection Modal (Cardboard Cosmos Dossier) -->
   <div id="level-select-modal">
     <div class="level-select-board">
+      
+      <!-- Top Navigation: Kembali ke Panduan Game & Trigger Analog -->
+      <div class="level-top-bar">
+        <a href="game.html" class="level-back-btn">
+          <span>⬅</span> <span>Kembali ke Panduan Game</span>
+        </a>
+        <button id="btn-toggle-analog-lobby" class="analog-trigger-btn" type="button" title="Trigger Kontrol Analog Stick">
+          <span>🕹️</span> <span id="lobby-analog-text">Analog: NONAKTIF</span>
+        </button>
+      </div>
+
       <span class="tape tape-pink" style="font-size: 0.95rem; margin-bottom: 0.8rem; transform: rotate(-1.5deg);">
         ★ PAPAN MISI HARMONIA // CARE-TECH RPG ★
       </span>
@@ -521,15 +569,6 @@
           <div class="lock-tag">🔒 Terkunci</div>
         </div>
       </div>
-
-      <div class="level-modal-nav">
-        <a href="game.html" class="level-nav-btn">
-          <span>⬅</span> <span>Kembali ke Panduan Game</span>
-        </a>
-        <a href="dashboard.html" class="level-nav-btn primary">
-          <span>🏠</span> <span>Menu Utama Dashboard</span>
-        </a>
-      </div>
     </div>
   </div>
 
@@ -545,13 +584,14 @@
     </div>
   </div>
 
-  <!-- Touch Controls for Mobile -->
+  <!-- Touch Controls for Mobile (Dynamic Floating Analog & Action Button) -->
   <div id="mobile-controls">
-    <div class="d-pad">
-      <div class="d-btn d-up" data-dir="up">▲</div>
-      <div class="d-btn d-down" data-dir="down">▼</div>
-      <div class="d-btn d-left" data-dir="left">◀</div>
-      <div class="d-btn d-right" data-dir="right">▶</div>
+    <div id="joystick-zone" class="joystick-zone">
+      <div id="joystick-container" class="joystick-container">
+        <div id="joystick-base" class="joystick-base">
+          <div id="joystick-thumb" class="joystick-thumb"></div>
+        </div>
+      </div>
     </div>
     <div class="action-btn" id="btn-action">A</div>
   </div>
@@ -584,7 +624,15 @@
 
 
   <script>
-    window.virtualInput = { up: false, down: false, left: false, right: false, actionJustDown: false };
+    window.virtualInput = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      axisX: 0,
+      axisY: 0,
+      actionJustDown: false
+    };
     
     document.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('btn-start-mobile');
@@ -609,23 +657,238 @@
         overlay.classList.add('hidden');
         document.body.classList.add('mobile-active');
       });
-      
-      const bindBtn = (el, key) => {
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); window.virtualInput[key] = true; }, {passive: false});
-        el.addEventListener('touchend', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
-        el.addEventListener('touchcancel', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
-        el.addEventListener('mousedown', (e) => { e.preventDefault(); window.virtualInput[key] = true; });
-        el.addEventListener('mouseup', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
-        el.addEventListener('mouseleave', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
+
+      /* ── Dynamic Floating Analog Stick Logic ── */
+      const joystickZone = document.getElementById('joystick-zone');
+      const joystickContainer = document.getElementById('joystick-container');
+      const joystickThumb = document.getElementById('joystick-thumb');
+
+      let joystickActive = false;
+      let joystickPointerId = null;
+      let center = { x: 0, y: 0 };
+      const halfSize = 70;
+      const maxDistance = 44; // max travel radius in px
+
+      const setJoystickCenter = (clientX, clientY) => {
+        // Clamp center so the 140px base stays visible and comfortable on screen
+        const minX = halfSize + 10;
+        const maxX = Math.max(minX, window.innerWidth * 0.48);
+        const minY = 85 + halfSize;
+        const maxY = Math.max(minY, window.innerHeight - halfSize - 10);
+
+        const clampedX = Math.max(minX, Math.min(clientX, maxX));
+        const clampedY = Math.max(minY, Math.min(clientY, maxY));
+
+        center = { x: clampedX, y: clampedY };
+
+        if (joystickContainer) {
+          joystickContainer.style.left = `${clampedX - halfSize}px`;
+          joystickContainer.style.top = `${clampedY - halfSize}px`;
+          joystickContainer.style.bottom = 'auto';
+        }
       };
-      
-      document.querySelectorAll('.d-btn').forEach(btn => bindBtn(btn, btn.getAttribute('data-dir')));
-      
+
+      const handlePointerMove = (clientX, clientY) => {
+        const dx = clientX - center.x;
+        const dy = clientY - center.y;
+        const dist = Math.hypot(dx, dy);
+
+        let clampedX = dx;
+        let clampedY = dy;
+        if (dist > maxDistance) {
+          clampedX = (dx / dist) * maxDistance;
+          clampedY = (dy / dist) * maxDistance;
+        }
+
+        if (joystickThumb) {
+          joystickThumb.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+        }
+
+        // Normalize axes (-1.0 to 1.0)
+        const normX = clampedX / maxDistance;
+        const normY = clampedY / maxDistance;
+
+        const deadzone = 0.12;
+        if (dist / maxDistance < deadzone) {
+          window.virtualInput.axisX = 0;
+          window.virtualInput.axisY = 0;
+          window.virtualInput.left = false;
+          window.virtualInput.right = false;
+          window.virtualInput.up = false;
+          window.virtualInput.down = false;
+        } else {
+          window.virtualInput.axisX = normX;
+          window.virtualInput.axisY = normY;
+          window.virtualInput.left = normX < -0.3;
+          window.virtualInput.right = normX > 0.3;
+          window.virtualInput.up = normY < -0.3;
+          window.virtualInput.down = normY > 0.3;
+        }
+      };
+
+      const resetJoystick = () => {
+        joystickActive = false;
+        joystickPointerId = null;
+        if (joystickContainer) {
+          joystickContainer.classList.remove('active');
+          joystickContainer.style.left = '24px';
+          joystickContainer.style.top = 'auto';
+          joystickContainer.style.bottom = '24px';
+        }
+        if (joystickThumb) {
+          joystickThumb.style.transform = 'translate(0px, 0px)';
+        }
+        window.virtualInput.axisX = 0;
+        window.virtualInput.axisY = 0;
+        window.virtualInput.left = false;
+        window.virtualInput.right = false;
+        window.virtualInput.up = false;
+        window.virtualInput.down = false;
+      };
+
+      window.resetJoystick = resetJoystick;
+
+      const isAnyMenuOpen = () => {
+        const lvlModal = document.getElementById('level-select-modal');
+        const startOverlay = document.getElementById('mobile-start-overlay');
+        const isLvlModalOpen = lvlModal && !lvlModal.classList.contains('hidden');
+        const isStartOverlayOpen = startOverlay && !startOverlay.classList.contains('hidden');
+        const isSidebarOpen = document.body.classList.contains('menu-open');
+        return !!(isLvlModalOpen || isStartOverlayOpen || isSidebarOpen);
+      };
+
+      if (joystickZone) {
+        joystickZone.addEventListener('pointerdown', (e) => {
+          if (isAnyMenuOpen()) {
+            return;
+          }
+          e.preventDefault();
+          joystickActive = true;
+          joystickPointerId = e.pointerId;
+          if (joystickContainer) joystickContainer.classList.add('active');
+          if (joystickZone.setPointerCapture) {
+            try { joystickZone.setPointerCapture(e.pointerId); } catch (_) {}
+          }
+          setJoystickCenter(e.clientX, e.clientY);
+          handlePointerMove(e.clientX, e.clientY);
+        });
+
+        joystickZone.addEventListener('pointermove', (e) => {
+          if (isAnyMenuOpen()) {
+            resetJoystick();
+            return;
+          }
+          if (!joystickActive || e.pointerId !== joystickPointerId) return;
+          e.preventDefault();
+          handlePointerMove(e.clientX, e.clientY);
+        });
+
+        const onPointerEnd = (e) => {
+          if (e.pointerId !== joystickPointerId) return;
+          e.preventDefault();
+          if (joystickZone.releasePointerCapture) {
+            try { joystickZone.releasePointerCapture(e.pointerId); } catch (_) {}
+          }
+          resetJoystick();
+        };
+
+        joystickZone.addEventListener('pointerup', onPointerEnd);
+        joystickZone.addEventListener('pointercancel', onPointerEnd);
+      }
+
+      window.addEventListener('blur', resetJoystick);
+      window.addEventListener('resize', resetJoystick);
+      window.addEventListener('menu-toggled', (e) => {
+        if (e.detail && e.detail.open) {
+          resetJoystick();
+        }
+      });
+
+      /* ── Action Button (A / Interaksi) ── */
       const triggerAction = () => {
         window.virtualInput.actionJustDown = true;
         const ev = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
         window.dispatchEvent(ev);
+        const evEnter = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+        window.dispatchEvent(evEnter);
       };
+
+      const actionBtn = document.getElementById('btn-action');
+      if (actionBtn) {
+        const onActionPress = (e) => {
+          if (isAnyMenuOpen()) return;
+          e.preventDefault();
+          triggerAction();
+        };
+        actionBtn.addEventListener('pointerdown', onActionPress);
+        actionBtn.addEventListener('touchstart', onActionPress, { passive: false });
+      }
+
+      /* ── Analog Trigger & State Management ── */
+      window.isAnalogActive = () => {
+        if (document.body.classList.contains('analog-enabled')) return true;
+        if (document.body.classList.contains('analog-disabled')) return false;
+        return document.body.classList.contains('mobile-active');
+      };
+
+      const updateLobbyAnalogBtn = (active) => {
+        const lobbyBtn = document.getElementById('btn-toggle-analog-lobby');
+        const lobbyTxt = document.getElementById('lobby-analog-text');
+        if (lobbyBtn && lobbyTxt) {
+          if (active) {
+            lobbyBtn.classList.add('is-active');
+            lobbyTxt.textContent = 'Analog: AKTIF';
+          } else {
+            lobbyBtn.classList.remove('is-active');
+            lobbyTxt.textContent = 'Analog: NONAKTIF';
+          }
+        }
+      };
+
+      window.setAnalogActive = (enable) => {
+        if (enable) {
+          document.body.classList.add('analog-enabled');
+          document.body.classList.remove('analog-disabled');
+          localStorage.setItem('caretech_analog_mode', 'on');
+        } else {
+          document.body.classList.remove('analog-enabled');
+          document.body.classList.add('analog-disabled');
+          localStorage.setItem('caretech_analog_mode', 'off');
+        }
+        updateLobbyAnalogBtn(enable);
+        window.dispatchEvent(new CustomEvent('analog-toggled', { detail: { enabled: enable } }));
+      };
+
+      window.toggleAnalogControls = () => {
+        const nextState = !window.isAnalogActive();
+        window.setAnalogActive(nextState);
+        return nextState;
+      };
+
+      const lobbyAnalogBtn = document.getElementById('btn-toggle-analog-lobby');
+      if (lobbyAnalogBtn) {
+        lobbyAnalogBtn.addEventListener('click', () => {
+          window.toggleAnalogControls();
+        });
+      }
+
+      // Check saved preference on startup
+      const savedAnalogMode = localStorage.getItem('caretech_analog_mode');
+      if (savedAnalogMode === 'on') {
+        window.setAnalogActive(true);
+      } else if (savedAnalogMode === 'off') {
+        window.setAnalogActive(false);
+      } else {
+        updateLobbyAnalogBtn(window.isAnalogActive());
+      }
+
+      // Shortcut F2 to toggle analog anytime
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'F2') {
+          e.preventDefault();
+          window.toggleAnalogControls();
+        }
+      });
 
       // Level 1 Selection Handler
       const lvl1Btn = document.getElementById('btn-select-level-1');
@@ -653,10 +916,8 @@
         if (window.game && window.game.registry) {
           window.game.registry.events.on('changedata-dialogueActive', (parent, value) => {
             const controls = document.getElementById('mobile-controls');
-            if (value) {
-              controls.style.display = 'none';
-            } else {
-              controls.style.display = 'block';
+            if (controls) {
+              controls.classList.toggle('dialogue-hidden', !!value);
             }
           });
           clearInterval(checkDialogue);

@@ -188,16 +188,43 @@ class UIScene extends Phaser.Scene {
         this.time.delayedCall(100, () => { btnGroup.y -= 2; btnGroup.x -= 2; onClick(); });
       });
       this.sidebarContainer.add(btnGroup);
-      return { txt, zone, btnGroup };
+      return { txt, zone, btnGroup, drawBg };
     };
 
-    this.switchLevelBtnObj = createBtn(40, 145, 200, 36, 'Ganti Level', 0x39ff14, 0x2fe00e, () => {
-      this.levelListContainer.setVisible(!this.levelListContainer.visible);
-    }, '#000000');
-
-    this.switchLangBtnObj = createBtn(40, 192, 200, 36, 'Ganti Bahasa (ID)', 0xffe500, 0xf5cc00, () => {
+    this.switchLangBtnObj = createBtn(40, 145, 200, 36, 'Ganti Bahasa (ID)', 0xffe500, 0xf5cc00, () => {
       const curLang = this.registry.get('lang') || 'id';
       this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
+    }, '#000000');
+
+    const getAnalogLabel = () => {
+      const lang = this.registry.get('lang') || 'id';
+      const on = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
+      if (lang === 'en') return on ? '🕹️ Analog: ON' : '🕹️ Analog: OFF';
+      return on ? '🕹️ Analog: AKTIF' : '🕹️ Analog: NONAKTIF';
+    };
+
+    this.analogToggleBtnObj = createBtn(40, 189, 200, 36, getAnalogLabel(), 0xffffff, 0xffe500, () => {
+      if (typeof window.toggleAnalogControls === 'function') {
+        const nextState = window.toggleAnalogControls();
+        this.analogToggleBtnObj.txt.setText(getAnalogLabel());
+        this.analogToggleBtnObj.drawBg(nextState ? 0x39ff14 : 0xffffff);
+      }
+    }, '#000000');
+
+    // Set initial background color based on active state
+    const initAnalogOn = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
+    this.analogToggleBtnObj.drawBg(initAnalogOn ? 0x39ff14 : 0xffffff);
+
+    window.addEventListener('analog-toggled', () => {
+      if (this.analogToggleBtnObj && this.analogToggleBtnObj.txt) {
+        this.analogToggleBtnObj.txt.setText(getAnalogLabel());
+        const on = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
+        this.analogToggleBtnObj.drawBg(on ? 0x39ff14 : 0xffffff);
+      }
+    });
+
+    this.switchLevelBtnObj = createBtn(40, 233, 200, 36, 'Ganti Level', 0x39ff14, 0x2fe00e, () => {
+      this.levelListContainer.setVisible(!this.levelListContainer.visible);
     }, '#000000');
     
     this.closeSidebarBtnObj = createBtn(40, height - 90, 200, 36, 'Lanjut Main', 0x00e5ff, 0x00c4dc, () => {
@@ -208,7 +235,7 @@ class UIScene extends Phaser.Scene {
       window.location.href = 'game.html';
     }, '#ffffff');
 
-    this.levelListContainer = this.add.container(0, 238).setVisible(false);
+    this.levelListContainer = this.add.container(0, 277).setVisible(false);
     this.sidebarContainer.add(this.levelListContainer);
 
     const levelInfos = [
@@ -273,7 +300,7 @@ class UIScene extends Phaser.Scene {
     }).setOrigin(0.5).setScrollFactor(1).setDepth(150).setAlpha(0);
 
     /* ══════════ Dialogue Panel (Cardboard Comic Speech Box) ══════════ */
-    this._boxH = 148;
+    this._boxH = 154;
     this._boxW = width - 16;
     this._boxX = 8;
     this._boxY = height - this._boxH - 4;
@@ -322,17 +349,17 @@ class UIScene extends Phaser.Scene {
 
     // Accent line in dialog
     this.dialogBorder = this.add.rectangle(
-      this._boxX + 10, this._boxY + 16, this._boxW - 20, 2, 0x000000, 0.25
+      this._boxX + 10, this._boxY + 16, this._boxW - 20, 2, 0x000000, 0.2
     ).setOrigin(0).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Dialog text (Comic ink style)
-    this.dialogText = this.add.text(this._boxX + 12, this._boxY + 24, '', {
+    this.dialogText = this.add.text(this._boxX + 14, this._boxY + 22, '', {
       fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
       fontSize: '11px',
       fontStyle: 'bold',
       color: '#000000',
-      wordWrap: { width: this._boxW - 24 },
-      lineSpacing: 4,
+      wordWrap: { width: this._boxW - 28 },
+      lineSpacing: 3,
     }).setScrollFactor(1).setDepth(201).setVisible(false);
 
     // Continue indicator (Pink retro pointer)
@@ -351,41 +378,91 @@ class UIScene extends Phaser.Scene {
       yoyo: true, repeat: -1, duration: 500
     });
 
-    // ── Clickable option buttons (pool of 4) ────────
+    // ── Clickable option buttons (Attractive Interactive Choice Cards) ────────
     this.optionButtons = [];
-    const optStartY = this._boxY + 64;
-    const optSpacing = 18;
+    const optStartY = this._boxY + 54;
+    const optSpacing = 28;
+    const optBtnW = this._boxW - 28;
+    const badgeColors = [0xffe500, 0x00e5ff, 0x39ff14, 0xff2e93];
 
     for (let i = 0; i < 4; i++) {
-      const btn = this.add.text(
-        this._boxX + 14,
-        optStartY + i * optSpacing,
-        '',
-        {
-          fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif',
-          fontSize: '10px',
-          fontStyle: 'bold',
-          color: '#000000',
-          backgroundColor: '#ffffff',
-          padding: { x: 8, y: 3 },
+      const btnContainer = this.add.container(this._boxX + 14, optStartY + i * optSpacing)
+        .setScrollFactor(1).setDepth(205).setVisible(false);
+      
+      const shadow = this.add.graphics();
+      shadow.fillStyle(0x000000, 1).fillRoundedRect(3, 3, optBtnW, 24, 6);
+      
+      const bg = this.add.graphics();
+      const drawCardBg = (fillColor, borderColor = 0x000000) => {
+        bg.clear()
+          .fillStyle(fillColor, 1).fillRoundedRect(0, 0, optBtnW, 24, 6)
+          .lineStyle(2, borderColor, 1).strokeRoundedRect(0, 0, optBtnW, 24, 6);
+      };
+      drawCardBg(0xffffff);
+
+      const numBadge = this.add.graphics();
+      numBadge.fillStyle(badgeColors[i], 1).fillRoundedRect(4, 3, 20, 18, 4)
+        .lineStyle(1.5, 0x000000, 1).strokeRoundedRect(4, 3, 20, 18, 4);
+
+      const numTxt = this.add.text(14, 12, `${i + 1}`, {
+        fontFamily: '"GROBOLD", monospace',
+        fontSize: '11px',
+        color: '#000000',
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
+
+      const labelTxt = this.add.text(32, 12, '', {
+        fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
+        fontSize: '10.5px',
+        fontStyle: 'bold',
+        color: '#000000',
+        wordWrap: { width: optBtnW - 54 }
+      }).setOrigin(0, 0.5);
+
+      const arrowTxt = this.add.text(optBtnW - 14, 12, '▶', {
+        fontFamily: '"GROBOLD", monospace',
+        fontSize: '10px',
+        color: '#ff2e93',
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
+
+      const zone = this.add.zone(optBtnW / 2, 12, optBtnW, 24).setInteractive({ useHandCursor: true });
+
+      btnContainer.add([shadow, bg, numBadge, numTxt, labelTxt, arrowTxt, zone]);
+
+      const optObj = {
+        container: btnContainer,
+        shadow,
+        bg,
+        drawCardBg,
+        numBadge,
+        numTxt,
+        labelTxt,
+        arrowTxt,
+        zone,
+        optBtnW,
+        updateWidth: (newW) => {
+          optObj.optBtnW = newW;
+          shadow.clear().fillStyle(0x000000, 1).fillRoundedRect(3, 3, newW, 24, 6);
+          drawCardBg(0xffffff);
+          arrowTxt.setX(newW - 14);
+          labelTxt.setStyle({ wordWrap: { width: newW - 54 } });
+          zone.setSize(newW, 24).setPosition(newW / 2, 12);
         }
-      )
-        .setScrollFactor(1)
-        .setDepth(202)
-        .setVisible(false)
-        .setInteractive({ useHandCursor: true });
+      };
 
-      // Hover effects
-      btn.on('pointerover', () => {
-        btn.setColor('#000000');
-        btn.setBackgroundColor('#ffe500');
+      zone.on('pointerover', () => {
+        drawCardBg(0xfffde6);
+        btnContainer.y -= 1;
+        arrowTxt.setColor('#ff8a00').setScale(1.2);
       });
-      btn.on('pointerout', () => {
-        btn.setColor('#000000');
-        btn.setBackgroundColor('#ffffff');
+      zone.on('pointerout', () => {
+        drawCardBg(0xffffff);
+        btnContainer.y += 1;
+        arrowTxt.setColor('#ff2e93').setScale(1);
       });
 
-      this.optionButtons.push(btn);
+      this.optionButtons.push(optObj);
     }
 
     /* ══════════ Event Listeners ══════════ */
@@ -462,14 +539,16 @@ class UIScene extends Phaser.Scene {
     this.speakerTagBg.setPosition(this._boxX + 12, this._boxY - 16);
     this.speakerTxt.setPosition(this._boxX + 18, this._boxY - 12);
     this.dialogBorder.setSize(this._boxW - 20, 2).setPosition(this._boxX + 10, this._boxY + 16);
-    this.dialogText.setPosition(this._boxX + 12, this._boxY + 24);
-    this.dialogText.setStyle({ wordWrap: { width: this._boxW - 24 } });
+    this.dialogText.setPosition(this._boxX + 14, this._boxY + 22);
+    this.dialogText.setStyle({ wordWrap: { width: this._boxW - 28 } });
     this.continueText.setPosition(this._boxX + this._boxW - 16, this._boxY + this._boxH - 14);
 
-    const optStartY = this._boxY + 64;
-    const optSpacing = 18;
-    this.optionButtons.forEach((btn, i) => {
-      btn.setPosition(this._boxX + 14, optStartY + i * optSpacing);
+    const optStartY = this._boxY + 54;
+    const optSpacing = 28;
+    const optBtnW = this._boxW - 28;
+    this.optionButtons.forEach((opt, i) => {
+      opt.updateWidth(optBtnW);
+      opt.container.setPosition(this._boxX + 14, optStartY + i * optSpacing);
     });
   }
 
@@ -575,27 +654,28 @@ class UIScene extends Phaser.Scene {
 
     // ── Render option buttons INSIDE the box ────────
     const choices = node.choices || [];
-    const optStartY = this._boxY + 64;
-    const optSpacing = 18;
+    const optStartY = this._boxY + 54;
+    const optSpacing = 28;
 
     for (let i = 0; i < this.optionButtons.length; i++) {
-      const btn = this.optionButtons[i];
-      btn.removeAllListeners('pointerdown');
+      const opt = this.optionButtons[i];
+      opt.zone.removeAllListeners('pointerdown');
 
       if (i < choices.length) {
         const ch = choices[i];
-        btn
-          .setText(`[${i + 1}] ${typeof ch.label === 'object' ? ch.label[lang] : ch.label}`)
+        const labelText = typeof ch.label === 'object' ? ch.label[lang] : ch.label;
+        opt.labelTxt.setText(labelText);
+        opt.numTxt.setText(`${i + 1}`);
+        opt.drawCardBg(0xffffff);
+        opt.container
           .setPosition(this._boxX + 14, optStartY + i * optSpacing)
-          .setVisible(true)
-          .setColor('#000000')
-          .setBackgroundColor('#ffffff');
+          .setVisible(true);
 
-        btn.on('pointerdown', () => {
+        opt.zone.on('pointerdown', () => {
           this._selectOption(ch);
         });
       } else {
-        btn.setVisible(false);
+        opt.container.setVisible(false);
       }
     }
 
@@ -677,7 +757,10 @@ class UIScene extends Phaser.Scene {
     this.dialogText.setVisible(false);
     this.portraitImage.setVisible(false);
     this.continueText.setVisible(false);
-    this.optionButtons.forEach(btn => btn.setVisible(false).removeAllListeners('pointerdown'));
+    this.optionButtons.forEach(opt => {
+      opt.container.setVisible(false);
+      opt.zone.removeAllListeners('pointerdown');
+    });
     
     this.input.keyboard.removeAllListeners('keydown');
     this.input.keyboard.removeAllListeners('keydown-E');
@@ -773,6 +856,28 @@ class UIScene extends Phaser.Scene {
     if (this.sidebarOpen) {
       this.levelListContainer.setVisible(false);
     }
+    this.registry.set('menuOpen', this.sidebarOpen);
+
+    // Notify DOM and reset controls when menu opens
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('menu-open', this.sidebarOpen);
+    }
+    if (this.sidebarOpen) {
+      if (window.virtualInput) {
+        window.virtualInput.axisX = 0;
+        window.virtualInput.axisY = 0;
+        window.virtualInput.left = false;
+        window.virtualInput.right = false;
+        window.virtualInput.up = false;
+        window.virtualInput.down = false;
+        window.virtualInput.actionJustDown = false;
+      }
+      if (typeof window.resetJoystick === 'function') {
+        window.resetJoystick();
+      }
+    }
+    window.dispatchEvent(new CustomEvent('menu-toggled', { detail: { open: this.sidebarOpen } }));
+
     this.tweens.add({
       targets: this.sidebarContainer,
       x: this.sidebarOpen ? 0 : -300,
@@ -786,8 +891,12 @@ class UIScene extends Phaser.Scene {
     const lang = this.registry.get('lang') || 'id';
     
     if (this.harmonyLabelTxt) this.harmonyLabelTxt.setText(lang === 'en' ? '♥ HARMONY' : '♥ HARMONI');
-    if (this.switchLevelBtnObj) this.switchLevelBtnObj.txt.setText(lang === 'en' ? 'Switch Level' : 'Ganti Level');
     if (this.switchLangBtnObj)  this.switchLangBtnObj.txt.setText(lang === 'en' ? 'Switch Language (EN)' : 'Ganti Bahasa (ID)');
+    if (this.analogToggleBtnObj) {
+      const isAnalog = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
+      this.analogToggleBtnObj.txt.setText(lang === 'en' ? (isAnalog ? '🕹️ Analog: ON' : '🕹️ Analog: OFF') : (isAnalog ? '🕹️ Analog: AKTIF' : '🕹️ Analog: NONAKTIF'));
+    }
+    if (this.switchLevelBtnObj) this.switchLevelBtnObj.txt.setText(lang === 'en' ? 'Switch Level' : 'Ganti Level');
     if (this.closeSidebarBtnObj) this.closeSidebarBtnObj.txt.setText(lang === 'en' ? 'Resume' : 'Lanjut Main');
     if (this.exitGameBtnObj) this.exitGameBtnObj.txt.setText(lang === 'en' ? 'Exit Game' : 'Keluar Game');
     if (this.interactPrompt) this.interactPrompt.setText(lang === 'en' ? '[ Press E to interact ]' : '[ Tekan E untuk interaksi ]');
