@@ -11,7 +11,8 @@ const DIALOGUES = {
       id: 'Bel istirahat berbunyi. Nakula berjalan di taman sekolah.' 
     },
     next    : null,
-    action  : 'lvl1_start_walk'
+    action  : null,
+    onCloseAction: 'lvl1_start_walk'
   },
 
   // 003: ECA trigger saat Nakula mendekat ke Nabula (<= 3 block)
@@ -61,7 +62,9 @@ const DIALOGUES = {
     portrait: 'player_neutral',
     text    : { en: 'Let\'s go talk to her.', id: 'Ayo kita bicara dengannya.' },
     next    : null,
-    action  : 'lvl1_005a_walk' // Camera backs to Nakula, Nakula auto-walks to Nabula, auto-trigger 007
+    autoAdvanceTimer: 3000,
+    action  : 'lvl1_005a_ready',
+    onCloseAction: 'lvl1_005a_walk'
   },
 
   /* ── 005b Branch ── */
@@ -114,11 +117,55 @@ const DIALOGUES = {
       },
       {
         label: { en: '2. "Leave it, keep walking." (-10)', id: '2. "Biarkan saja, lanjut jalan." (-10)' },
-        next : null,
+        next : 'lvl1_005b_8_narrator',
         harmonyDelta: -10,
-        action: 'lvl1_005b_ignore_quest'
+        action: 'vibrate_choice'
       }
     ]
+  },
+  'lvl1_005b_8_narrator': {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: 'Nabula finally stands up by herself and walks into the library, without getting a chance to talk to anyone.',
+      id: 'Nabula akhirnya berdiri sendiri dan berjalan masuk ke perpustakaan, tanpa sempat bicara dengan siapa pun.' 
+    },
+    next    : null,
+    autoAdvanceTimer: 5000,
+    action  : 'lvl1_005b_focus_nabula',
+    onCloseAction: 'lvl1_005b_nabula_leaves'
+  },
+  'lvl1_005b_9b_eca': {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_surprised',
+    text    : { 
+      en: 'Nakula... Nabula entered the library. Let\'s go after her before it\'s too late!',
+      id: 'Nakula... Nabula masuk ke perpustakaan. Yuk, susul dia sebelum terlambat!' 
+    },
+    next    : null,
+    action  : null,
+    onCloseAction: 'lvl1_005b_start_timer_quest'
+  },
+  'lvl1_005b_10_narrator': {
+    speaker : { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: 'Nakula didn\'t make it in time to catch Nabula that day.',
+      id: 'Nakula tidak sempat menyusul Nabula hari itu.' 
+    },
+    next    : 'lvl1_005b_12_eca',
+    action  : 'lvl1_005b_fail_fade'
+  },
+  'lvl1_005b_12_eca': {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_sad',
+    text    : { 
+      en: 'It\'s okay, Nakula. Sometimes we realize too late that a friend needs help. But tomorrow, we still have another chance to try again.',
+      id: 'Nggak apa-apa, Nakula. Kadang kita telat sadar kalau teman butuh bantuan. Tapi besok, kita masih punya kesempatan buat coba lagi.' 
+    },
+    next    : null,
+    action  : null,
+    onCloseAction: 'lvl1_005b_show_fail_result'
   },
 
   /* ── 005c Branch ── */
@@ -195,7 +242,9 @@ const DIALOGUES = {
       id: 'Nabula berdiri dan berjalan menuju perpustakaan.' 
     },
     next    : null,
-    action  : 'lvl1_012_nabula_leaves' // Nabula turns right, walks to (14, 12.5), camera follows
+    autoAdvanceTimer: 5000,
+    action  : 'lvl1_012_focus_nabula',
+    onCloseAction: 'lvl1_012_nabula_leaves'
   },
 
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */

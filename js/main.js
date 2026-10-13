@@ -48,3 +48,5 @@ game.registry.set('harmony',        50);      // Harmony Index 0-100
 game.registry.set('clock',          480);     // in-game minutes since midnight (08:00 = 480)
 game.registry.set('currentMap',     'garden');
 game.registry.set('dialogueActive', false);
+game.registry.set('level1_player_locked', true);
+game.registry.set('level1_quest_active', null);

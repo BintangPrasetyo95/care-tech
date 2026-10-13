@@ -289,6 +289,126 @@
       border: 1px solid rgba(44, 182, 125, 0.4);
     }
 
+    /* ══════════ Level Result / Ending Modal ══════════ */
+    #level-result-modal {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 9995;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #level-result-modal.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .result-card {
+      background: rgba(30, 41, 59, 0.88);
+      border: 2px solid rgba(239, 68, 68, 0.35);
+      border-radius: 20px;
+      padding: 2.2rem 2rem;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+    }
+    .result-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 0.8rem;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .result-card h2 {
+      font-family: 'GROBOLD', 'Grobold', sans-serif;
+      font-size: 1.8rem;
+      color: #f8fafc;
+      margin-bottom: 0.4rem;
+    }
+    .result-subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      font-style: italic;
+      margin-bottom: 1.5rem;
+    }
+    .result-score-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-bottom: 1.8rem;
+      text-align: left;
+    }
+    .result-score-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 0.4rem;
+    }
+    .result-score-desc {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .btn-action-primary {
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-action-primary:hover {
+      background: #0369a1;
+      transform: translateY(-2px);
+    }
+    .btn-action-secondary {
+      background: rgba(51, 65, 85, 0.7);
+      color: #e2e8f0;
+      border: 1px solid rgba(100, 116, 139, 0.4);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-action-secondary:hover {
+      background: rgba(71, 85, 105, 0.8);
+      transform: translateY(-2px);
+    }
+    .btn-action-locked {
+      background: rgba(30, 41, 59, 0.5);
+      color: #64748b;
+      border: 1px solid rgba(51, 65, 85, 0.3);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: not-allowed;
+    }
+
   </style>
 </head>
 <body>
@@ -340,6 +460,26 @@
         <div class="level-title">Level 5</div>
         <div class="level-sub">Tantangan Waktu X<br>(Kantin)</div>
         <div class="lock-tag">🔒 Terkunci</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level 1 Alternative Ending Modal (005b-13 & 005b-14) -->
+  <div id="level-result-modal" class="hidden">
+    <div class="result-card">
+      <div class="result-tag">ENDING ALTERNATIF</div>
+      <h2>LEVEL 1 SELESAI</h2>
+      <p class="result-subtitle">"Nabula masih butuh dukunganmu."</p>
+
+      <div class="result-score-box">
+        <div class="result-score-title">⚫ Harmoni: 0/100 — Harmonia Padam</div>
+        <div class="result-score-desc">"Nabula nggak sempat dapat bantuan kali ini. Tapi ini bukan akhir, yuk coba lagi dan perhatikan tanda-tanda saat teman butuh kamu."</div>
+      </div>
+
+      <div class="result-actions">
+        <button id="btn-replay-level-1" class="btn-action-primary">🔄 Main Ulang Level 1</button>
+        <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+        <button class="btn-action-locked" disabled>🔒 Lanjut ke Level 2 (Capai skor ≥ 60)</button>
       </div>
     </div>
   </div>
@@ -444,6 +584,52 @@
             }
           };
           tryStartLevel1();
+        });
+      }
+
+      // Listen for alternate ending modal (005b timeout/fail)
+      window.addEventListener('show_level_fail_modal', () => {
+        const resultModal = document.getElementById('level-result-modal');
+        if (resultModal) {
+          resultModal.classList.remove('hidden');
+        }
+      });
+
+      // Replay Level 1
+      const replayBtn = document.getElementById('btn-replay-level-1');
+      if (replayBtn) {
+        replayBtn.addEventListener('click', () => {
+          const resultModal = document.getElementById('level-result-modal');
+          if (resultModal) {
+            resultModal.classList.add('hidden');
+          }
+          if (window.game && window.game.registry) {
+            window.game.registry.set('harmony', 50);
+            window.game.registry.set('level1_003_triggered', false);
+            window.game.registry.set('level1_nabula_left_garden', false);
+            window.game.registry.set('level1_quest_active', null);
+            window.game.registry.set('level1_player_locked', true);
+            window.game.registry.set('dialogueActive', false);
+            
+            const world = window.game.scene.getScene('World');
+            if (world && world._changeMap) {
+              world._changeMap('garden', 14 * 64 + 32, 3.5 * 64);
+              setTimeout(() => {
+                const ui = window.game.scene.getScene('UI');
+                if (ui && ui.startLevel1IntroTransition) {
+                  ui.startLevel1IntroTransition();
+                }
+              }, 400);
+            }
+          }
+        });
+      }
+
+      // Return home
+      const returnHomeBtn = document.getElementById('btn-return-home');
+      if (returnHomeBtn) {
+        returnHomeBtn.addEventListener('click', () => {
+          window.location.href = 'index.html';
         });
       }
 

@@ -72,19 +72,21 @@ class UIScene extends Phaser.Scene {
 
 
     /* ══════════ Quest Banner (top-center) ══════════ */
-    this.questContainer = this.add.container(width / 2, -60).setScrollFactor(1).setDepth(300);
-    const questBg = this.add.graphics();
-    questBg.fillStyle(0x0f172a, 0.92);
-    questBg.fillRoundedRect(-140, -18, 280, 36, 10);
-    questBg.lineStyle(1.5, 0x38bdf8, 0.8);
-    questBg.strokeRoundedRect(-140, -18, 280, 36, 10);
-    this.questText = this.add.text(0, 0, 'QUEST: Ikuti Nabula ke perpustakaan.', {
+    this.questContainer = this.add.container(width / 2, -80).setScrollFactor(1).setDepth(300);
+    this.questBg = this.add.graphics();
+    this.questText = this.add.text(0, -8, '', {
       fontFamily: '"Segoe UI", system-ui, sans-serif',
       fontSize: '11px',
       fontStyle: 'bold',
       color: '#38bdf8'
     }).setOrigin(0.5);
-    this.questContainer.add([questBg, this.questText]);
+    this.questTimerText = this.add.text(0, 10, '', {
+      fontFamily: '"Segoe UI", system-ui, sans-serif',
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: '#facc15'
+    }).setOrigin(0.5).setVisible(false);
+    this.questContainer.add([this.questBg, this.questText, this.questTimerText]);
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this.add.text(width / 2, height / 4, '', {
@@ -434,28 +436,133 @@ class UIScene extends Phaser.Scene {
     });
   }
 
-  /** Show top quest banner */
-  showQuestBanner(text, duration = 4000) {
-    if (this.questText) this.questText.setText(text);
-    if (!this.questContainer) return;
-    this.tweens.add({
-      targets: this.questContainer,
-      y: 45,
-      duration: 500,
-      ease: 'Back.easeOut'
-    });
-    if (duration > 0) {
-      this.time.delayedCall(duration, () => {
-        this.hideQuestBanner();
+  /** Show top quest banner with optional timer */
+  showQuest(text, options = {}) {
+    if (this._questDismissTimer) {
+      this._questDismissTimer.destroy();
+      this._questDismissTimer = null;
+    }
+    if (this._questTimerEvent) {
+      this._questTimerEvent.destroy();
+      this._questTimerEvent = null;
+    }
+
+    const hasTimer = !!options.hasTimer;
+    const durationSec = options.durationSec || 30;
+    this._questOnTimeout = options.onTimeout || null;
+
+    if (this.questBg) this.questBg.clear();
+
+    if (hasTimer) {
+      this.questBg.fillStyle(0x0f172a, 0.95);
+      this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
+      this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
+      this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
+
+      this.questText.setY(-8).setText(text).setColor('#facc15');
+      this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+
+      let remaining = durationSec;
+      this._questTimerEvent = this.time.addEvent({
+        delay: 1000,
+        repeat: durationSec - 1,
+        callback: () => {
+          remaining--;
+          const secStr = remaining.toString().padStart(2, '0');
+          this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
+          if (remaining <= 5) {
+            this.questTimerText.setColor('#ef4444');
+          }
+          if (remaining <= 0) {
+            if (this._questTimerEvent) {
+              this._questTimerEvent.destroy();
+              this._questTimerEvent = null;
+            }
+            this.hideQuestBanner();
+            if (this._questOnTimeout) {
+              this._questOnTimeout();
+            }
+          }
+        }
+      });
+    } else {
+      this.questBg.fillStyle(0x0f172a, 0.92);
+      this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
+      this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
+      this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
+
+      this.questText.setY(0).setText(text).setColor('#38bdf8');
+      this.questTimerText.setVisible(false);
+
+      if (options.duration && options.duration > 0) {
+        this._questDismissTimer = this.time.delayedCall(options.duration, () => {
+          this.hideQuestBanner();
+        });
+      }
+    }
+
+    if (this.questContainer) {
+      this.tweens.killTweensOf(this.questContainer);
+      this.questContainer.setY(-80);
+      this.tweens.add({
+        targets: this.questContainer,
+        y: 45,
+        duration: 500,
+        ease: 'Back.easeOut'
       });
     }
   }
 
+  showQuestBanner(text, duration = 4000) {
+    this.showQuest(text, { duration });
+  }
+
+  completeQuest(questName) {
+    if (this._questDismissTimer) {
+      this._questDismissTimer.destroy();
+      this._questDismissTimer = null;
+    }
+    if (this._questTimerEvent) {
+      this._questTimerEvent.destroy();
+      this._questTimerEvent = null;
+    }
+    if (this.questTimerText) this.questTimerText.setVisible(false);
+
+    if (this.questBg) {
+      this.questBg.clear();
+      this.questBg.fillStyle(0x064e3b, 0.96);
+      this.questBg.fillRoundedRect(-170, -18, 340, 36, 10);
+      this.questBg.lineStyle(2, 0x22c55e, 1);
+      this.questBg.strokeRoundedRect(-170, -18, 340, 36, 10);
+    }
+
+    if (this.questText) {
+      this.questText.setY(0).setColor('#4ade80').setText(`✓ QUEST SELESAI: ${questName}`);
+    }
+
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+
+    if (this.questContainer) {
+      this.tweens.killTweensOf(this.questContainer);
+      this.tweens.add({
+        targets: this.questContainer,
+        y: 45,
+        duration: 400,
+        ease: 'Back.easeOut'
+      });
+    }
+
+    this._questDismissTimer = this.time.delayedCall(4500, () => {
+      this.hideQuestBanner();
+    });
+  }
+
   hideQuestBanner() {
     if (!this.questContainer) return;
+    this.tweens.killTweensOf(this.questContainer);
     this.tweens.add({
       targets: this.questContainer,
-      y: -60,
+      y: -80,
       duration: 400,
       ease: 'Power2'
     });
@@ -498,6 +605,22 @@ class UIScene extends Phaser.Scene {
       this.registry.events.emit('dialogue_action', node.action);
     }
 
+    // Handle auto-advance timer if specified on dialogue node
+    if (this._autoAdvanceTimerEvent) {
+      this._autoAdvanceTimerEvent.destroy();
+      this._autoAdvanceTimerEvent = null;
+    }
+    if (node.autoAdvanceTimer && node.autoAdvanceTimer > 0) {
+      this._autoAdvanceTimerEvent = this.time.delayedCall(node.autoAdvanceTimer, () => {
+        this._autoAdvanceTimerEvent = null;
+        if (node.next) {
+          this._showNode(node.next);
+        } else {
+          this._closeDialogue();
+        }
+      });
+    }
+
     // Show panel elements
     this.dialogBg.setVisible(true);
     this.dialogBorder.setVisible(true);
@@ -533,6 +656,10 @@ class UIScene extends Phaser.Scene {
           .setBackgroundColor('#263238');
 
         btn.on('pointerdown', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
           this._selectOption(ch);
         });
       } else {
@@ -548,30 +675,48 @@ class UIScene extends Phaser.Scene {
       this.input.keyboard.on('keydown', (event) => {
         const num = parseInt(event.key, 10);
         if (num >= 1 && num <= choices.length) {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
           this._selectOption(choices[num - 1]);
         }
       });
     } else if (node.next) {
       // Auto-advance on click
       this.continueText.setVisible(true);
-      this.dialogBg.setInteractive();
-      this.dialogBg.once('pointerdown', () => {
-        this.dialogBg.disableInteractive();
-        this._showNode(node.next);
-      });
+      this.dialogBg.disableInteractive();
       
       // Clean up previous listeners and timers
       this.input.keyboard.removeAllListeners('keydown-E');
       this.input.keyboard.removeAllListeners('keydown-SPACE');
       if (this._dialogueTimer) this._dialogueTimer.destroy();
 
-      // Also advance on E or Space (add slight delay to prevent same-frame trigger)
-      this._dialogueTimer = this.time.delayedCall(100, () => {
+      // Delay interaction to prevent same-frame event leakage from previous click
+      this._dialogueTimer = this.time.delayedCall(150, () => {
+        this.dialogBg.setInteractive();
+        this.dialogBg.once('pointerdown', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this.dialogBg.disableInteractive();
+          this._showNode(node.next);
+        });
+
         this.input.keyboard.once('keydown-E', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
           this.dialogBg.disableInteractive();
           this._showNode(node.next);
         });
         this.input.keyboard.once('keydown-SPACE', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
           this.dialogBg.disableInteractive();
           this._showNode(node.next);
         });
@@ -579,21 +724,46 @@ class UIScene extends Phaser.Scene {
     } else {
       // End of dialogue — click or press key to close
       this.continueText.setVisible(true);
-      this.dialogBg.setInteractive();
-      this.dialogBg.once('pointerdown', () => this._closeDialogue());
+      this.dialogBg.disableInteractive();
       
       this.input.keyboard.removeAllListeners('keydown-E');
       this.input.keyboard.removeAllListeners('keydown-SPACE');
       if (this._dialogueTimer) this._dialogueTimer.destroy();
 
-      this._dialogueTimer = this.time.delayedCall(100, () => {
-        this.input.keyboard.once('keydown-E', () => this._closeDialogue());
-        this.input.keyboard.once('keydown-SPACE', () => this._closeDialogue());
+      // Delay interaction to prevent same-frame event leakage from previous click
+      this._dialogueTimer = this.time.delayedCall(150, () => {
+        this.dialogBg.setInteractive();
+        this.dialogBg.once('pointerdown', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this._closeDialogue();
+        });
+
+        this.input.keyboard.once('keydown-E', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this._closeDialogue();
+        });
+        this.input.keyboard.once('keydown-SPACE', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this._closeDialogue();
+        });
       });
     }
   }
 
   _selectOption(ch) {
+    if (this._autoAdvanceTimerEvent) {
+      this._autoAdvanceTimerEvent.destroy();
+      this._autoAdvanceTimerEvent = null;
+    }
     const cur = this.registry.get('harmony');
     this.registry.set('harmony', Phaser.Math.Clamp(cur + (ch.harmonyDelta || 0), 0, 100));
     
@@ -609,6 +779,14 @@ class UIScene extends Phaser.Scene {
   }
 
   _closeDialogue() {
+    if (this._autoAdvanceTimerEvent) {
+      this._autoAdvanceTimerEvent.destroy();
+      this._autoAdvanceTimerEvent = null;
+    }
+
+    const lastNodeId = this._currentDialogueNode;
+    const lastNode = lastNodeId ? DIALOGUES[lastNodeId] : null;
+
     this.dialogBg.setVisible(false).disableInteractive();
     this.dialogBorder.setVisible(false);
     this.speakerTxt.setVisible(false);
@@ -627,6 +805,10 @@ class UIScene extends Phaser.Scene {
     }
 
     this.registry.set('dialogueActive', false);
+
+    if (lastNode && lastNode.onCloseAction) {
+      this.registry.events.emit('dialogue_action', lastNode.onCloseAction);
+    }
   }
 
   /* ══════════ QTE Methods ══════════ */
