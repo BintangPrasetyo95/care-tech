@@ -70,6 +70,13 @@ class BootScene extends Phaser.Scene {
     this._defineAnimations();
     this.registry.set('lang', 'id');
 
+    // Ensure all pixel-art game textures retain NEAREST filter for crisp sprites
+    this.textures.each(t => {
+      if (t.key !== '__DEFAULT' && t.key !== '__MISSING') {
+        t.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      }
+    });
+
     const preloader = document.getElementById('preloader');
     if (preloader) preloader.classList.add('hidden');
     this.scene.start('World');

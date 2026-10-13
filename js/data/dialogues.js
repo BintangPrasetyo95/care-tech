@@ -36,19 +36,19 @@ const DIALOGUES = {
     },
     choices : [
       { 
-        label: { en: '1. "Let\'s go talk to her." (+25)', id: '1. "Ayo kita bicara dengannya." (+25)' },
+        label: { en: '1. "Let\'s go talk to her."', id: '1. "Ayo kita bicara dengannya."' },
         next : 'lvl1_005a_1',
         harmonyDelta: 25,
         action: 'vibrate_choice'
       },
       { 
-        label: { en: '2. "I don\'t care." (-35)', id: '2. "Aku nggak peduli." (-35)' },
+        label: { en: '2. "I don\'t care."', id: '2. "Aku nggak peduli."' },
         next : 'lvl1_005b_1',
         harmonyDelta: -35,
         action: 'vibrate_choice'
       },
       { 
-        label: { en: '3. "Maybe it\'s just my imagination." (-10)', id: '3. "Mungkin cuma perasaanku aja." (-10)' },
+        label: { en: '3. "Maybe it\'s just my imagination."', id: '3. "Mungkin cuma perasaanku aja."' },
         next : 'lvl1_005c_1',
         harmonyDelta: -10,
         action: 'vibrate_choice'
@@ -110,14 +110,14 @@ const DIALOGUES = {
     },
     choices : [
       {
-        label: { en: '1. "Approach Nabula." (+10)', id: '1. "Hampiri Nabula." (+10)' },
+        label: { en: '1. "Approach Nabula."', id: '1. "Hampiri Nabula."' },
         next : null,
         harmonyDelta: 10,
         action: 'lvl1_005b_approach'
       },
       {
-        label: { en: '2. "Leave it, keep walking." (-10)', id: '2. "Biarkan saja, lanjut jalan." (-10)' },
-        next : 'lvl1_005b_8_narrator',
+        label: { en: '2. "Leave it, keep walking."', id: '2. "Biarkan saja, lanjut jalan."' },
+        next : null,
         harmonyDelta: -10,
         action: 'vibrate_choice'
       }
