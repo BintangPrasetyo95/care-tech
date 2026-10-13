@@ -45,8 +45,11 @@ class Player {
     const body = this.sprite.body;
     body.setVelocity(0);
 
-    // Freeze during dialogue
-    if (this.scene.registry.get('dialogueActive')) {
+    // Freeze during dialogue unless cutscene animation is active
+    if (this.isCutsceneActive) {
+      return;
+    }
+    if (this.scene.registry.get('dialogueActive') || this.scene.registry.get('menuOpen')) {
       this.sprite.anims.play('player_idle_' + this.facing, true);
       return;
     }
@@ -54,20 +57,30 @@ class Player {
     let vx = 0;
     let vy = 0;
 
-    if (this.cursors.left.isDown  || this.keyA.isDown || (window.virtualInput && window.virtualInput.left)) vx = -1;
-    if (this.cursors.right.isDown || this.keyD.isDown || (window.virtualInput && window.virtualInput.right)) vx =  1;
-    if (this.cursors.up.isDown    || this.keyW.isDown || (window.virtualInput && window.virtualInput.up)) vy = -1;
-    if (this.cursors.down.isDown  || this.keyS.isDown || (window.virtualInput && window.virtualInput.down)) vy =  1;
+    const hasAnalog = window.virtualInput && (window.virtualInput.axisX !== undefined || window.virtualInput.axisY !== undefined) && (window.virtualInput.axisX !== 0 || window.virtualInput.axisY !== 0);
 
-    // Normalize diagonal speed
+    if (hasAnalog) {
+      vx = window.virtualInput.axisX;
+      vy = window.virtualInput.axisY;
+    } else {
+      if (this.cursors.left.isDown  || this.keyA.isDown || (window.virtualInput && window.virtualInput.left)) vx = -1;
+      if (this.cursors.right.isDown || this.keyD.isDown || (window.virtualInput && window.virtualInput.right)) vx =  1;
+      if (this.cursors.up.isDown    || this.keyW.isDown || (window.virtualInput && window.virtualInput.up)) vy = -1;
+      if (this.cursors.down.isDown  || this.keyS.isDown || (window.virtualInput && window.virtualInput.down)) vy =  1;
+    }
+
+    // Normalize speed
     const len = Math.sqrt(vx * vx + vy * vy) || 1;
     body.setVelocity((vx / len) * this.speed, (vy / len) * this.speed);
 
-    // Update facing direction (prioritise last pressed axis)
-    if (vy < 0)      this.facing = 'up';
-    else if (vy > 0) this.facing = 'down';
-    else if (vx < 0) this.facing = 'left';
-    else if (vx > 0) this.facing = 'right';
+    // Update facing direction (prioritise dominant axis)
+    if (Math.abs(vy) > Math.abs(vx)) {
+      if (vy < 0)      this.facing = 'up';
+      else if (vy > 0) this.facing = 'down';
+    } else if (Math.abs(vx) > 0) {
+      if (vx < 0)      this.facing = 'left';
+      else if (vx > 0) this.facing = 'right';
+    }
 
     /* -- play walk / idle animation -- */
     if (this.facing === 'left') {

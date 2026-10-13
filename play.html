@@ -1,41 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CARE-TECH: An anti-bullying narrative RPG set in Harmonia School. Build empathy, protect friends, and raise the Harmony Index." />
-  <title>CARE-TECH: Harmonia School</title>
+  <meta name="description" content="CARE-TECH: Game RPG naratif anti-perundungan di Harmonia School. Bangun empati, lindungi teman, dan tingkatkan Indeks Harmoni." />
+  <title>CareTech - Harmonia School RPG (Cardboard Cosmos)</title>
   <link rel="icon" href="assets/logo-care-tech.png" />
-  <style>
-    @font-face {
-      font-family: 'GROBOLD';
-      src: local('GROBOLD'), local('Grobold'), url('assets/fonts/GROBOLD.ttf') format('truetype');
-      font-weight: 100 900;
-      font-style: normal;
-      font-display: swap;
-    }
 
+  <!-- Fonts: Retro 8-bit Pixel Font & Clean Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Cardboard Cosmos Stylesheet -->
+  <link rel="stylesheet" href="dashboard.css">
+
+  <style>
     /* ── Reset & full-bleed canvas ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      background: #e8faff;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #e8e2d2;
+      font-family: var(--mk);
+      color: var(--ink);
     }
     canvas {
       display: block;
       margin: 0 auto;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: auto;
     }
 
-    /* ══════════ Pre-game loading screen ══════════ */
+    /* ══════════ Pre-game loading screen (Cardboard Cosmos) ══════════ */
     #preloader {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: radial-gradient(circle at center, #ddecec 0%, #0f1011 100%);
+      background: #ede6d4;
       z-index: 9999;
       transition: opacity 1.2s ease-in-out, visibility 1.2s;
     }
@@ -43,42 +45,46 @@
       opacity: 0; 
       visibility: hidden;
     }
-    #preloader h1 {
-      font-family: 'GROBOLD', 'Grobold', sans-serif;
-      font-size: 2.2rem; 
-      color: #3b65c7; 
-      font-weight: 400;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
+    .preloader-card {
+      background: #ffffff;
+      border: 4px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      transform: rotate(-0.8deg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #preloader h1 span { 
-      font-weight: 600;
-      background: linear-gradient(90deg, #0ea5e9, #2cb67d);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    #preloader p {
-      color: #64748b; font-size: 0.95rem; margin-bottom: 3rem;
-      font-weight: 400; letter-spacing: 0.05em;
+    .preloader-card img {
+      max-width: 250px;
+      width: 100%;
+      margin-bottom: 1.2rem;
+      filter: drop-shadow(4px 4px 0 var(--ink));
+      transform: rotate(-1.5deg);
     }
     
     .loader-orb {
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #38bdf8, #34d399);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 10px rgba(255,255,255,0.8);
-      animation: orbPulse 2s ease-in-out infinite alternate;
+      background: linear-gradient(135deg, var(--cy), var(--lime));
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      animation: orbPulse 1.4s ease-in-out infinite alternate;
+      margin-top: 0.5rem;
     }
     @keyframes orbPulse {
       0% {
-        transform: scale(0.95) translateY(0px);
-        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2), inset 0 0 8px rgba(255,255,255,0.6);
+        transform: scale(0.9) translateY(0px) rotate(0deg);
+        box-shadow: 3px 3px 0 var(--ink);
       }
       100% {
-        transform: scale(1.05) translateY(-5px);
-        box-shadow: 0 0 35px rgba(52, 211, 153, 0.5), inset 0 0 15px rgba(255,255,255,0.9);
+        transform: scale(1.1) translateY(-6px) rotate(15deg);
+        box-shadow: 7px 7px 0 var(--ink);
       }
     }
   
@@ -86,106 +92,560 @@
     #mobile-start-overlay {
       display: none;
       position: fixed; inset: 0;
-      background: rgba(15, 16, 17, 0.95);
-      z-index: 10000;
+      background: rgba(229, 217, 197, 0.96);
+      z-index: 20005;
       flex-direction: column; align-items: center; justify-content: center;
-      color: white; text-align: center;
+      padding: 1.5rem;
+      text-align: center;
     }
-    #mobile-start-overlay h2 { font-family: 'GROBOLD', 'Grobold', sans-serif; font-size: 2rem; margin-bottom: 1rem; color: #38bdf8; }
-    #mobile-start-overlay button {
-      padding: 1rem 2rem; font-size: 1.5rem; background: #2cb67d; color: white;
-      border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+    .mobile-overlay-box {
+      background: #ffffff;
+      border: 4px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      box-shadow: 7px 7px 0 var(--ink);
+      padding: 2.2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .mobile-overlay-box h2 {
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.2rem;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .mobile-overlay-box p {
+      font-family: var(--mk);
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 1.8rem;
     }
     @media (hover: none) and (pointer: coarse), (max-width: 900px) {
       #mobile-start-overlay:not(.hidden) { display: flex; }
     }
     
     #mobile-controls {
-      display: none;
+      display: none !important;
       position: fixed; inset: 0;
       pointer-events: none;
-      z-index: 9998;
+      z-index: 1000;
     }
-    .mobile-active #mobile-controls { display: block; }
+    body.mobile-active #mobile-controls {
+      display: block !important;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      #mobile-controls {
+        display: none !important;
+      }
+    }
+    /* Explicit analog trigger overrides (works on both desktop and mobile) */
+    body.analog-enabled #mobile-controls {
+      display: block !important;
+    }
+    body.analog-disabled #mobile-controls {
+      display: none !important;
+    }
+
+    /* ══════════ MENU PRIORITY OVERRIDE ══════════ */
+    /* When pause menu is open, touch events pass through to menu without moving analog */
+    body.menu-open #joystick-zone {
+      pointer-events: none !important;
+    }
+
+    /* ══════════ DIALOGUE STATE: ONLY THE ANALOG IS GONE ══════════ */
+    /* The analog joystick (zone, container, thumb) is gone ONLY in dialogue state.
+       The action button E remains visible and interactive so players can advance dialogues. */
+    body.dialogue-active #joystick-zone,
+    #mobile-controls.dialogue-active #joystick-zone,
+    body.dialogue-active #joystick-container,
+    #mobile-controls.dialogue-active #joystick-container {
+      display: none !important;
+      pointer-events: none !important;
+    }
+
+    body.dialogue-active #btn-action,
+    #mobile-controls.dialogue-active #btn-action {
+      display: flex !important;
+      pointer-events: auto !important;
+    }
     
-    .d-pad {
-      position: absolute; bottom: 20px; left: 20px;
-      width: 150px; height: 150px;
+    /* ══════════ Dynamic Floating Analog Joystick & Action Button ══════════ */
+    .joystick-zone {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 48vw;
+      height: calc(100vh - 80px);
+      max-height: 85vh;
       pointer-events: auto;
-    }
-    .d-btn {
-      position: absolute;
-      width: 50px; height: 50px;
-      background: rgba(255, 255, 255, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: white; font-weight: bold;
+      touch-action: none;
       user-select: none; -webkit-user-select: none;
+      z-index: 1001;
     }
-    .d-btn:active, .action-btn:active { background: rgba(255, 255, 255, 0.6); }
-    .d-up { top: 0; left: 50px; }
-    .d-down { bottom: 0; left: 50px; }
-    .d-left { top: 50px; left: 0; }
-    .d-right { top: 50px; right: 0; }
-    
-    .action-btn {
-      position: absolute; bottom: 40px; right: 40px;
-      width: 80px; height: 80px;
-      background: rgba(44, 182, 125, 0.5);
-      border: 2px solid rgba(44, 182, 125, 0.8);
+    .joystick-container {
+      position: fixed;
+      bottom: 24px; left: 24px;
+      width: 140px; height: 140px;
+      pointer-events: none;
+      touch-action: none;
+      user-select: none; -webkit-user-select: none;
+      opacity: 0.72;
+      transition: opacity 0.2s ease;
+      z-index: 1002;
+    }
+    .joystick-container.active {
+      opacity: 1;
+    }
+    .joystick-base {
+      position: relative;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: white; font-weight: bold;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .joystick-base::before {
+      content: '';
+      position: absolute;
+      width: 44px; height: 44px;
+      border: 2px dashed rgba(26, 26, 26, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .joystick-thumb {
+      width: 58px; height: 58px;
+      background: var(--sun);
+      border: 3.5px solid var(--ink);
+      box-shadow: 2px 2px 0 var(--ink);
+      border-radius: 50%;
+      position: absolute;
+      top: calc(50% - 29px);
+      left: calc(50% - 29px);
+      pointer-events: none;
+      transition: transform 0.12s ease-out;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .joystick-thumb::after {
+      content: '';
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(26, 26, 26, 0.15);
+      border: 1.5px solid rgba(26, 26, 26, 0.25);
+    }
+    .joystick-container.active .joystick-thumb {
+      background: #ffcc00;
+      transition: none;
+    }
+    
+    .action-btn {
+      position: absolute; bottom: 44px; right: 36px;
+      width: 78px; height: 78px;
+      background: var(--lime);
+      border: 3.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: var(--ink); font-weight: 900;
+      font-family: 'GROBOLD', var(--imp);
       pointer-events: auto;
       user-select: none; -webkit-user-select: none;
+      transition: transform 0.08s ease;
+    }
+    .action-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 var(--ink);
+      background: #2fe00e;
+    }
+
+    /* ══════════ Level Selection Screen Modal (Cardboard Dossier) ══════════ */
+    #level-select-modal {
+      position: fixed; inset: 0;
+      background: rgba(238, 230, 215, 0.97);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 1;
+      visibility: visible;
+      overflow-y: auto;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+    }
+    #level-select-modal.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .level-select-board {
+      max-width: 1040px;
+      width: 100%;
+      text-align: center;
+      margin: auto;
+      padding: 1rem 0;
+    }
+    .level-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .level-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-family: var(--mk);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #ffffff;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 12px;
+      padding: 0.45rem 1.1rem;
+      transition: all 0.15s ease;
+    }
+    .level-back-btn:hover {
+      background: var(--sun);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .level-back-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .analog-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mk);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #ffffff;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 12px;
+      padding: 0.45rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: all 0.15s ease;
+    }
+    .analog-trigger-btn:hover {
+      background: var(--sun);
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .analog-trigger-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+    .analog-trigger-btn.is-active {
+      background: var(--lime);
+    }
+    .level-select-header {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+    .level-select-header img {
+      max-width: 240px;
+      filter: drop-shadow(4px 4px 0 var(--ink));
+      transform: rotate(-1.5deg);
+      margin-bottom: 0.8rem;
+    }
+    .level-select-header h1 {
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.6rem;
+      color: var(--ink);
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3rem;
+      text-shadow: 3px 3px 0 #ffffff;
+    }
+    .level-select-header p {
+      color: #222;
+      font-family: var(--mk);
+      font-size: 1.12rem;
+      font-weight: 700;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.3rem;
+      max-width: 1020px;
+      width: 100%;
+      margin: 0 auto 2rem auto;
+    }
+    @media (max-width: 920px) {
+      .level-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 580px) {
+      .level-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .level-select-header h1 {
+        font-size: 1.9rem;
+      }
+    }
+    .level-card {
+      position: relative;
+      background: #ffffff;
+      border: 3.5px solid var(--ink);
+      border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.2s ease, background 0.2s;
+      box-shadow: 6px 6px 0 var(--ink);
+      user-select: none;
+    }
+    .level-card:nth-child(even) {
+      border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+      transform: rotate(1.2deg);
+    }
+    .level-card:nth-child(odd) {
+      transform: rotate(-1.2deg);
+    }
+    .level-card:not(.locked):hover {
+      transform: translateY(-8px) scale(1.03) rotate(0deg) !important;
+      background: #fffdf5;
+      box-shadow: 10px 10px 0 var(--ink) !important;
+    }
+    .level-card.locked {
+      background: #f1ebd8;
+      border-color: #555555;
+      color: #64748b;
+      cursor: not-allowed;
+      opacity: 0.85;
+      box-shadow: 4px 4px 0 #555555;
+    }
+    .level-num-badge {
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 2.2rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.8rem;
+      background: var(--sun);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      transform: rotate(-2deg);
+    }
+    .level-card.locked .level-num-badge {
+      background: #cbd5e1;
+      color: #64748b;
+      border-color: #64748b;
+      box-shadow: 2px 2px 0 #64748b;
+      transform: none;
+    }
+    .level-title {
+      font-family: 'GROBOLD', var(--imp);
+      font-size: 1.2rem;
+      margin-bottom: 0.35rem;
+      color: var(--ink);
+    }
+    .level-card.locked .level-title {
+      color: #555555;
+    }
+    .level-sub {
+      font-family: var(--mk);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #333333;
+      line-height: 1.35;
+      margin-bottom: 0.8rem;
+      min-height: 2.5rem;
+    }
+    .level-card.locked .level-sub {
+      color: #64748b;
+    }
+    .lock-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 900;
+      background: #e2e8f0;
+      color: #475569;
+      border: 2px dashed #64748b;
+    }
+    .play-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 900;
+      background: var(--lime);
+      color: var(--ink);
+      border: 2.5px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      text-transform: uppercase;
+      transition: background 0.15s ease;
+    }
+    .play-tag:hover {
+      background: #2fe00e;
     }
 
   </style>
 </head>
 <body>
 
-  <div id="mobile-start-overlay">
-    <h2>Mobile Mode</h2>
-    <p style="margin-bottom: 2rem;">Game requires Fullscreen and Landscape mode.</p>
-    <button id="btn-start-mobile">Play Game</button>
-  </div>
+  <!-- Level Selection Modal (Cardboard Cosmos Dossier) -->
+  <div id="level-select-modal">
+    <div class="level-select-board">
+      
+      <!-- Top Navigation: Kembali ke Panduan Game & Trigger Analog -->
+      <div class="level-top-bar">
+        <a href="game.html" class="level-back-btn">
+          <span>⬅</span> <span>Kembali ke Panduan Game</span>
+        </a>
+        <button id="btn-toggle-analog-lobby" class="analog-trigger-btn" type="button" title="Trigger Kontrol Analog Stick">
+          <span>🕹️</span> <span id="lobby-analog-text">Analog: NONAKTIF</span>
+        </button>
+      </div>
 
-  <div id="mobile-controls">
-    <div class="d-pad">
-      <div class="d-btn d-up" data-dir="up">▲</div>
-      <div class="d-btn d-down" data-dir="down">▼</div>
-      <div class="d-btn d-left" data-dir="left">◀</div>
-      <div class="d-btn d-right" data-dir="right">▶</div>
+      <span class="tape tape-pink" style="font-size: 0.95rem; margin-bottom: 0.8rem; transform: rotate(-1.5deg);">
+        ★ PAPAN MISI HARMONIA // CARE-TECH RPG ★
+      </span>
+
+      <div class="level-select-header">
+        <img src="assets/logo-care-tech-with-text.png" alt="CARE-TECH">
+        <h1>PILIH LEVEL PETUALANGAN</h1>
+        <p>Jelajahi sekolah Harmonia, bangun empati, lindungi teman-temanmu, dan raih Indeks Harmoni tertinggi!</p>
+      </div>
+
+      <div class="level-grid">
+        <!-- Level 1 (UNLOCKED) -->
+        <div class="level-card" id="btn-select-level-1" tabindex="0">
+          <div class="level-num-badge">1</div>
+          <div class="level-title">Level 1</div>
+          <div class="level-sub">Detektif Emosi<br>(Taman Sekolah)</div>
+          <div class="play-tag">▶ Mainkan</div>
+        </div>
+
+        <!-- Level 2 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 1">
+          <div class="level-num-badge">2</div>
+          <div class="level-title">Level 2</div>
+          <div class="level-sub">Penyelamatan Empati<br>(Lorong)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 3 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 2">
+          <div class="level-num-badge">3</div>
+          <div class="level-title">Level 3</div>
+          <div class="level-sub">Kasus Misteri<br>(Ruang Kelas)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 4 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 3">
+          <div class="level-num-badge">4</div>
+          <div class="level-title">Level 4</div>
+          <div class="level-sub">Pembangun Harmoni<br>(Auditorium)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+
+        <!-- Level 5 (LOCKED) -->
+        <div class="level-card locked" title="Terkunci - Selesaikan Level 4">
+          <div class="level-num-badge">5</div>
+          <div class="level-title">Level 5</div>
+          <div class="level-sub">Tantangan Waktu X<br>(Kantin)</div>
+          <div class="lock-tag">🔒 Terkunci</div>
+        </div>
+      </div>
     </div>
-    <div class="action-btn" id="btn-action">A</div>
   </div>
 
+  <!-- Mobile Start Overlay -->
+  <div id="mobile-start-overlay">
+    <div class="mobile-overlay-box">
+      <span class="tape tape-cyan" style="font-size: 0.85rem; margin-bottom: 0.8rem;">MODE MOBILE / SMARTPHONE</span>
+      <h2>Siap Bermain?</h2>
+      <p>Game memerlukan layar penuh (fullscreen) dan posisi landscape untuk pengalaman terbaik.</p>
+      <button id="btn-start-mobile" class="btn btn-start" style="font-size: 1.25rem; width: 100%;">
+        Mulai Game RPG! 🎮
+      </button>
+    </div>
+  </div>
+
+  <!-- Touch Controls for Mobile (Dynamic Floating Analog & Action Button) -->
+  <div id="mobile-controls">
+    <div id="joystick-zone" class="joystick-zone">
+      <div id="joystick-container" class="joystick-container">
+        <div id="joystick-base" class="joystick-base">
+          <div id="joystick-thumb" class="joystick-thumb"></div>
+        </div>
+      </div>
+    </div>
+    <div class="action-btn" id="btn-action">E</div>
+  </div>
 
   <!-- Pre-loader shown while scripts download -->
   <div id="preloader">
-    <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo" style="max-width: 300px; margin-bottom: 2rem;">
-    <div class="loader-orb"></div>
+    <div class="preloader-card">
+      <img src="assets/logo-care-tech-with-text.png" alt="CareTech Logo">
+      <span class="tape tape-lime" style="font-size: 1.05rem; margin-bottom: 1.2rem;">
+        MEMUAT DUNIA HARMONIA...
+      </span>
+      <div class="loader-orb"></div>
+    </div>
   </div>
 
   <!-- Phaser 3 engine (pinned version for reproducibility) -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
   <!-- Game modules — loaded in strict dependency order -->
-  <script src="js/data/dialogues.js"></script>
-  <script src="js/systems/RelationshipManager.js"></script>
-  <script src="js/systems/DialogueManager.js"></script>
-  <script src="js/systems/ScheduleManager.js"></script>
-  <script src="js/entities/Player.js"></script>
-  <script src="js/entities/NPC.js"></script>
-  <script src="js/scenes/BootScene.js"></script>
-  <script src="js/scenes/WorldScene.js"></script>
-  <script src="js/scenes/UIScene.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/data/dialogues.js?v=caf_outdoor_v1"></script>
+  <script src="js/systems/RelationshipManager.js?v=caf_outdoor_v1"></script>
+  <script src="js/systems/DialogueManager.js?v=caf_outdoor_v1"></script>
+  <script src="js/systems/ScheduleManager.js?v=caf_outdoor_v1"></script>
+  <script src="js/entities/Player.js?v=caf_outdoor_v1"></script>
+  <script src="js/entities/NPC.js?v=caf_outdoor_v1"></script>
+  <script src="js/scenes/BootScene.js?v=caf_outdoor_v1"></script>
+  <script src="js/scenes/WorldScene.js?v=caf_outdoor_v1"></script>
+  <script src="js/scenes/UIScene.js?v=caf_outdoor_v1"></script>
+  <script src="js/main.js?v=caf_outdoor_v1"></script>
 
 
   <script>
-    window.virtualInput = { up: false, down: false, left: false, right: false, actionJustDown: false };
+    window.virtualInput = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      axisX: 0,
+      axisY: 0,
+      actionJustDown: false
+    };
     
     document.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('btn-start-mobile');
@@ -210,42 +670,284 @@
         overlay.classList.add('hidden');
         document.body.classList.add('mobile-active');
       });
-      
-      const bindBtn = (el, key) => {
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); window.virtualInput[key] = true; }, {passive: false});
-        el.addEventListener('touchend', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
-        el.addEventListener('touchcancel', (e) => { e.preventDefault(); window.virtualInput[key] = false; }, {passive: false});
-        el.addEventListener('mousedown', (e) => { e.preventDefault(); window.virtualInput[key] = true; });
-        el.addEventListener('mouseup', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
-        el.addEventListener('mouseleave', (e) => { e.preventDefault(); window.virtualInput[key] = false; });
+
+      /* ── Dynamic Floating Analog Stick Logic ── */
+      const joystickZone = document.getElementById('joystick-zone');
+      const joystickContainer = document.getElementById('joystick-container');
+      const joystickThumb = document.getElementById('joystick-thumb');
+
+      let joystickActive = false;
+      let joystickPointerId = null;
+      let center = { x: 0, y: 0 };
+      const halfSize = 70;
+      const maxDistance = 44; // max travel radius in px
+
+      const setJoystickCenter = (clientX, clientY) => {
+        // Clamp center so the 140px base stays visible and comfortable on screen
+        const minX = halfSize + 10;
+        const maxX = Math.max(minX, window.innerWidth * 0.48);
+        const minY = 85 + halfSize;
+        const maxY = Math.max(minY, window.innerHeight - halfSize - 10);
+
+        const clampedX = Math.max(minX, Math.min(clientX, maxX));
+        const clampedY = Math.max(minY, Math.min(clientY, maxY));
+
+        center = { x: clampedX, y: clampedY };
+
+        if (joystickContainer) {
+          joystickContainer.style.left = `${clampedX - halfSize}px`;
+          joystickContainer.style.top = `${clampedY - halfSize}px`;
+          joystickContainer.style.bottom = 'auto';
+        }
       };
-      
-      document.querySelectorAll('.d-btn').forEach(btn => bindBtn(btn, btn.getAttribute('data-dir')));
-      
+
+      const handlePointerMove = (clientX, clientY) => {
+        const dx = clientX - center.x;
+        const dy = clientY - center.y;
+        const dist = Math.hypot(dx, dy);
+
+        let clampedX = dx;
+        let clampedY = dy;
+        if (dist > maxDistance) {
+          clampedX = (dx / dist) * maxDistance;
+          clampedY = (dy / dist) * maxDistance;
+        }
+
+        if (joystickThumb) {
+          joystickThumb.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+        }
+
+        // Normalize axes (-1.0 to 1.0)
+        const normX = clampedX / maxDistance;
+        const normY = clampedY / maxDistance;
+
+        const deadzone = 0.12;
+        if (dist / maxDistance < deadzone) {
+          window.virtualInput.axisX = 0;
+          window.virtualInput.axisY = 0;
+          window.virtualInput.left = false;
+          window.virtualInput.right = false;
+          window.virtualInput.up = false;
+          window.virtualInput.down = false;
+        } else {
+          window.virtualInput.axisX = normX;
+          window.virtualInput.axisY = normY;
+          window.virtualInput.left = normX < -0.3;
+          window.virtualInput.right = normX > 0.3;
+          window.virtualInput.up = normY < -0.3;
+          window.virtualInput.down = normY > 0.3;
+        }
+      };
+
+      const resetJoystick = () => {
+        joystickActive = false;
+        joystickPointerId = null;
+        if (joystickContainer) {
+          joystickContainer.classList.remove('active');
+          joystickContainer.style.left = '24px';
+          joystickContainer.style.top = 'auto';
+          joystickContainer.style.bottom = '24px';
+        }
+        if (joystickThumb) {
+          joystickThumb.style.transform = 'translate(0px, 0px)';
+        }
+        window.virtualInput.axisX = 0;
+        window.virtualInput.axisY = 0;
+        window.virtualInput.left = false;
+        window.virtualInput.right = false;
+        window.virtualInput.up = false;
+        window.virtualInput.down = false;
+      };
+
+      window.resetJoystick = resetJoystick;
+
+      const isAnyMenuOpen = () => {
+        const lvlModal = document.getElementById('level-select-modal');
+        const startOverlay = document.getElementById('mobile-start-overlay');
+        const isLvlModalOpen = lvlModal && !lvlModal.classList.contains('hidden');
+        const isStartOverlayOpen = startOverlay && !startOverlay.classList.contains('hidden');
+        const isSidebarOpen = document.body.classList.contains('menu-open');
+        return !!(isLvlModalOpen || isStartOverlayOpen || isSidebarOpen);
+      };
+
+      if (joystickZone) {
+        joystickZone.addEventListener('pointerdown', (e) => {
+          if (isAnyMenuOpen()) {
+            return;
+          }
+          e.preventDefault();
+          joystickActive = true;
+          joystickPointerId = e.pointerId;
+          if (joystickContainer) joystickContainer.classList.add('active');
+          if (joystickZone.setPointerCapture) {
+            try { joystickZone.setPointerCapture(e.pointerId); } catch (_) {}
+          }
+          setJoystickCenter(e.clientX, e.clientY);
+          handlePointerMove(e.clientX, e.clientY);
+        });
+
+        joystickZone.addEventListener('pointermove', (e) => {
+          if (isAnyMenuOpen()) {
+            resetJoystick();
+            return;
+          }
+          if (!joystickActive || e.pointerId !== joystickPointerId) return;
+          e.preventDefault();
+          handlePointerMove(e.clientX, e.clientY);
+        });
+
+        const onPointerEnd = (e) => {
+          if (e.pointerId !== joystickPointerId) return;
+          e.preventDefault();
+          if (joystickZone.releasePointerCapture) {
+            try { joystickZone.releasePointerCapture(e.pointerId); } catch (_) {}
+          }
+          resetJoystick();
+        };
+
+        joystickZone.addEventListener('pointerup', onPointerEnd);
+        joystickZone.addEventListener('pointercancel', onPointerEnd);
+      }
+
+      window.addEventListener('blur', resetJoystick);
+      window.addEventListener('resize', resetJoystick);
+      window.addEventListener('menu-toggled', (e) => {
+        if (e.detail && e.detail.open) {
+          resetJoystick();
+        }
+      });
+
+      /* ── Action Button (E / Interaksi) ── */
       const triggerAction = () => {
         window.virtualInput.actionJustDown = true;
-        const ev = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
-        window.dispatchEvent(ev);
+        const evE = new KeyboardEvent('keydown', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true });
+        window.dispatchEvent(evE);
+        const evSpace = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
+        window.dispatchEvent(evSpace);
+        const evEnter = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true });
+        window.dispatchEvent(evEnter);
       };
 
       const actionBtn = document.getElementById('btn-action');
-      actionBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerAction(); }, {passive: false});
-      actionBtn.addEventListener('mousedown', (e) => { e.preventDefault(); triggerAction(); });
+      if (actionBtn) {
+        const onActionPress = (e) => {
+          if (isAnyMenuOpen()) return;
+          e.preventDefault();
+          triggerAction();
+        };
+        actionBtn.addEventListener('pointerdown', onActionPress);
+        actionBtn.addEventListener('touchstart', onActionPress, { passive: false });
+      }
 
-      // Hide controls during dialogue
+      /* ── Analog Trigger & State Management ── */
+      window.isAnalogActive = () => {
+        if (document.body.classList.contains('analog-enabled')) return true;
+        if (document.body.classList.contains('analog-disabled')) return false;
+        return document.body.classList.contains('mobile-active');
+      };
+
+      const updateLobbyAnalogBtn = (active) => {
+        const lobbyBtn = document.getElementById('btn-toggle-analog-lobby');
+        const lobbyTxt = document.getElementById('lobby-analog-text');
+        if (lobbyBtn && lobbyTxt) {
+          if (active) {
+            lobbyBtn.classList.add('is-active');
+            lobbyTxt.textContent = 'Analog: AKTIF';
+          } else {
+            lobbyBtn.classList.remove('is-active');
+            lobbyTxt.textContent = 'Analog: NONAKTIF';
+          }
+        }
+      };
+
+      window.setAnalogActive = (enable) => {
+        if (enable) {
+          document.body.classList.add('analog-enabled');
+          document.body.classList.remove('analog-disabled');
+          localStorage.setItem('caretech_analog_mode', 'on');
+        } else {
+          document.body.classList.remove('analog-enabled');
+          document.body.classList.add('analog-disabled');
+          localStorage.setItem('caretech_analog_mode', 'off');
+        }
+        updateLobbyAnalogBtn(enable);
+        window.dispatchEvent(new CustomEvent('analog-toggled', { detail: { enabled: enable } }));
+      };
+
+      window.toggleAnalogControls = () => {
+        const nextState = !window.isAnalogActive();
+        window.setAnalogActive(nextState);
+        return nextState;
+      };
+
+      const lobbyAnalogBtn = document.getElementById('btn-toggle-analog-lobby');
+      if (lobbyAnalogBtn) {
+        lobbyAnalogBtn.addEventListener('click', () => {
+          window.toggleAnalogControls();
+        });
+      }
+
+      // Check saved preference on startup (default: ON unless explicitly turned off)
+      const savedAnalogMode = localStorage.getItem('caretech_analog_mode');
+      if (savedAnalogMode === 'off') {
+        window.setAnalogActive(false);
+      } else {
+        window.setAnalogActive(true);
+      }
+
+      // Shortcut F2 to toggle analog anytime
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'F2') {
+          e.preventDefault();
+          window.toggleAnalogControls();
+        }
+      });
+
+      // Level 1 Selection Handler
+      const lvl1Btn = document.getElementById('btn-select-level-1');
+      const lvlSelectModal = document.getElementById('level-select-modal');
+
+      if (lvl1Btn) {
+        lvl1Btn.addEventListener('click', () => {
+          if (lvlSelectModal) {
+            lvlSelectModal.classList.add('hidden');
+          }
+          // Emit event to Phaser game
+          const tryStartLevel1 = () => {
+            if (window.game && window.game.events) {
+              window.game.events.emit('start_level_1');
+            } else {
+              setTimeout(tryStartLevel1, 100);
+            }
+          };
+          tryStartLevel1();
+        });
+      }
+
+      // Dialogue state sync: ONLY the analog is gone during dialogue state
+      const setDialogueActive = (active) => {
+        const isAct = !!active;
+        document.body.classList.toggle('dialogue-active', isAct);
+        const controls = document.getElementById('mobile-controls');
+        if (controls) {
+          controls.classList.toggle('dialogue-active', isAct);
+          controls.classList.remove('dialogue-hidden');
+        }
+        if (isAct && typeof resetJoystick === 'function') {
+          resetJoystick();
+        }
+      };
+
+      window.setDialogueActive = setDialogueActive;
+
       const checkDialogue = setInterval(() => {
         if (window.game && window.game.registry) {
           window.game.registry.events.on('changedata-dialogueActive', (parent, value) => {
-            const controls = document.getElementById('mobile-controls');
-            if (value) {
-              controls.style.display = 'none';
-            } else {
-              controls.style.display = 'block';
-            }
+            setDialogueActive(value);
           });
           clearInterval(checkDialogue);
         }
-      }, 200);
+      }, 100);
     });
   </script>
 

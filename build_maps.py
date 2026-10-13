@@ -20,7 +20,26 @@ tiles = {
     'stage': (124, 45, 18),
     'flower': (251, 113, 133),
     'tree': (22, 101, 52),
-    'water_tl': (14, 165, 233),
+    'water_0_0': (0,0,0,0),
+    'water_1_0': (0,0,0,0),
+    'water_2_0': (0,0,0,0),
+    'water_3_0': (0,0,0,0),
+    'water_0_1': (0,0,0,0),
+    'water_1_1': (0,0,0,0),
+    'water_2_1': (0,0,0,0),
+    'water_3_1': (0,0,0,0),
+    'water_0_2': (0,0,0,0),
+    'water_1_2': (0,0,0,0),
+    'water_2_2': (0,0,0,0),
+    'water_3_2': (0,0,0,0),
+    'water_0_3': (0,0,0,0),
+    'water_1_3': (0,0,0,0),
+    'water_2_3': (0,0,0,0),
+    'water_3_3': (0,0,0,0),
+    'water_0_4': (0,0,0,0),
+    'water_1_4': (0,0,0,0),
+    'water_2_4': (0,0,0,0),
+    'water_3_4': (0,0,0,0),
     'bookshelf': (0, 0, 0, 0),
     'bookshelf_t': (0, 0, 0, 0),
     'bookshelf_b': (0, 0, 0, 0),
@@ -34,12 +53,14 @@ tiles = {
     'path_1_1': (0, 0, 0, 0),
     'path_3_2': (0, 0, 0, 0),
     'path_1_2': (0, 0, 0, 0),
-    'water_tr': (0, 0, 0, 0),
-    'water_bl': (0, 0, 0, 0),
-    'water_br': (0, 0, 0, 0),
     'tree_0_0': (0,0,0,0), 'tree_0_1': (0,0,0,0), 'tree_0_2': (0,0,0,0),
     'tree_1_0': (0,0,0,0), 'tree_1_1': (0,0,0,0), 'tree_1_2': (0,0,0,0),
     'tree_2_0': (0,0,0,0), 'tree_2_1': (0,0,0,0), 'tree_2_2': (0,0,0,0),
+    'fountain_0_0': (0,0,0,0),
+    'fountain_1_0': (0,0,0,0),
+    'fountain_0_1': (0,0,0,0),
+    'fountain_1_1': (0,0,0,0),
+
     'dummy_42': (0,0,0,0),
     'grass_var1': (0,0,0,0),
     'grass_var2': (0,0,0,0),
@@ -65,6 +86,30 @@ tiles = {
     'caf_srv_1_3': (0,0,0,0), 'caf_srv_1_4': (0,0,0,0), 'caf_srv_1_5': (0,0,0,0),
     'path_3_0': (0,0,0,0),
     'path_1_0': (0,0,0,0),
+    'planter_h_0_0': (0,0,0,0),
+    'planter_h_0_1': (0,0,0,0),
+    'planter_h_0_2': (0,0,0,0),
+    'planter_h_1_0': (0,0,0,0),
+    'planter_h_1_1': (0,0,0,0),
+    'planter_h_1_2': (0,0,0,0),
+    'planter_v_0': (0,0,0,0),
+    'planter_v_1': (0,0,0,0),
+    'planter_v_2': (0,0,0,0),
+    'lib_tc_0_0': (0,0,0,0), 'lib_tc_0_1': (0,0,0,0), 'lib_tc_0_2': (0,0,0,0),
+    'lib_tc_1_0': (0,0,0,0), 'lib_tc_1_1': (0,0,0,0), 'lib_tc_1_2': (0,0,0,0),
+    'lib_tc_2_0': (0,0,0,0), 'lib_tc_2_1': (0,0,0,0), 'lib_tc_2_2': (0,0,0,0),
+    'lib_desk_0_0': (0,0,0,0), 'lib_desk_0_1': (0,0,0,0), 'lib_desk_0_2': (0,0,0,0),
+    'lib_desk_1_0': (0,0,0,0), 'lib_desk_1_1': (0,0,0,0), 'lib_desk_1_2': (0,0,0,0),
+    'canteen_tc_0_0': (0,0,0,0), 'canteen_tc_0_1': (0,0,0,0),
+    'canteen_tc_1_0': (0,0,0,0), 'canteen_tc_1_1': (0,0,0,0),
+    'canteen_tc_2_0': (0,0,0,0), 'canteen_tc_2_1': (0,0,0,0),
+    'sink': (0,0,0,0),
+    'trash_can': (0,0,0,0),
+    'caf_plat_0_0': (0,0,0,0), 'caf_plat_0_1': (0,0,0,0), 'caf_plat_0_2': (0,0,0,0), 'caf_plat_0_3': (0,0,0,0),
+    'caf_plat_1_0': (0,0,0,0), 'caf_plat_1_1': (0,0,0,0), 'caf_plat_1_2': (0,0,0,0), 'caf_plat_1_3': (0,0,0,0),
+    'caf_plat_2_0': (0,0,0,0), 'caf_plat_2_1': (0,0,0,0), 'caf_plat_2_2': (0,0,0,0), 'caf_plat_2_3': (0,0,0,0),
+    'caf_plat_3_0': (0,0,0,0), 'caf_plat_3_1': (0,0,0,0), 'caf_plat_3_2': (0,0,0,0), 'caf_plat_3_3': (0,0,0,0),
+    'caf_plat_4_0': (0,0,0,0), 'caf_plat_4_1': (0,0,0,0), 'caf_plat_4_2': (0,0,0,0), 'caf_plat_4_3': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -78,6 +123,8 @@ try:
     garden_sheet = Image.open('assets/sprites/school_garden_sprites.png')
     pond_sheet = Image.open('assets/sprites/school_garden_pond_sprites.png')
     big_tree_sheet = Image.open('assets/sprites/big_tree.png')
+    fountain_sheet = Image.open('assets/sprites/water_fountain.png')
+
     grass_v1 = Image.open('assets/sprites/grass variant 1.png')
     grass_v2 = Image.open('assets/sprites/grass variant 2.png')
     bench_sheet = Image.open('assets/sprites/long_bench.png')
@@ -94,6 +141,14 @@ try:
     gw_lb = Image.open('assets/sprites/garden_walls/garden_wall_left_bottom.png')
     gw_rt = Image.open('assets/sprites/garden_walls/garden_wall_right_top.png')
     gw_rb = Image.open('assets/sprites/garden_walls/garden_wall_right_bottom.png')
+    planter_h = Image.open('assets/sprites/concrete_planter_box_horizontal.png')
+    planter_v = Image.open('assets/sprites/concrete_planter_box_vertical.png')
+    lib_tc_sheet = Image.open('assets/sprites/library_table_and_chair.png')
+    lib_desk_sheet = Image.open('assets/sprites/library_desk.png')
+    canteen_tc_sheet = Image.open('assets/sprites/new assets/canteen_table_chair.png')
+    sink_img = Image.open('assets/sprites/new assets/sink.png').convert('RGBA')
+    trash_can_img = Image.open('assets/sprites/new assets/trash-can.png')
+    caf_plat_sheet = Image.open('assets/sprites/cafetaria_platform_sprites.png')
     custom_tiles = {
         'school_wall_tl': school_fw.crop((1*64, 0*64, 2*64, 1*64)),
         'school_wall_t': school_fw.crop((2*64, 0*64, 3*64, 1*64)),
@@ -135,10 +190,27 @@ try:
         'path_1_1': garden_sheet.crop((1*64, 1*64, 2*64, 2*64)),
         'path_3_2': garden_sheet.crop((3*64, 2*64, 4*64, 3*64)),
         'path_1_2': garden_sheet.crop((1*64, 2*64, 2*64, 3*64)),
-        'water_tl': pond_sheet.crop((0, 0, 64, 64)),
-        'water_tr': pond_sheet.crop((64, 0, 128, 64)),
-        'water_bl': pond_sheet.crop((0, 64, 64, 128)),
-        'water_br': pond_sheet.crop((64, 64, 128, 128)),
+        'water_0_0': pond_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'water_1_0': pond_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'water_2_0': pond_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'water_3_0': pond_sheet.crop((3*64, 0*64, 4*64, 1*64)),
+        'water_0_1': pond_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'water_1_1': pond_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'water_2_1': pond_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'water_3_1': pond_sheet.crop((3*64, 1*64, 4*64, 2*64)),
+        'water_0_2': pond_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'water_1_2': pond_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'water_2_2': pond_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'water_3_2': pond_sheet.crop((3*64, 2*64, 4*64, 3*64)),
+        'water_0_3': pond_sheet.crop((0*64, 3*64, 1*64, 4*64)),
+        'water_1_3': pond_sheet.crop((1*64, 3*64, 2*64, 4*64)),
+        'water_2_3': pond_sheet.crop((2*64, 3*64, 3*64, 4*64)),
+        'water_3_3': pond_sheet.crop((3*64, 3*64, 4*64, 4*64)),
+        'water_0_4': pond_sheet.crop((0*64, 4*64, 1*64, 5*64)),
+        'water_1_4': pond_sheet.crop((1*64, 4*64, 2*64, 5*64)),
+        'water_2_4': pond_sheet.crop((2*64, 4*64, 3*64, 5*64)),
+        'water_3_4': pond_sheet.crop((3*64, 4*64, 4*64, 5*64)),
+
         'tree_0_0': big_tree_sheet.crop((0*64, 0*64, 1*64, 1*64)),
         'tree_0_1': big_tree_sheet.crop((1*64, 0*64, 2*64, 1*64)),
         'tree_0_2': big_tree_sheet.crop((2*64, 0*64, 3*64, 1*64)),
@@ -148,6 +220,11 @@ try:
         'tree_2_0': big_tree_sheet.crop((0*64, 2*64, 1*64, 3*64)),
         'tree_2_1': big_tree_sheet.crop((1*64, 2*64, 2*64, 3*64)),
         'tree_2_2': big_tree_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'fountain_0_0': fountain_sheet.crop((0, 0, 64, 64)),
+        'fountain_1_0': fountain_sheet.crop((64, 0, 128, 64)),
+        'fountain_0_1': fountain_sheet.crop((0, 64, 64, 128)),
+        'fountain_1_1': fountain_sheet.crop((64, 64, 128, 128)),
+
         'grass_var1': grass_v1,
         'grass_var2': grass_v2,
         'bench_0_0': bench_sheet.crop((0*64, 0*64, 1*64, 1*64)),
@@ -174,6 +251,58 @@ try:
         'caf_srv_1_5': caf_srv_sheet.crop((5*64, 1*64, 6*64, 2*64)),
         'path_3_0': garden_sheet.crop((3*64, 0*64, 4*64, 1*64)),
         'path_1_0': garden_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'planter_h_0_0': planter_h.crop((0*64, 0*64, 1*64, 1*64)),
+        'planter_h_0_1': planter_h.crop((1*64, 0*64, 2*64, 1*64)),
+        'planter_h_0_2': planter_h.crop((2*64, 0*64, 3*64, 1*64)),
+        'planter_h_1_0': planter_h.crop((0*64, 1*64, 1*64, 2*64)),
+        'planter_h_1_1': planter_h.crop((1*64, 1*64, 2*64, 2*64)),
+        'planter_h_1_2': planter_h.crop((2*64, 1*64, 3*64, 2*64)),
+        'planter_v_0': planter_v.crop((0*64, 0*64, 1*64, 1*64)),
+        'planter_v_1': planter_v.crop((0*64, 1*64, 1*64, 2*64)),
+        'planter_v_2': planter_v.crop((0*64, 2*64, 1*64, 3*64)),
+        'lib_tc_0_0': lib_tc_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'lib_tc_0_1': lib_tc_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'lib_tc_0_2': lib_tc_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'lib_tc_1_0': lib_tc_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'lib_tc_1_1': lib_tc_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'lib_tc_1_2': lib_tc_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'lib_tc_2_0': lib_tc_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'lib_tc_2_1': lib_tc_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'lib_tc_2_2': lib_tc_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'lib_desk_0_0': lib_desk_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'lib_desk_0_1': lib_desk_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'lib_desk_0_2': lib_desk_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'lib_desk_1_0': lib_desk_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'lib_desk_1_1': lib_desk_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'lib_desk_1_2': lib_desk_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'canteen_tc_0_0': canteen_tc_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'canteen_tc_0_1': canteen_tc_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'canteen_tc_1_0': canteen_tc_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'canteen_tc_1_1': canteen_tc_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'canteen_tc_2_0': canteen_tc_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'canteen_tc_2_1': canteen_tc_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'sink': sink_img,
+        'trash_can': trash_can_img,
+        'caf_plat_0_0': caf_plat_sheet.crop((0*64, 0*64, 1*64, 1*64)),
+        'caf_plat_0_1': caf_plat_sheet.crop((1*64, 0*64, 2*64, 1*64)),
+        'caf_plat_0_2': caf_plat_sheet.crop((2*64, 0*64, 3*64, 1*64)),
+        'caf_plat_0_3': caf_plat_sheet.crop((3*64, 0*64, 4*64, 1*64)),
+        'caf_plat_1_0': caf_plat_sheet.crop((0*64, 1*64, 1*64, 2*64)),
+        'caf_plat_1_1': caf_plat_sheet.crop((1*64, 1*64, 2*64, 2*64)),
+        'caf_plat_1_2': caf_plat_sheet.crop((2*64, 1*64, 3*64, 2*64)),
+        'caf_plat_1_3': caf_plat_sheet.crop((3*64, 1*64, 4*64, 2*64)),
+        'caf_plat_2_0': caf_plat_sheet.crop((0*64, 2*64, 1*64, 3*64)),
+        'caf_plat_2_1': caf_plat_sheet.crop((1*64, 2*64, 2*64, 3*64)),
+        'caf_plat_2_2': caf_plat_sheet.crop((2*64, 2*64, 3*64, 3*64)),
+        'caf_plat_2_3': caf_plat_sheet.crop((3*64, 2*64, 4*64, 3*64)),
+        'caf_plat_3_0': caf_plat_sheet.crop((0*64, 3*64, 1*64, 4*64)),
+        'caf_plat_3_1': caf_plat_sheet.crop((1*64, 3*64, 2*64, 4*64)),
+        'caf_plat_3_2': caf_plat_sheet.crop((2*64, 3*64, 3*64, 4*64)),
+        'caf_plat_3_3': caf_plat_sheet.crop((3*64, 3*64, 4*64, 4*64)),
+        'caf_plat_4_0': caf_plat_sheet.crop((0*64, 4*64, 1*64, 5*64)),
+        'caf_plat_4_1': caf_plat_sheet.crop((1*64, 4*64, 2*64, 5*64)),
+        'caf_plat_4_2': caf_plat_sheet.crop((2*64, 4*64, 3*64, 5*64)),
+        'caf_plat_4_3': caf_plat_sheet.crop((3*64, 4*64, 4*64, 5*64)),
     }
 except Exception as e:
     import traceback
@@ -195,3 +324,7 @@ os.makedirs('assets/tilemaps', exist_ok=True)
 img.save('assets/sprites/tileset.png')
 
 print('Generated spritesheet successfully.')
+tile_ids = {name: i for i, name in enumerate(tile_names)}
+print("TILE_IDS_JSON_START")
+print(json.dumps(tile_ids, indent=2))
+print("TILE_IDS_JSON_END")

@@ -8,12 +8,22 @@
 const TILE  = 64;          // logical tile size used everywhere
 const SCALE = 2;           // pixel-art up-scale factor (decreased since sprites are larger)
 
+const dpr = Math.max(window.devicePixelRatio || 1, 1);
+
 const config = {
   type   : Phaser.AUTO,
   width  : window.innerWidth,      // Use full screen width
   height : window.innerHeight,     // Use full screen height
-  pixelArt : true,         // keep sprites crisp
-  roundPixels : true,      // prevent sub-pixel rendering (ghosting/jitter)
+  resolution: dpr,                 // Native high-DPR resolution for razor-sharp rendering
+  pixelArt : true,                 // keep sprites crisp
+  roundPixels : true,              // prevent sub-pixel rendering (ghosting/jitter)
+
+  render: {
+    antialias: true,               // Smooth MSAA for UI vectors & fonts
+    antialiasGL: true,
+    roundPixels: true,
+    pixelArt: true
+  },
 
   physics: {
     default: 'arcade',
@@ -40,6 +50,7 @@ const config = {
 
 /* ── Create the Phaser game instance ── */
 const game = new Phaser.Game(config);
+window.game = game;
 
 /* ── Global shared state ──
    Accessible from any scene via `this.registry`. */
