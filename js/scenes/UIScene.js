@@ -732,6 +732,14 @@ class UIScene extends Phaser.Scene {
   }
 
   hideQuestBanner() {
+    if (this._questDismissTimer) {
+      this._questDismissTimer.destroy();
+      this._questDismissTimer = null;
+    }
+    if (this._questTimerEvent) {
+      this._questTimerEvent.destroy();
+      this._questTimerEvent = null;
+    }
     if (!this.questContainer) return;
     this.tweens.killTweensOf(this.questContainer);
     this.tweens.add({
@@ -981,8 +989,22 @@ class UIScene extends Phaser.Scene {
     window.addEventListener('dialogue_advance_request', trigger);
   }
 
+  enableDialogueAdvance(targetNode = null) {
+    const nextNode = targetNode || (this._currentNode ? this._currentNode.next : null);
+    if (nextNode) {
+      this._setupDialogueAdvance(() => {
+        this._showNode(nextNode);
+      });
+    } else {
+      this._setupDialogueAdvance(() => {
+        this._closeDialogue();
+      });
+    }
+  }
+
   _selectOption(ch) {
     this._cleanupDialogueAdvance();
+    this.hideQuestBanner();
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;

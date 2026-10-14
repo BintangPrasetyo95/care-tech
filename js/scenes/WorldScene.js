@@ -110,6 +110,111 @@ class WorldScene extends Phaser.Scene {
       }
     }
 
+    /* ── Check Level 1 Arrival at Cafeteria (Quest Complete & Cutscene 049) ── */
+    if (mapKey === 'cafeteria') {
+      this._cafeteriaCutsceneRunning = false;
+      const activeQuest = this.registry.get('level1_quest_active');
+      const is049Done = this.registry.get('level1_049_done');
+
+      console.log(`%c[Kantin 049] Masuk map cafeteria. activeQuest: "${activeQuest}", 049_done: ${is049Done}`, 'color: #38bdf8; font-weight: bold;');
+
+      // Pastikan Nakula selalu menghadap kiri saat tiba di kantin
+      if (this.player) {
+        this.player.facing = 'left';
+        if (this.player.sprite) {
+          this.player.sprite.setFlipX(true);
+          this.player.sprite.anims.play('player_idle_left', true);
+        }
+      }
+
+      if (!is049Done) {
+        this.registry.set('level1_cafeteria_arrived', true);
+
+        if (activeQuest === 'pergi_ke_kantin') {
+          this.registry.set('level1_quest_active', null);
+          this.time.delayedCall(200, () => {
+            const ui = this.scene.get('UI');
+            if (ui && ui.completeQuest) {
+              ui.completeQuest('Pergi ke kantin.');
+            }
+          });
+        }
+
+        // Jalankan cutscene setelah fade-in layar kantin selesai
+        this.time.delayedCall(300, () => {
+          if (!this._cafeteriaCutsceneRunning && !this.registry.get('level1_049_done')) {
+            console.log('[Kantin 049] Pemicu timer create() memanggil _startCafeteriaCutscene()...');
+            this._startCafeteriaCutscene();
+          }
+        });
+      }
+    }
+
+    /* ── Check Level 1 Emergency Quest Resolution (Garden or Library) ── */
+    if (mapKey === 'garden' && this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
+      this.registry.set('level1_quest_active', null);
+      this.time.delayedCall(300, () => {
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Menyusul Nabula ke taman!');
+        }
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_058x_nabula_garden_found');
+        }
+      });
+    } else if (mapKey === 'library' && this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
+      this.registry.set('level1_quest_active', null);
+      this.time.delayedCall(300, () => {
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Lapor Bu Wati di perpustakaan!');
+        }
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_058x_bu_wati_found');
+        }
+      });
+    }
+
+    /* ── Check Level 1 Branch B: Arrival at Cafeteria with Bu Wati ── */
+    if (mapKey === 'cafeteria' && this.registry.get('level1_branch_b_bu_wati_at_cafeteria') && !this.registry.get('level1_branch_b_reached_table')) {
+      console.log('%c[Kantin 059b] Bu Wati & Nakula tiba di pintu masuk kantin! Memulai cutscene 059b-8...', 'color: #38bdf8; font-weight: bold;');
+      this.registry.set('level1_player_locked', true);
+      if (this.player) {
+        this.player.isLocked = true;
+        this.player.facing = 'left';
+        if (this.player.sprite) {
+          this.player.sprite.setFlipX(true);
+          this.player.sprite.anims.play('player_idle_left', true);
+        }
+      }
+      this.time.delayedCall(400, () => {
+        const ui = this.scene.get('UI');
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_059b_8_effect');
+        }
+      });
+    }
+
+    /* ── Check Level 1 Branch C: Arrival at Library with Nabula ── */
+    if (mapKey === 'library' && this.registry.get('level1_branch_c_nabula_at_library') && !this.registry.get('level1_branch_c_reached_wati')) {
+      console.log('%c[Perpustakaan 059c] Nakula & Nabula tiba di perpustakaan! Memulai cutscene 059c-23...', 'color: #38bdf8; font-weight: bold;');
+      this.registry.set('level1_player_locked', true);
+      if (this.player) {
+        this.player.isLocked = true;
+        this.player.facing = 'right';
+        if (this.player.sprite) {
+          this.player.sprite.setFlipX(false);
+          this.player.sprite.anims.play('player_idle_right', true);
+        }
+      }
+      this.time.delayedCall(400, () => {
+        const ui = this.scene.get('UI');
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_059c_23_effect');
+        }
+      });
+    }
+
     // Pasang helper debug console untuk pengujian cepat
     window.testCutscene017 = () => {
       console.log('%c[DEBUG] Memulai paksa Cutscene 017...', 'color: #f43f5e; font-weight: bold;');
@@ -121,6 +226,117 @@ class WorldScene extends Phaser.Scene {
         this._startLibraryCutscene();
       }
     };
+    window.testCutscene049 = () => {
+      console.log('%c[DEBUG] Memulai paksa Cutscene 049 di Kantin...', 'color: #f43f5e; font-weight: bold;');
+      this.registry.set('level1_049_done', false);
+      this.registry.set('level1_049_triggered', false);
+      this._cafeteriaCutsceneRunning = false;
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+      } else {
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          nabula.sprite.setPosition(11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2);
+          nabula.sprite.anims.play('nabula_idle_down', true);
+        }
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        if (bagas) {
+          bagas.sprite.setPosition(13.3 * TILE + TILE / 2, 4 * TILE + TILE / 2);
+          bagas.sprite.setFlipX(false);
+          bagas.sprite.anims.play('bagas_idle_down', true);
+        }
+        const rio = this.npcs.find(n => n.key === 'rio');
+        if (rio) {
+          rio.sprite.setPosition(14.3 * TILE + TILE / 2, 4 * TILE + TILE / 2);
+          rio.sprite.setFlipX(false);
+          rio.sprite.anims.play('rio_idle_down', true);
+        }
+        if (this.player && this.player.sprite) {
+          this.player.sprite.setPosition(29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+          this.player.facing = 'left';
+          this.player.sprite.setFlipX(true);
+          this.player.sprite.anims.play('player_idle_left', true);
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.centerOn(29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        }
+        this._startCafeteriaCutscene();
+      }
+    };
+    window.testChoice058 = () => {
+      console.log('%c[DEBUG] Membuka langsung UI 3 Pilihan Strategis 058...', 'color: #f43f5e; font-weight: bold;');
+      this._cafeteriaChoiceTimeoutCount = 0;
+      this.registry.set('level1_049_done', true);
+      this._cafeteriaCutsceneRunning = false;
+      const ui = this.scene.get('UI');
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        this.time.delayedCall(400, () => {
+          this.panCameraTo(11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2, 0);
+          if (ui && ui.startDialogue) {
+            ui.startDialogue('lvl1_058_choice');
+          }
+        });
+      } else {
+        this.panCameraTo(11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2, 0);
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_058_choice');
+        }
+      }
+    };
+    window.testTimeout1 = () => {
+      console.log('%c[DEBUG] Mensimulasikan Timeout ke-1 (Ragu-ragu)...', 'color: #f43f5e; font-weight: bold;');
+      this._cafeteriaChoiceTimeoutCount = 0;
+      this.handleCafeteriaChoiceTimeout();
+    };
+    window.testTimeout2 = () => {
+      console.log('%c[DEBUG] Mensimulasikan Timeout ke-2 (Terlambat & Bubar)...', 'color: #f43f5e; font-weight: bold;');
+      this._cafeteriaChoiceTimeoutCount = 1;
+      this.handleCafeteriaChoiceTimeout();
+    };
+    window.testBranchA = () => {
+      console.log('%c[DEBUG] Menguji Jalur A (Konfrontasi Langsung)...', 'color: #3b82f6; font-weight: bold;');
+      this.registry.set('level1_049_done', true);
+      this.registry.set('level1_route_chosen', 'A');
+      const ui = this.scene.get('UI');
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        this.time.delayedCall(400, () => {
+          if (ui && ui.startDialogue) ui.startDialogue('lvl1_059a_1_narrator');
+        });
+      } else {
+        if (this.player && this.player.sprite) {
+          this.player.sprite.setPosition(29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        }
+        if (ui && ui.startDialogue) ui.startDialogue('lvl1_059a_1_narrator');
+      }
+    };
+    window.testBranchB = () => {
+      console.log('%c[DEBUG] Menguji Jalur B (Lapor Bu Wati)...', 'color: #3b82f6; font-weight: bold;');
+      this.registry.set('level1_049_done', true);
+      this.registry.set('level1_route_chosen', 'B');
+      const ui = this.scene.get('UI');
+      if (ui && ui.startDialogue) ui.startDialogue('lvl1_059b_1_nakula');
+    };
+    window.testBranchC = () => {
+      console.log('%c[DEBUG] Menguji Jalur C (Dukungan Emosional)...', 'color: #3b82f6; font-weight: bold;');
+      this.registry.set('level1_049_done', true);
+      this.registry.set('level1_route_chosen', 'C');
+      const ui = this.scene.get('UI');
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        this.time.delayedCall(400, () => {
+          if (ui && ui.startDialogue) ui.startDialogue('lvl1_059c_1_narrator');
+        });
+      } else {
+        if (ui && ui.startDialogue) ui.startDialogue('lvl1_059c_1_narrator');
+      }
+    };
+    window.testConvergence060 = () => {
+      console.log('%c[DEBUG] Menguji Node 060 (Titik Temu)...', 'color: #3b82f6; font-weight: bold;');
+      const ui = this.scene.get('UI');
+      if (ui && ui.startDialogue) ui.startDialogue('lvl1_060_narrator');
+    };
     window.debugLevel1State = () => {
       console.table({
         currentMap: this.registry.get('currentMap'),
@@ -128,10 +344,13 @@ class WorldScene extends Phaser.Scene {
         level1_012_completed: this.registry.get('level1_012_completed'),
         level1_nabula_left_garden: this.registry.get('level1_nabula_left_garden'),
         level1_library_arrived: this.registry.get('level1_library_arrived'),
-        level1_017_triggered: this.registry.get('level1_017_triggered'),
         level1_017_done: this.registry.get('level1_017_done'),
+        level1_cafeteria_arrived: this.registry.get('level1_cafeteria_arrived'),
+        level1_049_triggered: this.registry.get('level1_049_triggered'),
+        level1_049_done: this.registry.get('level1_049_done'),
         level1_player_locked: this.registry.get('level1_player_locked'),
-        _libraryCutsceneRunning: this._libraryCutsceneRunning
+        _libraryCutsceneRunning: this._libraryCutsceneRunning,
+        _cafeteriaCutsceneRunning: this._cafeteriaCutsceneRunning
       });
     };
 
@@ -524,8 +743,30 @@ class WorldScene extends Phaser.Scene {
         this._onClueFound('book');
       } else if (action === 'lvl1_037_clue_found_wulan') {
         this._onClueFound('wulan');
-      } else if (action === 'lvl1_044_camera_to_nakula' || action === 'lvl1_056_camera_to_nakula') {
+      } else if (action === 'lvl1_044_camera_to_nakula') {
         this.panCameraToActor(this.player, 800, true, 1);
+      } else if (action === 'lvl1_056_camera_to_nakula') {
+        console.log('%c[Kantin 056] Rio selesai bicara. Kamera bergeser kembali ke Nakula di pintu masuk (29, 13)...', 'color: #3b82f6; font-weight: bold;');
+        const targetX = 29 * TILE + TILE / 2;
+        const targetY = 13 * TILE + TILE / 2;
+        this.panCameraTo(targetX, targetY, 850, 'Sine.easeInOut', () => {
+          console.log('%c[Kantin 057] Kamera sampai di Nakula! Membuka dialog lvl1_057_eca...', 'color: #22c55e; font-weight: bold;');
+          const ui = this.scene.get('UI');
+          if (ui && ui.startDialogue) {
+            ui.startDialogue('lvl1_057_eca');
+          }
+        });
+      } else if (action === 'lvl1_057_focus_nabula') {
+        const targetX = 11.9 * TILE + TILE / 2;
+        const targetY = 6 * TILE + TILE / 2;
+        console.log('%c[Kantin 057] Dialog 057 selesai. Kamera bergeser kembali mengarah ke meja Nabula (11.9, 6)...', 'color: #3b82f6; font-weight: bold;');
+        this.panCameraTo(targetX, targetY, 900, 'Sine.easeInOut', () => {
+          console.log('%c[Kantin 057b] Kamera selesai bergerak ke meja Nabula! Membuka dialog lvl1_057b_eca...', 'color: #22c55e; font-weight: bold;');
+          const ui = this.scene.get('UI');
+          if (ui && ui.startDialogue) {
+            ui.startDialogue('lvl1_057b_eca');
+          }
+        });
       } else if (action === 'lvl1_046_clue_found_students') {
         this._onClueFound('students');
       } else if (action === 'lvl1_046_all_clues_collected') {
@@ -545,12 +786,677 @@ class WorldScene extends Phaser.Scene {
           }
           if (navigator.vibrate) navigator.vibrate(100);
         });
-      } else if (action === 'lvl1_049_focus_cafeteria') {
-        const nabula = this.npcs.find(n => n.key === 'nabula');
-        if (nabula) {
-          this.panCameraToActor(nabula, 900);
+      } else if (action === 'lvl1_049_focus_cafeteria' || action === 'lvl1_049_bullies_approach') {
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+
+        console.log('%c[Kantin 049] Bagas & Rio mulai berjalan santai menghampiri meja Nabula...', 'color: #f59e0b; font-weight: bold;');
+
+        // Bagas: dari (13.3, 4) -> (13.3, 5.5) (1.5 tile = 96 px, durasi 1050 ms, ~91.4 px/s)
+        if (bagas) {
+          bagas.sprite.setFlipX(false);
+          bagas.sprite.anims.play('bagas_walk_down', true);
+          this.tweens.add({
+            targets: bagas.sprite,
+            y: 5.5 * TILE + TILE / 2,
+            duration: 1050,
+            ease: 'Linear',
+            onComplete: () => {
+              bagas.sprite.setFlipX(false);
+              bagas.sprite.anims.play('bagas_idle_left', true);
+            }
+          });
         }
-        if (navigator.vibrate) navigator.vibrate(60);
+
+        // Rio: 2 Langkah:
+        // Langkah 1: dari (14.3, 4) -> (14.3, 6.5) (2.5 tile = 160 px, durasi 1750 ms, ~91.4 px/s)
+        // Langkah 2: dari (14.3, 6.5) -> (13.3, 6.5) (1.0 tile = 64 px, durasi 700 ms, ~91.4 px/s)
+        if (rio) {
+          rio.sprite.setFlipX(false);
+          rio.sprite.anims.play('rio_walk_down', true);
+
+          this.tweens.chain({
+            targets: rio.sprite,
+            tweens: [
+              {
+                y: 6.5 * TILE + TILE / 2,
+                duration: 1750,
+                ease: 'Linear',
+                onComplete: () => {
+                  rio.sprite.setFlipX(false);
+                  rio.sprite.anims.play('rio_walk_left', true);
+                }
+              },
+              {
+                x: 13.3 * TILE + TILE / 2,
+                duration: 700,
+                ease: 'Linear'
+              }
+            ],
+            onComplete: () => {
+              rio.sprite.setFlipX(false);
+              rio.sprite.anims.play('rio_idle_left', true);
+
+              console.log('%c[Kantin 049] Bagas & Rio selesai bergerak ke meja Nabula. Mengizinkan pemain melanjutkan dialog ke 050...', 'color: #10b981; font-weight: bold;');
+              const ui = this.scene.get('UI');
+              if (ui && ui.enableDialogueAdvance) {
+                ui.enableDialogueAdvance('lvl1_050_bagas');
+              } else if (ui && ui._setupDialogueAdvance) {
+                ui._setupDialogueAdvance(() => {
+                  ui._showNode('lvl1_050_bagas');
+                });
+              }
+            }
+          });
+        }
+      } else if (action === 'lvl1_058_start_timer' || action === 'lvl1_058_show_cafeteria_choice') {
+        this.registry.set('level1_049_done', true);
+        this._cafeteriaCutsceneRunning = false;
+        console.log('%c[Kantin 058] Node pilihan intervensi muncul! Memulai countdown timer 30 detik...', 'color: #38bdf8; font-weight: bold;');
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('PILIH TINDAKAN (BATAS WAKTU: 30 DETIK)', {
+            hasTimer: true,
+            durationSec: 30,
+            onTimeout: () => {
+              this.handleCafeteriaChoiceTimeout();
+            }
+          });
+        }
+      } else if (action === 'lvl1_059a_chosen' || action === 'lvl1_059b_chosen' || action === 'lvl1_059c_chosen') {
+        this._cafeteriaChoiceTimeoutCount = 0;
+        console.log(`%c[Kantin 058] Pemain memilih: ${action}! Timer dibatalkan dan harmoni ditambahkan +25.`, 'color: #10b981; font-weight: bold;');
+        const ui = this.scene.get('UI');
+        if (ui && ui.hideQuestBanner) {
+          ui.hideQuestBanner();
+        }
+        if (action === 'lvl1_059a_chosen') {
+          this.registry.set('level1_route_chosen', 'A');
+        } else if (action === 'lvl1_059b_chosen') {
+          this.registry.set('level1_route_chosen', 'B');
+        } else if (action === 'lvl1_059c_chosen') {
+          this.registry.set('level1_route_chosen', 'C');
+        }
+      } else if (action === 'lvl1_059a_walk_to_table') {
+        console.log('%c[Kantin 059a] Nakula berjalan ke meja Nabula...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_player_locked', true);
+        if (this.player && this.player.sprite) {
+          this.player.isLocked = true;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+
+          const p = this.player.sprite;
+          p.setFlipX(false);
+          p.anims.play('player_walk_up', true);
+          this.tweens.add({
+            targets: p,
+            y: 9 * TILE + TILE / 2,
+            duration: 1000,
+            ease: 'Linear',
+            onComplete: () => {
+              p.setFlipX(true);
+              p.anims.play('player_walk_left', true);
+              this.tweens.add({
+                targets: p,
+                x: 11.9 * TILE + TILE / 2,
+                duration: 2200,
+                ease: 'Linear',
+                onComplete: () => {
+                  p.setFlipX(false);
+                  p.anims.play('player_walk_up', true);
+                  this.tweens.add({
+                    targets: p,
+                    y: 7.5 * TILE + TILE / 2,
+                    duration: 600,
+                    ease: 'Linear',
+                    onComplete: () => {
+                      p.anims.play('player_idle_up', true);
+                      this.player.facing = 'up';
+                      console.log('%c[Kantin 059a] Nakula sampai di meja Nabula! Membuka dialog 059a-2...', 'color: #22c55e; font-weight: bold;');
+                      const ui = this.scene.get('UI');
+                      if (ui && ui.startDialogue) {
+                        ui.startDialogue('lvl1_059a_2_nakula');
+                      }
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_059a_bullies_turn') {
+        console.log('%c[Kantin 059a] Bagas dan Rio menoleh terkejut ke arah Nakula...', 'color: #f59e0b; font-weight: bold;');
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (bagas && bagas.sprite) {
+          bagas.sprite.anims.play('bagas_idle_down', true);
+        }
+        if (rio && rio.sprite) {
+          rio.sprite.anims.play('rio_idle_down', true);
+        }
+        if (nabula && nabula.showEmotion) {
+          nabula.showEmotion('😮');
+        }
+      } else if (action === 'lvl1_059a_bullies_leave') {
+        console.log('%c[Kantin 059a] Bagas dan Rio meninggalkan meja kantin...', 'color: #f59e0b; font-weight: bold;');
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+        this.registry.set('level1_058x_bullies_left', true);
+        if (bagas && bagas.sprite) {
+          bagas.sprite.setFlipX(false);
+          bagas.sprite.anims.play('bagas_walk_right', true);
+          this.tweens.add({
+            targets: bagas.sprite,
+            x: 25 * TILE,
+            duration: 2200,
+            ease: 'Linear',
+            onComplete: () => {
+              this.tweens.add({
+                targets: bagas.sprite,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => bagas.sprite.setVisible(false)
+              });
+            }
+          });
+        }
+        if (rio && rio.sprite) {
+          rio.sprite.setFlipX(false);
+          rio.sprite.anims.play('rio_walk_right', true);
+          this.tweens.add({
+            targets: rio.sprite,
+            x: 26 * TILE,
+            duration: 2500,
+            ease: 'Linear',
+            onComplete: () => {
+              this.tweens.add({
+                targets: rio.sprite,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => rio.sprite.setVisible(false)
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_059a_complete') {
+        console.log('%c[Kantin 059a] Jalur A selesai! Transisi ke Node 060...', 'color: #10b981; font-weight: bold;');
+        this.registry.set('level1_branch_a_done', true);
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && nabula.showEmotion) {
+          nabula.showEmotion('😊');
+        }
+      } else if (action === 'lvl1_059b_start_quest') {
+        console.log('%c[Kantin 059b] Mulai Quest: Cari Bu Wati di perpustakaan...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_quest_active', 'lapor_bu_wati_branch_b');
+        this.registry.set('level1_player_locked', false);
+        if (this.player) {
+          this.player.isLocked = false;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+        }
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST: Cari Bu Wati di perpustakaan.');
+        }
+      } else if (action === 'lvl1_059b_transition_to_cafeteria') {
+        console.log('%c[Perpustakaan 059b] Transisi ke kantin bersama Bu Wati...', 'color: #38bdf8; font-weight: bold;');
+        this.registry.set('level1_quest_active', null);
+        this.registry.set('level1_branch_b_bu_wati_at_cafeteria', true);
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Cari Bu Wati di perpustakaan.');
+        }
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+      } else if (action === 'lvl1_059b_walk_to_table') {
+        console.log('%c[Kantin 059b] Bu Wati dan Nakula berjalan menghampiri meja Nabula...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_player_locked', true);
+        const wati = this.npcs.find(n => n.key === 'wati');
+        if (this.player && this.player.sprite) {
+          this.player.isLocked = true;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+
+          const p = this.player.sprite;
+          p.setFlipX(false);
+          p.anims.play('player_walk_up', true);
+          this.tweens.add({
+            targets: p,
+            y: 9 * TILE + TILE / 2,
+            duration: 1000,
+            ease: 'Linear',
+            onComplete: () => {
+              p.setFlipX(true);
+              p.anims.play('player_walk_left', true);
+              this.tweens.add({
+                targets: p,
+                x: 11.9 * TILE + TILE / 2,
+                duration: 2200,
+                ease: 'Linear',
+                onComplete: () => {
+                  p.setFlipX(false);
+                  p.anims.play('player_walk_up', true);
+                  this.tweens.add({
+                    targets: p,
+                    y: 7.5 * TILE + TILE / 2,
+                    duration: 600,
+                    ease: 'Linear',
+                    onComplete: () => {
+                      p.anims.play('player_idle_up', true);
+                      this.player.facing = 'up';
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        if (wati && wati.sprite) {
+          const ws = wati.sprite;
+          ws.setFlipX(false);
+          ws.anims.play('wati_walk_up', true);
+          this.tweens.add({
+            targets: ws,
+            y: 9 * TILE + TILE / 2,
+            duration: 1000,
+            ease: 'Linear',
+            onComplete: () => {
+              ws.setFlipX(true);
+              ws.anims.play('wati_walk_left', true);
+              this.tweens.add({
+                targets: ws,
+                x: 13.3 * TILE + TILE / 2,
+                duration: 2200,
+                ease: 'Linear',
+                onComplete: () => {
+                  ws.setFlipX(false);
+                  ws.anims.play('wati_walk_up', true);
+                  this.tweens.add({
+                    targets: ws,
+                    y: 7.5 * TILE + TILE / 2,
+                    duration: 600,
+                    ease: 'Linear',
+                    onComplete: () => {
+                      ws.anims.play('wati_idle_up', true);
+                      this.registry.set('level1_branch_b_reached_table', true);
+                      console.log('%c[Kantin 059b] Bu Wati & Nakula tiba di meja! Membuka dialog 059b-12...', 'color: #22c55e; font-weight: bold;');
+                      const ui = this.scene.get('UI');
+                      if (ui && ui.startDialogue) {
+                        ui.startDialogue('lvl1_059b_12_bu_wati');
+                      }
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_059b_bullies_leave_with_teacher') {
+        console.log('%c[Kantin 059b] Bu Wati membawa Bagas dan Rio keluar ke ruang sebelah...', 'color: #f59e0b; font-weight: bold;');
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+        const wati = this.npcs.find(n => n.key === 'wati');
+        this.registry.set('level1_058x_bullies_left', true);
+        this.registry.set('level1_branch_b_bu_wati_at_cafeteria', false);
+
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          if (bagas && bagas.sprite) bagas.sprite.setVisible(false);
+          if (rio && rio.sprite) rio.sprite.setVisible(false);
+          if (wati && wati.sprite) wati.sprite.setVisible(false);
+
+          this.cameras.main.fadeIn(500, 0, 0, 0);
+          this.time.delayedCall(300, () => {
+            const ui = this.scene.get('UI');
+            if (ui && ui.startDialogue) {
+              ui.startDialogue('lvl1_059b_15c_effect');
+            }
+          });
+        });
+      } else if (action === 'lvl1_059b_complete') {
+        console.log('%c[Kantin 059b] Jalur B selesai! Transisi ke Node 060...', 'color: #10b981; font-weight: bold;');
+        this.registry.set('level1_branch_b_done', true);
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && nabula.showEmotion) {
+          nabula.showEmotion('😊');
+        }
+      } else if (action === 'lvl1_059c_focus_nabula') {
+        console.log('%c[Kantin 059c] Kamera mengarah ke Nabula...', 'color: #3b82f6; font-weight: bold;');
+        this.panCameraTo(11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2, 600);
+      } else if (action === 'lvl1_059c_nabula_runs_away') {
+        console.log('%c[Kantin 059c] Nabula buru-buru berdiri dan berlari keluar...', 'color: #f59e0b; font-weight: bold;');
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        this.registry.set('level1_058x_nabula_left', true);
+        if (nabula && nabula.sprite) {
+          if (nabula.clearEmotion) nabula.clearEmotion();
+          const ns = nabula.sprite;
+          this.cameras.main.startFollow(ns, true, 0.08, 0.08);
+
+          ns.anims.play('nabula_walk_down', true);
+          this.tweens.add({
+            targets: ns,
+            y: 9 * TILE + TILE / 2,
+            duration: 600,
+            ease: 'Linear',
+            onComplete: () => {
+              ns.setFlipX(false);
+              ns.anims.play('nabula_walk_right', true);
+              this.tweens.add({
+                targets: ns,
+                x: 29 * TILE + TILE / 2,
+                duration: 2000,
+                ease: 'Linear',
+                onComplete: () => {
+                  ns.anims.play('nabula_walk_down', true);
+                  this.tweens.add({
+                    targets: ns,
+                    y: 13 * TILE + TILE / 2,
+                    duration: 600,
+                    ease: 'Linear',
+                    onComplete: () => {
+                      this.tweens.add({
+                        targets: ns,
+                        alpha: 0,
+                        duration: 300,
+                        onComplete: () => {
+                          ns.setVisible(false);
+                          console.log('%c[Kantin 059c] Nabula keluar dari pintu kantin. Lanjut dialog 059c-3...', 'color: #22c55e; font-weight: bold;');
+                          const ui = this.scene.get('UI');
+                          if (ui && ui.startDialogue) {
+                            ui.startDialogue('lvl1_059c_3_effect');
+                          }
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_059c_camera_to_nakula') {
+        console.log('%c[Kantin 059c] Kamera kembali menyorot Nakula di pintu...', 'color: #3b82f6; font-weight: bold;');
+        if (this.player && this.player.sprite) {
+          this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 700);
+        }
+      } else if (action === 'lvl1_059c_start_garden_quest') {
+        console.log('%c[Kantin 059c] Mulai Quest: Cari Nabula di taman...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_quest_active', 'cari_nabula_taman_branch_c');
+        this.registry.set('level1_nabula_at_garden_branch_c', true);
+        this.registry.set('level1_player_locked', false);
+        if (this.player) {
+          this.player.isLocked = false;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+        }
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST: Cari Nabula di taman.');
+        }
+      } else if (action === 'lvl1_059c_transition_to_library') {
+        console.log('%c[Taman 059c] Transisi ke perpustakaan bersama Nabula...', 'color: #38bdf8; font-weight: bold;');
+        this.registry.set('level1_quest_active', null);
+        this.registry.set('level1_branch_c_nabula_at_library', true);
+        this.registry.set('level1_nabula_at_garden_branch_c', false);
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Temui Bu Wati di perpustakaan bersama Nabula.');
+        }
+        this._changeMap('library', 1 * TILE + TILE / 2, 9 * TILE + TILE / 2);
+      } else if (action === 'lvl1_059c_walk_to_wati') {
+        console.log('%c[Perpustakaan 059c] Nakula dan Nabula berjalan menuju meja Bu Wati...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_player_locked', true);
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (this.player && this.player.sprite) {
+          this.player.isLocked = true;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+
+          const p = this.player.sprite;
+          p.setFlipX(false);
+          p.anims.play('player_walk_right', true);
+          this.tweens.add({
+            targets: p,
+            x: 8.5 * TILE + TILE / 2,
+            duration: 1800,
+            ease: 'Linear',
+            onComplete: () => {
+              p.anims.play('player_walk_up', true);
+              this.tweens.add({
+                targets: p,
+                y: 3 * TILE + TILE / 2,
+                duration: 1200,
+                ease: 'Linear',
+                onComplete: () => {
+                  p.anims.play('player_idle_up', true);
+                  this.player.facing = 'up';
+                }
+              });
+            }
+          });
+        }
+
+        if (nabula && nabula.sprite) {
+          const ns = nabula.sprite;
+          ns.setFlipX(false);
+          ns.anims.play('nabula_walk_right', true);
+          this.tweens.add({
+            targets: ns,
+            x: 9.5 * TILE + TILE / 2,
+            duration: 1800,
+            ease: 'Linear',
+            onComplete: () => {
+              ns.anims.play('nabula_walk_up', true);
+              this.tweens.add({
+                targets: ns,
+                y: 3 * TILE + TILE / 2,
+                duration: 1200,
+                ease: 'Linear',
+                onComplete: () => {
+                  ns.anims.play('nabula_idle_up', true);
+                  this.registry.set('level1_branch_c_reached_wati', true);
+                  console.log('%c[Perpustakaan 059c] Sampai di meja Bu Wati! Membuka dialog 059c-25...', 'color: #22c55e; font-weight: bold;');
+                  const ui = this.scene.get('UI');
+                  if (ui && ui.startDialogue) {
+                    ui.startDialogue('lvl1_059c_25_bu_wati');
+                  }
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_059c_complete') {
+        console.log('%c[Perpustakaan 059c] Jalur C selesai! Transisi ke Node 060...', 'color: #10b981; font-weight: bold;');
+        this.registry.set('level1_branch_c_done', true);
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && nabula.showEmotion) {
+          nabula.showEmotion('😊');
+        }
+      } else if (action === 'lvl1_060b_focus_wulan') {
+        console.log('%c[Node 060b] Menyorot Wulan yang memandang cemas dari kejauhan...', 'color: #38bdf8; font-weight: bold;');
+        let wulan = this.npcs.find(n => n.key === 'wulan');
+        const currentMap = this.registry.get('currentMap');
+
+        if (currentMap === 'cafeteria') {
+          if (!wulan) {
+            wulan = new NPC(this, 20 * TILE + TILE / 2, 10 * TILE + TILE / 2,
+              'wulan', null, { name: 'Wulan', emotion: '😟' });
+            wulan.sprite.anims.play('wulan_idle_left', true);
+            this.npcs.push(wulan);
+          }
+          this.panCameraTo(20 * TILE + TILE / 2, 10 * TILE + TILE / 2, 700, 'Sine.easeInOut', () => {
+            if (wulan && wulan.showEmotion) wulan.showEmotion('😟');
+            this.time.delayedCall(1200, () => {
+              if (wulan && wulan.sprite) {
+                wulan.sprite.setFlipX(false);
+                wulan.sprite.anims.play('wulan_walk_right', true);
+                this.tweens.add({
+                  targets: wulan.sprite,
+                  x: 24 * TILE + TILE / 2,
+                  duration: 1500,
+                  ease: 'Linear',
+                  onComplete: () => {
+                    this.tweens.add({
+                      targets: wulan.sprite,
+                      alpha: 0,
+                      duration: 400,
+                      onComplete: () => wulan.sprite.setVisible(false)
+                    });
+                  }
+                });
+              }
+              this.time.delayedCall(800, () => {
+                if (this.player && this.player.sprite) {
+                  this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 700);
+                }
+              });
+            });
+          });
+        } else if (currentMap === 'library') {
+          if (wulan) {
+            this.panCameraTo(wulan.sprite.x, wulan.sprite.y, 700, 'Sine.easeInOut', () => {
+              if (wulan.showEmotion) wulan.showEmotion('😟');
+              this.time.delayedCall(1200, () => {
+                wulan.sprite.setFlipX(false);
+                wulan.sprite.anims.play('wulan_walk_down', true);
+                this.tweens.add({
+                  targets: wulan.sprite,
+                  y: 9 * TILE + TILE / 2,
+                  duration: 1500,
+                  ease: 'Linear',
+                  onComplete: () => {
+                    this.tweens.add({
+                      targets: wulan.sprite,
+                      alpha: 0,
+                      duration: 400,
+                      onComplete: () => wulan.sprite.setVisible(false)
+                    });
+                  }
+                });
+                this.time.delayedCall(800, () => {
+                  if (this.player && this.player.sprite) {
+                    this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 700);
+                  }
+                });
+              });
+            });
+          }
+        }
+      } else if (action === 'lvl1_060c_finish_stage3') {
+        console.log('%c[Tahap 3 Selesai] 3 Cabang Keputusan (059a, 059b, 059c) & Node 060 Berhasil Diselesaikan!', 'color: #10b981; font-weight: bold; font-size: 14px;');
+        this.registry.set('level1_stage3_complete', true);
+        const ui = this.scene.get('UI');
+        if (ui && ui.showToast) {
+          ui.showToast('Tahap 3 Selesai! Menuju Tahap 4: Refleksi & Penilaian.');
+        }
+      } else if (action === 'lvl1_058x_bullies_leave') {
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+        this.registry.set('level1_058x_bullies_left', true);
+        console.log('%c[Kantin 058x] Bagas & Rio bubar meninggalkan kantin...', 'color: #f59e0b; font-weight: bold;');
+        if (bagas) {
+          bagas.sprite.setFlipX(false);
+          bagas.sprite.anims.play('bagas_walk_right', true);
+          this.tweens.add({
+            targets: bagas.sprite,
+            x: 24 * TILE,
+            duration: 2200,
+            ease: 'Linear',
+            onComplete: () => {
+              this.tweens.add({
+                targets: bagas.sprite,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => bagas.sprite.setVisible(false)
+              });
+            }
+          });
+        }
+        if (rio) {
+          rio.sprite.setFlipX(false);
+          rio.sprite.anims.play('rio_walk_right', true);
+          this.tweens.add({
+            targets: rio.sprite,
+            x: 25 * TILE,
+            duration: 2500,
+            ease: 'Linear',
+            onComplete: () => {
+              this.tweens.add({
+                targets: rio.sprite,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => rio.sprite.setVisible(false)
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_058x_nabula_leaves') {
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        this.registry.set('level1_058x_nabula_left', true);
+        this.registry.set('level1_nabula_at_garden_emergency', true);
+        console.log('%c[Kantin 058x] Nabula buru-buru meninggalkan kantin...', 'color: #f59e0b; font-weight: bold;');
+        if (nabula) {
+          if (nabula.clearEmotion) nabula.clearEmotion();
+          nabula.sprite.setFlipX(false);
+          nabula.sprite.anims.play('nabula_walk_right', true);
+          this.tweens.add({
+            targets: nabula.sprite,
+            x: 26 * TILE,
+            duration: 1800,
+            ease: 'Linear',
+            onComplete: () => {
+              this.tweens.add({
+                targets: nabula.sprite,
+                alpha: 0,
+                duration: 400,
+                onComplete: () => nabula.sprite.setVisible(false)
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_058x_start_emergency_quest') {
+        console.log('%c[Kantin 058x] Memulai Quest Darurat (30s): Susul Nabula ke taman ATAU lapor Bu Wati!', 'color: #ef4444; font-weight: bold;');
+        this.registry.set('level1_player_locked', false);
+        if (this.player) {
+          this.player.isLocked = false;
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+        }
+        this.registry.set('level1_quest_active', 'emergency_susul_atau_lapor');
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST (DARURAT): Susul Nabula ke taman ATAU lapor Bu Wati!', {
+            hasTimer: true,
+            durationSec: 30,
+            onTimeout: () => {
+              this.handleCafeteriaEmergencyTimeout();
+            }
+          });
+        }
+      } else if (action === 'lvl1_058x_emergency_success') {
+        this.registry.set('level1_quest_active', null);
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Berhasil menemukan bantuan!');
+        }
+      } else if (action === 'lvl1_058x_fade_out') {
+        this.cameras.main.fadeOut(800, 0, 0, 0);
+      } else if (action === 'lvl1_058x_show_fail_modal') {
+        this.registry.set('harmony', 0);
+        window.dispatchEvent(new CustomEvent('show_level_fail_modal', {
+          detail: {
+            score: 0,
+            status: 'Harmonia Padam',
+            message: 'Nakula tidak sempat bertindak tepat waktu saat Nabula membutuhkan bantuan di kantin.'
+          }
+        }));
       }
     }, this);
 
@@ -640,6 +1546,41 @@ class WorldScene extends Phaser.Scene {
     const ui = this.scene.get('UI');
     if (ui) {
       ui.startDialogue('lvl1_005b_10_narrator');
+    }
+  }
+
+  handleCafeteriaChoiceTimeout() {
+    this._cafeteriaChoiceTimeoutCount = (this._cafeteriaChoiceTimeoutCount || 0) + 1;
+    const curHarmony = this.registry.get('harmony') !== undefined ? this.registry.get('harmony') : 100;
+    const newHarmony = Math.max(0, curHarmony - 15);
+    this.registry.set('harmony', newHarmony);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+    const ui = this.scene.get('UI');
+    if (this._cafeteriaChoiceTimeoutCount === 1) {
+      console.log(`%c[Kantin 058x] Timeout ke-1! Harmoni dikurangi -15 (Sisa: ${newHarmony}). Membuka dialog refleksi 058x-1...`, 'color: #f59e0b; font-weight: bold;');
+      if (ui && ui.startDialogue) {
+        ui.startDialogue('lvl1_058x_1_narrator');
+      }
+    } else {
+      console.log(`%c[Kantin 058x] Timeout ke-2! Harmoni dikurangi -15 (Sisa: ${newHarmony}). Membuka urutan Bagas/Rio bubar (058x-5)...`, 'color: #ef4444; font-weight: bold;');
+      if (ui && ui.startDialogue) {
+        ui.startDialogue('lvl1_058x_5_narrator');
+      }
+    }
+  }
+
+  handleCafeteriaEmergencyTimeout() {
+    console.log('%c[Kantin 058x] Waktu habis untuk Quest Darurat! Menjalankan Fail Ending...', 'color: #ef4444; font-weight: bold;');
+    this.registry.set('level1_player_locked', true);
+    if (this.player && this.player.sprite) {
+      this.player.isLocked = true;
+      if (this.player.sprite.body) this.player.sprite.setVelocity(0, 0);
+      this.player.sprite.anims.play('player_idle_' + (this.player.facing || 'down'), true);
+    }
+    const ui = this.scene.get('UI');
+    if (ui && ui.startDialogue) {
+      ui.startDialogue('lvl1_058x_10_narrator');
     }
   }
 
@@ -741,6 +1682,46 @@ class WorldScene extends Phaser.Scene {
     });
   }
 
+  _startCafeteriaCutscene() {
+    if (this._cafeteriaCutsceneRunning || this.registry.get('level1_049_done')) {
+      console.log(`[Kantin 049] _startCafeteriaCutscene dilewati: running=${this._cafeteriaCutsceneRunning}, done=${this.registry.get('level1_049_done')}`);
+      return;
+    }
+    this._cafeteriaCutsceneRunning = true;
+    this.registry.set('level1_049_triggered', true);
+    this.registry.set('level1_player_locked', true);
+
+    console.log('%c[Kantin 049] Cutscene Dimulai! Mengunci input pemain (1 detik jeda awal)...', 'color: #eab308; font-weight: bold;');
+
+    // Kunci gerakan pemain saat baru tiba di kantin dan pastikan menghadap kiri
+    if (this.player) {
+      this.player.isLocked = true;
+      this.player.facing = 'left';
+      if (this.player.sprite) {
+        if (this.player.sprite.body) this.player.sprite.setVelocity(0, 0);
+        this.player.sprite.setFlipX(true);
+        this.player.sprite.anims.play('player_idle_left', true);
+      }
+    }
+
+    // Jeda 1 detik saat Nakula baru masuk (kamera tetap di Nakula)
+    this.time.delayedCall(1000, () => {
+      console.log('%c[Kantin 049] Jeda 1 detik selesai. Kamera mulai pan halus ke meja Nabula (11.9, 6)...', 'color: #3b82f6; font-weight: bold;');
+      const targetX = 11.9 * TILE + TILE / 2;
+      const targetY = 6 * TILE + TILE / 2;
+      this.panCameraTo(targetX, targetY, 1100, 'Sine.easeInOut', () => {
+        if (navigator.vibrate) navigator.vibrate(60);
+        console.log('%c[Kantin 049] Kamera sampai di meja Nabula! Membuka dialog lvl1_049_narrator...', 'color: #22c55e; font-weight: bold;');
+        const ui = this.scene.get('UI');
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_049_narrator');
+        } else {
+          console.error('[Kantin 049] UI scene tidak ditemukan atau startDialogue hilang!');
+        }
+      });
+    });
+  }
+
   update(time, delta) {
     if (this.player) this.player.update(time, delta);
     for (let i = 0; i < this.npcs.length; i++) {
@@ -755,6 +1736,15 @@ class WorldScene extends Phaser.Scene {
       this.cameras.main && !this.cameras.main._fadeOp) {
       console.log('[Perpus 017] Pemicu update() fallback memanggil _startLibraryCutscene()...');
       this._startLibraryCutscene();
+    }
+
+    /* ── Level 1 Cafeteria Scene Trigger (Fallback if not started in create) ── */
+    if (this.registry.get('currentMap') === 'cafeteria' &&
+      !this.registry.get('level1_049_done') &&
+      !this._cafeteriaCutsceneRunning &&
+      this.cameras.main && !this.cameras.main._fadeOp) {
+      console.log('[Kantin 049] Pemicu update() fallback memanggil _startCafeteriaCutscene()...');
+      this._startCafeteriaCutscene();
     }
 
     /* ── Level 1 Clue 3: Proximity Trigger for Raya & Mei (038 / 039) ── */
@@ -781,43 +1771,6 @@ class WorldScene extends Phaser.Scene {
             const ui = this.scene.get('UI');
             if (ui && ui.startDialogue) {
               ui.startDialogue('lvl1_039_narrator');
-            }
-          });
-        }
-      }
-    }
-
-    /* ── Level 1 Cafeteria Arrival Trigger (049) ── */
-    if (this.registry.get('currentMap') === 'cafeteria' &&
-      this.registry.get('level1_quest_active') === 'pergi_ke_kantin' &&
-      !this.registry.get('level1_049_triggered') &&
-      !this.registry.get('dialogueActive')) {
-      if (this.player && this.player.sprite) {
-        this.registry.set('level1_049_triggered', true);
-        this.registry.set('dialogueActive', true);
-        this.registry.set('level1_player_locked', true);
-        if (this.player) {
-          this.player.isLocked = true;
-          this.player.sprite.setVelocity(0, 0);
-          this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
-        }
-        const nabula = this.npcs.find(n => n.key === 'nabula');
-        if (nabula) {
-          this.cameras.main.stopFollow();
-          this.tweens.killTweensOf(this.cameras.main);
-          const halfView = this._getHalfView();
-          this.tweens.add({
-            targets: this.cameras.main,
-            scrollX: nabula.sprite.x - halfView.w,
-            scrollY: nabula.sprite.y - halfView.h,
-            duration: 900,
-            ease: 'Sine.easeInOut',
-            onComplete: () => {
-              if (navigator.vibrate) navigator.vibrate(60);
-              const ui = this.scene.get('UI');
-              if (ui && ui.startDialogue) {
-                ui.startDialogue('lvl1_049_narrator');
-              }
             }
           });
         }
@@ -1802,6 +2755,18 @@ class WorldScene extends Phaser.Scene {
         nabula.sprite.anims.play('nabula_idle_left', true);
         nabula.sprite.setFlipX(true);
         this.npcs.push(nabula);
+      } else if (this.registry.get('level1_nabula_at_garden_emergency') && !this.registry.get('level1_complete')) {
+        const nabula = new NPC(this, 12 * TILE + TILE / 2, 9 * TILE + TILE / 2,
+          'nabula', 'lvl1_058x_nabula_garden_found', { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.anims.play('nabula_idle_left', true);
+        nabula.sprite.setFlipX(true);
+        this.npcs.push(nabula);
+      } else if (this.registry.get('level1_nabula_at_garden_branch_c') && !this.registry.get('level1_complete')) {
+        const nabula = new NPC(this, 12 * TILE + TILE / 2, 9 * TILE + TILE / 2,
+          'nabula', 'lvl1_059c_8_nakula', { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.anims.play('nabula_idle_left', true);
+        nabula.sprite.setFlipX(true);
+        this.npcs.push(nabula);
       }
     } else if (mapKey === 'schoolyard') {
       const offset = 10;
@@ -1851,30 +2816,81 @@ class WorldScene extends Phaser.Scene {
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
 
-      // Babak 4C: Saat quest pergi_ke_kantin aktif atau clues sudah 3/3, spawn Nabula, Bagas, Rio
-      if (this.registry.get('level1_quest_active') === 'pergi_ke_kantin' || this.registry.get('level1_clues_found') >= 3) {
-        const nabula = new NPC(this, 10 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-          'nabula', null, { name: 'Nabula', emotion: '😔' });
-        nabula.sprite.anims.play('nabula_idle_down', true);
-        this.npcs.push(nabula);
+      // Babak 4C & Babak 5: Spawn Nabula, Bagas, Rio di kantin
+      const canSpawnCafeteriaGroup = (
+        this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
+        this.registry.get('level1_clues_found') >= 3 ||
+        this.registry.get('level1_cafeteria_arrived') ||
+        !this.registry.get('level1_049_done')
+      ) && !this.registry.get('level1_complete');
 
-        const bagas = new NPC(this, 11 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-          'bagas', null, { name: 'Bagas' });
-        bagas.sprite.setFlipX(true);
-        bagas.sprite.anims.play('bagas_idle_left', true);
-        this.npcs.push(bagas);
+      if (canSpawnCafeteriaGroup) {
+        const is049Done = this.registry.get('level1_049_done');
 
-        const rio = new NPC(this, 9 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-          'rio', null, { name: 'Rio' });
-        rio.sprite.anims.play('rio_idle_right', true);
-        this.npcs.push(rio);
+        // Nabula di meja makan (11.9, 6) jika belum kabur
+        if (!this.registry.get('level1_058x_nabula_left')) {
+          const nabula = new NPC(this, 11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+            'nabula', null, { name: 'Nabula', emotion: '😔' });
+          nabula.sprite.anims.play('nabula_idle_down', true);
+          this.npcs.push(nabula);
+        }
+
+        // Bagas & Rio jika belum bubar
+        if (!this.registry.get('level1_058x_bullies_left')) {
+          const bagasX = is049Done ? 13.3 : 13.3;
+          const bagasY = is049Done ? 5.5 : 4;
+          const bagas = new NPC(this, bagasX * TILE + TILE / 2, bagasY * TILE + TILE / 2,
+            'bagas', null, { name: 'Bagas' });
+          bagas.sprite.setFlipX(false);
+          bagas.sprite.anims.play(is049Done ? 'bagas_idle_left' : 'bagas_idle_down', true);
+          this.npcs.push(bagas);
+
+          const rioX = is049Done ? 13.3 : 14.3;
+          const rioY = is049Done ? 6.5 : 4;
+          const rio = new NPC(this, rioX * TILE + TILE / 2, rioY * TILE + TILE / 2,
+            'rio', null, { name: 'Rio' });
+          rio.sprite.setFlipX(false);
+          rio.sprite.anims.play(is049Done ? 'rio_idle_left' : 'rio_idle_down', true);
+          this.npcs.push(rio);
+        }
+      }
+
+      // Bu Wati di kantin saat Jalur B berjalan
+      if (this.registry.get('level1_branch_b_bu_wati_at_cafeteria')) {
+        const wati = new NPC(this, 28 * TILE + TILE / 2, 13 * TILE + TILE / 2,
+          'wati', null, { name: 'Bu Wati' });
+        wati.sprite.anims.play('wati_idle_left', true);
+        wati.sprite.setFlipX(true);
+        this.npcs.push(wati);
+      }
+
+      // Wulan di kantin memantau dari kejauhan (Node 060b)
+      if (this.registry.get('level1_branch_a_done') || this.registry.get('level1_branch_b_done')) {
+        const wulan = new NPC(this, 20 * TILE + TILE / 2, 10 * TILE + TILE / 2,
+          'wulan', null, { name: 'Wulan', emotion: '😟' });
+        wulan.sprite.anims.play('wulan_idle_left', true);
+        this.npcs.push(wulan);
       }
     }
 
     if (mapKey === 'library') {
       // Bu Wati (Pustakawan / Guru) at reception desk (col 9, row 1)
+      let watiDialogue = 'librarian_chat';
+      if (this.registry.get('level1_quest_active') === 'lapor_bu_wati_branch_b') {
+        watiDialogue = 'lvl1_059b_5_nakula';
+      } else if (this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
+        watiDialogue = 'lvl1_058x_bu_wati_found';
+      }
       this.npcs.push(new NPC(this, 9 * TILE + TILE / 2, 1 * TILE + TILE / 2,
-        'wati', 'librarian_chat', { name: 'Bu Wati' }));
+        'wati', watiDialogue, { name: 'Bu Wati' }));
+
+      // Nabula di perpustakaan bersama Nakula (Jalur C)
+      if (this.registry.get('level1_branch_c_nabula_at_library')) {
+        const nabula = new NPC(this, 2 * TILE + TILE / 2, 9 * TILE + TILE / 2,
+          'nabula', null, { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.anims.play('nabula_idle_right', true);
+        this.npcs.push(nabula);
+      }
 
       // Wulan at (16, 6) menghadap kanan
       let wulanDialogue = 'lvl1_wulan_ambient';

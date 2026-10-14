@@ -150,7 +150,7 @@ class BootScene extends Phaser.Scene {
     };
 
     ['player', 'nabula', 'bagas', 'rio', 'wulan', 'raya', 'mei', 'wati', 'riko', 'rani', 'bully', 'student'].forEach(char => {
-      ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk', 'angry'].forEach(emotion => {
+      ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk', 'angry', 'serious', 'worried', 'relief'].forEach(emotion => {
         makePortrait(`${char}_${emotion}`, portraitColors[char]);
       });
     });
