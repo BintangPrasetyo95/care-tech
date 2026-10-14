@@ -3,6 +3,8 @@
    CareTech Scrapbook & Cardboard Theme
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap');
+
 @font-face {
     font-family: 'GROBOLD';
     src: local('GROBOLD'), local('Grobold'), url('assets/fonts/GROBOLD.ttf') format('truetype');
@@ -40,8 +42,9 @@
     --glass-border: var(--ink);
     --glass-shadow: 6px 6px 0 var(--ink);
 
-    /* Typography from Cardboard Cosmos */
-    --mk: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    /* Typography */
+    --mk: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --body-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --mono: 'Courier New', Courier, monospace;
     --imp: 'GROBOLD', 'Grobold', sans-serif;
     --title-font: 'GROBOLD', 'Grobold', sans-serif;
