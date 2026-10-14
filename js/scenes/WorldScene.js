@@ -29,7 +29,7 @@ class WorldScene extends Phaser.Scene {
     let defaultSpawnY = 7;
     if (mapKey === 'garden') { defaultSpawnX = 14; defaultSpawnY = 3.5; }
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
-    if (mapKey === 'library') { defaultSpawnX = 9; defaultSpawnY = 9; }
+    if (mapKey === 'library') { defaultSpawnX = 1; defaultSpawnY = 9; }
     if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
 
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
@@ -37,6 +37,7 @@ class WorldScene extends Phaser.Scene {
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
     this.physics.world.setBounds(0, 0, mapW * TILE, mapH * TILE);
+    this.cameras.main.setBounds(0, 0, mapW * TILE, mapH * TILE);
 
     /* ── NPCs ── */
     this.npcs = [];
@@ -58,6 +59,8 @@ class WorldScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
     this.cameras.main.setZoom(SCALE);
     this.cameras.main.setBackgroundColor('#0f0e17');
+    /* ── Camera Fade In (Gelap ke Terang) ── */
+    this.cameras.main.fadeIn(400, 0, 0, 0);
 
     /* ── Launch HUD overlay (only if not already running) ── */
     if (!this.scene.isActive('UI')) {
@@ -72,161 +75,83 @@ class WorldScene extends Phaser.Scene {
     this.nearestInteractable = null;
     this.currentTransitions = this._getTransitions(mapKey);
 
-    /* ── Check Level 1 Arrival at Library (Quest Complete) ── */
+    /* ── Check Level 1 Arrival at Library (Quest Complete & Cutscene 016/017) ── */
     if (mapKey === 'library') {
+      this._libraryCutsceneRunning = false;
       const activeQuest = this.registry.get('level1_quest_active');
-      if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
-        this.registry.set('level1_quest_active', null);
+      const is017Done = this.registry.get('level1_017_done');
+
+      console.log(`%c[Perpus 017] Masuk map library. activeQuest: "${activeQuest}", 017_done: ${is017Done}`, 'color: #38bdf8; font-weight: bold;');
+
+      // Picu cutscene perpustakaan 016/017 jika 017 belum selesai
+      if (!is017Done) {
         this.registry.set('level1_library_arrived', true);
-        const questName = (activeQuest === 'ikuti_nabula') 
-          ? 'Ikuti Nabula ke perpustakaan' 
-          : 'Susul Nabula ke perpustakaan';
-        this.time.delayedCall(400, () => {
-          const ui = this.scene.get('UI');
-          if (ui && ui.completeQuest) {
-            ui.completeQuest(questName);
+
+        if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
+          this.registry.set('level1_quest_active', null);
+          const questName = (activeQuest === 'ikuti_nabula') 
+            ? 'Ikuti Nabula ke perpustakaan' 
+            : 'Susul Nabula ke perpustakaan';
+          this.time.delayedCall(200, () => {
+            const ui = this.scene.get('UI');
+            if (ui && ui.completeQuest) {
+              ui.completeQuest(questName);
+            }
+          });
+        }
+
+        // Jalankan cutscene setelah fade-in layar perpustakaan selesai
+        this.time.delayedCall(300, () => {
+          if (!this._libraryCutsceneRunning && !this.registry.get('level1_017_done')) {
+            console.log('[Perpus 017] Pemicu timer create() memanggil _startLibraryCutscene()...');
+            this._startLibraryCutscene();
           }
         });
       }
     }
 
-    /* ── Dialogue Action Listener ── */
+    // Pasang helper debug console untuk pengujian cepat
+    window.testCutscene017 = () => {
+      console.log('%c[DEBUG] Memulai paksa Cutscene 017...', 'color: #f43f5e; font-weight: bold;');
+      this.registry.set('level1_017_done', false);
+      this._libraryCutsceneRunning = false;
+      if (this.registry.get('currentMap') !== 'library') {
+        this._changeMap('library', 1 * TILE + TILE / 2, 9 * TILE + TILE / 2);
+      } else {
+        this._startLibraryCutscene();
+      }
+    };
+    window.debugLevel1State = () => {
+      console.table({
+        currentMap: this.registry.get('currentMap'),
+        level1_quest_active: this.registry.get('level1_quest_active'),
+        level1_012_completed: this.registry.get('level1_012_completed'),
+        level1_nabula_left_garden: this.registry.get('level1_nabula_left_garden'),
+        level1_library_arrived: this.registry.get('level1_library_arrived'),
+        level1_017_triggered: this.registry.get('level1_017_triggered'),
+        level1_017_done: this.registry.get('level1_017_done'),
+        level1_player_locked: this.registry.get('level1_player_locked'),
+        _libraryCutsceneRunning: this._libraryCutsceneRunning
+      });
+    };
+
+    /* ── Action Executor & Dialogue Action Listener ── */
+    this.actionExecutor = new ActionExecutor(this);
+
     this.registry.events.on('dialogue_action', (action) => {
-      if (action === 'nabula_smile_anim') {
-        const nabula = this.npcs.find(n => n.key === 'nabula');
-        if (nabula) {
-          nabula.clearEmotion();
-
-          nabula.emotionBubble = this.add.graphics();
-          nabula.emotionBubble.fillStyle(0xffffff, 0.95);
-          nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
-          nabula.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
-
-          nabula.emotionText = this.add.text(0, 0, '😊', { fontSize: '12px' }).setOrigin(0.5, 0.45);
-          nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
-
-          nabula.emotionOffset = 0;
-          nabula.emotionTween = this.tweens.add({
-            targets: nabula,
-            emotionOffset: -4,
-            yoyo: true,
-            repeat: -1,
-            duration: 1200,
-            ease: 'Sine.easeInOut'
-          });
-
-          this.tweens.add({
-            targets: nabula.sprite,
-            y: nabula.sprite.y - 10,
-            yoyo: true,
-            duration: 150,
-            ease: 'Power1'
-          });
+      // If action is an atomic object or array sequence, execute via ActionExecutor
+      if (typeof action === 'object' && action !== null) {
+        if (Array.isArray(action)) {
+          this.actionExecutor.executeSequence(action);
+        } else {
+          this.actionExecutor.executeAction(action);
         }
-      } else if (action === 'nabula_run_away') {
-        const nabula = this.npcs.find(n => n.key === 'nabula');
-        if (nabula) {
-          nabula.clearEmotion();
-          nabula.dialogueId = 'nabula_found';
+        return;
+      }
 
-          this.tweens.add({
-            targets: nabula.sprite,
-            x: 5 * TILE + TILE / 2,
-            y: 12 * TILE + TILE / 2,
-            duration: 2000,
-            onStart: () => {
-              nabula.sprite.anims.play('nabula_walk_left', true);
-            },
-            onComplete: () => {
-              nabula.sprite.anims.play('nabula_idle_down', true);
-              // Give back her sad emotion
-              nabula.emotionBubble = this.add.graphics();
-              nabula.emotionBubble.fillStyle(0xffffff, 0.95);
-              nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
-              nabula.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
-              nabula.emotionText = this.add.text(0, 0, '😔', { fontSize: '12px' }).setOrigin(0.5, 0.45);
-              nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
-              nabula.emotionOffset = 0;
-              nabula.emotionTween = this.tweens.add({
-                targets: nabula,
-                emotionOffset: -4,
-                yoyo: true,
-                repeat: -1,
-                duration: 1200,
-                ease: 'Sine.easeInOut'
-              });
-            }
-          });
-        }
-      } else if (action === 'complete_level1') {
+      if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
         try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
-      } else if (action === 'complete_level2') {
-        this.registry.set('level2_complete', true);
-        try { localStorage.setItem('caretech_scenario_2', 'true'); } catch (e) { }
-      } else if (action === 'found_evidence_phone') {
-        this.registry.set('evidence_phone', true);
-        this._checkLevel3Ready();
-      } else if (action === 'found_evidence_witness') {
-        this.registry.set('evidence_witness', true);
-        this._checkLevel3Ready();
-      } else if (action === 'complete_level3') {
-        this.registry.set('level3_complete', true);
-        try { localStorage.setItem('caretech_scenario_3', 'true'); } catch (e) { }
-      } else if (['build_vent_corner', 'build_appreciation_box', 'build_peer_support'].includes(action)) {
-        this.registry.set('built_project', action);
-        this.registry.set('level4_complete', true);
-        try { localStorage.setItem('caretech_scenario_4', 'true'); } catch (e) { }
-
-        // Find the initiative board and update its state so it doesn't prompt again
-        const board = this.npcs.find(n => n.key === 'initiative_board');
-        if (board) board.dialogueId = 'board_already_done';
-      } else if (action === 'start_qte') {
-        this.registry.set('qte_active', true);
-        const victim = this.npcs.find(n => n.key === 'qte_victim');
-        if (victim) victim.dialogueId = 'qte_success';
-
-        if (this.qteArrow) this.qteArrow.setVisible(true);
-
-        this.scene.get('UI').startQTETimer(20, () => {
-          if (this.registry.get('qte_active')) {
-            this.registry.set('qte_active', false);
-            this.registry.set('dialogueActive', true);
-
-            const v = this.npcs.find(n => n.key === 'qte_victim');
-            if (v) v.dialogueId = null;
-
-            this.scene.get('UI')._showNode('qte_fail');
-          }
-        });
-      } else if (action === 'complete_level5') {
-        this.registry.set('level5_complete', true);
-        try { localStorage.setItem('caretech_scenario_5', 'true'); } catch (e) { }
-        this.registry.set('qte_active', false);
-        this.scene.get('UI').stopQTETimer();
-        if (this.qteArrow) this.qteArrow.destroy();
-
-        // Update victim dialogue to thank you
-        const victim = this.npcs.find(n => n.key === 'qte_victim');
-        if (victim) {
-          victim.dialogueId = 'victim_thanks';
-        }
-
-        // Make the bullies walk out the door
-        const bullies = this.npcs.filter(n => n.key === 'bully');
-        bullies.forEach((bully, idx) => {
-          this.tweens.chain({
-            targets: bully.sprite,
-            tweens: [
-              { y: 9 * TILE, duration: 1000 }, // Move down to central concourse
-              { x: 31 * TILE + (idx * 20), duration: 2200 } // Run out East exit to Schoolyard
-            ],
-            onComplete: () => {
-              bully.sprite.destroy();
-              if (bully.indicator) bully.indicator.destroy();
-            }
-          });
-        });
       } else if (action === 'lvl1_start_walk') {
         // Player is now free to walk in the garden (001 continued)
         this.registry.set('level1_player_locked', false);
@@ -235,18 +160,7 @@ class WorldScene extends Phaser.Scene {
           if (this.player.sprite) this.player.sprite.setVelocity(0, 0);
         }
       } else if (action === 'lvl1_camera_to_nakula') {
-        this.cameras.main.stopFollow();
-        this.tweens.killTweensOf(this.cameras.main);
-        this.tweens.add({
-          targets: this.cameras.main,
-          scrollX: this.player.sprite.x - this.cameras.main.width / 2,
-          scrollY: this.player.sprite.y - this.cameras.main.height / 2,
-          duration: 800,
-          ease: 'Sine.easeInOut',
-          onComplete: () => {
-            this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
-          }
-        });
+        this.panCameraToActor(this.player, 800, true, 1);
       } else if (action === 'lvl1_005a_ready') {
         // 005a-1: Nakula stays still, camera returns to Nakula with 3s timer before walking (005a-2)
         this.registry.set('level1_player_locked', true);
@@ -258,18 +172,7 @@ class WorldScene extends Phaser.Scene {
             this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
           }
         }
-        this.cameras.main.stopFollow();
-        this.tweens.killTweensOf(this.cameras.main);
-        this.tweens.add({
-          targets: this.cameras.main,
-          scrollX: this.player.sprite.x - this.cameras.main.width / 2,
-          scrollY: this.player.sprite.y - this.cameras.main.height / 2,
-          duration: 600,
-          ease: 'Sine.easeInOut',
-          onComplete: () => {
-            this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
-          }
-        });
+        this.panCameraToActor(this.player, 600, true, 0.08);
       } else if (action === 'lvl1_005a_walk') {
         // 005a-2: Nakula walks to Nabula automatically, camera follows
         const nabula = this.npcs.find(n => n.key === 'nabula');
@@ -372,19 +275,12 @@ class WorldScene extends Phaser.Scene {
         }
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula) {
-          this.cameras.main.stopFollow();
-          this.tweens.killTweensOf(this.cameras.main);
-          this.tweens.add({
-            targets: this.cameras.main,
-            scrollX: nabula.sprite.x - this.cameras.main.width / 2,
-            scrollY: nabula.sprite.y - this.cameras.main.height / 2,
-            duration: 800,
-            ease: 'Sine.easeInOut'
-          });
+          this.panCameraToActor(nabula, 800);
         }
       } else if (action === 'lvl1_012_nabula_leaves' || action === 'lvl1_005b_nabula_leaves') {
         // Gerakan dan kamera Nabula disamakan antara 012 dan 005b
         // 012 & 013: Nakula TETAP tidak bisa digerakkan sampai kamera kembali tepat ke Nakula di 013!
+        this.registry.set('level1_012_completed', true);
         this.registry.set('level1_player_locked', true);
         if (this.player) {
           this.player.isLocked = true;
@@ -396,7 +292,7 @@ class WorldScene extends Phaser.Scene {
           nabula.clearEmotion();
           this.cameras.main.stopFollow();
           this.tweens.killTweensOf(this.cameras.main);
-          this.cameras.main.startFollow(nabula.sprite, true, 0.08, 0.08);
+          this.cameras.main.startFollow(nabula.sprite, true, 0.25, 0.25);
 
           // Langkah 1: Berjalan ke kanan menuju (15, 9.5)
           nabula.sprite.setFlipX(false);
@@ -413,13 +309,13 @@ class WorldScene extends Phaser.Scene {
               {
                 x: step1X,
                 y: step1Y,
-                duration: 2200,
+                duration: 800,
                 ease: 'Linear'
               },
               {
                 x: step2X,
                 y: step2Y,
-                duration: 3500,
+                duration: 3000,
                 ease: 'Linear',
                 onStart: () => {
                   nabula.sprite.setFlipX(false);
@@ -434,41 +330,33 @@ class WorldScene extends Phaser.Scene {
               nabula.sprite.setActive(false).setVisible(false);
               if (nabula.sprite.body) nabula.sprite.body.enable = false;
               if (nabula.clearEmotion) nabula.clearEmotion();
-              if (nabula.indicator) nabula.indicator.destroy();
-
-              // PERBAIKAN: Hentikan follow Nabula agar kamera tidak looping / fighting
-              this.cameras.main.stopFollow();
-              this.tweens.killTweensOf(this.cameras.main);
+              // Dialog 012 tertutup otomatis saat Nabula menghilang
+              const ui = this.scene.get('UI');
+              if (ui && ui._closeDialogue) {
+                ui._closeDialogue();
+              }
 
               // 013: Kamera kembali menyorot Nakula
-              this.tweens.add({
-                targets: this.cameras.main,
-                scrollX: this.player.sprite.x - this.cameras.main.width / 2,
-                scrollY: this.player.sprite.y - this.cameras.main.height / 2,
-                duration: 1200,
-                ease: 'Sine.easeInOut',
-                onComplete: () => {
-                  this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
-                  this.currentTransitions = this._getTransitions('garden');
+              this.panCameraToActor(this.player, 1000, true, 1, () => {
+                this.currentTransitions = this._getTransitions('garden');
 
-                  if (isFrom005b) {
-                    // 005b-9b: Tampilkan dialog ECA (Nakula masih tetap diam sampai quest timer dimulai)
-                    this.scene.get('UI').startDialogue('lvl1_005b_9b_eca');
-                  } else {
-                    // 013 selesai: Kamera sudah kembali tepat ke Nakula!
-                    // NAKULA SEKARANG BISA DIGERAKKAN!
-                    this.registry.set('level1_player_locked', false);
-                    if (this.player) {
-                      this.player.isLocked = false;
-                    }
-                    // 014: UI QUEST "Ikuti Nabula ke perpustakaan."
-                    this.registry.set('level1_quest_active', 'ikuti_nabula');
-                    const ui = this.scene.get('UI');
-                    if (ui && ui.showQuest) {
-                      ui.showQuest('QUEST: Ikuti Nabula ke perpustakaan.');
-                    }
-                    if (navigator.vibrate) navigator.vibrate(100);
+                if (isFrom005b) {
+                  // 005b-9b: Tampilkan dialog ECA (Nakula masih tetap diam sampai quest timer dimulai)
+                  this.scene.get('UI').startDialogue('lvl1_005b_9b_eca');
+                } else {
+                  // 013 selesai: Kamera sudah kembali tepat ke Nakula!
+                  // NAKULA SEKARANG BISA DIGERAKKAN!
+                  this.registry.set('level1_player_locked', false);
+                  if (this.player) {
+                    this.player.isLocked = false;
                   }
+                  // 014: UI QUEST "Ikuti Nabula ke perpustakaan."
+                  this.registry.set('level1_quest_active', 'ikuti_nabula');
+                  const ui = this.scene.get('UI');
+                  if (ui && ui.showQuest) {
+                    ui.showQuest('QUEST: Ikuti Nabula ke perpustakaan.');
+                  }
+                  if (navigator.vibrate) navigator.vibrate(100);
                 }
               });
             }
@@ -512,6 +400,157 @@ class WorldScene extends Phaser.Scene {
         if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
       } else if (action === 'vibrate_soft') {
         if (navigator.vibrate) navigator.vibrate(60);
+      } else if (action === 'lvl1_017_focus_bullies') {
+        // 017: Sorot Bagas dan Rio di koordinat (4.5, 13)
+        this._focusCameraOnBullies();
+      } else if (action === 'lvl1_019_focus_nabula') {
+        // Pemain selesai membaca dialog Rio (019).
+        // Gerakkan kamera ke Nabula di (8.5, 16) TERLEBIH DAHULU.
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          this.panCameraToActor(nabula, 800, false, 1, () => {
+            // Setelah kamera sampai di Nabula, baru tampilkan dialog lvl1_020_narrator!
+            const ui = this.scene.get('UI');
+            if (ui && ui.startDialogue) {
+              ui.startDialogue('lvl1_020_narrator');
+            }
+          });
+        }
+      } else if (action === 'lvl1_020_nabula_runs') {
+        // 020: Nabula lari terburu-buru keluar dari perpustakaan (3 langkah kecepatan konstan: ~300 px/s)
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          if (nabula.clearEmotion) nabula.clearEmotion();
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(nabula.sprite, true, 0.1, 0.1);
+
+          // Langkah 1: Mulai lari ke kiri menuju (7, 16)
+          nabula.sprite.setFlipX(true);
+          nabula.sprite.anims.play('nabula_walk_left', true);
+
+          this.tweens.chain({
+            targets: nabula.sprite,
+            tweens: [
+              {
+                // Langkah 1: Lari ke kiri dari (8.5, 16) ke (7, 16) (1.5 tile = 96 px) - 320 ms (~300 px/s)
+                x: 7 * TILE + TILE / 2,
+                duration: 320,
+                ease: 'Linear',
+                onComplete: () => {
+                  nabula.sprite.setFlipX(false);
+                  nabula.sprite.anims.play('nabula_walk_up', true);
+                }
+              },
+              {
+                // Langkah 2: Lari ke atas di lorong kolom 7 dari baris 16 ke baris 9 (7 tile = 448 px) - 1500 ms (~300 px/s)
+                y: 9 * TILE + TILE / 2,
+                duration: 1500,
+                ease: 'Linear',
+                onComplete: () => {
+                  nabula.sprite.setFlipX(true);
+                  nabula.sprite.anims.play('nabula_walk_left', true);
+                }
+              },
+              {
+                // Langkah 3: Lari ke kiri di baris 9 dari kolom 7 ke kolom 0 (7 tile = 448 px) - 1500 ms (~300 px/s)
+                x: 0 * TILE + TILE / 2,
+                duration: 1500,
+                ease: 'Linear'
+              }
+            ],
+            onComplete: () => {
+              nabula.sprite.setActive(false).setVisible(false);
+              if (nabula.sprite.body) nabula.sprite.body.enable = false;
+              if (nabula.indicator) nabula.indicator.destroy();
+              this.registry.set('level1_020_done', true);
+
+              // Tutup dialog narator 020 saat Nabula menghilang
+              const ui = this.scene.get('UI');
+              if (ui && ui._closeDialogue) {
+                ui._closeDialogue();
+              }
+
+              // 021: Kamera kembali mengarah ke Nakula
+              this.panCameraToActor(this.player, 900, true, 1, () => {
+                // 022: Auto-trigger dialog Nakula
+                if (ui && ui.startDialogue) {
+                  ui.startDialogue('lvl1_022_nakula');
+                }
+              });
+            }
+          });
+        }
+      } else if (action === 'lvl1_024_start_clue_quest') {
+        // 024: PROGRES: Temukan petunjuk (0/3)
+        this.registry.set('level1_017_done', true);
+        this.registry.set('level1_player_locked', false);
+        if (this.player) this.player.isLocked = false;
+        this.registry.set('level1_clue_quest_active', true);
+        this.registry.set('level1_clues_found', 0);
+        this.registry.set('level1_clue_book_found', false);
+        this.registry.set('level1_clue_wulan_found', false);
+        this.registry.set('level1_clue_students_found', false);
+
+        // Update Wulan ke dialog petunjuk
+        const wulan = this.npcs.find(n => n.key === 'wulan');
+        if (wulan) {
+          wulan.dialogueId = 'lvl1_033_nakula';
+          if (!wulan.indicator) {
+            wulan.indicator = this.add.circle(wulan.sprite.x, wulan.sprite.y - 20, 4, 0xfacc15).setDepth(10);
+            this.tweens.add({ targets: wulan.indicator, alpha: { from: 0.3, to: 1 }, yoyo: true, repeat: -1, duration: 800 });
+          }
+        }
+
+        // Spawn Buku Robek di (17, 17) jika berada di perpustakaan
+        let book = this.npcs.find(n => n.key === 'clue_book');
+        if (!book && this.registry.get('currentMap') === 'library') {
+          book = new NPC(this, 17 * TILE + TILE / 2, 17 * TILE + TILE / 2,
+            'clue_book', 'lvl1_027_narrator', { name: 'Buku Tugas Robek' });
+          this.npcs.push(book);
+        }
+
+        // Pastikan kamera follow Nakula
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('PROGRES: Temukan petunjuk (0/3)');
+        }
+        if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+      } else if (action === 'lvl1_030_clue_found_book') {
+        this._onClueFound('book');
+      } else if (action === 'lvl1_037_clue_found_wulan') {
+        this._onClueFound('wulan');
+      } else if (action === 'lvl1_044_camera_to_nakula' || action === 'lvl1_056_camera_to_nakula') {
+        this.panCameraToActor(this.player, 800, true, 1);
+      } else if (action === 'lvl1_046_clue_found_students') {
+        this._onClueFound('students');
+      } else if (action === 'lvl1_046_all_clues_collected') {
+        this.registry.set('level1_player_locked', false);
+        if (this.player) this.player.isLocked = false;
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('3/3 — Semua petunjuk terkumpul.');
+        }
+        if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
+        this.time.delayedCall(2200, () => {
+          // 047: UI QUEST "Pergi ke kantin."
+          this.registry.set('level1_quest_active', 'pergi_ke_kantin');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Pergi ke kantin.');
+          }
+          if (navigator.vibrate) navigator.vibrate(100);
+        });
+      } else if (action === 'lvl1_049_focus_cafeteria') {
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          this.panCameraToActor(nabula, 900);
+        }
+        if (navigator.vibrate) navigator.vibrate(60);
       }
     }, this);
 
@@ -534,6 +573,64 @@ class WorldScene extends Phaser.Scene {
     this._drawDebugGrid(mapW, mapH);
   }
 
+  /* ── Helper: Level 1 Clue Tracker (026 - 047) ── */
+  _onClueFound(clueKey) {
+    if (clueKey === 'book') {
+      this.registry.set('level1_clue_book_found', true);
+      const book = this.npcs.find(n => n.key === 'clue_book');
+      if (book) {
+        if (book.indicator) book.indicator.destroy();
+        book.sprite.destroy();
+        this.npcs = this.npcs.filter(n => n !== book);
+      }
+    } else if (clueKey === 'wulan') {
+      this.registry.set('level1_clue_wulan_found', true);
+      const wulan = this.npcs.find(n => n.key === 'wulan');
+      if (wulan) {
+        wulan.dialogueId = 'lvl1_wulan_after_clue';
+      }
+    } else if (clueKey === 'students') {
+      this.registry.set('level1_clue_students_found', true);
+    }
+
+    let count = 0;
+    if (this.registry.get('level1_clue_book_found')) count++;
+    if (this.registry.get('level1_clue_wulan_found')) count++;
+    if (this.registry.get('level1_clue_students_found')) count++;
+    this.registry.set('level1_clues_found', count);
+
+    const ui = this.scene.get('UI');
+    if (count < 3) {
+      this.registry.set('level1_player_locked', false);
+      if (this.player) this.player.isLocked = false;
+      this.cameras.main.stopFollow();
+      this.tweens.killTweensOf(this.cameras.main);
+      this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+      if (ui && ui.showQuest) {
+        ui.showQuest(`PROGRES: Temukan petunjuk (${count}/3)`);
+      }
+      if (navigator.vibrate) navigator.vibrate(60);
+    } else {
+      // 045: Petunjuk 3/3 terkumpul! Kunci pergerakan dan picu dialog lvl1_045_eca
+      this.registry.set('level1_player_locked', true);
+      if (this.player) {
+        this.player.isLocked = true;
+        this.player.sprite.setVelocity(0, 0);
+        this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+      }
+      this.cameras.main.stopFollow();
+      this.tweens.killTweensOf(this.cameras.main);
+      this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+      if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
+      this.time.delayedCall(400, () => {
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_045_eca');
+        }
+      });
+    }
+  }
+
   handleLevel1TimeoutFail() {
     this.registry.set('level1_player_locked', true);
     if (this.player && this.player.sprite) {
@@ -546,34 +643,186 @@ class WorldScene extends Phaser.Scene {
     }
   }
 
-  _checkLevel3Ready() {
-    if (this.registry.get('evidence_phone') && this.registry.get('evidence_witness')) {
-      const rani = this.npcs.find(n => n.key === 'rani');
-      if (rani) {
-        rani.dialogueId = 'rani_report_ready';
+  /**
+   * Pan camera smoothly to target world coordinates (x, y)
+   * Centers the viewport precisely on (x, y) in all zoom levels and screen resolutions.
+   */
+  panCameraTo(x, y, duration = 800, ease = 'Sine.easeInOut', onComplete = null) {
+    const cam = this.cameras.main;
+    cam.stopFollow();
+    this.tweens.killTweensOf(cam);
+
+    let completed = false;
+    const finish = () => {
+      if (completed) return;
+      completed = true;
+      if (typeof onComplete === 'function') onComplete();
+    };
+
+    if (duration <= 0) {
+      cam.centerOn(x, y);
+      finish();
+      return;
+    }
+
+    cam.pan(x, y, duration, ease, true, (camera, progress) => {
+      if (progress >= 1) {
+        finish();
+      }
+    });
+  }
+
+  /**
+   * Pan camera smoothly to an actor (player or NPC)
+   */
+  panCameraToActor(actor, duration = 800, followAfter = false, lerp = 1, onComplete = null) {
+    if (!actor || !actor.sprite) return;
+    this.panCameraTo(actor.sprite.x, actor.sprite.y, duration, 'Sine.easeInOut', () => {
+      if (followAfter && actor && actor.sprite) {
+        this.cameras.main.startFollow(actor.sprite, true, lerp, lerp);
+      }
+      if (typeof onComplete === 'function') onComplete();
+    });
+  }
+
+  _getHalfView() {
+    return {
+      w: this.cameras.main.width / 2,
+      h: this.cameras.main.height / 2
+    };
+  }
+
+  _focusCameraOnBullies(onComplete) {
+    const targetX = 4.5 * TILE + TILE / 2;
+    const targetY = 13 * TILE + TILE / 2;
+    this.panCameraTo(targetX, targetY, 1000, 'Sine.easeInOut', () => {
+      if (navigator.vibrate) navigator.vibrate(60);
+      if (typeof onComplete === 'function') onComplete();
+    });
+  }
+
+  _startLibraryCutscene() {
+    if (this._libraryCutsceneRunning || this.registry.get('level1_017_done')) {
+      console.log(`[Perpus 017] _startLibraryCutscene dilewati: running=${this._libraryCutsceneRunning}, done=${this.registry.get('level1_017_done')}`);
+      return;
+    }
+    this._libraryCutsceneRunning = true;
+    this.registry.set('level1_017_triggered', true);
+    this.registry.set('level1_player_locked', true);
+
+    console.log('%c[Perpus 017] Cutscene Dimulai! Mengunci input pemain (1 detik jeda awal)...', 'color: #eab308; font-weight: bold;');
+
+    // Kunci gerakan pemain saat baru tiba di perpustakaan
+    if (this.player) {
+      this.player.isLocked = true;
+      if (this.player.sprite && this.player.sprite.body) {
+        this.player.sprite.setVelocity(0, 0);
+        this.player.sprite.anims.play('player_idle_' + (this.player.facing || 'right'), true);
       }
     }
+
+    // Jeda 1 detik saat Nakula baru masuk (kamera tetap di Nakula)
+    this.time.delayedCall(1000, () => {
+      console.log('%c[Perpus 017] Jeda 1 detik selesai. Kamera mulai pan halus ke Rio & Bagas (4.5, 13)...', 'color: #3b82f6; font-weight: bold;');
+      // Setelah 1 detik, kamera melakukan pan mulus ke Bagas dan Rio di (4.5, 13)
+      const targetX = 4.5 * TILE + TILE / 2;
+      const targetY = 13 * TILE + TILE / 2;
+      this.panCameraTo(targetX, targetY, 1000, 'Sine.easeInOut', () => {
+        if (navigator.vibrate) navigator.vibrate(60);
+        console.log('%c[Perpus 017] Kamera sampai di Rio & Bagas! Membuka dialog lvl1_017_narrator...', 'color: #22c55e; font-weight: bold;');
+        // Setelah kamera selesai bergerak dan sampai di Bagas & Rio, dialog 017 baru muncul!
+        const ui = this.scene.get('UI');
+        if (ui && ui.startDialogue) {
+          ui.startDialogue('lvl1_017_narrator');
+        } else {
+          console.error('[Perpus 017] UI scene tidak ditemukan atau startDialogue hilang!');
+        }
+      });
+    });
   }
 
   update(time, delta) {
-
-    // Trigger Level 5 (Cafeteria QTE)
-    if (this.registry.get('currentMap') === 'cafeteria' &&
-      this.registry.get('level4_complete') &&
-      !this.registry.get('level5_triggered') &&
-      !this.registry.get('dialogueActive')) {
-      if (this.player.sprite.y < 12 * TILE) {
-        this.registry.set('level5_triggered', true);
-        this.registry.set('dialogueActive', true);
-        this.scene.get('UI')._showNode('qte_intro');
-      }
-    }
-
     if (this.player) this.player.update(time, delta);
     for (let i = 0; i < this.npcs.length; i++) {
       this.npcs[i].update(time, delta);
     }
     this._updatePlayerMask();
+
+    /* ── Level 1 Library Scene Trigger (Fallback if not started in create) ── */
+    if (this.registry.get('currentMap') === 'library' &&
+      !this.registry.get('level1_017_done') &&
+      !this._libraryCutsceneRunning &&
+      this.cameras.main && !this.cameras.main._fadeOp) {
+      console.log('[Perpus 017] Pemicu update() fallback memanggil _startLibraryCutscene()...');
+      this._startLibraryCutscene();
+    }
+
+    /* ── Level 1 Clue 3: Proximity Trigger for Raya & Mei (038 / 039) ── */
+    if (this.registry.get('currentMap') === 'library' &&
+      this.registry.get('level1_clue_quest_active') &&
+      !this.registry.get('level1_clue_students_found') &&
+      !this.registry.get('level1_039_triggered') &&
+      !this.registry.get('dialogueActive')) {
+      if (this.player && this.player.sprite) {
+        const dx = this.player.sprite.x - (4.5 * TILE + TILE / 2);
+        const dy = this.player.sprite.y - (4 * TILE + TILE / 2);
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= 2.8 * TILE) {
+          this.registry.set('level1_039_triggered', true);
+          this.registry.set('dialogueActive', true);
+          this.registry.set('level1_player_locked', true);
+          if (this.player) {
+            this.player.isLocked = true;
+            this.player.sprite.setVelocity(0, 0);
+            this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+          }
+          // Kamera otomatis mengarah ke dua siswa (039)
+          this.panCameraTo(4.5 * TILE + TILE / 2, 4 * TILE + TILE / 2, 800, 'Sine.easeInOut', () => {
+            const ui = this.scene.get('UI');
+            if (ui && ui.startDialogue) {
+              ui.startDialogue('lvl1_039_narrator');
+            }
+          });
+        }
+      }
+    }
+
+    /* ── Level 1 Cafeteria Arrival Trigger (049) ── */
+    if (this.registry.get('currentMap') === 'cafeteria' &&
+      this.registry.get('level1_quest_active') === 'pergi_ke_kantin' &&
+      !this.registry.get('level1_049_triggered') &&
+      !this.registry.get('dialogueActive')) {
+      if (this.player && this.player.sprite) {
+        this.registry.set('level1_049_triggered', true);
+        this.registry.set('dialogueActive', true);
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          this.player.sprite.setVelocity(0, 0);
+          this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+        }
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula) {
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          const halfView = this._getHalfView();
+          this.tweens.add({
+            targets: this.cameras.main,
+            scrollX: nabula.sprite.x - halfView.w,
+            scrollY: nabula.sprite.y - halfView.h,
+            duration: 900,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+              if (navigator.vibrate) navigator.vibrate(60);
+              const ui = this.scene.get('UI');
+              if (ui && ui.startDialogue) {
+                ui.startDialogue('lvl1_049_narrator');
+              }
+            }
+          });
+        }
+      }
+    }
 
 
     /* ── Level 1 Proximity Trigger (003: 3 Blocks from Nabula) ── */
@@ -596,17 +845,9 @@ class WorldScene extends Phaser.Scene {
           this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
 
           // Kamera otomatis mengarah ke Nabula (003)
-          this.cameras.main.stopFollow();
-          this.tweens.add({
-            targets: this.cameras.main,
-            scrollX: nabula.sprite.x - this.cameras.main.width / 2,
-            scrollY: nabula.sprite.y - this.cameras.main.height / 2,
-            duration: 1000,
-            ease: 'Sine.easeInOut',
-            onComplete: () => {
-              if (navigator.vibrate) navigator.vibrate(60);
-              this.scene.get('UI').startDialogue('lvl1_003_eca');
-            }
+          this.panCameraToActor(nabula, 800, false, 1, () => {
+            if (navigator.vibrate) navigator.vibrate(60);
+            this.scene.get('UI').startDialogue('lvl1_003_eca');
           });
         }
       }
@@ -654,7 +895,7 @@ class WorldScene extends Phaser.Scene {
         const behindThisTier = tier.zones.some(z =>
           px >= z.minX && px <= z.maxX && py >= z.minY && py < z.maxY
         );
-        tier.layer.setDepth(behindThisTier ? 6 : 3);
+        tier.layer.setDepth(behindThisTier ? 6 : 4.5);
       }
     }
   }
@@ -686,7 +927,11 @@ class WorldScene extends Phaser.Scene {
 
   /* ────── Proximity indicator updates ────── */
   _updateProximity() {
-    if (this.registry.get('dialogueActive')) {
+    const isPlayerLocked = this.registry.get('dialogueActive') || 
+      (this.player && (this.player.isLocked || this.player.isCutsceneActive)) ||
+      this.registry.get('level1_player_locked');
+
+    if (isPlayerLocked) {
       for (let i = 0; i < this.npcs.length; i++) {
         this.npcs[i].setIndicatorVisible(false);
       }
@@ -728,6 +973,18 @@ class WorldScene extends Phaser.Scene {
       const onDoor = this._isNearDoor();
       uiScene.setInteractPrompt(nearest !== null || onDoor);
     }
+
+    /* ── Auto-transition when walking directly into doorway boundary ── */
+    if (this.player && this.player.sprite && !this._isTransitioning && !this.registry.get('dialogueActive') && !this.registry.get('level1_player_locked')) {
+      const tileRow = Math.round((this.player.sprite.y - TILE / 2) / TILE);
+      const currentMap = this.registry.get('currentMap');
+
+      if (currentMap === 'library' && (tileRow === 9 || tileRow === 10) && this.player.sprite.x <= 1.2 * TILE) {
+        this._changeMap('schoolyard', 41 * TILE + TILE / 2, (tileRow === 9 ? 13 : 14) * TILE + TILE / 2);
+      } else if (currentMap === 'schoolyard' && (tileRow === 13 || tileRow === 14) && this.player.sprite.x <= 1.2 * TILE) {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, tileRow * TILE + TILE / 2);
+      }
+    }
   }
 
   /* ────── Map builder (Dynamic 2D Arrays) ────── */
@@ -768,7 +1025,7 @@ class WorldScene extends Phaser.Scene {
     this.bookshelfTiers = [];
     const bookshelfLayersByRow = {};
     bookshelfBaseRows.forEach(r => {
-      const layer = map.createBlankLayer(`Bookshelves_${r}`, tileset).setDepth(3);
+      const layer = map.createBlankLayer(`Bookshelves_${r}`, tileset).setDepth(4.5);
       bookshelfLayersByRow[r] = layer;
       this.bookshelfTiers.push({
         baseRow: r,
@@ -1514,31 +1771,19 @@ class WorldScene extends Phaser.Scene {
         m[1][c] = 'bookshelf_b';
       });
 
-      // North wing freestanding shelves (pairs at r=2-3, 4-5, 6-7)
+      // North wing freestanding shelves (all shelf columns)
       shelfCols.forEach(c => {
-        m[2][c] = 'bookshelf_t';
-        m[3][c] = 'bookshelf_b';
-
-        m[4][c] = 'bookshelf_t';
-        m[5][c] = 'bookshelf_b';
-
-        m[6][c] = 'bookshelf_t';
-        m[7][c] = 'bookshelf_b';
+        m[2][c] = 'bookshelf_t'; m[3][c] = 'bookshelf_b';
+        m[4][c] = 'bookshelf_t'; m[5][c] = 'bookshelf_b';
+        m[6][c] = 'bookshelf_t'; m[7][c] = 'bookshelf_b';
       });
 
-      // South wing freestanding shelves (pairs at r=11-12, 13-14, 15-16, 17-18)
+      // South wing freestanding shelves (all shelf columns)
       shelfCols.forEach(c => {
-        m[11][c] = 'bookshelf_t';
-        m[12][c] = 'bookshelf_b';
-
-        m[13][c] = 'bookshelf_t';
-        m[14][c] = 'bookshelf_b';
-
-        m[15][c] = 'bookshelf_t';
-        m[16][c] = 'bookshelf_b';
-
-        m[17][c] = 'bookshelf_t';
-        m[18][c] = 'bookshelf_b';
+        m[11][c] = 'bookshelf_t'; m[12][c] = 'bookshelf_b';
+        m[13][c] = 'bookshelf_t'; m[14][c] = 'bookshelf_b';
+        m[15][c] = 'bookshelf_t'; m[16][c] = 'bookshelf_b';
+        m[17][c] = 'bookshelf_t'; m[18][c] = 'bookshelf_b';
       });
 
       return m;
@@ -1569,77 +1814,34 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (mapKey === 'corridor') {
-      if (this.registry.get('level1_complete')) {
-        this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 3 * TILE + TILE / 2,
-          'bully', 'bully_taunt', { name: 'Bully' }));
-        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 3 * TILE + TILE / 2,
-          'bully', null, { name: 'Bully 2' }));
-
-        if (!this.registry.get('level2_triggered')) {
-          // Nabula being mocked
-          this.npcs.push(new NPC(this, 11 * TILE + TILE / 2, 4 * TILE + TILE / 2,
-            'nabula', null, { name: 'Nabula', emotion: '😔' }));
-        } else if (!this.registry.get('level2_complete')) {
-          // Nabula hiding behind library
-          this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 12 * TILE + TILE / 2,
-            'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
-        }
-      }
-
-      // Riko lurking (always there or maybe also needs level 1?)
-      // Let's keep him there for ambient.
+      // Riko lurking
       this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 8 * TILE + TILE / 2,
         'riko', 'riko_corridor', { name: 'Riko' }));
 
-      // Level 4 Initiative Additions
-      const project = this.registry.get('built_project');
-      if (project === 'build_vent_corner') {
-        this.npcs.push(new NPC(this, 2 * TILE + TILE / 2, 12 * TILE + TILE / 2,
-          'student', 'board_interact', { name: 'Vent Corner', immovable: true }));
-      } else if (project === 'build_appreciation_box') {
-        const box = new NPC(this, 14 * TILE + TILE / 2, 3 * TILE + TILE / 2,
-          'student', 'board_interact', { name: 'Appreciation Box', immovable: true });
-        box.sprite.setAlpha(0); // Invisible box but glowing
-        this.npcs.push(box);
-      } else if (project === 'build_peer_support') {
-        this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-          'student', 'peer_supporter_chat', { name: 'Peer Supporter' }));
-      }
+      // Ambient students in hallway
+      this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+        'student', 'student_chat_1', { name: 'Student' }));
     }
 
     if (mapKey === 'classroom') {
+      // Teacher Rani
       this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'rani', 'rani_intro', { name: 'Teacher Rani' }));
 
-      if (this.registry.get('level2_complete')) {
-        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 2 * TILE + TILE / 2,
-          'nabula', 'nabula_safe', { name: 'Nabula' }));
-      }
-
-      // The Witness
+      // Ambient student
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 7 * TILE + TILE / 2,
-        'student', 'witness_intro', { name: 'Witness' }));
-
-      // The abandoned smartphone (evidence)
-      const phone = new NPC(this, 4 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-        'student', 'evidence_phone', { name: 'Smartphone', immovable: true });
-      phone.sprite.setAlpha(0); // Invisible, but has interaction radius and pulse indicator
-      this.npcs.push(phone);
-
-      // Also ensure if we enter the room and we already have both evidence, Rani's dialogue is ready
-      this._checkLevel3Ready();
+        'student', 'student_chat_2', { name: 'Student' }));
     }
 
     if (mapKey === 'auditorium') {
       this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'student_chat_1', { name: 'Student' }));
 
-      // The Initiative Board (Middle board at row 1, col 10)
-      const isBuilt = this.registry.get('level4_complete');
+      // The Bulletin Board
       const board = new NPC(this, 10 * TILE + TILE / 2, 1 * TILE + TILE / 2,
-        'student', isBuilt ? 'board_already_done' : 'board_initiative_intro', { name: 'Initiative Board', immovable: true });
+        'student', 'board_interact', { name: 'Papan Nilai', immovable: true });
       board.key = 'initiative_board';
-      board.sprite.setAlpha(0); // Invisible, attached to the tilemap board graphic
+      board.sprite.setAlpha(0); // Invisible, attached to tilemap graphic
       this.npcs.push(board);
     }
 
@@ -1647,56 +1849,99 @@ class WorldScene extends Phaser.Scene {
       this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 7 * TILE + TILE / 2,
         'student', 'student_chat_2', { name: 'Student' }));
       this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 10 * TILE + TILE / 2,
-        'player', 'student_chat_1', { name: 'Nakula' }));
+        'student', 'student_chat_1', { name: 'Student' }));
 
-      if (!this.registry.get('level5_complete')) {
-        const vx = 11 * TILE + TILE / 2;
-        const vy = 3 * TILE + TILE / 2;
+      // Babak 4C: Saat quest pergi_ke_kantin aktif atau clues sudah 3/3, spawn Nabula, Bagas, Rio
+      if (this.registry.get('level1_quest_active') === 'pergi_ke_kantin' || this.registry.get('level1_clues_found') >= 3) {
+        const nabula = new NPC(this, 10 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+          'nabula', null, { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.anims.play('nabula_idle_down', true);
+        this.npcs.push(nabula);
 
-        const victim = new NPC(this, vx, vy,
-          'student', null, { name: 'Victim', immovable: true });
-        victim.key = 'qte_victim';
-        this.npcs.push(victim);
+        const bagas = new NPC(this, 11 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+          'bagas', null, { name: 'Bagas' });
+        bagas.sprite.setFlipX(true);
+        bagas.sprite.anims.play('bagas_idle_left', true);
+        this.npcs.push(bagas);
 
-        // Surrounding bullies
-        this.npcs.push(new NPC(this, vx - TILE, vy, 'bully', null, { name: 'Bully 1', immovable: true })); // Left
-        this.npcs.push(new NPC(this, vx + TILE, vy, 'bully', null, { name: 'Bully 2', immovable: true })); // Right
-        this.npcs.push(new NPC(this, vx, vy - TILE, 'bully', null, { name: 'Bully 3', immovable: true })); // Top
-
-        this.qteArrow = this.add.text(victim.sprite.x, victim.sprite.y - 40, '⬇', {
-          fontFamily: 'sans-serif',
-          fontSize: '32px',
-          color: '#ef4444',
-          stroke: '#ffffff',
-          strokeThickness: 4
-        }).setOrigin(0.5).setDepth(200).setVisible(false);
-
-        this.tweens.add({
-          targets: this.qteArrow,
-          y: victim.sprite.y - 30,
-          yoyo: true,
-          repeat: -1,
-          duration: 400
-        });
+        const rio = new NPC(this, 9 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+          'rio', null, { name: 'Rio' });
+        rio.sprite.anims.play('rio_idle_right', true);
+        this.npcs.push(rio);
       }
     }
 
     if (mapKey === 'library') {
-      // Librarian at the reception desk (col 9, row 1)
+      // Bu Wati (Pustakawan / Guru) at reception desk (col 9, row 1)
       this.npcs.push(new NPC(this, 9 * TILE + TILE / 2, 1 * TILE + TILE / 2,
-        'student', 'librarian_chat', { name: 'Librarian' }));
+        'wati', 'librarian_chat', { name: 'Bu Wati' }));
 
-      // Students studying at tables
-      this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 6 * TILE + TILE / 2,
-        'student', 'student_chat_1', { name: 'Student' }));
-      this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 13 * TILE + TILE / 2,
-        'student', 'student_chat_2', { name: 'Student' }));
+      // Wulan at (16, 6) menghadap kanan
+      let wulanDialogue = 'lvl1_wulan_ambient';
+      if (this.registry.get('level1_clue_quest_active') && !this.registry.get('level1_clue_wulan_found')) {
+        wulanDialogue = 'lvl1_033_nakula';
+      } else if (this.registry.get('level1_clue_wulan_found')) {
+        wulanDialogue = 'lvl1_wulan_after_clue';
+      }
+      // Wulan (16, 6) menghadap kiri
+      const wulan = new NPC(this, 16 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+        'wulan', wulanDialogue, { name: 'Wulan' });
+      wulan.sprite.setFlipX(false);
+      wulan.sprite.anims.play('wulan_idle_left', true);
+      this.npcs.push(wulan);
+
+      // Rio (4, 13) menghadap kanan (sprite asli hadap kiri, butuh flipX: true) & Bagas (5, 13) menghadap kiri (flipX: false)
+      const rio = new NPC(this, 4 * TILE + TILE / 2, 13 * TILE + TILE / 2,
+        'rio', 'lvl1_rio_ambient', { name: 'Rio' });
+      rio.sprite.setFlipX(true);
+      rio.sprite.anims.play('rio_idle_right', true);
+      this.npcs.push(rio);
+
+      const bagas = new NPC(this, 5 * TILE + TILE / 2, 13 * TILE + TILE / 2,
+        'bagas', 'lvl1_bagas_ambient', { name: 'Bagas' });
+      bagas.sprite.setFlipX(false);
+      bagas.sprite.anims.play('bagas_idle_left', true);
+      this.npcs.push(bagas);
+
+      // Raya (4, 4) menghadap kanan (sprite asli sudah hadap kanan, flipX: false) & Mei (5, 4) menghadap kiri (flipX: false)
+      const raya = new NPC(this, 4 * TILE + TILE / 2, 4 * TILE + TILE / 2,
+        'raya', 'lvl1_raya_ambient', { name: 'Raya' });
+      raya.sprite.setFlipX(false);
+      raya.sprite.anims.play('raya_idle_right', true);
+      this.npcs.push(raya);
+
+      const mei = new NPC(this, 5 * TILE + TILE / 2, 4 * TILE + TILE / 2,
+        'mei', 'lvl1_mei_ambient', { name: 'Mei' });
+      mei.sprite.setFlipX(false);
+      mei.sprite.anims.play('mei_idle_left', true);
+      this.npcs.push(mei);
+
+      // Nabula: (8.5, 16) menghadap kanan.
+      // HANYA muncul di perpustakaan jika Nabula sudah meninggalkan taman (012) dan belum kabur di 020
+      const canSpawnNabula = (this.registry.get('level1_library_arrived') || this.registry.get('level1_nabula_left_garden')) &&
+        !this.registry.get('level1_020_done');
+      if (canSpawnNabula) {
+        const nabula = new NPC(this, 8.5 * TILE + TILE / 2, 16 * TILE + TILE / 2,
+          'nabula', null, { name: 'Nabula', emotion: '😔' });
+        nabula.sprite.setFlipX(false);
+        nabula.sprite.anims.play('nabula_idle_right', true);
+        this.npcs.push(nabula);
+      }
+
+      // Buku Robek: (17, 17). HANYA muncul saat quest mencari petunjuk aktif dan belum ditemukan
+      if (this.registry.get('level1_clue_quest_active') && !this.registry.get('level1_clue_book_found')) {
+        const book = new NPC(this, 17 * TILE + TILE / 2, 17 * TILE + TILE / 2,
+          'clue_book', 'lvl1_027_narrator', { name: 'Buku Tugas Robek' });
+        this.npcs.push(book);
+      }
     }
   }
 
   /* ────── Interaction via E/Space key ────── */
   _tryInteract() {
     if (this.registry.get('dialogueActive')) return;
+    if (this.player && (this.player.isLocked || this.player.isCutsceneActive)) return;
+    if (this.registry.get('level1_player_locked')) return;
 
     const px = this.player.sprite.x;
     const py = this.player.sprite.y;
@@ -1720,6 +1965,25 @@ class WorldScene extends Phaser.Scene {
 
     if (nearest) {
       if (nearest.clearEmotion) nearest.clearEmotion();
+      // Jika pemain berinteraksi dengan Raya atau Mei saat quest petunjuk aktif, picu dialog menguping (039)
+      if ((nearest.key === 'raya' || nearest.key === 'mei') &&
+          this.registry.get('level1_clue_quest_active') &&
+          !this.registry.get('level1_clue_students_found')) {
+        this.registry.set('level1_039_triggered', true);
+        this.registry.set('dialogueActive', true);
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          this.player.sprite.setVelocity(0, 0);
+          this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+        }
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.panCameraTo(4.5 * TILE + TILE / 2, 4 * TILE + TILE / 2, 800, 'Sine.easeInOut', () => {
+          this.scene.get('UI').startDialogue('lvl1_039_narrator');
+        });
+        return;
+      }
       this.scene.get('UI').startDialogue(nearest.dialogueId);
       return;
     }
@@ -1730,23 +1994,25 @@ class WorldScene extends Phaser.Scene {
 
   /* ────── Door transition detection ────── */
   _isNearDoor() {
+    if (!this.player || !this.player.sprite) return false;
     const px = Math.round((this.player.sprite.x - TILE / 2) / TILE);
     const py = Math.round((this.player.sprite.y - TILE / 2) / TILE);
 
     for (let i = 0; i < this.currentTransitions.length; i++) {
       const t = this.currentTransitions[i];
-      if (px === t.fromX && Math.abs(py - t.fromY) <= 1) return true;
+      if (Math.abs(px - t.fromX) <= 1 && Math.abs(py - t.fromY) <= 1) return true;
     }
     return false;
   }
 
   _checkDoor() {
+    if (!this.player || !this.player.sprite) return;
     const px = Math.round((this.player.sprite.x - TILE / 2) / TILE);
     const py = Math.round((this.player.sprite.y - TILE / 2) / TILE);
 
     for (let i = 0; i < this.currentTransitions.length; i++) {
       const t = this.currentTransitions[i];
-      if (px === t.fromX && Math.abs(py - t.fromY) <= 1) {
+      if (Math.abs(px - t.fromX) <= 1 && Math.abs(py - t.fromY) <= 1) {
         this._changeMap(t.toMap, t.spawnX * TILE + TILE / 2, t.spawnY * TILE + TILE / 2);
         return;
       }
@@ -1769,14 +2035,20 @@ class WorldScene extends Phaser.Scene {
           // West to Cafeteria
           { fromX: 0, fromY: 13, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
           { fromX: 0, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 14 },
+          { fromX: 1, fromY: 13, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
+          { fromX: 1, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 14 },
           // East to Library
           { fromX: 42, fromY: 13, toMap: 'library', spawnX: 1, spawnY: 9 },
-          { fromX: 42, fromY: 14, toMap: 'library', spawnX: 1, spawnY: 10 }
+          { fromX: 42, fromY: 14, toMap: 'library', spawnX: 1, spawnY: 10 },
+          { fromX: 41, fromY: 13, toMap: 'library', spawnX: 1, spawnY: 9 },
+          { fromX: 41, fromY: 14, toMap: 'library', spawnX: 1, spawnY: 10 }
         ],
         library: [
           // West to Schoolyard
           { fromX: 0, fromY: 9, toMap: 'schoolyard', spawnX: 41, spawnY: 13 },
-          { fromX: 0, fromY: 10, toMap: 'schoolyard', spawnX: 41, spawnY: 14 }
+          { fromX: 0, fromY: 10, toMap: 'schoolyard', spawnX: 41, spawnY: 14 },
+          { fromX: 1, fromY: 9, toMap: 'schoolyard', spawnX: 41, spawnY: 13 },
+          { fromX: 1, fromY: 10, toMap: 'schoolyard', spawnX: 41, spawnY: 14 }
         ],
         garden: [
           { fromX: 14, fromY: 0, toMap: 'schoolyard', spawnX: 21, spawnY: 21 },
@@ -1818,10 +2090,13 @@ class WorldScene extends Phaser.Scene {
   }
 
   _changeMap(newMap, spawnX, spawnY) {
+    if (this._isTransitioning) return;
+    this._isTransitioning = true;
     this.registry.set('currentMap', newMap);
     // Fade transition
     this.cameras.main.fadeOut(300, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
+      this._isTransitioning = false;
       this.scene.restart({ spawnX, spawnY });
     });
   }

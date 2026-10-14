@@ -106,6 +106,7 @@ class Player {
   }
 
   isInteracting() {
+    if (this.isLocked || this.isCutsceneActive) return false;
     let vAction = false;
     if (window.virtualInput && window.virtualInput.actionJustDown) {
       vAction = true;

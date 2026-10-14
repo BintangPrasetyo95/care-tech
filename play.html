@@ -763,17 +763,24 @@
   <!-- Phaser 3 engine (pinned version for reproducibility) -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
+  <!-- Core & State Management -->
+  <script src="js/core/GameState.js?v=lib_v20261014_10"></script>
+  <script src="js/systems/ActionExecutor.js?v=lib_v20261014_10"></script>
+
+  <!-- Level Data Modules (Data-Driven Architecture) -->
+  <script src="js/data/levels/level1/dialogues.js?v=lib_v20261014_10"></script>
+
   <!-- Game modules — loaded in strict dependency order -->
-  <script src="js/data/dialogues.js?v=caf_outdoor_v1"></script>
-  <script src="js/systems/RelationshipManager.js?v=caf_outdoor_v1"></script>
-  <script src="js/systems/DialogueManager.js?v=caf_outdoor_v1"></script>
-  <script src="js/systems/ScheduleManager.js?v=caf_outdoor_v1"></script>
-  <script src="js/entities/Player.js?v=caf_outdoor_v1"></script>
-  <script src="js/entities/NPC.js?v=caf_outdoor_v1"></script>
-  <script src="js/scenes/BootScene.js?v=caf_outdoor_v1"></script>
-  <script src="js/scenes/WorldScene.js?v=caf_outdoor_v1"></script>
-  <script src="js/scenes/UIScene.js?v=caf_outdoor_v1"></script>
-  <script src="js/main.js?v=caf_outdoor_v1"></script>
+  <script src="js/data/dialogues.js?v=lib_v20261014_10"></script>
+  <script src="js/systems/RelationshipManager.js?v=lib_v20261014_10"></script>
+  <script src="js/systems/DialogueManager.js?v=lib_v20261014_10"></script>
+  <script src="js/systems/ScheduleManager.js?v=lib_v20261014_10"></script>
+  <script src="js/entities/Player.js?v=lib_v20261014_10"></script>
+  <script src="js/entities/NPC.js?v=lib_v20261014_10"></script>
+  <script src="js/scenes/BootScene.js?v=lib_v20261014_10"></script>
+  <script src="js/scenes/WorldScene.js?v=lib_v20261014_10"></script>
+  <script src="js/scenes/UIScene.js?v=lib_v20261014_10"></script>
+  <script src="js/main.js?v=lib_v20261014_10"></script>
 
 
   <script>
@@ -960,6 +967,7 @@
       /* ── Action Button (E / Interaksi) ── */
       const triggerAction = () => {
         window.virtualInput.actionJustDown = true;
+        window.dispatchEvent(new CustomEvent('dialogue_advance_request'));
         const evE = new KeyboardEvent('keydown', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true });
         window.dispatchEvent(evE);
         const evSpace = new KeyboardEvent('keydown', { key: ' ', code: 'Space', keyCode: 32, which: 32, bubbles: true });
@@ -1047,11 +1055,36 @@
       const lvl1Btn = document.getElementById('btn-select-level-1');
       const lvlSelectModal = document.getElementById('level-select-modal');
 
+      const resetAllLevel1State = () => {
+        if (!window.game || !window.game.registry) return;
+        const reg = window.game.registry;
+        reg.set('harmony', 50);
+        reg.set('level1_003_triggered', false);
+        reg.set('level1_nabula_left_garden', false);
+        reg.set('level1_quest_active', null);
+        reg.set('level1_player_locked', true);
+        reg.set('dialogueActive', false);
+        reg.set('level1_library_arrived', false);
+        reg.set('level1_017_triggered', false);
+        reg.set('level1_017_done', false);
+        reg.set('level1_020_done', false);
+        reg.set('level1_clue_quest_active', false);
+        reg.set('level1_clues_found', 0);
+        reg.set('level1_clue_book_found', false);
+        reg.set('level1_clue_wulan_found', false);
+        reg.set('level1_clue_students_found', false);
+        reg.set('level1_039_triggered', false);
+        reg.set('level1_043_done', false);
+        reg.set('level1_045_done', false);
+        reg.set('level1_complete', false);
+      };
+
       if (lvl1Btn) {
         lvl1Btn.addEventListener('click', () => {
           if (lvlSelectModal) {
             lvlSelectModal.classList.add('hidden');
           }
+          resetAllLevel1State();
           // Emit event to Phaser game
           const tryStartLevel1 = () => {
             if (window.game && window.game.events) {
@@ -1080,14 +1113,8 @@
           if (resultModal) {
             resultModal.classList.add('hidden');
           }
+          resetAllLevel1State();
           if (window.game && window.game.registry) {
-            window.game.registry.set('harmony', 50);
-            window.game.registry.set('level1_003_triggered', false);
-            window.game.registry.set('level1_nabula_left_garden', false);
-            window.game.registry.set('level1_quest_active', null);
-            window.game.registry.set('level1_player_locked', true);
-            window.game.registry.set('dialogueActive', false);
-            
             const world = window.game.scene.getScene('World');
             if (world && world._changeMap) {
               world._changeMap('garden', 14 * 64 + 32, 3.5 * 64);

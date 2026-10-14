@@ -60,6 +60,22 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('nakula_walk', 'assets/sprites/characters/nakula_walk.png',
                           { frameWidth: 64, frameHeight: 64 });
     
+    // Level 1 library characters
+    this.load.spritesheet('bagas', 'assets/sprites/characters/bagas.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('rio', 'assets/sprites/characters/rio.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('wulan', 'assets/sprites/characters/wulan.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('raya', 'assets/sprites/characters/raya.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('mei', 'assets/sprites/characters/mei.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('wati', 'assets/sprites/characters/npc2.png',
+                          { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet('clue_book', 'assets/sprites/new assets/book_lying.png',
+                          { frameWidth: 64, frameHeight: 64 });
+
     // Load tileset image
     this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
     this.load.spritesheet('tileset_sheet', 'assets/sprites/tileset.png?v=' + Date.now(), { frameWidth: 64, frameHeight: 64 });
@@ -121,14 +137,20 @@ class BootScene extends Phaser.Scene {
     const portraitColors = {
       player: 0x3b82f6,
       nabula: 0xec4899,
+      bagas: 0xef4444,
+      rio: 0xf97316,
+      wulan: 0x10b981,
+      raya: 0x06b6d4,
+      mei: 0xa855f7,
+      wati: 0x8b5cf6,
       riko: 0xef4444,
       rani: 0x8b5cf6,
       bully: 0x6b7280,
       student: 0x22d3ee
     };
 
-    ['player', 'nabula', 'riko', 'rani', 'bully', 'student'].forEach(char => {
-      ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk'].forEach(emotion => {
+    ['player', 'nabula', 'bagas', 'rio', 'wulan', 'raya', 'mei', 'wati', 'riko', 'rani', 'bully', 'student'].forEach(char => {
+      ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk', 'angry'].forEach(emotion => {
         makePortrait(`${char}_${emotion}`, portraitColors[char]);
       });
     });
@@ -143,7 +165,7 @@ class BootScene extends Phaser.Scene {
     // With single-frame placeholders we create one-frame anims
     // so the Player/NPC code doesn't crash. Replace with real
     // spritesheets when pixel art is ready.
-    const characters = ['riko', 'rani', 'bully', 'student'];
+    const characters = ['riko', 'rani', 'bully', 'student', 'bagas', 'rio', 'wulan', 'raya', 'mei', 'wati'];
     characters.forEach(key => {
       dirs.forEach(dir => {
         if (!this.anims.exists(`${key}_walk_${dir}`)) {
