@@ -74,6 +74,24 @@ class WorldScene extends Phaser.Scene {
     this.nearestInteractable = null;
     this.currentTransitions = this._getTransitions(mapKey);
 
+    /* ── Check Level 1 Arrival at Library (Quest Complete) ── */
+    if (mapKey === 'library') {
+      const activeQuest = this.registry.get('level1_quest_active');
+      if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
+        this.registry.set('level1_quest_active', null);
+        this.registry.set('level1_library_arrived', true);
+        const questName = (activeQuest === 'ikuti_nabula') 
+          ? 'Ikuti Nabula ke perpustakaan' 
+          : 'Susul Nabula ke perpustakaan';
+        this.time.delayedCall(400, () => {
+          const ui = this.scene.get('UI');
+          if (ui && ui.completeQuest) {
+            ui.completeQuest(questName);
+          }
+        });
+      }
+    }
+
     /* ── Dialogue Action Listener ── */
     this.registry.events.on('dialogue_action', (action) => {
       if (action === 'nabula_smile_anim') {
@@ -212,12 +230,15 @@ class WorldScene extends Phaser.Scene {
           });
         });
       } else if (action === 'lvl1_start_walk') {
-        // Player is now free to walk in the garden
-        if (this.player && this.player.sprite) {
-          this.player.sprite.setVelocity(0, 0);
+        // Player is now free to walk in the garden (001 continued)
+        this.registry.set('level1_player_locked', false);
+        if (this.player) {
+          this.player.isLocked = false;
+          if (this.player.sprite) this.player.sprite.setVelocity(0, 0);
         }
       } else if (action === 'lvl1_camera_to_nakula') {
         this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
         this.tweens.add({
           targets: this.cameras.main,
           scrollX: this.player.sprite.x - this.cameras.main.width / 2,
@@ -228,11 +249,39 @@ class WorldScene extends Phaser.Scene {
             this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
           }
         });
+      } else if (action === 'lvl1_005a_ready') {
+        // 005a-1: Nakula stays still, camera returns to Nakula with 3s timer before walking (005a-2)
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          this.player.isCutsceneActive = false;
+          if (this.player.sprite) {
+            this.player.sprite.setVelocity(0, 0);
+            this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+          }
+        }
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.tweens.add({
+          targets: this.cameras.main,
+          scrollX: this.player.sprite.x - this.cameras.main.width / 2,
+          scrollY: this.player.sprite.y - this.cameras.main.height / 2,
+          duration: 600,
+          ease: 'Sine.easeInOut',
+          onComplete: () => {
+            this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+          }
+        });
       } else if (action === 'lvl1_005a_walk') {
         // 005a-2: Nakula walks to Nabula automatically, camera follows
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula && this.player) {
           this.player.isCutsceneActive = true;
+          if (this.player.sprite && this.player.sprite.body) {
+            this.player.sprite.body.enable = false; // Disable body collision to allow smooth cutscene movement
+          }
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
           this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
 
           const targetX = nabula.sprite.x - 48; // Berdiri di sebelah kiri Nabula
@@ -240,18 +289,11 @@ class WorldScene extends Phaser.Scene {
 
           // Tentukan arah hadap dan animasi jalan
           const dx = targetX - this.player.sprite.x;
-          const dy = targetY - this.player.sprite.y;
-
-          if (Math.abs(dx) > Math.abs(dy)) {
-            if (dx < 0) {
-              this.player.facing = 'left';
-              this.player.sprite.setFlipX(true);
-            } else {
-              this.player.facing = 'right';
-              this.player.sprite.setFlipX(false);
-            }
+          if (dx < 0) {
+            this.player.facing = 'left';
+            this.player.sprite.setFlipX(true);
           } else {
-            this.player.facing = dy < 0 ? 'up' : 'down';
+            this.player.facing = 'right';
             this.player.sprite.setFlipX(false);
           }
           this.player.sprite.anims.play('player_walk_' + this.player.facing, true);
@@ -267,6 +309,10 @@ class WorldScene extends Phaser.Scene {
               this.player.sprite.setFlipX(false);
               this.player.sprite.anims.play('player_idle_right', true);
               this.player.isCutsceneActive = false;
+              if (this.player.sprite && this.player.sprite.body) {
+                this.player.sprite.body.enable = true;
+                this.player.sprite.body.reset(targetX, targetY);
+              }
               // Auto-trigger 007 (006a: Nakula langsung menyapa tanpa tombol aksi)
               this.time.delayedCall(300, () => {
                 this.scene.get('UI').startDialogue('lvl1_007_nakula');
@@ -279,6 +325,11 @@ class WorldScene extends Phaser.Scene {
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula && this.player) {
           this.player.isCutsceneActive = true;
+          if (this.player.sprite && this.player.sprite.body) {
+            this.player.sprite.body.enable = false;
+          }
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
           this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
           const targetX = nabula.sprite.x - 48;
           const targetY = nabula.sprite.y;
@@ -304,51 +355,59 @@ class WorldScene extends Phaser.Scene {
               this.player.sprite.setFlipX(false);
               this.player.sprite.anims.play('player_idle_right', true);
               this.player.isCutsceneActive = false;
+              if (this.player.sprite && this.player.sprite.body) {
+                this.player.sprite.body.enable = true;
+                this.player.sprite.body.reset(targetX, targetY);
+              }
               this.time.delayedCall(300, () => {
                 this.scene.get('UI').startDialogue('lvl1_007_nakula');
               });
             }
           });
         }
-      } else if (action === 'lvl1_005b_ignore_quest') {
-        // 005b-7b - 005b-9c: Nabula walks to library, 20s quest
+      } else if (action === 'lvl1_012_focus_nabula' || action === 'lvl1_005b_focus_nabula') {
+        // 012: Kunci kontrol Nakula saat kamera mengarah ke Nabula
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          if (this.player.sprite) this.player.sprite.setVelocity(0, 0);
+        }
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula) {
-          nabula.sprite.setFlipX(false);
-          nabula.sprite.anims.play('nabula_walk_up', true);
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
           this.tweens.add({
-            targets: nabula.sprite,
-            x: 14 * TILE + TILE / 2,
-            y: 0,
-            duration: 3500,
-            onComplete: () => {
-              nabula.sprite.setVisible(false);
-              const ui = this.scene.get('UI');
-              if (ui && ui.showQuestBanner) {
-                ui.showQuestBanner('QUEST (20s): Susul Nabula ke perpustakaan.', 20000);
-              }
-            }
+            targets: this.cameras.main,
+            scrollX: nabula.sprite.x - this.cameras.main.width / 2,
+            scrollY: nabula.sprite.y - this.cameras.main.height / 2,
+            duration: 800,
+            ease: 'Sine.easeInOut'
           });
         }
-      } else if (action === 'lvl1_005c_enable_move') {
-        this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
-      } else if (action === 'lvl1_012_nabula_leaves') {
-        // 012 & 012a: Nabula berdiri dan berjalan menuju perpustakaan.
-        // Nabula menghadap ke kanan, berjalan ke (14.5, 9), lalu berbelok ke atas menuju pintu perpustakaan (14.5, 0)
+      } else if (action === 'lvl1_012_nabula_leaves' || action === 'lvl1_005b_nabula_leaves') {
+        // Gerakan dan kamera Nabula disamakan antara 012 dan 005b
+        // 012 & 013: Nakula TETAP tidak bisa digerakkan sampai kamera kembali tepat ke Nakula di 013!
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          if (this.player.sprite) this.player.sprite.setVelocity(0, 0);
+        }
+        const isFrom005b = (action === 'lvl1_005b_nabula_leaves');
         const nabula = this.npcs.find(n => n.key === 'nabula');
         if (nabula) {
           nabula.clearEmotion();
           this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
           this.cameras.main.startFollow(nabula.sprite, true, 0.08, 0.08);
 
-          // Langkah 1: Berjalan ke kanan menuju (14.5, 9)
+          // Langkah 1: Berjalan ke kanan menuju (15, 9.5)
           nabula.sprite.setFlipX(false);
           nabula.sprite.anims.play('nabula_walk_right', true);
 
           const step1X = 15 * TILE;
           const step1Y = 9 * TILE + TILE / 2;
           const step2X = 15 * TILE;
-          const step2Y = 0; // Pintu perpustakaan di utara (15, 0)
+          const step2Y = 0; // Pintu utara taman menuju lapangan sekolah
 
           this.tweens.chain({
             targets: nabula.sprite,
@@ -365,20 +424,24 @@ class WorldScene extends Phaser.Scene {
                 duration: 3500,
                 ease: 'Linear',
                 onStart: () => {
-                  // Berbelok ke atas menuju pintu perpustakaan
                   nabula.sprite.setFlipX(false);
                   nabula.sprite.anims.play('nabula_walk_up', true);
                 }
               }
             ],
             onComplete: () => {
-              // Nabula hilang dari map taman untuk sementara waktu sampai ID selanjutnya
+              // Nabula hilang dari map taman
               this.registry.set('level1_nabula_left_garden', true);
               nabula.dialogueId = null;
               nabula.sprite.setActive(false).setVisible(false);
               if (nabula.sprite.body) nabula.sprite.body.enable = false;
               if (nabula.clearEmotion) nabula.clearEmotion();
               if (nabula.indicator) nabula.indicator.destroy();
+
+              // PERBAIKAN: Hentikan follow Nabula agar kamera tidak looping / fighting
+              this.cameras.main.stopFollow();
+              this.tweens.killTweensOf(this.cameras.main);
+
               // 013: Kamera kembali menyorot Nakula
               this.tweens.add({
                 targets: this.cameras.main,
@@ -388,17 +451,65 @@ class WorldScene extends Phaser.Scene {
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
                   this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
-                  // 014: UI QUEST "Ikuti Nabula ke perpustakaan."
-                  const ui = this.scene.get('UI');
-                  if (ui && ui.showQuestBanner) {
-                    ui.showQuestBanner('QUEST: Ikuti Nabula ke perpustakaan.', 6000);
+                  this.currentTransitions = this._getTransitions('garden');
+
+                  if (isFrom005b) {
+                    // 005b-9b: Tampilkan dialog ECA (Nakula masih tetap diam sampai quest timer dimulai)
+                    this.scene.get('UI').startDialogue('lvl1_005b_9b_eca');
+                  } else {
+                    // 013 selesai: Kamera sudah kembali tepat ke Nakula!
+                    // NAKULA SEKARANG BISA DIGERAKKAN!
+                    this.registry.set('level1_player_locked', false);
+                    if (this.player) {
+                      this.player.isLocked = false;
+                    }
+                    // 014: UI QUEST "Ikuti Nabula ke perpustakaan."
+                    this.registry.set('level1_quest_active', 'ikuti_nabula');
+                    const ui = this.scene.get('UI');
+                    if (ui && ui.showQuest) {
+                      ui.showQuest('QUEST: Ikuti Nabula ke perpustakaan.');
+                    }
+                    if (navigator.vibrate) navigator.vibrate(100);
                   }
-                  if (navigator.vibrate) navigator.vibrate(100);
                 }
               });
             }
           });
         }
+      } else if (action === 'lvl1_005b_start_timer_quest') {
+        // 005b-9c: QUEST (BATAS WAKTU) 30 detik
+        this.registry.set('level1_player_locked', false);
+        if (this.player) this.player.isLocked = false;
+        this.registry.set('level1_quest_active', 'susul_nabula_timed');
+        this.currentTransitions = this._getTransitions('garden');
+
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST (BATAS WAKTU): Susul Nabula ke perpustakaan.', {
+            hasTimer: true,
+            durationSec: 30,
+            onTimeout: () => {
+              this.handleLevel1TimeoutFail();
+            }
+          });
+        }
+      } else if (action === 'lvl1_005b_fail_fade') {
+        this.cameras.main.fadeOut(800, 0, 0, 0);
+      } else if (action === 'lvl1_005b_show_fail_result') {
+        this.registry.set('harmony', 0);
+        window.dispatchEvent(new CustomEvent('show_level_fail_modal', {
+          detail: {
+            score: 0,
+            status: 'Harmonia Padam',
+            message: 'Nabula nggak sempat dapat bantuan kali ini. Tapi ini bukan akhir, yuk coba lagi dan perhatikan tanda-tanda saat teman butuh kamu.'
+          }
+        }));
+      } else if (action === 'lvl1_005c_enable_move') {
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+        this.registry.set('level1_player_locked', false);
+        if (this.player) this.player.isLocked = false;
       } else if (action === 'vibrate_choice') {
         if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
       } else if (action === 'vibrate_soft') {
@@ -423,6 +534,18 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Debug Grid (Row, Col) ── */
     this._drawDebugGrid(mapW, mapH);
+  }
+
+  handleLevel1TimeoutFail() {
+    this.registry.set('level1_player_locked', true);
+    if (this.player && this.player.sprite) {
+      this.player.sprite.setVelocity(0, 0);
+      this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+    }
+    const ui = this.scene.get('UI');
+    if (ui) {
+      ui.startDialogue('lvl1_005b_10_narrator');
+    }
   }
 
   _checkLevel3Ready() {
@@ -453,6 +576,7 @@ class WorldScene extends Phaser.Scene {
       this.npcs[i].update(time, delta);
     }
     this._updatePlayerMask();
+
 
     /* ── Level 1 Proximity Trigger (003: 3 Blocks from Nabula) ── */
     if (this.registry.get('currentMap') === 'garden' &&

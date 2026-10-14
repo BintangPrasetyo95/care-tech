@@ -42,14 +42,15 @@ class Player {
 
   /* ── Called every frame by WorldScene.update() ── */
   update() {
-    const body = this.sprite.body;
-    body.setVelocity(0);
-
-    // Freeze during dialogue unless cutscene animation is active
+    // Freeze during cutscenes where tween handles movement
     if (this.isCutsceneActive) {
       return;
     }
-    if (this.scene.registry.get('dialogueActive') || this.scene.registry.get('menuOpen')) {
+
+    const body = this.sprite.body;
+    if (body) body.setVelocity(0);
+
+    if (this.scene.registry.get('dialogueActive') || this.scene.registry.get('level1_player_locked') || this.isLocked) {
       this.sprite.anims.play('player_idle_' + this.facing, true);
       return;
     }
