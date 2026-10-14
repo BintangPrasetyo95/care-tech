@@ -672,8 +672,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'PILIHAN TINDAKAN', id: 'PILIHAN TINDAKAN' },
     portrait: null,
     text: {
-      en: 'What will you do to help Nabula? (Time limit: 30 seconds)',
-      id: 'Apa yang akan kamu lakukan untuk membantu Nabula? (Batas waktu: 30 detik)'
+      en: 'What will you do to help Nabula? (Time limit: 15 seconds)',
+      id: 'Apa yang akan kamu lakukan untuk membantu Nabula? (Batas waktu: 15 detik)'
     },
     choices: [
       {
@@ -749,8 +749,9 @@ window.LEVEL_1_DIALOGUES = {
       en: 'Nabula hastily leaves the cafeteria, looking even more saddened.',
       id: 'Nabula buru-buru meninggalkan kantin, terlihat semakin sedih.'
     },
-    next: 'lvl1_058x_7_eca',
-    action: 'lvl1_058x_nabula_leaves'
+    action: 'lvl1_058x_nabula_leaves',
+    noManualAdvance: true,
+    next: 'lvl1_058x_7_eca'
   },
   lvl1_058x_7_eca: {
     id: '058x-7',
@@ -818,8 +819,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula automatically steps forward towards Nabula at the cafeteria table. The camera follows Nakula\'s movement.',
-      id: 'Nakula otomatis melangkah maju mendekati meja Nabula di kantin. Kamera mengikuti pergerakan Nakula.'
+      en: 'Nakula automatically steps forward towards Nabula\'s table in the cafeteria.',
+      id: 'Nakula otomatis melangkah maju mendekati meja Nabula di kantin.'
     },
     next: null,
     action: 'lvl1_059a_walk_to_table'
@@ -914,6 +915,7 @@ window.LEVEL_1_DIALOGUES = {
       id: 'Bagas dan Rio meninggalkan meja kantin.'
     },
     action: 'lvl1_059a_bullies_leave',
+    noManualAdvance: true,
     next: 'lvl1_059a_11_nabula'
   },
   lvl1_059a_11_nabula: {
@@ -978,6 +980,7 @@ window.LEVEL_1_DIALOGUES = {
       en: '"Bu Wati, I saw Nabula being bothered by Bagas and Rio in the cafeteria. This matches what I heard earlier here too."',
       id: '"Bu Wati, saya lihat Nabula diganggu Bagas dan Rio di kantin. Ini juga seperti yang saya dengar sebelumnya di sini."'
     },
+    action: 'lvl1_059b_met_bu_wati',
     next: 'lvl1_059b_6_bu_wati'
   },
   lvl1_059b_6_bu_wati: {
@@ -1009,7 +1012,8 @@ window.LEVEL_1_DIALOGUES = {
       en: 'Bu Wati and Nakula are now in the cafeteria, observing from a distance Bagas and Rio still sitting near Nabula, continuing to tease her.',
       id: 'Bu Wati dan Nakula kini berada di kantin, melihat dari kejauhan Bagas dan Rio masih duduk di dekat Nabula, terus menggodanya.'
     },
-    next: 'lvl1_059b_9_bu_wati'
+    next: null,
+    onCloseAction: 'lvl1_059b_focus_bu_wati'
   },
   lvl1_059b_9_bu_wati: {
     id: '059b-9',
@@ -1036,11 +1040,12 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bu Wati and Nakula automatically walk over to Nabula\'s table. The camera follows their movement.',
-      id: 'Bu Wati dan Nakula otomatis berjalan menghampiri meja Nabula. Kamera mengikuti pergerakan mereka berdua.'
+      en: 'Bu Wati and Nakula automatically walk over to Nabula\'s table.',
+      id: 'Bu Wati dan Nakula otomatis berjalan menghampiri meja Nabula.'
     },
-    next: null,
-    onCloseAction: 'lvl1_059b_walk_to_table'
+    action: 'lvl1_059b_walk_to_table',
+    noManualAdvance: true,
+    next: 'lvl1_059b_12_bu_wati'
   },
   lvl1_059b_12_bu_wati: {
     id: '059b-12',
@@ -1142,31 +1147,11 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Then she hastily stands up and leaves the cafeteria. The camera follows Nabula.',
-      id: 'Lalu buru-buru berdiri dan meninggalkan kantin. Kamera mengikuti Nabula.'
+      en: 'Then she hastily stands up and leaves the cafeteria.',
+      id: 'Lalu buru-buru berdiri dan meninggalkan kantin.'
     },
     action: 'lvl1_059c_nabula_runs_away',
-    next: null
-  },
-  lvl1_059c_3_effect: {
-    id: '059c-3',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'Nabula hastily leaves through the cafeteria door.',
-      id: 'Nabula buru-buru keluar dari pintu kantin.'
-    },
-    next: 'lvl1_059c_4_effect'
-  },
-  lvl1_059c_4_effect: {
-    id: '059c-4',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'The camera pans back to Nakula standing near the entrance.',
-      id: 'Kamera kembali mengarah ke Nakula yang berdiri di dekat pintu.'
-    },
-    action: 'lvl1_059c_camera_to_nakula',
+    noManualAdvance: true,
     next: 'lvl1_059c_5_ui'
   },
   lvl1_059c_5_ui: {
@@ -1336,11 +1321,12 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula and Nabula automatically walk towards Bu Wati\'s desk. The camera follows their movement.',
-      id: 'Nakula dan Nabula otomatis berjalan masuk menuju meja Bu Wati. Kamera mengikuti pergerakan mereka berdua.'
+      en: 'Nakula and Nabula automatically walk in towards Bu Wati\'s desk.',
+      id: 'Nakula dan Nabula otomatis berjalan masuk menuju meja Bu Wati.'
     },
-    next: null,
-    onCloseAction: 'lvl1_059c_walk_to_wati'
+    action: 'lvl1_059c_walk_to_wati',
+    noManualAdvance: true,
+    next: 'lvl1_059c_25_bu_wati'
   },
   lvl1_059c_25_bu_wati: {
     id: '059c-25',
@@ -1416,6 +1402,135 @@ window.LEVEL_1_DIALOGUES = {
     },
     next: null,
     onCloseAction: 'lvl1_060c_finish_stage3'
+  },
+
+  /* ── Babak 4D: Refleksi & Evaluasi (Node 061 s/d 064) ── */
+  lvl1_061a_eca: {
+    id: '061a',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_serious',
+    text: {
+      en: '"You were really brave to speak up directly to them earlier. This method is quick and assertive, but can carry risks if they get angry. That\'s why adults still need to help look out for Nabula."',
+      id: '"Tadi kamu berani banget langsung bicara ke mereka. Cara ini cepat dan tegas, tapi bisa berisiko kalau mereka malah marah. Makanya orang dewasa tetap perlu ikut menjaga Nabula."'
+    },
+    next: 'lvl1_062_eca'
+  },
+  lvl1_061b_eca: {
+    id: '061b',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_serious',
+    text: {
+      en: '"You went straight to get an adult\'s help earlier. That\'s awesome. This method is safer, though it takes time for adults to step in. Knowing when to ask for help is also a form of courage."',
+      id: '"Kamu langsung cari bantuan orang dewasa tadi. Itu keren, lho. Cara ini lebih aman, tapi butuh waktu sampai orang dewasa bertindak. Tahu kapan harus minta tolong juga bentuk keberanian."'
+    },
+    next: 'lvl1_062_eca'
+  },
+  lvl1_061b_x_eca: {
+    id: '061b-x',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_serious',
+    text: {
+      en: '"Hesitated for a moment earlier, huh? It\'s okay, what matters is you ultimately still sought help for Nabula. Next time, try to believe in yourself more."',
+      id: '"Sempat ragu tadi, ya? Nggak apa-apa, yang penting akhirnya kamu tetap nyari bantuan buat Nabula. Lain kali, coba lebih percaya sama diri sendiri."'
+    },
+    next: 'lvl1_062_eca'
+  },
+  lvl1_061c_eca: {
+    id: '061c',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_serious',
+    text: {
+      en: '"You listened to Nabula first before taking action earlier. She felt accompanied, but the problem hasn\'t stopped on its own, so adult support remains vital. I like your way."',
+      id: '"Kamu dengerin Nabula dulu sebelum bertindak tadi. Dia merasa ditemani, tapi masalahnya belum berhenti sendiri, jadi bantuan orang dewasa tetap penting. Aku suka caramu."'
+    },
+    next: 'lvl1_062_eca'
+  },
+  lvl1_061c_x_eca: {
+    id: '061c-x',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_serious',
+    text: {
+      en: '"You were a bit confused about what to do earlier, but in the end you still approached Nabula. That\'s also an effort, even if a little late."',
+      id: '"Tadi kamu sempat bingung harus ngapain, tapi akhirnya kamu tetap nyamperin Nabula. Itu juga bentuk usaha, lho, biarpun telat dikit."'
+    },
+    next: 'lvl1_062_eca'
+  },
+  lvl1_062_eca: {
+    id: '062',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_happy',
+    text: {
+      en: '"Peluk atau berikan dukungan hangat untuk teman yang sedang sedih. Terima kasih sudah belajar menjadi teman yang peduli hari ini!"',
+      id: '"Peluk atau berikan dukungan hangat untuk teman yang sedang sedih. Terima kasih sudah belajar menjadi teman yang peduli hari ini!"'
+    },
+    action: { type: 'vibrate', pattern: [60, 40, 60] },
+    next: 'lvl1_062_routes_info'
+  },
+  lvl1_062_routes_info: {
+    id: '062-info',
+    speaker: { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text: {
+      en: 'Every approach has its strengths: speaking up directly, reporting to an adult, or listening with empathy first.',
+      id: 'Setiap cara memiliki kelebihan: bicara langsung dengan tegas, melapor ke orang dewasa dengan aman, atau mendengarkan teman terlebih dahulu.'
+    },
+    action: { type: 'vibrate', pattern: 60 },
+    next: 'lvl1_063_narrator'
+  },
+  lvl1_063_narrator: {
+    id: '063',
+    speaker: { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text: {
+      en: 'LEVEL 1 COMPLETE: "Help Nabula get the support she needs."',
+      id: 'LEVEL 1 SELESAI: "Bantu Nabula mendapatkan dukungan."'
+    },
+    action: 'lvl1_063_transition_to_064',
+    next: null
+  },
+  lvl1_064a_eca: {
+    id: '064a-1',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_happy',
+    text: {
+      en: '"You were brave enough to speak up directly. Want to continue or try another way?"',
+      id: '"Kamu sudah berani bicara langsung. Mau lanjut atau coba cara lain?"'
+    },
+    next: null,
+    onCloseAction: 'lvl1_064_show_completion_modal'
+  },
+  lvl1_064b_eca: {
+    id: '064b-1',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_happy',
+    text: {
+      en: '"You reported to an adult. Awesome! Want to continue or try another way?"',
+      id: '"Kamu sudah melapor ke orang dewasa. Hebat! Mau lanjut atau coba cara lain?"'
+    },
+    next: null,
+    onCloseAction: 'lvl1_064_show_completion_modal'
+  },
+  lvl1_064c_eca: {
+    id: '064c-1',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_happy',
+    text: {
+      en: '"You listened to Nabula first. Very cool! Want to continue or try another way?"',
+      id: '"Kamu sudah mendengarkan Nabula dulu. Keren! Mau lanjut atau coba cara lain?"'
+    },
+    next: null,
+    onCloseAction: 'lvl1_064_show_completion_modal'
+  },
+  lvl1_064x_eca: {
+    id: '064x-1',
+    speaker: { en: 'ECA', id: 'ECA' },
+    portrait: 'player_worried',
+    text: {
+      en: '"You\'ve tried to help Nabula, and that matters. Let\'s try again and pay close attention to signs when a friend needs you!"',
+      id: '"Kamu sudah berusaha menolong Nabula, dan itu penting. Yuk, coba lagi dan perhatikan tanda-tanda saat teman butuh kamu!"'
+    },
+    next: null,
+    onCloseAction: 'lvl1_064_show_completion_modal'
   }
 };
 

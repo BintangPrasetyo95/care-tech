@@ -1032,6 +1032,7 @@ class UIScene extends Phaser.Scene {
 
     const lastNodeId = this._currentDialogueNode;
     const lastNode = lastNodeId ? DIALOGUES[lastNodeId] : null;
+    this._currentDialogueNode = null;
 
     this.dialogShadow.setVisible(false);
     this.dialogBg.setVisible(false).disableInteractive();

@@ -544,6 +544,9 @@
       text-align: center;
       box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
     }
+    .result-card.is-success {
+      border: 2px solid rgba(34, 197, 94, 0.45);
+    }
     .result-tag {
       display: inline-block;
       font-size: 0.75rem;
@@ -555,6 +558,11 @@
       border-radius: 9999px;
       margin-bottom: 0.8rem;
       border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .result-card.is-success .result-tag {
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.35);
     }
     .result-card h2 {
       font-family: 'GROBOLD', 'Grobold', sans-serif;
@@ -581,6 +589,9 @@
       font-weight: 700;
       color: #fca5a5;
       margin-bottom: 0.4rem;
+    }
+    .result-card.is-success .result-score-title {
+      color: #86efac;
     }
     .result-score-desc {
       font-size: 0.88rem;
@@ -764,23 +775,23 @@
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
   <!-- Core & State Management -->
-  <script src="js/core/GameState.js?v=lib_v20261014_17"></script>
-  <script src="js/systems/ActionExecutor.js?v=lib_v20261014_17"></script>
+  <script src="js/core/GameState.js?v=lib_v20261014_22"></script>
+  <script src="js/systems/ActionExecutor.js?v=lib_v20261014_22"></script>
 
   <!-- Level Data Modules (Data-Driven Architecture) -->
-  <script src="js/data/levels/level1/dialogues.js?v=lib_v20261014_17"></script>
+  <script src="js/data/levels/level1/dialogues.js?v=lib_v20261014_22"></script>
 
   <!-- Game modules — loaded in strict dependency order -->
-  <script src="js/data/dialogues.js?v=lib_v20261014_17"></script>
-  <script src="js/systems/RelationshipManager.js?v=lib_v20261014_17"></script>
-  <script src="js/systems/DialogueManager.js?v=lib_v20261014_17"></script>
-  <script src="js/systems/ScheduleManager.js?v=lib_v20261014_17"></script>
-  <script src="js/entities/Player.js?v=lib_v20261014_17"></script>
-  <script src="js/entities/NPC.js?v=lib_v20261014_17"></script>
-  <script src="js/scenes/BootScene.js?v=lib_v20261014_17"></script>
-  <script src="js/scenes/WorldScene.js?v=lib_v20261014_17"></script>
-  <script src="js/scenes/UIScene.js?v=lib_v20261014_17"></script>
-  <script src="js/main.js?v=lib_v20261014_17"></script>
+  <script src="js/data/dialogues.js?v=lib_v20261014_22"></script>
+  <script src="js/systems/RelationshipManager.js?v=lib_v20261014_22"></script>
+  <script src="js/systems/DialogueManager.js?v=lib_v20261014_22"></script>
+  <script src="js/systems/ScheduleManager.js?v=lib_v20261014_22"></script>
+  <script src="js/entities/Player.js?v=lib_v20261014_22"></script>
+  <script src="js/entities/NPC.js?v=lib_v20261014_22"></script>
+  <script src="js/scenes/BootScene.js?v=lib_v20261014_22"></script>
+  <script src="js/scenes/WorldScene.js?v=lib_v20261014_22"></script>
+  <script src="js/scenes/UIScene.js?v=lib_v20261014_22"></script>
+  <script src="js/main.js?v=lib_v20261014_22"></script>
 
 
   <script>
@@ -1097,45 +1108,117 @@
         });
       }
 
-      // Listen for alternate ending modal (005b timeout/fail)
-      window.addEventListener('show_level_fail_modal', () => {
+      // Helper: Menampilkan modal hasil Level 1
+      const updateAndShowResultModal = (data = {}) => {
         const resultModal = document.getElementById('level-result-modal');
-        if (resultModal) {
-          resultModal.classList.remove('hidden');
+        if (!resultModal) return;
+
+        const card = resultModal.querySelector('.result-card');
+        const tag = resultModal.querySelector('.result-tag');
+        const title = resultModal.querySelector('h2');
+        const sub = resultModal.querySelector('.result-subtitle');
+        const scoreTitle = resultModal.querySelector('.result-score-title');
+        const scoreDesc = resultModal.querySelector('.result-score-desc');
+        const actionsContainer = resultModal.querySelector('.result-actions');
+
+        const isSuccess = data.isSuccess !== undefined ? data.isSuccess : (data.score >= 60);
+        const score = data.score !== undefined ? data.score : 0;
+        const status = data.status || (isSuccess ? 'Harmonia Bersinar' : 'Harmonia Padam');
+        const orb = data.orb || (isSuccess ? '🟢' : '⚫');
+        const message = data.message || (isSuccess
+          ? 'Kamu berhasil membantu Nabula mendapatkan dukungan dari guru dan lingkungan sekolah!'
+          : 'Nabula nggak sempat dapat bantuan kali ini. Tapi ini bukan akhir, yuk coba lagi dan perhatikan tanda-tanda saat teman butuh kamu.');
+
+        if (card) {
+          card.classList.toggle('is-success', isSuccess);
         }
+
+        if (tag) {
+          tag.textContent = isSuccess ? 'LEVEL 1 SELESAI' : 'ENDING ALTERNATIF';
+        }
+        if (title) {
+          title.textContent = 'LEVEL 1 SELESAI';
+        }
+        if (sub) {
+          sub.textContent = isSuccess ? '"Bantu Nabula mendapatkan dukungan."' : '"Nabula masih butuh dukunganmu."';
+        }
+        if (scoreTitle) {
+          scoreTitle.textContent = `${orb} Harmoni: ${score}/100 — ${status}`;
+        }
+        if (scoreDesc) {
+          scoreDesc.textContent = `"${message}"`;
+        }
+
+        // Render tombol aksi sesuai status
+        if (actionsContainer) {
+          if (isSuccess) {
+            actionsContainer.innerHTML = `
+              <button id="btn-next-level-2" class="btn-action-primary">🚀 Lanjut ke Level 2</button>
+              <button id="btn-replay-level-1" class="btn-action-secondary">🔄 Coba Cara Lain di Level 1</button>
+              <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+            `;
+          } else {
+            actionsContainer.innerHTML = `
+              <button id="btn-replay-level-1" class="btn-action-primary">🔄 Main Ulang Level 1</button>
+              <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+              <button class="btn-action-locked" disabled>🔒 Lanjut ke Level 2 (Capai skor ≥ 60)</button>
+            `;
+          }
+          attachModalActionListeners();
+        }
+
+        resultModal.classList.remove('hidden');
+      };
+
+      const attachModalActionListeners = () => {
+        const replayBtn = document.getElementById('btn-replay-level-1');
+        if (replayBtn) {
+          replayBtn.onclick = () => {
+            const resultModal = document.getElementById('level-result-modal');
+            if (resultModal) resultModal.classList.add('hidden');
+            resetAllLevel1State();
+            if (window.game && window.game.registry) {
+              const world = window.game.scene.getScene('World');
+              if (world && world._changeMap) {
+                world._changeMap('garden', 14 * 64 + 32, 3.5 * 64);
+                setTimeout(() => {
+                  const ui = window.game.scene.getScene('UI');
+                  if (ui && ui.startLevel1IntroTransition) {
+                    ui.startLevel1IntroTransition();
+                  }
+                }, 400);
+              }
+            }
+          };
+        }
+
+        const returnHomeBtn = document.getElementById('btn-return-home');
+        if (returnHomeBtn) {
+          returnHomeBtn.onclick = () => {
+            window.location.href = 'index.html';
+          };
+        }
+
+        const nextLvlBtn = document.getElementById('btn-next-level-2');
+        if (nextLvlBtn) {
+          nextLvlBtn.onclick = () => {
+            alert('🎉 Hebat! Kamu telah menuntaskan Level 1: Detective Emotion dengan sangat baik!\n\nLevel 2 sedang dalam tahap persiapan dan akan segera hadir di update petualangan berikutnya. ✨');
+          };
+        }
+      };
+
+      // Listen for alternate ending modal (005b timeout/fail)
+      window.addEventListener('show_level_fail_modal', (e) => {
+        updateAndShowResultModal(e.detail || { score: 0, isSuccess: false });
       });
 
-      // Replay Level 1
-      const replayBtn = document.getElementById('btn-replay-level-1');
-      if (replayBtn) {
-        replayBtn.addEventListener('click', () => {
-          const resultModal = document.getElementById('level-result-modal');
-          if (resultModal) {
-            resultModal.classList.add('hidden');
-          }
-          resetAllLevel1State();
-          if (window.game && window.game.registry) {
-            const world = window.game.scene.getScene('World');
-            if (world && world._changeMap) {
-              world._changeMap('garden', 14 * 64 + 32, 3.5 * 64);
-              setTimeout(() => {
-                const ui = window.game.scene.getScene('UI');
-                if (ui && ui.startLevel1IntroTransition) {
-                  ui.startLevel1IntroTransition();
-                }
-              }, 400);
-            }
-          }
-        });
-      }
+      // Listen for level complete modal (064 normal/success)
+      window.addEventListener('show_level_complete_modal', (e) => {
+        updateAndShowResultModal(e.detail || {});
+      });
 
-      // Return home
-      const returnHomeBtn = document.getElementById('btn-return-home');
-      if (returnHomeBtn) {
-        returnHomeBtn.addEventListener('click', () => {
-          window.location.href = 'index.html';
-        });
-      }
+      // Bind tombol default awal
+      attachModalActionListeners();
 
       // Dialogue state sync: ONLY the analog is gone during dialogue state
       const setDialogueActive = (active) => {
