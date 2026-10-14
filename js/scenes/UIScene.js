@@ -55,7 +55,7 @@ class UIScene extends Phaser.Scene {
       .setOrigin(0, 0).setStrokeStyle(3, 0x000000).setScrollFactor(1).setDepth(100);
     // Label
     this.harmonyLabelTxt = this._createSharpText(18, 12, '♥ INDEKS HARMONI', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '10.5px',
       fontStyle: 'bold',
       color: '#ff2e93',
@@ -77,7 +77,7 @@ class UIScene extends Phaser.Scene {
 
     /* ══════════ Harmony Change Flash ══════════ */
     this.harmonyFlash = this._createSharpText(224, 22, '', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '16px',
       fontStyle: 'bold',
       color: '#39ff14',
@@ -105,7 +105,7 @@ class UIScene extends Phaser.Scene {
     questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
     questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
     this.questText = this._createSharpText(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
-      fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '12px',
       fontStyle: 'bold',
       color: '#000000'
@@ -114,7 +114,7 @@ class UIScene extends Phaser.Scene {
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#ff2e93',
@@ -134,7 +134,7 @@ class UIScene extends Phaser.Scene {
     drawMenuBtn(0xffe500);
     
     this.menuToggleTxt = this._createSharpText(12 + 39, 46 + 13, '☰ MENU', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '11.5px', fontStyle: 'bold', color: '#000000'
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '11.5px', fontStyle: 'bold', color: '#000000'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(102);
 
     this.menuToggleZone = this.add.zone(12 + 39, 46 + 13, 78, 26)
@@ -163,7 +163,7 @@ class UIScene extends Phaser.Scene {
     
     this.sidebarContainer.add(
       this._createSharpText(140, 36, 'CARE-TECH', {
-        fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 2
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 2
       }).setOrigin(0.5).setShadow(2, 2, '#000000', 0, false, true)
     );
     
@@ -177,7 +177,7 @@ class UIScene extends Phaser.Scene {
     this.sidebarContainer.add(divider);
 
     this.sidebarLevelText = this._createSharpText(140, 110, '', {
-      fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '12px', color: '#000000', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
+      fontFamily: '"Inter", "Segoe UI", sans-serif', fontSize: '12px', color: '#000000', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
     }).setOrigin(0.5);
     this.sidebarContainer.add(this.sidebarLevelText);
 
@@ -194,7 +194,7 @@ class UIScene extends Phaser.Scene {
       drawBg(defaultHex);
       
       const txt = this._createSharpText(w / 2, h / 2, text, {
-        fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif', fontSize: '12.5px', fontStyle: 'bold', color: txtColor
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '12.5px', fontStyle: 'bold', color: txtColor
       }).setOrigin(0.5);
       
       btnGroup.add([shadow, bg, txt]);
@@ -279,7 +279,7 @@ class UIScene extends Phaser.Scene {
       drawBg(0xffffff);
 
       const btnTxt = this._createSharpText(140, i * 32 + 13, lvl.name['id'], {
-        fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', fontSize: '11px', color: '#000000', fontStyle: 'bold'
+        fontFamily: '"Inter", "Segoe UI", sans-serif', fontSize: '11px', color: '#000000', fontStyle: 'bold'
       }).setOrigin(0.5);
       
       const zone = this.add.zone(140, i * 32 + 13, 210, 26).setInteractive({ useHandCursor: true });
@@ -312,7 +312,7 @@ class UIScene extends Phaser.Scene {
 
     /* ══════════ Interaction Prompt (Yellow Tape Badge) ══════════ */
     this.interactPrompt = this._createSharpText(width / 2, height - 130, '★ TEKAN E / SPASI UNTUK BICARA ★', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", system-ui, sans-serif',
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '11.5px',
       color: '#000000',
       backgroundColor: '#ffe500',
@@ -361,7 +361,7 @@ class UIScene extends Phaser.Scene {
 
     // Speaker name
     this.speakerTxt = this._createSharpText(this._boxX + 18, this._boxY - 12, '', {
-      fontFamily: '"GROBOLD", "Comic Sans MS", sans-serif',
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", sans-serif',
       fontSize: '12px',
       color: '#ffffff',
       fontStyle: 'bold',
@@ -374,7 +374,7 @@ class UIScene extends Phaser.Scene {
 
     // Dialog text (Comic ink style)
     this.dialogText = this._createSharpText(this._boxX + 14, this._boxY + 22, '', {
-      fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '12.5px',
       fontStyle: 'bold',
       color: '#000000',
@@ -418,7 +418,7 @@ class UIScene extends Phaser.Scene {
       }).setOrigin(0.5);
 
       const labelTxt = this._createSharpText(32, 13, '', {
-        fontFamily: '"Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif',
+        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
         fontSize: '11.5px',
         fontStyle: 'bold',
         color: '#000000'

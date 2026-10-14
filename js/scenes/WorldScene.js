@@ -31,6 +31,8 @@ class WorldScene extends Phaser.Scene {
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
     if (mapKey === 'library') { defaultSpawnX = 9; defaultSpawnY = 9; }
     if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
+    if (mapKey === 'classroom') { defaultSpawnX = 5.5; defaultSpawnY = 10; }
+    if (mapKey === 'corridor') { defaultSpawnX = 12.5; defaultSpawnY = 2.5; }
 
     const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
     const py = this.spawnY || defaultSpawnY * TILE;
@@ -614,7 +616,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Level 2 Auto-Trigger ── */
     if (this.registry.get('currentMap') === 'corridor' && this.registry.get('level1_complete') && !this.registry.get('level2_triggered')) {
-      if (this.player.sprite.y < 9 * TILE && !this.registry.get('dialogueActive')) {
+      if (!this.registry.get('dialogueActive')) {
         this.registry.set('level2_triggered', true);
 
         // Stop player movement
@@ -965,7 +967,7 @@ class WorldScene extends Phaser.Scene {
       "caf_plat_4_3": 172
     };
 
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_0_0', 'planter_h_0_1', 'planter_h_0_2', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -1346,71 +1348,127 @@ class WorldScene extends Phaser.Scene {
     }
 
     if (key === 'corridor') {
+      const W = 26, H = 5;
       const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
-      for (let c = 1; c < W - 1; c++) { m[1][c] = 'school_wall_top'; m[5][c] = 'school_wall'; m[6][c] = 'school_wall'; }
-      m[5][5] = 'school_floor'; m[5][6] = 'school_floor'; m[5][14] = 'school_floor'; m[5][15] = 'school_floor';
-      m[6][5] = 'school_floor'; m[6][6] = 'school_floor'; m[6][14] = 'school_floor'; m[6][15] = 'school_floor';
-      for (let r = 2; r < 5; r++) {
-        for (let c = 1; c < W - 1; c++) if (c % 3 === 0) m[r][c] = 'school_floor2';
+
+      // Perimeter walls
+      for (let c = 0; c < W; c++) {
+        m[0][c] = 'school_wall';
+        m[H - 1][c] = 'school_wall';
       }
-      for (const r of [8, 10, 12]) {
-        m[r - 1][2] = 'bookshelf_t'; m[r][2] = 'bookshelf_b';
-        m[r - 1][3] = 'bookshelf_t'; m[r][3] = 'bookshelf_b';
+      for (let r = 0; r < H; r++) {
+        m[r][0] = 'school_wall';
+        m[r][W - 1] = 'school_wall';
       }
-      m[7][4] = 'bookshelf_t'; m[8][4] = 'bookshelf_b';
-      m[1][10] = 'board';
-      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
-      m[0][5] = 'door_big_l'; m[0][6] = 'door_big_r';
-      m[1][5] = 'school_floor'; m[1][6] = 'school_floor';
-      m[0][15] = 'door_big_l'; m[0][16] = 'door_big_r';
-      m[1][15] = 'school_floor'; m[1][16] = 'school_floor';
-      m[H - 1][3] = 'door_big_l'; m[H - 1][4] = 'door_big_r';
+
+      // Doors and openings:
+      // North Door to Classroom (cols 8 & 9)
+      m[0][8] = 'door_big_l';
+      m[0][9] = 'door_big_r';
+
+      // North Door to Auditorium (cols 16 & 17)
+      m[0][16] = 'door_big_l';
+      m[0][17] = 'door_big_r';
+
+      // South Door to Schoolyard (cols 12 & 13)
+      m[H - 1][12] = 'door_big_l';
+      m[H - 1][13] = 'door_big_r';
+
+      // West doorway to Cafeteria (rows 2 & 3)
+      m[2][0] = 'school_floor';
+      m[3][0] = 'school_floor';
+
+      // East doorway to Library (rows 2 & 3)
+      m[2][W - 1] = 'school_floor';
+      m[3][W - 1] = 'school_floor';
+
+      // Floor variation
+      for (let r = 1; r < H - 1; r++) {
+        for (let c = 1; c < W - 1; c++) {
+          if ((r + c) % 5 === 0 && m[r][c] === 'school_floor') {
+            m[r][c] = 'school_floor2';
+          }
+        }
+      }
+
       this._autotileSchoolWalls(m);
 
-      // Manual texture overrides for corridor
-      m[0][4] = m[2][0];
-      m[1][0] = m[2][0];
-      m[0][0] = 'school_wall_c'; // Full wall tile
-      m[6][0] = m[7][0];
-      m[14][5] = m[5][7];
-      m[14][2] = m[5][4];
-      m[14][9] = m[5][4];
-      m[14][12] = m[14][5];
-      m[6][19] = m[7][19];
-      m[1][19] = m[2][19];
-      m[0][17] = m[2][19];
-      m[0][11] = m[2][19];
-      m[0][7] = m[2][19];
-      m[0][9] = m[2][0];
-      m[0][14] = m[2][0];
-      m[0][19] = 'school_wall_c'; // Full wall tile
+      // Bulletin Board on top wall near classroom
+      m[0][4] = 'board';
+
+      // Decorative planter boxes (matching corridor_new.png Row 0: .PP.........PP.........PP.)
+      // Left planter pair (cols 1 & 2)
+      m[1][1] = 'planter_h_0_0';
+      m[1][2] = 'planter_h_0_2';
+
+      // Center planter pair (cols 12 & 13)
+      m[1][12] = 'planter_h_0_0';
+      m[1][13] = 'planter_h_0_2';
+
+      // Right planter pair (cols 23 & 24)
+      m[1][23] = 'planter_h_0_0';
+      m[1][24] = 'planter_h_0_2';
 
       return m;
     }
 
     if (key === 'classroom') {
+      const W = 13, H = 12;
       const m = Array.from({ length: H }, () => Array(W).fill('school_floor'));
-      for (let c = 0; c < W; c++) { m[0][c] = 'school_wall_top'; m[H - 1][c] = 'school_wall'; }
-      for (let r = 0; r < H; r++) { m[r][0] = 'school_wall'; m[r][W - 1] = 'school_wall'; }
-      m[1][9] = 'board'; m[1][10] = 'board'; m[1][11] = 'board';
-      m[3][10] = 'desk';
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 4; col++) {
-          m[6 + row * 2][4 + col * 3] = 'desk';
-          m[7 + row * 2][4 + col * 3] = 'chair';
+
+      // Perimeter walls
+      for (let c = 0; c < W; c++) {
+        m[0][c] = 'school_wall';
+        m[H - 1][c] = 'school_wall';
+      }
+      for (let r = 0; r < H; r++) {
+        m[r][0] = 'school_wall';
+        m[r][W - 1] = 'school_wall';
+      }
+
+      // Exit Door to Corridor at bottom wall (cols 5 & 6)
+      m[H - 1][5] = 'door_big_l';
+      m[H - 1][6] = 'door_big_r';
+
+      // Floor variation
+      for (let r = 1; r < H - 1; r++) {
+        for (let c = 1; c < W - 1; c++) {
+          if ((r + c) % 5 === 0 && m[r][c] === 'school_floor') {
+            m[r][c] = 'school_floor2';
+          }
         }
       }
-      for (const r of [3, 5, 7, 9]) {
-        m[r - 1][1] = 'bookshelf_t'; m[r][1] = 'bookshelf_b';
-        m[r - 1][18] = 'bookshelf_t'; m[r][18] = 'bookshelf_b';
-      }
-      for (let r = 2; r < H - 1; r++) {
-        for (let c = 1; c < W - 1; c++) if (m[r][c] === 'school_floor' && (r + c) % 5 === 0) m[r][c] = 'school_floor2';
-      }
-      m[H - 1][10] = 'door_big_l'; m[H - 1][11] = 'door_big_r';
+
       this._autotileSchoolWalls(m);
+
+      // Front Blackboard on top wall & row 1 (cols 5, 6, 7)
+      m[0][5] = 'board';
+      m[0][6] = 'board';
+      m[0][7] = 'board';
+      m[1][5] = 'board';
+      m[1][6] = 'board';
+      m[1][7] = 'board';
+
+      // Teacher Desk at Row 2, Col 3
+      m[2][3] = 'desk';
+
+      // Student Desks & Planters (matching classroom_new.png)
+      // Rows 4, 6, 8: 4 desks each (cols 3, 5, 7, 9) flanked by planters (cols 1, 11)
+      for (const r of [4, 6, 8]) {
+        m[r][1] = 'planter_v_0';
+        m[r][3] = 'desk';
+        m[r][5] = 'desk';
+        m[r][7] = 'desk';
+        m[r][9] = 'desk';
+        m[r][11] = 'planter_v_0';
+      }
+
+      // Cozy classroom reading corner at back
+      m[9][1] = 'bookshelf_t';
+      m[10][1] = 'bookshelf_b';
+      m[9][11] = 'bookshelf_t';
+      m[10][11] = 'bookshelf_b';
+
       return m;
     }
 
@@ -1570,49 +1628,48 @@ class WorldScene extends Phaser.Scene {
 
     if (mapKey === 'corridor') {
       if (this.registry.get('level1_complete')) {
-        this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'bully', 'bully_taunt', { name: 'Bully' }));
-        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'bully', null, { name: 'Bully 2' }));
 
         if (!this.registry.get('level2_triggered')) {
           // Nabula being mocked
-          this.npcs.push(new NPC(this, 11 * TILE + TILE / 2, 4 * TILE + TILE / 2,
+          this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 2 * TILE + TILE / 2,
             'nabula', null, { name: 'Nabula', emotion: '😔' }));
         } else if (!this.registry.get('level2_complete')) {
-          // Nabula hiding behind library
-          this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 12 * TILE + TILE / 2,
+          // Nabula hiding near the library entrance
+          this.npcs.push(new NPC(this, 21 * TILE + TILE / 2, 2 * TILE + TILE / 2,
             'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
         }
       }
 
-      // Riko lurking (always there or maybe also needs level 1?)
-      // Let's keep him there for ambient.
-      this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 8 * TILE + TILE / 2,
+      // Riko lurking
+      this.npcs.push(new NPC(this, 16 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'riko', 'riko_corridor', { name: 'Riko' }));
 
       // Level 4 Initiative Additions
       const project = this.registry.get('built_project');
       if (project === 'build_vent_corner') {
-        this.npcs.push(new NPC(this, 2 * TILE + TILE / 2, 12 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, 3 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'student', 'board_interact', { name: 'Vent Corner', immovable: true }));
       } else if (project === 'build_appreciation_box') {
-        const box = new NPC(this, 14 * TILE + TILE / 2, 3 * TILE + TILE / 2,
+        const box = new NPC(this, 14 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'student', 'board_interact', { name: 'Appreciation Box', immovable: true });
         box.sprite.setAlpha(0); // Invisible box but glowing
         this.npcs.push(box);
       } else if (project === 'build_peer_support') {
-        this.npcs.push(new NPC(this, 8 * TILE + TILE / 2, 6 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, 18 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'student', 'peer_supporter_chat', { name: 'Peer Supporter' }));
       }
     }
 
     if (mapKey === 'classroom') {
-      this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+      this.npcs.push(new NPC(this, 9 * TILE + TILE / 2, 2 * TILE + TILE / 2,
         'rani', 'rani_intro', { name: 'Teacher Rani' }));
 
       if (this.registry.get('level2_complete')) {
-        this.npcs.push(new NPC(this, 12 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+        this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 2 * TILE + TILE / 2,
           'nabula', 'nabula_safe', { name: 'Nabula' }));
       }
 
@@ -1758,9 +1815,9 @@ class WorldScene extends Phaser.Scene {
     if (!this._transitionsCache) {
       this._transitionsCache = {
         schoolyard: [
-          // North to Classroom
-          { fromX: 21, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
-          { fromX: 22, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
+          // North to Corridor
+          { fromX: 21, fromY: 0, toMap: 'corridor', spawnX: 12, spawnY: 3 },
+          { fromX: 22, fromY: 0, toMap: 'corridor', spawnX: 13, spawnY: 3 },
           // South to Garden
           { fromX: 20, fromY: 22, toMap: 'garden', spawnX: 14, spawnY: 1 },
           { fromX: 21, fromY: 22, toMap: 'garden', spawnX: 14, spawnY: 1 },
@@ -1783,22 +1840,31 @@ class WorldScene extends Phaser.Scene {
           { fromX: 15, fromY: 0, toMap: 'schoolyard', spawnX: 22, spawnY: 21 }
         ],
         corridor: [
-          { fromX: 10, fromY: 14, toMap: 'garden', spawnX: 14, spawnY: 2 },
-          { fromX: 11, fromY: 14, toMap: 'garden', spawnX: 14, spawnY: 2 },
-          { fromX: 5, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
-          { fromX: 6, fromY: 0, toMap: 'classroom', spawnX: 10, spawnY: 13 },
-          { fromX: 15, fromY: 0, toMap: 'auditorium', spawnX: 10, spawnY: 13 },
+          // South to Schoolyard
+          { fromX: 12, fromY: 4, toMap: 'schoolyard', spawnX: 21, spawnY: 1 },
+          { fromX: 13, fromY: 4, toMap: 'schoolyard', spawnX: 22, spawnY: 1 },
+          // North to Classroom
+          { fromX: 8, fromY: 0, toMap: 'classroom', spawnX: 5, spawnY: 10 },
+          { fromX: 9, fromY: 0, toMap: 'classroom', spawnX: 6, spawnY: 10 },
+          // North to Auditorium
           { fromX: 16, fromY: 0, toMap: 'auditorium', spawnX: 10, spawnY: 13 },
-          { fromX: 3, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
-          { fromX: 4, fromY: 14, toMap: 'cafeteria', spawnX: 29, spawnY: 14 }
+          { fromX: 17, fromY: 0, toMap: 'auditorium', spawnX: 11, spawnY: 13 },
+          // West to Cafeteria
+          { fromX: 0, fromY: 2, toMap: 'cafeteria', spawnX: 29, spawnY: 13 },
+          { fromX: 0, fromY: 3, toMap: 'cafeteria', spawnX: 29, spawnY: 14 },
+          // East to Library
+          { fromX: 25, fromY: 2, toMap: 'library', spawnX: 1, spawnY: 9 },
+          { fromX: 25, fromY: 3, toMap: 'library', spawnX: 1, spawnY: 10 }
         ],
         classroom: [
-          { fromX: 10, fromY: 14, toMap: 'schoolyard', spawnX: 21, spawnY: 1 },
-          { fromX: 11, fromY: 14, toMap: 'schoolyard', spawnX: 22, spawnY: 1 }
+          // South to Corridor
+          { fromX: 5, fromY: 11, toMap: 'corridor', spawnX: 8, spawnY: 1 },
+          { fromX: 6, fromY: 11, toMap: 'corridor', spawnX: 9, spawnY: 1 }
         ],
         auditorium: [
-          { fromX: 10, fromY: 14, toMap: 'corridor', spawnX: 15, spawnY: 2 },
-          { fromX: 11, fromY: 14, toMap: 'corridor', spawnX: 15, spawnY: 2 }
+          // South to Corridor
+          { fromX: 10, fromY: 14, toMap: 'corridor', spawnX: 16, spawnY: 1 },
+          { fromX: 11, fromY: 14, toMap: 'corridor', spawnX: 17, spawnY: 1 }
         ],
         cafeteria: [
           // East to Schoolyard

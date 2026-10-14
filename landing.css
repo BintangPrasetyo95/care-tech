@@ -3,6 +3,8 @@
    CareTech Scrapbook & Cardboard Theme for Landing Page
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap');
+
 /* --------------------------------------------------------------------------
    0. Custom Font Faces (GROBOLD for Brand & Headings)
    -------------------------------------------------------------------------- */
@@ -54,12 +56,12 @@
     --purple-main: #9333ea;
     --purple-dark: #7e22ce;
 
-    /* Typography from Cardboard Cosmos */
-    --mk: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    /* Typography */
+    --mk: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --mono: 'Courier New', Courier, monospace;
     --imp: 'GROBOLD', 'Grobold', sans-serif;
     --title-font: 'GROBOLD', 'Grobold', sans-serif;
-    --body-font: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    --body-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --pixel-font: 'Press Start 2P', monospace, sans-serif;
 }
 
