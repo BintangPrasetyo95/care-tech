@@ -300,35 +300,35 @@ class UIScene extends Phaser.Scene {
       fontFamily: '"GROBOLD", "Inter", "Segoe UI", sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#000000'
     }).setOrigin(0.5);
 
-    const zoomMinusBtn = this.add.container(48, 28);
+    const zoomMinusBtn = this.add.container(45, 26);
     const zoomMinusBg = this.add.graphics();
     const drawMinusBg = (col) => {
       zoomMinusBg.clear()
-        .fillStyle(col, 1).fillRoundedRect(0, 0, 24, 22, 6)
-        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 24, 22, 6);
+        .fillStyle(col, 1).fillRoundedRect(0, 0, 28, 26, 6)
+        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 28, 26, 6);
     };
     drawMinusBg(0xffe500);
-    const zoomMinusTxt = this._createSharpText(12, 10, '−', {
-      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#000000'
+    const zoomMinusTxt = this._createSharpText(14, 12, '−', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#000000'
     }).setOrigin(0.5);
-    const zoomMinusZone = this.add.zone(12, 11, 24, 22).setInteractive({ useHandCursor: true });
+    const zoomMinusZone = this.add.zone(14, 13, 30, 28).setInteractive({ useHandCursor: true });
     zoomMinusZone.on('pointerdown', () => { drawMinusBg(0xf5cc00); this._setZoom(this.currentZoom - 0.1); });
     zoomMinusZone.on('pointerup', () => drawMinusBg(0xffe500));
     zoomMinusZone.on('pointerout', () => drawMinusBg(0xffe500));
     zoomMinusBtn.add([zoomMinusBg, zoomMinusTxt, zoomMinusZone]);
 
-    const zoomPlusBtn = this.add.container(208, 28);
+    const zoomPlusBtn = this.add.container(207, 26);
     const zoomPlusBg = this.add.graphics();
     const drawPlusBg = (col) => {
       zoomPlusBg.clear()
-        .fillStyle(col, 1).fillRoundedRect(0, 0, 24, 22, 6)
-        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 24, 22, 6);
+        .fillStyle(col, 1).fillRoundedRect(0, 0, 28, 26, 6)
+        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 28, 26, 6);
     };
     drawPlusBg(0xffe500);
-    const zoomPlusTxt = this._createSharpText(12, 10, '+', {
-      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#000000'
+    const zoomPlusTxt = this._createSharpText(14, 12, '+', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#000000'
     }).setOrigin(0.5);
-    const zoomPlusZone = this.add.zone(12, 11, 24, 22).setInteractive({ useHandCursor: true });
+    const zoomPlusZone = this.add.zone(14, 13, 30, 28).setInteractive({ useHandCursor: true });
     zoomPlusZone.on('pointerdown', () => { drawPlusBg(0xf5cc00); this._setZoom(this.currentZoom + 0.1); });
     zoomPlusZone.on('pointerup', () => drawPlusBg(0xffe500));
     zoomPlusZone.on('pointerout', () => drawPlusBg(0xffe500));
@@ -336,7 +336,7 @@ class UIScene extends Phaser.Scene {
 
     // Track and thumb
     this.zoomTrackGfx = this.add.graphics();
-    const trackX = 78, trackY = 35, trackW = 124, trackH = 8;
+    const trackX = 79, trackY = 35, trackW = 122, trackH = 8;
     this._trackX = trackX; this._trackY = trackY; this._trackW = trackW; this._trackH = trackH;
 
     const zoomSliderZone = this.add.zone(trackX + trackW / 2, trackY + trackH / 2, trackW + 16, 26).setInteractive({ useHandCursor: true });
