@@ -134,30 +134,33 @@
         }
 
         .curhat-chips-bar {
-            padding: 0.8rem 1.5rem;
+            padding: 0.9rem 1.6rem;
             background: var(--paper-warm);
             border-top: 3px dashed var(--ink);
             display: flex;
-            gap: 0.7rem;
+            gap: 0.85rem;
             overflow-x: auto;
             white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
         }
 
         .chip-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.9rem;
+            gap: 0.55rem;
+            padding: 0.65rem 1.2rem;
+            min-height: 44px;
             background: #ffffff;
-            border: 2px solid var(--ink);
-            border-radius: 20px;
-            box-shadow: 3px 3px 0 var(--ink);
+            border: 2.5px solid var(--ink);
+            border-radius: 22px;
+            box-shadow: 3.5px 3.5px 0 var(--ink);
             font-family: var(--mono);
-            font-size: 0.86rem;
+            font-size: 0.98rem;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
             user-select: none;
+            flex-shrink: 0;
         }
 
         .chip-tag:hover {
@@ -304,13 +307,16 @@
             }
 
             .curhat-chips-bar {
-                padding: 0.6rem 0.8rem;
-                gap: 0.5rem;
+                padding: 0.75rem 1rem;
+                gap: 0.65rem;
             }
 
             .chip-tag {
-                padding: 0.35rem 0.7rem;
-                font-size: 0.8rem;
+                padding: 0.55rem 1.05rem;
+                font-size: 0.92rem;
+                min-height: 42px;
+                border-width: 2px;
+                box-shadow: 2.5px 2.5px 0 var(--ink);
             }
 
             .chat-input-bar {
@@ -375,7 +381,14 @@
             }
 
             .curhat-chips-bar {
-                padding: 0.45rem 0.5rem;
+                padding: 0.65rem 0.75rem;
+                gap: 0.55rem;
+            }
+
+            .chip-tag {
+                padding: 0.5rem 0.95rem;
+                font-size: 0.88rem;
+                min-height: 40px;
             }
 
             .chat-input-bar {
@@ -551,8 +564,8 @@
                             <button type="button" class="btn btn-small" style="background: #ffffff; padding: 0.4rem 0.9rem;" onclick="clearChat()">
                                 Bersihkan 🧹
                             </button>
-                            <button type="button" class="btn btn-small" style="background: var(--sun); padding: 0.4rem 0.9rem;" onclick="toggleApiKeyModal()">
-                                Kunci API ⚙️
+                            <button type="button" class="btn btn-small" id="btn-api-modal-trigger" style="background: var(--sun); padding: 0.4rem 0.9rem;" onclick="toggleApiKeyModal()">
+                                Akses AI ⚙️
                             </button>
                         </div>
                     </div>
@@ -582,7 +595,7 @@
 
                     <!-- Quick Curhat Starter Chips -->
                     <div class="curhat-chips-bar">
-                        <span style="font-family: var(--imp); font-size: 1rem; color: #555; align-self: center; margin-right: 0.2rem;">KLIK CEPAT:</span>
+                        <span style="font-family: var(--imp); font-size: 1.05rem; font-weight: 800; color: #333; align-self: center; margin-right: 0.3rem; flex-shrink: 0;">⚡ KLIK CEPAT:</span>
                         <div class="chip-tag" onclick="sendQuickPrompt('Aku lagi merasa sedih hari ini...')">
                             😔 Lagi merasa sedih...
                         </div>
@@ -616,42 +629,206 @@
 
     <!-- API Key Settings Modal -->
     <div class="settings-modal" id="settings-modal" onclick="if(event.target === this) toggleApiKeyModal()">
-        <div class="settings-card mk">
-            <span class="tape tape-pink" style="margin-bottom: 0.6rem;">PENGATURAN KUNCI</span>
-            <h2 style="font-size: 2.2rem; margin-bottom: 0.5rem;">Kunci Gemini API</h2>
-            <p style="font-family: var(--mk); color: #333; font-size: 1.05rem; line-height: 1.5; margin-bottom: 1.2rem;">
-                ESA AI dilengkapi <strong>Otak Empati Interaktif Bawaan</strong> sehingga bisa langsung kamu ajak curhat kapan saja! Jika kamu memiliki Kunci Google Gemini AI sendiri, kamu bisa memasukkannya di bawah ini:
-            </p>
-            <input type="password" id="api-key-input" placeholder="Masukkan Google Gemini API Key..." style="width: 100%; padding: 0.9rem; border: 3px solid var(--ink); border-radius: 8px; font-family: var(--mono); font-size: 1rem; margin-bottom: 1.4rem; box-shadow: 4px 4px 0 var(--ink); outline: none;">
-            <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
-                <button type="button" class="btn btn-small" style="background: #ffffff;" onclick="toggleApiKeyModal()">Batal</button>
-                <button type="button" class="btn btn-small" style="background: var(--lime);" onclick="saveApiKey()">Simpan Kunci ✓</button>
+        <div class="settings-card mk" style="max-width: 520px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
+                <span class="tape tape-pink">AKSES KUNCI AI</span>
+                <button type="button" onclick="toggleApiKeyModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; line-height: 1; font-weight: bold; color: var(--ink);">✕</button>
+            </div>
+            
+            <h2 style="font-size: 2rem; margin-bottom: 0.4rem;">Buka Akses Gemini AI 🤖</h2>
+            
+            <!-- Status Badge -->
+            <div id="api-status-banner" style="background: #f1f5f9; border: 2px dashed var(--ink); border-radius: 12px; padding: 0.7rem 0.9rem; margin-bottom: 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <div id="api-status-text" style="font-family: var(--mono); font-size: 0.88rem; color: #475569;">
+                    ⚪ <strong>Mode Otak Bawaan</strong> (Tanpa Kunci API)
+                </div>
+                <button type="button" id="btn-reset-key" class="btn btn-small" style="display: none; background: #ffebee; border: 1.5px solid #d32f2f; color: #d32f2f; padding: 0.25rem 0.6rem; font-size: 0.8rem;" onclick="resetApiKey()">
+                    Hapus 🗑️
+                </button>
+            </div>
+
+            <!-- Primary Section: Passcode Unlock -->
+            <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
+                <label style="font-family: var(--imp); font-size: 1.05rem; display: block; margin-bottom: 0.3rem; color: #1e293b;">
+                    🔑 Masukkan Kata Kunci Akses:
+                </label>
+                <p style="font-family: var(--mk); font-size: 1rem; color: #555; margin-bottom: 0.8rem; line-height: 1.35;">
+                    Punya kata kunci dari pengembang atau guru? Masukkan di sini untuk mengaktifkan AI secara otomatis tanpa perlu repot menyalin API Key panjang:
+                </p>
+                <div style="display: flex; gap: 0.6rem;">
+                    <input type="text" id="passcode-input" placeholder="Masukkan kata kunci..." style="flex: 1; padding: 0.7rem 0.9rem; border: 2px solid var(--ink); border-radius: 8px; font-family: var(--mono); font-size: 0.95rem; outline: none; box-shadow: 2px 2px 0 var(--ink);" onkeydown="if(event.key === 'Enter') unlockWithPasscode()">
+                    <button type="button" class="btn btn-small" style="background: var(--lime); padding: 0.7rem 1.1rem; font-weight: bold; flex-shrink: 0;" onclick="unlockWithPasscode()">
+                        Buka 🚀
+                    </button>
+                </div>
+                <div id="passcode-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.85rem; font-weight: 600;"></div>
+            </div>
+
+            <!-- Secondary Accordion: Manual API Key (Optional) -->
+            <details style="font-family: var(--sans); font-size: 0.88rem; color: #475569; margin-bottom: 1.2rem;">
+                <summary style="cursor: pointer; font-weight: 700; color: #1e293b; padding: 0.3rem 0;">
+                    ⚙️ Opsi Tambahan: Masukkan API Key Pribadi Manual
+                </summary>
+                <div style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border: 2px dashed #94a3b8; border-radius: 8px;">
+                    <p style="margin-bottom: 0.6rem; font-size: 0.82rem; line-height: 1.4;">
+                        Jika kamu memiliki Google Gemini API Key sendiri, kamu bisa menyimpannya langsung:
+                    </p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="password" id="api-key-input" placeholder="AIzaSy... atau AQ...." style="flex: 1; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.85rem; outline: none;">
+                        <button type="button" class="btn btn-small" style="background: var(--sun); padding: 0.5rem 0.9rem; flex-shrink: 0;" onclick="saveManualApiKey()">
+                            Simpan ✓
+                        </button>
+                    </div>
+                </div>
+            </details>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-small" style="background: #ffffff; padding: 0.5rem 1.2rem;" onclick="toggleApiKeyModal()">Tutup</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Key management
-        let geminiKey = localStorage.getItem('caretech_gemini_key') || "";
-        let chatHistory = [];
+        // Cipher data for key protection (Base64 + Caesar + ROT13)
+        const OBFUSCATED_API_KEY = "KPYoKQC4Oe42MfK2QRPmS1OqLNDiKNDfyYfOIM1bQQ5DOQfOHtDRO2jHwXY4LXbXKdPtLgw=";
+        const OBFUSCATED_PASSWORD = "v2DtTRD2SRHjR2HbwgPmuRa=";
 
-        function toggleApiKeyModal() {
-            const modal = document.getElementById('settings-modal');
-            const input = document.getElementById('api-key-input');
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            } else {
-                input.value = geminiKey;
-                modal.style.display = 'flex';
+        function decodeObfuscated(cipherStr) {
+            try {
+                // Reverse alphabet shift (-20 is equivalent to +6 mod 26)
+                const unshifted = cipherStr.replace(/[a-zA-Z]/g, (c) => {
+                    const code = c.charCodeAt(0);
+                    const base = code >= 97 ? 97 : 65;
+                    return String.fromCharCode(((code - base + 6) % 26) + base);
+                });
+                return atob(unshifted);
+            } catch (err) {
+                console.error("Decode cipher failed:", err);
+                return "";
             }
         }
 
-        function saveApiKey() {
+        // Key management state
+        let geminiKey = localStorage.getItem('caretech_gemini_key') || "";
+        let chatHistory = [];
+
+        function updateApiStatusIndicator() {
+            const statusTrigger = document.getElementById('btn-api-modal-trigger');
+            const statusBanner = document.getElementById('api-status-banner');
+            const statusText = document.getElementById('api-status-text');
+            const resetBtn = document.getElementById('btn-reset-key');
+            const keyInput = document.getElementById('api-key-input');
+
+            if (geminiKey && geminiKey.length > 15) {
+                if (statusTrigger) {
+                    statusTrigger.style.background = 'var(--lime)';
+                    statusTrigger.innerHTML = 'AI Aktif 🟢';
+                }
+                if (statusBanner) {
+                    statusBanner.style.background = '#dcfce7';
+                    statusBanner.style.borderColor = '#16a34a';
+                }
+                if (statusText) {
+                    statusText.innerHTML = '🟢 <strong>Kunci AI Terhubung!</strong> (Gemini Flash Aktif)';
+                    statusText.style.color = '#15803d';
+                }
+                if (resetBtn) resetBtn.style.display = 'inline-block';
+                if (keyInput) keyInput.value = geminiKey;
+            } else {
+                if (statusTrigger) {
+                    statusTrigger.style.background = 'var(--sun)';
+                    statusTrigger.innerHTML = 'Akses AI ⚙️';
+                }
+                if (statusBanner) {
+                    statusBanner.style.background = '#f1f5f9';
+                    statusBanner.style.borderColor = 'var(--ink)';
+                }
+                if (statusText) {
+                    statusText.innerHTML = '⚪ <strong>Mode Otak Bawaan</strong> (Tanpa Kunci API)';
+                    statusText.style.color = '#475569';
+                }
+                if (resetBtn) resetBtn.style.display = 'none';
+                if (keyInput) keyInput.value = '';
+            }
+        }
+
+        function toggleApiKeyModal() {
+            const modal = document.getElementById('settings-modal');
+            const keyInput = document.getElementById('api-key-input');
+            const passcodeFeedback = document.getElementById('passcode-feedback');
+            const passcodeInput = document.getElementById('passcode-input');
+
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                if (passcodeInput) passcodeInput.value = '';
+                if (passcodeFeedback) passcodeFeedback.style.display = 'none';
+                if (keyInput) keyInput.value = geminiKey;
+                updateApiStatusIndicator();
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    if (passcodeInput) passcodeInput.focus();
+                }, 100);
+            }
+        }
+
+        function unlockWithPasscode() {
+            const inputEl = document.getElementById('passcode-input');
+            const feedbackEl = document.getElementById('passcode-feedback');
+            const passcode = (inputEl.value || '').trim();
+
+            if (!passcode) {
+                feedbackEl.style.display = 'block';
+                feedbackEl.style.color = '#dc2626';
+                feedbackEl.textContent = 'Silakan ketikkan kata kunci terlebih dahulu!';
+                return;
+            }
+
+            const correctPwd = decodeObfuscated(OBFUSCATED_PASSWORD);
+            if (passcode === correctPwd) {
+                const realKey = decodeObfuscated(OBFUSCATED_API_KEY);
+                if (realKey && realKey.length > 15) {
+                    geminiKey = realKey;
+                    localStorage.setItem('caretech_gemini_key', geminiKey);
+                    inputEl.value = '';
+                    feedbackEl.style.display = 'block';
+                    feedbackEl.style.color = '#16a34a';
+                    feedbackEl.textContent = '🎉 Kata kunci benar! Akses Gemini AI berhasil dibuka!';
+                    updateApiStatusIndicator();
+                    setTimeout(() => {
+                        toggleApiKeyModal();
+                        addMessageToUI("Akses Google Gemini AI berhasil diaktifkan dengan kata kunci! Sekarang aku siap mendampingimu dengan kecerdasan penuh kawan! 🚀✨", "ai");
+                    }, 800);
+                    return;
+                }
+            }
+
+            feedbackEl.style.display = 'block';
+            feedbackEl.style.color = '#dc2626';
+            feedbackEl.textContent = '❌ Kata kunci salah! Periksa kembali huruf dan ejaannya.';
+        }
+
+        function saveManualApiKey() {
             const input = document.getElementById('api-key-input').value.trim();
+            if (!input) return;
             geminiKey = input;
             localStorage.setItem('caretech_gemini_key', geminiKey);
+            updateApiStatusIndicator();
             toggleApiKeyModal();
-            addMessageToUI("Kunci Gemini API berhasil diperbarui! Aku siap diajak curhat kawan!", "ai");
+            addMessageToUI("Kunci Gemini API manual berhasil disimpan! Aku siap diajak curhat kawan!", "ai");
+        }
+
+        function resetApiKey() {
+            geminiKey = "";
+            localStorage.removeItem('caretech_gemini_key');
+            updateApiStatusIndicator();
+            const feedbackEl = document.getElementById('passcode-feedback');
+            if (feedbackEl) {
+                feedbackEl.style.display = 'block';
+                feedbackEl.style.color = '#475569';
+                feedbackEl.textContent = 'Kunci API telah dihapus. ESA beralih ke Mode Otak Bawaan.';
+            }
+            addMessageToUI("Kunci API telah dilepas. ESA sekarang menggunakan Otak Empati Bawaan.", "ai");
         }
 
         function clearChat() {
@@ -769,9 +946,12 @@
                 try {
                     const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, bersahabat, dan mendukung bernama Esa (Emotional Support Assistance) untuk siswa sekolah. Dengarkan keluh kesah pengguna dan berikan respons yang suportif, hangat, tidak menghakimi, dan ringkas (maksimal 3 paragraf pendek).";
                     
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-goog-api-key': geminiKey
+                        },
                         body: JSON.stringify({
                             system_instruction: { parts: [{ text: systemInstruction }] },
                             contents: chatHistory
@@ -823,6 +1003,10 @@
             if(sidebar) sidebar.classList.toggle('active');
             if(overlay) overlay.classList.toggle('active');
         }
+
+        // Initialize status on startup
+        updateApiStatusIndicator();
+        document.addEventListener('DOMContentLoaded', updateApiStatusIndicator);
     </script>
     <script src="dropdown.js"></script>
 </body>
