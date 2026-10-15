@@ -99,18 +99,24 @@ class UIScene extends Phaser.Scene {
 
     /* ══════════ Quest Banner (top-center Yellow Notepad) ══════════ */
     this.questContainer = this.add.container(width / 2, -60).setScrollFactor(1).setDepth(300);
-    const questShadow = this.add.graphics();
-    questShadow.fillStyle(0x000000, 1).fillRoundedRect(-147, -15, 298, 36, 8);
-    const questBg = this.add.graphics();
-    questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
-    questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
+    this.questShadow = this.add.graphics();
+    this.questShadow.fillStyle(0x000000, 1).fillRoundedRect(-147, -15, 298, 36, 8);
+    this.questBg = this.add.graphics();
+    this.questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
+    this.questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
     this.questText = this._createSharpText(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '12px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5);
-    this.questContainer.add([questShadow, questBg, this.questText]);
+    this.questTimerText = this._createSharpText(0, 10, '', {
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#facc15'
+    }).setOrigin(0.5).setVisible(false);
+    this.questContainer.add([this.questShadow, this.questBg, this.questText, this.questTimerText]);
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
@@ -603,6 +609,7 @@ class UIScene extends Phaser.Scene {
       this.time.delayedCall(400, () => {
         this.cameras.main.fadeIn(800, 0, 0, 0);
         this.cameras.main.once('camerafadeincomplete', () => {
+          this.cameras.main.resetFX();
           this.startDialogue('lvl1_001_narrator');
         });
       });
@@ -624,16 +631,26 @@ class UIScene extends Phaser.Scene {
     const durationSec = options.durationSec || 30;
     this._questOnTimeout = options.onTimeout || null;
 
-    if (this.questBg) this.questBg.clear();
+    if (this.questBg) {
+      this.questBg.clear();
+      if (hasTimer) {
+        this.questBg.fillStyle(0x0f172a, 0.95);
+        this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
+        this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
+        this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
+      } else {
+        this.questBg.fillStyle(0x0f172a, 0.92);
+        this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
+        this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
+        this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
+      }
+    }
 
     if (hasTimer) {
-      this.questBg.fillStyle(0x0f172a, 0.95);
-      this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
-      this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
-      this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
-
-      this.questText.setY(-8).setText(text).setColor('#facc15');
-      this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+      if (this.questText) this.questText.setY(-8).setText(text).setColor('#facc15');
+      if (this.questTimerText) {
+        this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+      }
 
       let remaining = durationSec;
       this._questTimerEvent = this.time.addEvent({
@@ -642,9 +659,11 @@ class UIScene extends Phaser.Scene {
         callback: () => {
           remaining--;
           const secStr = remaining.toString().padStart(2, '0');
-          this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
-          if (remaining <= 5) {
-            this.questTimerText.setColor('#ef4444');
+          if (this.questTimerText) {
+            this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
+            if (remaining <= 5) {
+              this.questTimerText.setColor('#ef4444');
+            }
           }
           if (remaining <= 0) {
             if (this._questTimerEvent) {
@@ -659,13 +678,8 @@ class UIScene extends Phaser.Scene {
         }
       });
     } else {
-      this.questBg.fillStyle(0x0f172a, 0.92);
-      this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
-      this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
-      this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
-
-      this.questText.setY(0).setText(text).setColor('#38bdf8');
-      this.questTimerText.setVisible(false);
+      if (this.questText) this.questText.setY(0).setText(text).setColor('#38bdf8');
+      if (this.questTimerText) this.questTimerText.setVisible(false);
 
       if (options.duration && options.duration > 0) {
         this._questDismissTimer = this.time.delayedCall(options.duration, () => {
@@ -930,6 +944,14 @@ class UIScene extends Phaser.Scene {
           this.dialogBg.disableInteractive();
           this._showNode(node.next);
         });
+        this.input.keyboard.once('keydown-ENTER', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this.dialogBg.disableInteractive();
+          this._showNode(node.next);
+        });
       });
     } else {
       // End of dialogue — click or press key to close
@@ -938,33 +960,24 @@ class UIScene extends Phaser.Scene {
       
       this.input.keyboard.removeAllListeners('keydown-E');
       this.input.keyboard.removeAllListeners('keydown-SPACE');
+      this.input.keyboard.removeAllListeners('keydown-ENTER');
       if (this._dialogueTimer) this._dialogueTimer.destroy();
 
       // Delay interaction to prevent same-frame event leakage from previous click
       this._dialogueTimer = this.time.delayedCall(150, () => {
-        this.dialogBg.setInteractive();
-        this.dialogBg.once('pointerdown', () => {
+        const doClose = () => {
           if (this._autoAdvanceTimerEvent) {
             this._autoAdvanceTimerEvent.destroy();
             this._autoAdvanceTimerEvent = null;
           }
           this._closeDialogue();
-        });
+        };
 
-        this.input.keyboard.once('keydown-E', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this._closeDialogue();
-        });
-        this.input.keyboard.once('keydown-SPACE', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this._closeDialogue();
-        });
+        this.dialogBg.setInteractive();
+        this.dialogBg.once('pointerdown', doClose);
+        this.input.keyboard.once('keydown-E', doClose);
+        this.input.keyboard.once('keydown-SPACE', doClose);
+        this.input.keyboard.once('keydown-ENTER', doClose);
       });
     }
   }
@@ -997,6 +1010,7 @@ class UIScene extends Phaser.Scene {
     const lastNodeId = this._currentDialogueNode;
     const lastNode = lastNodeId ? DIALOGUES[lastNodeId] : null;
 
+    if (this.dialogShadow) this.dialogShadow.setVisible(false);
     this.dialogBg.setVisible(false).disableInteractive();
     this.dialogBorder.setVisible(false);
     this.speakerTagShadow.setVisible(false);
@@ -1013,6 +1027,7 @@ class UIScene extends Phaser.Scene {
     this.input.keyboard.removeAllListeners('keydown');
     this.input.keyboard.removeAllListeners('keydown-E');
     this.input.keyboard.removeAllListeners('keydown-SPACE');
+    this.input.keyboard.removeAllListeners('keydown-ENTER');
     
     if (this._dialogueTimer) {
       this._dialogueTimer.destroy();
@@ -1022,8 +1037,17 @@ class UIScene extends Phaser.Scene {
     if (typeof document !== 'undefined' && document.body) {
       document.body.classList.remove('dialogue-active');
     }
-    if (typeof window !== 'undefined' && typeof window.setDialogueActive === 'function') {
-      window.setDialogueActive(false);
+    if (typeof window !== 'undefined') {
+      if (typeof window.setDialogueActive === 'function') {
+        window.setDialogueActive(false);
+      }
+      if (typeof window.focus === 'function') {
+        window.focus();
+      }
+      const canvas = document.querySelector('canvas');
+      if (canvas && typeof canvas.focus === 'function') {
+        canvas.focus();
+      }
     }
 
     this.registry.set('dialogueActive', false);

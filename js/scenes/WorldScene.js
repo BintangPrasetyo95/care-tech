@@ -80,6 +80,8 @@ class WorldScene extends Phaser.Scene {
       if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
         this.registry.set('level1_quest_active', null);
         this.registry.set('level1_library_arrived', true);
+        this.registry.set('level1_complete', true);
+        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
         const questName = (activeQuest === 'ikuti_nabula') 
           ? 'Ikuti Nabula ke perpustakaan' 
           : 'Susul Nabula ke perpustakaan';
@@ -302,7 +304,7 @@ class WorldScene extends Phaser.Scene {
             targets: this.player.sprite,
             x: targetX,
             y: targetY,
-            duration: 2200,
+            duration: 1400,
             ease: 'Linear',
             onComplete: () => {
               this.player.facing = 'right';
@@ -314,11 +316,20 @@ class WorldScene extends Phaser.Scene {
                 this.player.sprite.body.reset(targetX, targetY);
               }
               // Auto-trigger 007 (006a: Nakula langsung menyapa tanpa tombol aksi)
-              this.time.delayedCall(300, () => {
-                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              this.time.delayedCall(200, () => {
+                const ui = this.scene.get('UI');
+                if (ui && ui.startDialogue) {
+                  ui.startDialogue('lvl1_007_nakula');
+                }
               });
             }
           });
+        } else {
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+            this.player.isCutsceneActive = false;
+          }
         }
       } else if (action === 'lvl1_005b_approach') {
         // 005b-7a: Nakula kembali mendekati Nabula
@@ -348,7 +359,7 @@ class WorldScene extends Phaser.Scene {
             targets: this.player.sprite,
             x: targetX,
             y: targetY,
-            duration: 2200,
+            duration: 1400,
             ease: 'Linear',
             onComplete: () => {
               this.player.facing = 'right';
@@ -359,11 +370,20 @@ class WorldScene extends Phaser.Scene {
                 this.player.sprite.body.enable = true;
                 this.player.sprite.body.reset(targetX, targetY);
               }
-              this.time.delayedCall(300, () => {
-                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              this.time.delayedCall(200, () => {
+                const ui = this.scene.get('UI');
+                if (ui && ui.startDialogue) {
+                  ui.startDialogue('lvl1_007_nakula');
+                }
               });
             }
           });
+        } else {
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+            this.player.isCutsceneActive = false;
+          }
         }
       } else if (action === 'lvl1_012_focus_nabula' || action === 'lvl1_005b_focus_nabula') {
         // 012: Kunci kontrol Nakula saat kamera mengarah ke Nabula
@@ -380,13 +400,12 @@ class WorldScene extends Phaser.Scene {
             targets: this.cameras.main,
             scrollX: nabula.sprite.x - this.cameras.main.width / 2,
             scrollY: nabula.sprite.y - this.cameras.main.height / 2,
-            duration: 800,
+            duration: 700,
             ease: 'Sine.easeInOut'
           });
         }
       } else if (action === 'lvl1_012_nabula_leaves' || action === 'lvl1_005b_nabula_leaves') {
         // Gerakan dan kamera Nabula disamakan antara 012 dan 005b
-        // 012 & 013: Nakula TETAP tidak bisa digerakkan sampai kamera kembali tepat ke Nakula di 013!
         this.registry.set('level1_player_locked', true);
         if (this.player) {
           this.player.isLocked = true;
@@ -415,13 +434,13 @@ class WorldScene extends Phaser.Scene {
               {
                 x: step1X,
                 y: step1Y,
-                duration: 2200,
+                duration: 900,
                 ease: 'Linear'
               },
               {
                 x: step2X,
                 y: step2Y,
-                duration: 3500,
+                duration: 1600,
                 ease: 'Linear',
                 onStart: () => {
                   nabula.sprite.setFlipX(false);
@@ -436,9 +455,9 @@ class WorldScene extends Phaser.Scene {
               nabula.sprite.setActive(false).setVisible(false);
               if (nabula.sprite.body) nabula.sprite.body.enable = false;
               if (nabula.clearEmotion) nabula.clearEmotion();
-              if (nabula.indicator) nabula.indicator.destroy();
+              if (nabula.indicator && nabula.indicator.destroy) nabula.indicator.destroy();
 
-              // PERBAIKAN: Hentikan follow Nabula agar kamera tidak looping / fighting
+              // Hentikan follow Nabula agar kamera tidak looping / fighting
               this.cameras.main.stopFollow();
               this.tweens.killTweensOf(this.cameras.main);
 
@@ -447,7 +466,7 @@ class WorldScene extends Phaser.Scene {
                 targets: this.cameras.main,
                 scrollX: this.player.sprite.x - this.cameras.main.width / 2,
                 scrollY: this.player.sprite.y - this.cameras.main.height / 2,
-                duration: 1200,
+                duration: 700,
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
                   this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
@@ -455,7 +474,10 @@ class WorldScene extends Phaser.Scene {
 
                   if (isFrom005b) {
                     // 005b-9b: Tampilkan dialog ECA (Nakula masih tetap diam sampai quest timer dimulai)
-                    this.scene.get('UI').startDialogue('lvl1_005b_9b_eca');
+                    const ui = this.scene.get('UI');
+                    if (ui && ui.startDialogue) {
+                      ui.startDialogue('lvl1_005b_9b_eca');
+                    }
                   } else {
                     // 013 selesai: Kamera sudah kembali tepat ke Nakula!
                     // NAKULA SEKARANG BISA DIGERAKKAN!
@@ -475,6 +497,17 @@ class WorldScene extends Phaser.Scene {
               });
             }
           });
+        } else {
+          // Fail-safe if nabula is not present
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+          }
+          this.registry.set('level1_quest_active', 'ikuti_nabula');
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Ikuti Nabula ke perpustakaan.');
+          }
         }
       } else if (action === 'lvl1_005b_start_timer_quest') {
         // 005b-9c: QUEST (BATAS WAKTU) 30 detik

@@ -117,7 +117,7 @@ const DIALOGUES = {
       },
       {
         label: { en: '2. "Leave it, keep walking."', id: '2. "Biarkan saja, lanjut jalan."' },
-        next : null,
+        next : 'lvl1_005b_8_narrator',
         harmonyDelta: -10,
         action: 'vibrate_choice'
       }
