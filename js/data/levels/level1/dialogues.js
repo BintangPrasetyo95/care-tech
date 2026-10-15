@@ -751,15 +751,15 @@ window.LEVEL_1_DIALOGUES = {
     },
     action: 'lvl1_058x_nabula_leaves',
     noManualAdvance: true,
-    next: 'lvl1_058x_7_eca'
+    next: null
   },
   lvl1_058x_7_eca: {
     id: '058x-7',
     speaker: { en: 'ECA', id: 'ECA' },
     portrait: 'player_neutral',
     text: {
-      en: '"Nakula, this is our last chance. Hurry, follow Nabula to the garden, OR find Bu Wati in the library, choose one, before it\'s too late!"',
-      id: '"Nakula, ini kesempatan terakhir. Cepat susul Nabula ke taman, atau cari Bu Wati di perpustakaan, pilih salah satu, sebelum terlambat!"'
+      en: '"Nakula, this is our last chance. Hurry, follow Nabula to the garden before it\'s too late!"',
+      id: '"Nakula, ini kesempatan terakhir. Cepat susul Nabula ke taman sebelum terlambat!"'
     },
     next: null,
     onCloseAction: 'lvl1_058x_start_emergency_quest'
@@ -771,8 +771,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula did not manage to find Nabula or Bu Wati in time.',
-      id: 'Nakula tidak sempat menemukan Nabula maupun Bu Wati tepat waktu.'
+      en: 'Nakula did not manage to find Nabula in time.',
+      id: 'Nakula tidak sempat menemukan Nabula tepat waktu.'
     },
     next: 'lvl1_058x_12_eca',
     action: 'lvl1_058x_fade_out'
@@ -787,30 +787,6 @@ window.LEVEL_1_DIALOGUES = {
     },
     next: null,
     onCloseAction: 'lvl1_058x_show_fail_modal'
-  },
-
-  /* ── 058x: Resolusi Darurat (Jika Pemain Berhasil Menemukan Nabula/Bu Wati) ── */
-  lvl1_058x_nabula_garden_found: {
-    id: '058x-garden',
-    speaker: { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_sad',
-    text: {
-      en: '"Nakula...? Thank you for coming after me. I just felt so overwhelmed earlier."',
-      id: '"Nakula...? Makasih ya udah nyusul aku. Tadi aku ngerasa bener-bener sendirian."'
-    },
-    next: null,
-    onCloseAction: 'lvl1_058x_emergency_success'
-  },
-  lvl1_058x_bu_wati_found: {
-    id: '058x-wati',
-    speaker: { en: 'Bu Wati', id: 'Bu Wati' },
-    portrait: 'wati_neutral',
-    text: {
-      en: '"Nakula? There is something happening in the cafeteria? Thank you for reporting this immediately, let\'s go check together."',
-      id: '"Nakula? Ada kejadian apa di kantin? Terima kasih sudah langsung melapor, ayo kita cek bersama-sama."'
-    },
-    next: null,
-    onCloseAction: 'lvl1_058x_emergency_success'
   },
 
   /* ── 059a: Jalur A (Konfrontasi Langsung: 059a-1 s/d 059a-13) ── */

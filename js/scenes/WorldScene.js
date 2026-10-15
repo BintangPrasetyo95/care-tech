@@ -179,30 +179,7 @@ class WorldScene extends Phaser.Scene {
       }
     }
 
-    /* ── Check Level 1 Emergency Quest Resolution (Garden or Library) ── */
-    if (mapKey === 'garden' && this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
-      this.registry.set('level1_quest_active', null);
-      this.time.delayedCall(300, () => {
-        const ui = this.scene.get('UI');
-        if (ui && ui.completeQuest) {
-          ui.completeQuest('Menyusul Nabula ke taman!');
-        }
-        if (ui && ui.startDialogue) {
-          ui.startDialogue('lvl1_058x_nabula_garden_found');
-        }
-      });
-    } else if (mapKey === 'library' && this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
-      this.registry.set('level1_quest_active', null);
-      this.time.delayedCall(300, () => {
-        const ui = this.scene.get('UI');
-        if (ui && ui.completeQuest) {
-          ui.completeQuest('Lapor Bu Wati di perpustakaan!');
-        }
-        if (ui && ui.startDialogue) {
-          ui.startDialogue('lvl1_058x_bu_wati_found');
-        }
-      });
-    }
+
 
     /* ── Check Level 1 Branch B: Arrival at Cafeteria with Bu Wati ── */
     if (mapKey === 'cafeteria' && this.registry.get('level1_branch_b_bu_wati_at_cafeteria') && !this.registry.get('level1_branch_b_reached_table')) {
@@ -376,6 +353,35 @@ class WorldScene extends Phaser.Scene {
       console.log('%c[DEBUG] Menguji Node 060 (Titik Temu)...', 'color: #3b82f6; font-weight: bold;');
       const ui = this.scene.get('UI');
       if (ui && ui.startDialogue) ui.startDialogue('lvl1_060_narrator');
+    };
+    window.testEmergencyQuest = () => {
+      console.log('%c[DEBUG] Mensimulasikan Quest Darurat 058x (30s)...', 'color: #ef4444; font-weight: bold;');
+      this.registry.set('level1_049_done', true);
+      this.registry.set('level1_058x_bullies_left', true);
+      this.registry.set('level1_058x_nabula_left', true);
+      this.registry.set('level1_nabula_at_garden_emergency', true);
+      const ui = this.scene.get('UI');
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        this.time.delayedCall(400, () => {
+          if (ui && ui.startDialogue) ui.startDialogue('lvl1_058x_7_eca');
+        });
+      } else {
+        if (ui && ui.startDialogue) ui.startDialogue('lvl1_058x_7_eca');
+      }
+    };
+    window.testNabulaRunsAwayEmergency = () => {
+      console.log('%c[DEBUG] Menguji Adegan Nabula Lari Keluar (058x-6 & Kamera)...', 'color: #f59e0b; font-weight: bold;');
+      this.registry.set('level1_049_done', true);
+      const ui = this.scene.get('UI');
+      if (this.registry.get('currentMap') !== 'cafeteria') {
+        this._changeMap('cafeteria', 29 * TILE + TILE / 2, 13 * TILE + TILE / 2);
+        this.time.delayedCall(400, () => {
+          if (ui && ui.startDialogue) ui.startDialogue('lvl1_058x_6_narrator');
+        });
+      } else {
+        if (ui && ui.startDialogue) ui.startDialogue('lvl1_058x_6_narrator');
+      }
     };
     window.debugLevel1State = () => {
       console.table({
@@ -1036,6 +1042,8 @@ class WorldScene extends Phaser.Scene {
         console.log('%c[Perpustakaan 059b] Transisi ke kantin bersama Bu Wati...', 'color: #38bdf8; font-weight: bold;');
         this.registry.set('level1_quest_active', null);
         this.registry.set('level1_branch_b_bu_wati_at_cafeteria', true);
+        this.registry.set('level1_058x_nabula_left', false);
+        this.registry.set('level1_058x_bullies_left', false);
         const ui = this.scene.get('UI');
         if (ui && ui.completeQuest) {
           ui.completeQuest('Cari Bu Wati di perpustakaan.');
@@ -1513,10 +1521,17 @@ class WorldScene extends Phaser.Scene {
         const nabula = this.npcs.find(n => n.key === 'nabula');
         this.registry.set('level1_058x_nabula_left', true);
         this.registry.set('level1_nabula_at_garden_emergency', true);
-        console.log('%c[Kantin 058x] Nabula buru-buru meninggalkan kantin lewat lorong aman...', 'color: #f59e0b; font-weight: bold;');
+        console.log('%c[Kantin 058x] Nabula buru-buru meninggalkan kantin (kamera mengikuti)...', 'color: #f59e0b; font-weight: bold;');
         if (nabula && nabula.sprite) {
           if (nabula.clearEmotion) nabula.clearEmotion();
           const ns = nabula.sprite;
+
+          // 1. Kamera langsung mengikuti pergerakan Nabula berlari keluar kantin
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(ns, true, 0.08, 0.08);
+
+          // 2. Nabula bergerak keluar lewat lorong aman baris 9
           ns.anims.play('nabula_walk_down', true);
           this.tweens.add({
             targets: ns,
@@ -1545,9 +1560,24 @@ class WorldScene extends Phaser.Scene {
                         duration: 300,
                         onComplete: () => {
                           ns.setVisible(false);
-                          const ui = this.scene.get('UI');
-                          if (ui && ui.startDialogue) {
-                            ui.startDialogue('lvl1_058x_7_eca');
+                          console.log('%c[Kantin 058x] Nabula telah keluar dari kantin. Mengarahkan kamera kembali ke Nakula...', 'color: #22c55e; font-weight: bold;');
+
+                          // 3. Kamera bergerak halus kembali menyorot Nakula
+                          if (this.player && this.player.sprite) {
+                            this.cameras.main.stopFollow();
+                            this.tweens.killTweensOf(this.cameras.main);
+                            this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 800, 'Sine.easeInOut', () => {
+                              console.log('%c[Kantin 058x] Kamera selesai menyorot Nakula. Membuka dialog lvl1_058x_7_eca...', 'color: #10b981; font-weight: bold;');
+                              const ui = this.scene.get('UI');
+                              if (ui && ui.startDialogue) {
+                                ui.startDialogue('lvl1_058x_7_eca');
+                              }
+                            });
+                          } else {
+                            const ui = this.scene.get('UI');
+                            if (ui && ui.startDialogue) {
+                              ui.startDialogue('lvl1_058x_7_eca');
+                            }
                           }
                         }
                       });
@@ -1564,7 +1594,7 @@ class WorldScene extends Phaser.Scene {
           }
         }
       } else if (action === 'lvl1_058x_start_emergency_quest') {
-        console.log('%c[Kantin 058x] Memulai Quest Darurat (30s): Susul Nabula ke taman ATAU lapor Bu Wati!', 'color: #ef4444; font-weight: bold;');
+        console.log('%c[Kantin 058x] Memulai Quest Darurat (30s): Susul Nabula ke taman!', 'color: #ef4444; font-weight: bold;');
         this.registry.set('level1_player_locked', false);
         if (this.player) {
           this.player.isLocked = false;
@@ -1572,10 +1602,10 @@ class WorldScene extends Phaser.Scene {
           this.tweens.killTweensOf(this.cameras.main);
           this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
         }
-        this.registry.set('level1_quest_active', 'emergency_susul_atau_lapor');
+        this.registry.set('level1_quest_active', 'emergency_susul_nabula_taman');
         const ui = this.scene.get('UI');
         if (ui && ui.showQuest) {
-          ui.showQuest('QUEST (DARURAT): Susul Nabula ke taman ATAU lapor Bu Wati!', {
+          ui.showQuest('QUEST (DARURAT): Susul Nabula ke taman!', {
             hasTimer: true,
             durationSec: 30,
             onTimeout: () => {
@@ -2066,9 +2096,14 @@ class WorldScene extends Phaser.Scene {
       }
     }
 
-    /* ── Level 1 Branch C: Proximity & Auto-Walk to Nabula in Garden (059c-8) ── */
+    /* ── Level 1 Branch C / Emergency: Proximity & Auto-Walk to Nabula in Garden (059c-8) ── */
+    const isBranchCGarden = this.registry.get('level1_quest_active') === 'cari_nabula_taman_branch_c' || this.registry.get('level1_nabula_at_garden_branch_c');
+    const isEmergencyGarden = this.registry.get('level1_quest_active') === 'emergency_susul_nabula_taman' ||
+      this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor' ||
+      this.registry.get('level1_nabula_at_garden_emergency');
+
     if (this.registry.get('currentMap') === 'garden' &&
-      (this.registry.get('level1_quest_active') === 'cari_nabula_taman_branch_c' || this.registry.get('level1_nabula_at_garden_branch_c')) &&
+      (isBranchCGarden || isEmergencyGarden) &&
       !this.registry.get('level1_059c_approached_nabula') &&
       !this.registry.get('dialogueActive')) {
       const nabula = this.npcs.find(n => n.key === 'nabula');
@@ -2084,6 +2119,13 @@ class WorldScene extends Phaser.Scene {
           this.player.isLocked = true;
           this.player.isCutsceneActive = true;
           if (this.player.sprite.body) this.player.sprite.body.enable = false;
+
+          if (isEmergencyGarden) {
+            this.registry.set('level1_route_chosen', 'C');
+            this.registry.set('level1_058x_emergency_taken', true);
+            this.registry.set('level1_nabula_at_garden_branch_c', true);
+            this.registry.set('level1_quest_active', null);
+          }
 
           // Kamera mengikuti Nakula
           this.cameras.main.stopFollow();
@@ -2124,7 +2166,10 @@ class WorldScene extends Phaser.Scene {
               // Selesaikan quest banner
               const ui = this.scene.get('UI');
               if (ui && ui.completeQuest) {
-                ui.completeQuest('Cari Nabula di taman.');
+                ui.completeQuest(isEmergencyGarden ? 'Menyusul Nabula ke taman!' : 'Cari Nabula di taman.');
+              }
+              if (isEmergencyGarden && ui && ui.hideQuestBanner) {
+                ui.hideQuestBanner();
               }
 
               // Kamera berhenti, lalu dialog lvl1_059c_8_nakula muncul
@@ -3090,7 +3135,7 @@ class WorldScene extends Phaser.Scene {
         this.npcs.push(nabula);
       } else if (this.registry.get('level1_nabula_at_garden_emergency') && !this.registry.get('level1_complete')) {
         const nabula = new NPC(this, 12 * TILE + TILE / 2, 9 * TILE + TILE / 2,
-          'nabula', 'lvl1_058x_nabula_garden_found', { name: 'Nabula', emotion: '😔' });
+          'nabula', 'lvl1_059c_8_nakula', { name: 'Nabula', emotion: '😔' });
         nabula.sprite.anims.play('nabula_idle_left', true);
         nabula.sprite.setFlipX(true);
         this.npcs.push(nabula);
@@ -3161,16 +3206,18 @@ class WorldScene extends Phaser.Scene {
       if (canSpawnCafeteriaGroup) {
         const is049Done = this.registry.get('level1_049_done');
 
-        // Nabula di meja makan (11.9, 6) jika belum kabur
-        if (!this.registry.get('level1_058x_nabula_left')) {
+        const isBranchBAtCafeteria = this.registry.get('level1_branch_b_bu_wati_at_cafeteria');
+
+        // Nabula di meja makan (11.9, 6) jika belum kabur (atau saat kembali bersama Bu Wati)
+        if (!this.registry.get('level1_058x_nabula_left') || isBranchBAtCafeteria) {
           const nabula = new NPC(this, 11.9 * TILE + TILE / 2, 6 * TILE + TILE / 2,
             'nabula', null, { name: 'Nabula', emotion: '😔' });
           nabula.sprite.anims.play('nabula_idle_down', true);
           this.npcs.push(nabula);
         }
 
-        // Bagas & Rio jika belum bubar
-        if (!this.registry.get('level1_058x_bullies_left')) {
+        // Bagas & Rio jika belum bubar (atau saat kembali bersama Bu Wati)
+        if (!this.registry.get('level1_058x_bullies_left') || isBranchBAtCafeteria) {
           const bagasX = is049Done ? 13.3 : 13.3;
           const bagasY = is049Done ? 5.5 : 4;
           const bagas = new NPC(this, bagasX * TILE + TILE / 2, bagasY * TILE + TILE / 2,
@@ -3214,9 +3261,6 @@ class WorldScene extends Phaser.Scene {
       if (this.registry.get('level1_quest_active') === 'lapor_bu_wati_branch_b') {
         watiDialogue = 'lvl1_059b_5_nakula';
         watiEmotion = '❗';
-      } else if (this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor') {
-        watiDialogue = 'lvl1_058x_bu_wati_found';
-        watiEmotion = '❗';
       }
       this.npcs.push(new NPC(this, 9 * TILE + TILE / 2, 1 * TILE + TILE / 2,
         'wati', watiDialogue, { name: 'Bu Wati', emotion: watiEmotion }));
@@ -3247,7 +3291,7 @@ class WorldScene extends Phaser.Scene {
       // HANYA spawn jika belum masuk Babak 4 / Kantin, dan bukan alur Jalur B / Emergency
       const isPastCafeteria = this.registry.get('level1_049_done') || this.registry.get('level1_049_triggered');
       const isBranchBQuest = this.registry.get('level1_quest_active') === 'lapor_bu_wati_branch_b';
-      const isEmergencyQuest = this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor';
+      const isEmergencyQuest = this.registry.get('level1_quest_active') === 'emergency_susul_nabula_taman' || this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor';
 
       if (!isPastCafeteria && !isBranchBQuest && !isEmergencyQuest) {
         // Rio (4, 13) menghadap kanan & Bagas (5, 13) menghadap kiri
