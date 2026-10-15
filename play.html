@@ -147,8 +147,10 @@
     }
 
     /* ══════════ MENU PRIORITY OVERRIDE ══════════ */
-    /* When pause menu is open, touch events pass through to menu without moving analog */
-    body.menu-open #joystick-zone {
+    /* When pause menu is open, touch events pass through to menu and joystick is hidden */
+    body.menu-open #joystick-zone,
+    body.menu-open #joystick-container {
+      display: none !important;
       pointer-events: none !important;
     }
 
@@ -173,9 +175,8 @@
     .joystick-zone {
       position: fixed;
       bottom: 0; left: 0;
-      width: 48vw;
-      height: calc(100vh - 80px);
-      max-height: 85vh;
+      width: 50vw;
+      height: 60vh;
       pointer-events: auto;
       touch-action: none;
       user-select: none; -webkit-user-select: none;
@@ -837,10 +838,12 @@
       const maxDistance = 44; // max travel radius in px
 
       const setJoystickCenter = (clientX, clientY) => {
-        // Clamp center so the 140px base stays visible and comfortable on screen
-        const minX = halfSize + 10;
-        const maxX = Math.max(minX, window.innerWidth * 0.48);
-        const minY = 85 + halfSize;
+        // Clamp center so the 140px base stays visible and comfortable on screen:
+        // Must not cross 50% width from left (clampedX + halfSize <= window.innerWidth * 0.50)
+        // Must not cross 60% height from below (clampedY - halfSize >= window.innerHeight * 0.40)
+        const minX = halfSize + 8;
+        const maxX = Math.max(minX, window.innerWidth * 0.50 - halfSize);
+        const minY = Math.max(halfSize + 8, window.innerHeight * 0.40 + halfSize);
         const maxY = Math.max(minY, window.innerHeight - halfSize - 10);
 
         const clampedX = Math.max(minX, Math.min(clientX, maxX));
