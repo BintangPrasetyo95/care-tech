@@ -247,35 +247,127 @@ const DIALOGUES = {
     onCloseAction: 'lvl1_012_nabula_leaves'
   },
 
+  lvl1_library_not_here: {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_surprised',
+    text    : { 
+      en: 'Wait... Nabula isn\'t here in the library yet. Maybe she stopped by the school corridor? Let\'s check the corridor!',
+      id: 'Lho... Nabula belum ada di perpustakaan. Jangan-jangan dia tertahan di lorong sekolah? Ayo kita cek ke lorong!' 
+    },
+    next    : null,
+    action  : null,
+    onCloseAction: 'lvl1_quest_check_corridor'
+  },
+
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */
 
   bully_taunt: {
-    speaker : { en: 'Bully NPC', id: 'Perundung' },
+    speaker : { en: 'Bully 1', id: 'Perundung 1' },
     portrait: 'bully_smirk',
-    text    : { en: 'Ha ha, look at Nabula — pretending she doesn\'t hear us! What a joke.', id: 'Ha ha, lihat Nabula — pura-pura tidak dengar kita! Lelucon macam apa ini.' },
+    text    : { 
+      en: 'Ha ha ha! Look at Nabula — staring at the floor like she\'s completely lost!', 
+      id: 'Ha ha ha! Lihat nih si Nabula — jalan nunduk terus kayak orang hilang arah!' 
+    },
     next    : 'bully_taunt_2'
   },
 
   bully_taunt_2: {
-    speaker : { en: 'Bully NPC', id: 'Perundung' },
+    speaker : { en: 'Bully 2', id: 'Perundung 2' },
     portrait: 'bully_smirk',
-    text    : { en: 'Hey Nabula! Why so quiet? Cat got your tongue? Hahaha!', id: 'Hei Nabula! Kenapa diam saja? Kucing makan lidahmu? Hahaha!' },
-    next    : 'nabula_runs'
+    text    : { 
+      en: 'Why so quiet? Can\'t even look people in the eye! Did you mess up another group project? Hahaha!', 
+      id: 'Kenapa diam aja? Dari kemarin nggak berani natap orang! Apa tugas kelompok kemarin juga berantakan gara-gara kamu? Hahaha!' 
+    },
+    next    : 'nabula_corridor_plea'
+  },
+
+  nabula_corridor_plea: {
+    speaker : { en: 'Nabula', id: 'Nabula' },
+    portrait: 'nabula_sad',
+    text    : { 
+      en: 'P-please stop... get out of my way... just let me through...', 
+      id: 'H-hentikan... jangan halangi jalan... tolong biarkan aku lewat...' 
+    },
+    next    : 'bully_taunt_3'
+  },
+
+  bully_taunt_3: {
+    speaker : { en: 'Bully 1', id: 'Perundung 1' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'Through? Who are you to tell us to move?! You don\'t own this hallway!', 
+      id: 'Lewat? Siapa kamu berani nyuruh-nyuruh kita minggir?! Lorong ini bukan punya nenek moyangmu!' 
+    },
+    next    : 'corridor_breakthrough'
+  },
+
+  corridor_breakthrough: {
+    speaker : { en: 'Narrator', id: 'Narator' },
+    portrait: null,
+    text    : { 
+      en: '[ Nabula clenches her fists, pushes past the gap between them, and bolts down the hallway toward the library! ]', 
+      id: '[ Nabula menggertakkan gigi, memberanikan diri menerobos celah di antara mereka, dan lari sekencang mungkin menuju perpustakaan! ]' 
+    },
+    next    : 'bully_taunt_after',
+    action  : 'corridor_nabula_escape'
+  },
+
+  bully_taunt_after: {
+    speaker : { en: 'Bully 1', id: 'Perundung 1' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'Hey! Running away already?! Guess she\'s hiding in the library corner again like always!', 
+      id: 'Woi! Baru digituin aja udah kabur! Palingan sembunyi lagi di pojokan perpustakaan kayak biasa!' 
+    },
+    action  : 'corridor_camera_return_nakula',
+    next    : 'corridor_eca_react'
+  },
+
+  corridor_eca_react: {
+    speaker : { en: 'ECA', id: 'ECA' },
+    portrait: 'player_surprised',
+    text    : { 
+      en: 'Nakula! Did you see that?! They cornered Nabula until she ran off terrified to the library. Let\'s go after her right away and make sure she\'s okay!', 
+      id: 'Nakula! Kamu lihat itu kan?! Mereka terus-terusan memojokkan Nabula sampai dia lari ketakutan ke perpustakaan. Ayo cepat susul dia ke perpustakaan dan pastikan dia baik-baik saja!' 
+    },
+    next    : null,
+    onCloseAction: 'lvl2_quest_find_nabula'
+  },
+
+  bully_idle_1: {
+    speaker : { en: 'Bully 1', id: 'Perundung 1' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'What are you staring at? You want to interfere too? Mind your own business!', 
+      id: 'Ngapain kamu lihat-lihat? Mau ikut campur urusan orang lain juga? Urus saja dirimu sendiri!' 
+    },
+    next    : null
+  },
+
+  bully_idle_2: {
+    speaker : { en: 'Bully 2', id: 'Perundung 2' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'Better walk away before you get in trouble too, kid.', 
+      id: 'Mending kamu pergi sebelum ikutan kena masalah.' 
+    },
+    next    : null
   },
 
   nabula_runs: {
     speaker : { en: '', id: '' },
     portrait: null,
-    text    : { en: '[ Nabula lowers her head and runs toward the back of the library… ]', id: '[ Nabula menundukkan kepala dan lari ke belakang perpustakaan… ]' },
+    text    : { en: '[ Nabula lowers her head and runs through the corridor into the library… ]', id: '[ Nabula menundukkan kepala dan lari menyusuri lorong menuju perpustakaan… ]' },
     next    : 'narrator_find_her',
-    action  : 'nabula_run_away'
+    action  : 'corridor_nabula_escape'
   },
 
   narrator_find_her: {
     speaker : { en: '', id: '' },
     portrait: null,
-    text    : { en: '[ You should find Nabula. She went behind the library — head through the corridor. ]', id: '[ Kamu harus mencari Nabula. Dia pergi ke belakang perpustakaan — telusuri lorong. ]' },
-    next    : null
+    text    : { en: '[ Follow Nabula! She ran into the back of the library. ]', id: '[ Ikuti Nabula! Dia lari ke bagian belakang perpustakaan. ]' },
+    next    : null,
+    onCloseAction: 'lvl2_quest_find_nabula'
   },
 
   nabula_found: {

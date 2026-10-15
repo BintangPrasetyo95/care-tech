@@ -86,6 +86,36 @@ class NPC {
     }
   }
 
+  /* Set or change the emotion bubble */
+  setEmotion(emoji) {
+    this.clearEmotion();
+    this.emotionBubble = this.scene.add.graphics();
+    this.emotionBubble.fillStyle(0xffffff, 0.95);
+    this.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
+    this.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
+
+    this.emotionText = this.scene.add.text(0, 0, emoji, {
+      fontSize: '13px',
+      resolution: Math.max(window.devicePixelRatio || 1, 2)
+    }).setOrigin(0.5, 0.45);
+    if (this.emotionText.texture) {
+      this.emotionText.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+
+    this.emotionContainer = this.scene.add.container(this.sprite.x, this.sprite.y - 35, [this.emotionBubble, this.emotionText])
+      .setDepth(11);
+
+    this.emotionOffset = 0;
+    this.emotionTween = this.scene.tweens.add({
+      targets: this,
+      emotionOffset: -4,
+      yoyo: true,
+      repeat: -1,
+      duration: 1200,
+      ease: 'Sine.easeInOut'
+    });
+  }
+
   /* Called every frame by WorldScene.update() */
   update() {
     // Update indicator position to follow NPC
