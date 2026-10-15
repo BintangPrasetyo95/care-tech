@@ -305,8 +305,8 @@ const DIALOGUES = {
     speaker : { en: 'Narrator', id: 'Narator' },
     portrait: null,
     text    : { 
-      en: '[ Nabula clenches her fists, pushes past the gap between them, and bolts down the hallway toward the library! ]', 
-      id: '[ Nabula menggertakkan gigi, memberanikan diri menerobos celah di antara mereka, dan lari sekencang mungkin menuju perpustakaan! ]' 
+      en: '[ Nabula clenches her fists, pushes past the gap between them, and bolts out through the doors into the schoolyard toward the library! ]', 
+      id: '[ Nabula menggertakkan gigi, memberanikan diri menerobos celah di antara mereka, dan lari keluar menuju lapangan sekolah ke arah perpustakaan! ]' 
     },
     next    : 'bully_taunt_after',
     action  : 'corridor_nabula_escape'
@@ -316,19 +316,20 @@ const DIALOGUES = {
     speaker : { en: 'Bully 1', id: 'Perundung 1' },
     portrait: 'bully_smirk',
     text    : { 
-      en: 'Hey! Running away already?! Guess she\'s hiding in the library corner again like always!', 
-      id: 'Woi! Baru digituin aja udah kabur! Palingan sembunyi lagi di pojokan perpustakaan kayak biasa!' 
+      en: 'Hey! Running away to the yard already?! Guess she\'s hiding in the library corner again like always!', 
+      id: 'Woi! Baru digituin aja udah kabur ke lapangan! Palingan sembunyi lagi di pojokan perpustakaan kayak biasa!' 
     },
     action  : 'corridor_camera_return_nakula',
-    next    : 'corridor_eca_react'
+    next    : 'corridor_eca_react',
+    onCloseAction: 'lvl2_quest_find_nabula'
   },
 
   corridor_eca_react: {
     speaker : { en: 'ECA', id: 'ECA' },
     portrait: 'player_surprised',
     text    : { 
-      en: 'Nakula! Did you see that?! They cornered Nabula until she ran off terrified to the library. Let\'s go after her right away and make sure she\'s okay!', 
-      id: 'Nakula! Kamu lihat itu kan?! Mereka terus-terusan memojokkan Nabula sampai dia lari ketakutan ke perpustakaan. Ayo cepat susul dia ke perpustakaan dan pastikan dia baik-baik saja!' 
+      en: 'Nakula! Did you see that?! Nabula was so overwhelmed she ran out into the schoolyard toward the library. Let\'s go after her through the library\'s main entrance across the yard!', 
+      id: 'Nakula! Kamu lihat itu kan?! Nabula sampai lari keluar ke lapangan menuju perpustakaan. Ayo cepat kita susul dia lewat pintu utama perpustakaan di seberang lapangan!' 
     },
     next    : null,
     onCloseAction: 'lvl2_quest_find_nabula'

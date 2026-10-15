@@ -98,6 +98,27 @@ class WorldScene extends Phaser.Scene {
           });
         });
       }
+
+      // If arrived at library during Level 2 (after corridor cutscene)
+      if (this.registry.get('level2_triggered') && !this.registry.get('level2_complete')) {
+        this.time.delayedCall(400, () => {
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Temukan Nabula di bagian belakang perpustakaan.');
+          }
+        });
+      }
+    }
+
+    if (mapKey === 'schoolyard') {
+      if (this.registry.get('level2_triggered') && !this.registry.get('level2_complete')) {
+        this.time.delayedCall(400, () => {
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Masuk ke perpustakaan lewat pintu utama di sebelah timur lapangan.');
+          }
+        });
+      }
     }
 
     if (mapKey === 'corridor') {
@@ -178,28 +199,49 @@ class WorldScene extends Phaser.Scene {
           this.tweens.killTweensOf(this.cameras.main);
           this.cameras.main.startFollow(nabula.sprite, true, 0.08, 0.08);
 
-          const destX = 25 * TILE + TILE / 2;
-          const destY = 2 * TILE + TILE / 2;
+          // Door coordinates to Schoolyard: cols 12 & 13, row 4
+          const turnX = 12.5 * TILE;
+          const turnY = 2 * TILE + TILE / 2;
+          const exitX = 12.5 * TILE;
+          const exitY = 4 * TILE + 48; // Stepping through the bottom doors to the schoolyard
 
           let nakulaReacted = false;
 
-          this.tweens.add({
+          this.tweens.chain({
             targets: nabula.sprite,
-            x: destX,
-            y: destY,
-            duration: 2200,
-            ease: 'Linear',
-            onUpdate: () => {
-              // As Nabula dashes past Nakula (near col 12)
-              if (!nakulaReacted && this.player && this.player.sprite && nabula.sprite.x >= this.player.sprite.x - 40) {
-                nakulaReacted = true;
-                this.player.facing = 'right';
-                this.player.sprite.setFlipX(false);
-                this.player.sprite.anims.play('player_idle_right', true);
-                this._showPlayerEmote('❗');
-                if (navigator.vibrate) navigator.vibrate(60);
+            tweens: [
+              {
+                x: turnX,
+                y: turnY,
+                duration: 1100,
+                ease: 'Linear',
+                onUpdate: () => {
+                  // As Nabula dashes past Nakula (near col 12)
+                  if (!nakulaReacted && this.player && this.player.sprite && nabula.sprite.x >= this.player.sprite.x - 48) {
+                    nakulaReacted = true;
+                    this.player.facing = 'right';
+                    this.player.sprite.setFlipX(false);
+                    this.player.sprite.anims.play('player_idle_right', true);
+                    this._showPlayerEmote('❗');
+                    if (navigator.vibrate) navigator.vibrate(60);
+                  }
+                }
+              },
+              {
+                x: exitX,
+                y: exitY,
+                duration: 850,
+                ease: 'Linear',
+                onStart: () => {
+                  nabula.sprite.setFlipX(false);
+                  nabula.sprite.anims.play('nabula_walk_down', true);
+                  if (this.player && this.player.sprite) {
+                    this.player.facing = 'down';
+                    this.player.sprite.anims.play('player_idle_down', true);
+                  }
+                }
               }
-            },
+            ],
             onComplete: () => {
               nabula.sprite.setActive(false).setVisible(false);
               if (nabula.sprite.body) nabula.sprite.body.enable = false;
@@ -248,7 +290,7 @@ class WorldScene extends Phaser.Scene {
         }
         const ui = this.scene.get('UI');
         if (ui && ui.showQuest) {
-          ui.showQuest('QUEST: Temukan Nabula di bagian belakang perpustakaan.');
+          ui.showQuest('QUEST: Susul Nabula ke perpustakaan lewat lapangan.');
         }
         if (navigator.vibrate) navigator.vibrate(80);
       } else if (action === 'complete_level1') {
