@@ -42,6 +42,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── NPCs ── */
     this.npcs = [];
+    this.level2_cutscene_started = false;
     this._spawnNPCs(mapKey);
 
     /* ── Systems ── */
@@ -58,7 +59,9 @@ class WorldScene extends Phaser.Scene {
     });
 
     this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
-    this.cameras.main.setZoom(SCALE);
+    const savedZoom = (typeof localStorage !== 'undefined' && parseFloat(localStorage.getItem('caretech_zoom'))) || this.registry.get('cameraZoom') || SCALE;
+    this.registry.set('cameraZoom', savedZoom);
+    this.cameras.main.setZoom(savedZoom);
     this.cameras.main.setBackgroundColor('#0f0e17');
 
     /* ── Launch HUD overlay (only if not already running) ── */
@@ -80,6 +83,8 @@ class WorldScene extends Phaser.Scene {
       if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
         this.registry.set('level1_quest_active', null);
         this.registry.set('level1_library_arrived', true);
+        this.registry.set('level1_complete', true);
+        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
         const questName = (activeQuest === 'ikuti_nabula') 
           ? 'Ikuti Nabula ke perpustakaan' 
           : 'Susul Nabula ke perpustakaan';
@@ -88,7 +93,42 @@ class WorldScene extends Phaser.Scene {
           if (ui && ui.completeQuest) {
             ui.completeQuest(questName);
           }
+          this.time.delayedCall(1200, () => {
+            if (ui && ui.startDialogue) {
+              ui.startDialogue('lvl1_library_not_here');
+            }
+          });
         });
+      }
+
+      // If arrived at library during Level 2 (after corridor cutscene)
+      if (this.registry.get('level2_triggered') && !this.registry.get('level2_complete')) {
+        this.time.delayedCall(400, () => {
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Temukan Nabula di bagian belakang perpustakaan.');
+          }
+        });
+      }
+    }
+
+    if (mapKey === 'schoolyard') {
+      if (this.registry.get('level2_triggered') && !this.registry.get('level2_complete')) {
+        this.time.delayedCall(400, () => {
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Masuk ke perpustakaan lewat pintu utama di sebelah timur lapangan.');
+          }
+        });
+      }
+    }
+
+    if (mapKey === 'corridor') {
+      const activeQuest = this.registry.get('level1_quest_active');
+      if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
+        this.registry.set('level1_quest_active', null);
+        this.registry.set('level1_complete', true);
+        try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
       }
     }
 
@@ -125,47 +165,146 @@ class WorldScene extends Phaser.Scene {
             ease: 'Power1'
           });
         }
-      } else if (action === 'nabula_run_away') {
+      } else if (action === 'corridor_nabula_escape' || action === 'nabula_run_away') {
         const nabula = this.npcs.find(n => n.key === 'nabula');
+        const bullies = this.npcs.filter(n => n.key === 'bully');
+
         if (nabula) {
           nabula.clearEmotion();
-          nabula.dialogueId = 'nabula_found';
+          nabula.sprite.setFlipX(false);
+          nabula.sprite.anims.play('nabula_walk_right', true);
 
-          this.tweens.add({
+          // Bullies recoil in surprise
+          if (bullies[0]) {
+            bullies[0].setEmotion('😠');
+            bullies[0].sprite.setFlipX(false);
+            this.tweens.add({
+              targets: bullies[0].sprite,
+              x: bullies[0].sprite.x + 14,
+              duration: 200,
+              ease: 'Quad.easeOut'
+            });
+          }
+          if (bullies[1]) {
+            bullies[1].setEmotion('😮');
+            bullies[1].sprite.setFlipX(false);
+            this.tweens.add({
+              targets: bullies[1].sprite,
+              x: bullies[1].sprite.x - 14,
+              duration: 200,
+              ease: 'Quad.easeOut'
+            });
+          }
+
+          // Camera smoothly follows Nabula as she sprints east
+          this.cameras.main.stopFollow();
+          this.tweens.killTweensOf(this.cameras.main);
+          this.cameras.main.startFollow(nabula.sprite, true, 0.08, 0.08);
+
+          // Door coordinates to Schoolyard: cols 12 & 13, row 4
+          const turnX = 12.5 * TILE;
+          const turnY = 2 * TILE + TILE / 2;
+          const exitX = 12.5 * TILE;
+          const exitY = 4 * TILE + 48; // Stepping through the bottom doors to the schoolyard
+
+          let nakulaReacted = false;
+
+          this.tweens.chain({
             targets: nabula.sprite,
-            x: 5 * TILE + TILE / 2,
-            y: 12 * TILE + TILE / 2,
-            duration: 2000,
-            onStart: () => {
-              nabula.sprite.anims.play('nabula_walk_left', true);
-            },
+            tweens: [
+              {
+                x: turnX,
+                y: turnY,
+                duration: 1100,
+                ease: 'Linear',
+                onUpdate: () => {
+                  // As Nabula dashes past Nakula (near col 12)
+                  if (!nakulaReacted && this.player && this.player.sprite && nabula.sprite.x >= this.player.sprite.x - 48) {
+                    nakulaReacted = true;
+                    this.player.facing = 'right';
+                    this.player.sprite.setFlipX(false);
+                    this.player.sprite.anims.play('player_idle_right', true);
+                    this._showPlayerEmote('❗');
+                    if (navigator.vibrate) navigator.vibrate(60);
+                  }
+                }
+              },
+              {
+                x: exitX,
+                y: exitY,
+                duration: 850,
+                ease: 'Linear',
+                onStart: () => {
+                  nabula.sprite.setFlipX(false);
+                  nabula.sprite.anims.play('nabula_walk_down', true);
+                  if (this.player && this.player.sprite) {
+                    this.player.facing = 'down';
+                    this.player.sprite.anims.play('player_idle_down', true);
+                  }
+                }
+              }
+            ],
             onComplete: () => {
-              nabula.sprite.anims.play('nabula_idle_down', true);
-              // Give back her sad emotion
-              nabula.emotionBubble = this.add.graphics();
-              nabula.emotionBubble.fillStyle(0xffffff, 0.95);
-              nabula.emotionBubble.fillRoundedRect(-11, -11, 22, 22, 6);
-              nabula.emotionBubble.fillTriangle(-3, 11, 3, 11, 0, 16);
-              nabula.emotionText = this.add.text(0, 0, '😔', { fontSize: '12px' }).setOrigin(0.5, 0.45);
-              nabula.emotionContainer = this.add.container(nabula.sprite.x, nabula.sprite.y - 35, [nabula.emotionBubble, nabula.emotionText]).setDepth(11);
-              nabula.emotionOffset = 0;
-              nabula.emotionTween = this.tweens.add({
-                targets: nabula,
-                emotionOffset: -4,
-                yoyo: true,
-                repeat: -1,
-                duration: 1200,
-                ease: 'Sine.easeInOut'
-              });
+              nabula.sprite.setActive(false).setVisible(false);
+              if (nabula.sprite.body) nabula.sprite.body.enable = false;
+              if (nabula.clearEmotion) nabula.clearEmotion();
+              if (nabula.indicator && nabula.indicator.destroy) nabula.indicator.destroy();
+
+              // Update bully dialogues to post-cutscene text
+              if (bullies[0]) bullies[0].dialogueId = 'bully_idle_1';
+              if (bullies[1]) bullies[1].dialogueId = 'bully_idle_2';
             }
           });
         }
+      } else if (action === 'corridor_camera_return_nakula') {
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        if (this.player && this.player.sprite) {
+          const targetX = this.player.sprite.x - this.cameras.main.width / 2;
+          const targetY = this.player.sprite.y - this.cameras.main.height / 2;
+          this.tweens.add({
+            targets: this.cameras.main,
+            scrollX: targetX,
+            scrollY: targetY,
+            duration: 750,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+              this._clearPlayerEmote();
+            }
+          });
+        }
+      } else if (action === 'lvl1_quest_check_corridor') {
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST: Cari Nabula di lorong sekolah.');
+        }
+      } else if (action === 'lvl2_quest_find_nabula') {
+        this._clearPlayerEmote();
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        if (this.player && this.player.sprite) {
+          this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+        }
+        this.registry.set('level2_player_locked', false);
+        if (this.player) {
+          this.player.isLocked = false;
+          this.player.isCutsceneActive = false;
+        }
+        const ui = this.scene.get('UI');
+        if (ui && ui.showQuest) {
+          ui.showQuest('QUEST: Susul Nabula ke perpustakaan lewat lapangan.');
+        }
+        if (navigator.vibrate) navigator.vibrate(80);
       } else if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
         try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
       } else if (action === 'complete_level2') {
         this.registry.set('level2_complete', true);
         try { localStorage.setItem('caretech_scenario_2', 'true'); } catch (e) { }
+        const ui = this.scene.get('UI');
+        if (ui && ui.completeQuest) {
+          ui.completeQuest('Beri dukungan empati pada Nabula');
+        }
       } else if (action === 'found_evidence_phone') {
         this.registry.set('evidence_phone', true);
         this._checkLevel3Ready();
@@ -302,7 +441,7 @@ class WorldScene extends Phaser.Scene {
             targets: this.player.sprite,
             x: targetX,
             y: targetY,
-            duration: 2200,
+            duration: 1400,
             ease: 'Linear',
             onComplete: () => {
               this.player.facing = 'right';
@@ -314,11 +453,20 @@ class WorldScene extends Phaser.Scene {
                 this.player.sprite.body.reset(targetX, targetY);
               }
               // Auto-trigger 007 (006a: Nakula langsung menyapa tanpa tombol aksi)
-              this.time.delayedCall(300, () => {
-                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              this.time.delayedCall(200, () => {
+                const ui = this.scene.get('UI');
+                if (ui && ui.startDialogue) {
+                  ui.startDialogue('lvl1_007_nakula');
+                }
               });
             }
           });
+        } else {
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+            this.player.isCutsceneActive = false;
+          }
         }
       } else if (action === 'lvl1_005b_approach') {
         // 005b-7a: Nakula kembali mendekati Nabula
@@ -348,7 +496,7 @@ class WorldScene extends Phaser.Scene {
             targets: this.player.sprite,
             x: targetX,
             y: targetY,
-            duration: 2200,
+            duration: 1400,
             ease: 'Linear',
             onComplete: () => {
               this.player.facing = 'right';
@@ -359,11 +507,20 @@ class WorldScene extends Phaser.Scene {
                 this.player.sprite.body.enable = true;
                 this.player.sprite.body.reset(targetX, targetY);
               }
-              this.time.delayedCall(300, () => {
-                this.scene.get('UI').startDialogue('lvl1_007_nakula');
+              this.time.delayedCall(200, () => {
+                const ui = this.scene.get('UI');
+                if (ui && ui.startDialogue) {
+                  ui.startDialogue('lvl1_007_nakula');
+                }
               });
             }
           });
+        } else {
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+            this.player.isCutsceneActive = false;
+          }
         }
       } else if (action === 'lvl1_012_focus_nabula' || action === 'lvl1_005b_focus_nabula') {
         // 012: Kunci kontrol Nakula saat kamera mengarah ke Nabula
@@ -380,13 +537,12 @@ class WorldScene extends Phaser.Scene {
             targets: this.cameras.main,
             scrollX: nabula.sprite.x - this.cameras.main.width / 2,
             scrollY: nabula.sprite.y - this.cameras.main.height / 2,
-            duration: 800,
+            duration: 700,
             ease: 'Sine.easeInOut'
           });
         }
       } else if (action === 'lvl1_012_nabula_leaves' || action === 'lvl1_005b_nabula_leaves') {
         // Gerakan dan kamera Nabula disamakan antara 012 dan 005b
-        // 012 & 013: Nakula TETAP tidak bisa digerakkan sampai kamera kembali tepat ke Nakula di 013!
         this.registry.set('level1_player_locked', true);
         if (this.player) {
           this.player.isLocked = true;
@@ -415,13 +571,13 @@ class WorldScene extends Phaser.Scene {
               {
                 x: step1X,
                 y: step1Y,
-                duration: 2200,
+                duration: 900,
                 ease: 'Linear'
               },
               {
                 x: step2X,
                 y: step2Y,
-                duration: 3500,
+                duration: 1600,
                 ease: 'Linear',
                 onStart: () => {
                   nabula.sprite.setFlipX(false);
@@ -436,9 +592,9 @@ class WorldScene extends Phaser.Scene {
               nabula.sprite.setActive(false).setVisible(false);
               if (nabula.sprite.body) nabula.sprite.body.enable = false;
               if (nabula.clearEmotion) nabula.clearEmotion();
-              if (nabula.indicator) nabula.indicator.destroy();
+              if (nabula.indicator && nabula.indicator.destroy) nabula.indicator.destroy();
 
-              // PERBAIKAN: Hentikan follow Nabula agar kamera tidak looping / fighting
+              // Hentikan follow Nabula agar kamera tidak looping / fighting
               this.cameras.main.stopFollow();
               this.tweens.killTweensOf(this.cameras.main);
 
@@ -447,7 +603,7 @@ class WorldScene extends Phaser.Scene {
                 targets: this.cameras.main,
                 scrollX: this.player.sprite.x - this.cameras.main.width / 2,
                 scrollY: this.player.sprite.y - this.cameras.main.height / 2,
-                duration: 1200,
+                duration: 700,
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
                   this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
@@ -455,7 +611,10 @@ class WorldScene extends Phaser.Scene {
 
                   if (isFrom005b) {
                     // 005b-9b: Tampilkan dialog ECA (Nakula masih tetap diam sampai quest timer dimulai)
-                    this.scene.get('UI').startDialogue('lvl1_005b_9b_eca');
+                    const ui = this.scene.get('UI');
+                    if (ui && ui.startDialogue) {
+                      ui.startDialogue('lvl1_005b_9b_eca');
+                    }
                   } else {
                     // 013 selesai: Kamera sudah kembali tepat ke Nakula!
                     // NAKULA SEKARANG BISA DIGERAKKAN!
@@ -475,6 +634,17 @@ class WorldScene extends Phaser.Scene {
               });
             }
           });
+        } else {
+          // Fail-safe if nabula is not present
+          this.registry.set('level1_player_locked', false);
+          if (this.player) {
+            this.player.isLocked = false;
+          }
+          this.registry.set('level1_quest_active', 'ikuti_nabula');
+          const ui = this.scene.get('UI');
+          if (ui && ui.showQuest) {
+            ui.showQuest('QUEST: Ikuti Nabula ke perpustakaan.');
+          }
         }
       } else if (action === 'lvl1_005b_start_timer_quest') {
         // 005b-9c: QUEST (BATAS WAKTU) 30 detik
@@ -614,22 +784,119 @@ class WorldScene extends Phaser.Scene {
       }
     }
 
-    /* ── Level 2 Auto-Trigger ── */
-    if (this.registry.get('currentMap') === 'corridor' && this.registry.get('level1_complete') && !this.registry.get('level2_triggered')) {
+    /* ── Level 2 Auto-Trigger (Cinematic Corridor Cutscene) ── */
+    if (this.registry.get('currentMap') === 'corridor' && this.registry.get('level1_complete') && !this.registry.get('level2_triggered') && !this.level2_cutscene_started) {
       if (!this.registry.get('dialogueActive')) {
-        this.registry.set('level2_triggered', true);
-
-        // Stop player movement
-        this.player.sprite.setVelocity(0, 0);
-        this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
-
-        // Start bully taunt dialogue
-        this.scene.get('UI').startDialogue('bully_taunt');
+        this.level2_cutscene_started = true;
+        this._startCorridorCutscene();
       }
+    }
+
+    if (this.playerEmoteContainer && this.player && this.player.sprite) {
+      this.playerEmoteContainer.setPosition(this.player.sprite.x, this.player.sprite.y - 35);
     }
 
     /* ── Check proximity for interaction prompt ── */
     this._updateProximity();
+  }
+
+  _startCorridorCutscene() {
+    this.registry.set('level2_player_locked', true);
+    if (this.player) {
+      this.player.isLocked = true;
+      if (this.player.sprite) {
+        this.player.sprite.setVelocity(0, 0);
+        const faceLeft = this.player.sprite.x >= 6 * TILE;
+        this.player.facing = faceLeft ? 'left' : 'right';
+        this.player.sprite.setFlipX(faceLeft);
+        this.player.sprite.anims.play('player_idle_' + this.player.facing, true);
+      }
+    }
+
+    const nabula = this.npcs.find(n => n.key === 'nabula');
+    const bullies = this.npcs.filter(n => n.key === 'bully');
+
+    if (bullies[0]) bullies[0].sprite.setFlipX(true);
+    if (bullies[1]) bullies[1].sprite.setFlipX(false);
+    if (nabula) nabula.setEmotion('😰');
+
+    // Smooth camera pan to confrontation at (col 6, row 2)
+    this.cameras.main.stopFollow();
+    this.tweens.killTweensOf(this.cameras.main);
+
+    const targetCamX = (6 * TILE + TILE / 2) - this.cameras.main.width / 2;
+    const targetCamY = (2 * TILE + TILE / 2) - this.cameras.main.height / 2;
+
+    this.tweens.add({
+      targets: this.cameras.main,
+      scrollX: targetCamX,
+      scrollY: targetCamY,
+      duration: 850,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        // Acting animation: Bully 1 steps aggressively towards Nabula
+        if (bullies[0]) {
+          this.tweens.add({
+            targets: bullies[0].sprite,
+            x: bullies[0].sprite.x - 14,
+            duration: 160,
+            yoyo: true,
+            repeat: 1,
+            ease: 'Power1'
+          });
+        }
+        if (bullies[1]) {
+          bullies[1].setEmotion('😈');
+        }
+        if (nabula) {
+          // Nabula trembles
+          this.tweens.add({
+            targets: nabula.sprite,
+            x: nabula.sprite.x + 3,
+            duration: 60,
+            yoyo: true,
+            repeat: 4
+          });
+        }
+        if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
+
+        this.time.delayedCall(350, () => {
+          this.registry.set('level2_triggered', true);
+          const ui = this.scene.get('UI');
+          if (ui && ui.startDialogue) {
+            ui.startDialogue('bully_taunt');
+          }
+        });
+      }
+    });
+  }
+
+  _showPlayerEmote(emoji) {
+    this._clearPlayerEmote();
+    if (!this.player || !this.player.sprite) return;
+
+    const bubble = this.add.graphics();
+    bubble.fillStyle(0xffffff, 0.95);
+    bubble.fillRoundedRect(-11, -11, 22, 22, 6);
+    bubble.fillTriangle(-3, 11, 3, 11, 0, 16);
+
+    const txt = this.add.text(0, 0, emoji, {
+      fontSize: '13px',
+      resolution: Math.max(window.devicePixelRatio || 1, 2)
+    }).setOrigin(0.5, 0.45);
+    if (txt.texture) {
+      txt.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+
+    this.playerEmoteContainer = this.add.container(this.player.sprite.x, this.player.sprite.y - 35, [bubble, txt])
+      .setDepth(15);
+  }
+
+  _clearPlayerEmote() {
+    if (this.playerEmoteContainer) {
+      this.playerEmoteContainer.destroy();
+      this.playerEmoteContainer = null;
+    }
   }
 
   _updatePlayerMask() {
@@ -1225,8 +1492,8 @@ class WorldScene extends Phaser.Scene {
       const m = [
         ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass'],
         ['path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_3_2', 'path_1_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_2', 'path_2_3', 'grass'],
-        ['path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_0', 'path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_1', 'grass'],
-        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
+        ['path_2_4', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_3_0', 'path', 'path', 'path_1_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_2_0', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_1', 'grass'],
+        ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_3_0', 'path_1_0', 'path_2_4', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_4', 'path_1_1', 'grass'],
         ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
         ['grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
         ['gw_lt', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_3_1', 'path_1_1', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'path_1_1', 'grass'],
@@ -1628,19 +1895,25 @@ class WorldScene extends Phaser.Scene {
 
     if (mapKey === 'corridor') {
       if (this.registry.get('level1_complete')) {
-        this.npcs.push(new NPC(this, 7 * TILE + TILE / 2, 2 * TILE + TILE / 2,
-          'bully', 'bully_taunt', { name: 'Bully' }));
-        this.npcs.push(new NPC(this, 5 * TILE + TILE / 2, 2 * TILE + TILE / 2,
-          'bully', null, { name: 'Bully 2' }));
+        const bully1Diag = this.registry.get('level2_triggered') ? 'bully_idle_1' : 'bully_taunt';
+        const bully2Diag = this.registry.get('level2_triggered') ? 'bully_idle_2' : null;
+
+        const b1 = new NPC(this, 7 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+          'bully', bully1Diag, { name: 'Perundung 1' });
+        const b2 = new NPC(this, 5 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+          'bully', bully2Diag, { name: 'Perundung 2' });
+
+        b1.sprite.setFlipX(true);  // Facing left towards Nabula
+        b2.sprite.setFlipX(false); // Facing right towards Nabula
+
+        this.npcs.push(b1);
+        this.npcs.push(b2);
 
         if (!this.registry.get('level2_triggered')) {
-          // Nabula being mocked
-          this.npcs.push(new NPC(this, 6 * TILE + TILE / 2, 2 * TILE + TILE / 2,
-            'nabula', null, { name: 'Nabula', emotion: '😔' }));
-        } else if (!this.registry.get('level2_complete')) {
-          // Nabula hiding near the library entrance
-          this.npcs.push(new NPC(this, 21 * TILE + TILE / 2, 2 * TILE + TILE / 2,
-            'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
+          // Nabula cornered and mocked
+          const nab = new NPC(this, 6 * TILE + TILE / 2, 2 * TILE + TILE / 2,
+            'nabula', null, { name: 'Nabula', emotion: '😰' });
+          this.npcs.push(nab);
         }
       }
 
@@ -1748,6 +2021,12 @@ class WorldScene extends Phaser.Scene {
         'student', 'student_chat_1', { name: 'Student' }));
       this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 13 * TILE + TILE / 2,
         'student', 'student_chat_2', { name: 'Student' }));
+
+      // Nabula hiding at the back of the library (Level 2)
+      if (this.registry.get('level2_triggered') && !this.registry.get('level2_complete')) {
+        this.npcs.push(new NPC(this, 10 * TILE + TILE / 2, 19 * TILE + TILE / 2,
+          'nabula', 'nabula_found', { name: 'Nabula', emotion: '😔' }));
+      }
     }
   }
 

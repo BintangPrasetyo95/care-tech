@@ -566,7 +566,10 @@ h2.tape, .tape-heading {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    white-space: nowrap;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    flex-shrink: 0;
     font-family: var(--imp);
     font-size: 1.45rem;
     letter-spacing: 0.05em;
@@ -583,6 +586,13 @@ h2.tape, .tape-heading {
     user-select: none;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn-starfall-giant span {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    display: inline-block;
 }
 
 .btn-starfall-giant:hover {
@@ -1652,9 +1662,11 @@ h2.tape, .tape-heading {
 
     .btn-starfall-giant {
         font-size: 0.95rem;
-        padding: 0.75rem 1.6rem;
+        padding: 0.75rem 1.4rem;
         border-width: 4px;
         gap: 8px;
+        white-space: nowrap !important;
+        max-width: 92vw;
     }
 
     .pixel-globe-canvas {

@@ -99,18 +99,24 @@ class UIScene extends Phaser.Scene {
 
     /* ══════════ Quest Banner (top-center Yellow Notepad) ══════════ */
     this.questContainer = this.add.container(width / 2, -60).setScrollFactor(1).setDepth(300);
-    const questShadow = this.add.graphics();
-    questShadow.fillStyle(0x000000, 1).fillRoundedRect(-147, -15, 298, 36, 8);
-    const questBg = this.add.graphics();
-    questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
-    questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
+    this.questShadow = this.add.graphics();
+    this.questShadow.fillStyle(0x000000, 1).fillRoundedRect(-147, -15, 298, 36, 8);
+    this.questBg = this.add.graphics();
+    this.questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
+    this.questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
     this.questText = this._createSharpText(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '12px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5);
-    this.questContainer.add([questShadow, questBg, this.questText]);
+    this.questTimerText = this._createSharpText(0, 10, '', {
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#facc15'
+    }).setOrigin(0.5).setVisible(false);
+    this.questContainer.add([this.questShadow, this.questBg, this.questText, this.questTimerText]);
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
@@ -157,29 +163,51 @@ class UIScene extends Phaser.Scene {
     sidebarBg.fillStyle(0xe5d9c5, 1).fillRect(0, 0, 280, height);
     sidebarBg.lineStyle(4, 0x000000, 1).lineBetween(280, 0, 280, height);
     // Header tape banner
-    sidebarBg.fillStyle(0xff2e93, 1).fillRect(20, 18, 240, 52);
-    sidebarBg.lineStyle(3, 0x000000, 1).strokeRect(20, 18, 240, 52);
+    sidebarBg.fillStyle(0xff2e93, 1).fillRect(20, 12, 240, 48);
+    sidebarBg.lineStyle(3, 0x000000, 1).strokeRect(20, 12, 240, 48);
     this.sidebarContainer.add(sidebarBg);
     
     this.sidebarContainer.add(
-      this._createSharpText(140, 36, 'CARE-TECH', {
-        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 2
+      this._createSharpText(130, 26, 'CARE-TECH', {
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '22px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 2
       }).setOrigin(0.5).setShadow(2, 2, '#000000', 0, false, true)
     );
     
     this.sidebarContainer.add(
-      this._createSharpText(140, 56, 'Harmonia School RPG', {
-        fontFamily: '"Courier New", Courier, monospace', fontSize: '11px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 1
+      this._createSharpText(130, 45, 'Harmonia School RPG', {
+        fontFamily: '"Courier New", Courier, monospace', fontSize: '10px', fontStyle: 'bold', color: '#ffffff', letterSpacing: 1
       }).setOrigin(0.5).setShadow(1, 1, '#000000', 0, false, true)
     );
 
-    const divider = this.add.graphics().lineStyle(3, 0x000000, 1).lineBetween(30, 85, 250, 85);
+    // Close button (✕) on header banner
+    const closeHeaderBtn = this.add.container(232, 18);
+    const closeHeaderBg = this.add.graphics()
+      .fillStyle(0xffffff, 1).fillRoundedRect(0, 0, 22, 22, 4)
+      .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 22, 22, 4);
+    const closeHeaderTxt = this._createSharpText(11, 11, '✕', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#000000'
+    }).setOrigin(0.5);
+    const closeHeaderZone = this.add.zone(11, 11, 22, 22).setInteractive({ useHandCursor: true });
+    closeHeaderZone.on('pointerdown', () => this._toggleSidebar());
+    closeHeaderBtn.add([closeHeaderBg, closeHeaderTxt, closeHeaderZone]);
+    this.sidebarContainer.add(closeHeaderBtn);
+
+    const divider = this.add.graphics().lineStyle(3, 0x000000, 1).lineBetween(24, 66, 256, 66);
     this.sidebarContainer.add(divider);
 
-    this.sidebarLevelText = this._createSharpText(140, 110, '', {
+    // Scrollable container for sidebar body
+    this.sidebarScrollContainer = this.add.container(0, 72);
+    this.sidebarContainer.add(this.sidebarScrollContainer);
+
+    this.sidebarMaskGfx = this.make.graphics();
+    this.sidebarMaskGfx.fillStyle(0xffffff);
+    this.sidebarMaskGfx.fillRect(0, 72, 280, height - 72);
+    this.sidebarScrollContainer.setMask(this.sidebarMaskGfx.createGeometryMask());
+
+    this.sidebarLevelText = this._createSharpText(140, 10, '', {
       fontFamily: '"Inter", "Segoe UI", sans-serif', fontSize: '12px', color: '#000000', align: 'center', wordWrap: { width: 240 }, fontStyle: 'bold'
     }).setOrigin(0.5);
-    this.sidebarContainer.add(this.sidebarLevelText);
+    this.sidebarScrollContainer.add(this.sidebarLevelText);
 
     // Button Generator (Cardboard Cosmos 3D Tactile Buttons)
     const createBtn = (x, y, w, h, text, defaultHex, hoverHex, onClick, txtColor = '#000000') => {
@@ -194,24 +222,38 @@ class UIScene extends Phaser.Scene {
       drawBg(defaultHex);
       
       const txt = this._createSharpText(w / 2, h / 2, text, {
-        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '12.5px', fontStyle: 'bold', color: txtColor
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif', fontSize: '12px', fontStyle: 'bold', color: txtColor
       }).setOrigin(0.5);
       
       btnGroup.add([shadow, bg, txt]);
       const zone = this.add.zone(w / 2, h / 2, w, h).setInteractive({ useHandCursor: true });
       btnGroup.add(zone);
       
+      let pDownPos = null;
       zone.on('pointerover', () => { drawBg(hoverHex); btnGroup.y -= 1; });
-      zone.on('pointerout', () => { drawBg(defaultHex); btnGroup.y += 1; });
-      zone.on('pointerdown', () => {
-        btnGroup.y += 2; btnGroup.x += 2;
-        this.time.delayedCall(100, () => { btnGroup.y -= 2; btnGroup.x -= 2; onClick(); });
+      zone.on('pointerout', () => {
+        if (pDownPos) { btnGroup.y -= 2; btnGroup.x -= 2; pDownPos = null; }
+        drawBg(defaultHex);
+        btnGroup.y += 1;
       });
-      this.sidebarContainer.add(btnGroup);
+      zone.on('pointerdown', (pointer) => {
+        pDownPos = { x: pointer.x, y: pointer.y };
+        btnGroup.y += 2; btnGroup.x += 2;
+      });
+      zone.on('pointerup', (pointer) => {
+        if (!pDownPos) return;
+        btnGroup.y -= 2; btnGroup.x -= 2;
+        const dist = Math.hypot(pointer.x - pDownPos.x, pointer.y - pDownPos.y);
+        pDownPos = null;
+        if (dist < 10) {
+          onClick();
+        }
+      });
+      this.sidebarScrollContainer.add(btnGroup);
       return { txt, zone, btnGroup, drawBg };
     };
 
-    this.switchLangBtnObj = createBtn(40, 145, 200, 36, 'Ganti Bahasa (ID)', 0xffe500, 0xf5cc00, () => {
+    this.switchLangBtnObj = createBtn(40, 26, 200, 34, 'Ganti Bahasa (ID)', 0xffe500, 0xf5cc00, () => {
       const curLang = this.registry.get('lang') || 'id';
       this.registry.set('lang', curLang === 'en' ? 'id' : 'en');
     }, '#000000');
@@ -223,7 +265,7 @@ class UIScene extends Phaser.Scene {
       return on ? '🕹️ Analog: AKTIF' : '🕹️ Analog: NONAKTIF';
     };
 
-    this.analogToggleBtnObj = createBtn(40, 189, 200, 36, getAnalogLabel(), 0xffffff, 0xffe500, () => {
+    this.analogToggleBtnObj = createBtn(40, 66, 200, 34, getAnalogLabel(), 0xffffff, 0xffe500, () => {
       if (typeof window.toggleAnalogControls === 'function') {
         const nextState = window.toggleAnalogControls();
         this.analogToggleBtnObj.txt.setText(getAnalogLabel());
@@ -231,7 +273,6 @@ class UIScene extends Phaser.Scene {
       }
     }, '#000000');
 
-    // Set initial background color based on active state
     const initAnalogOn = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
     this.analogToggleBtnObj.drawBg(initAnalogOn ? 0x39ff14 : 0xffffff);
 
@@ -243,20 +284,91 @@ class UIScene extends Phaser.Scene {
       }
     });
 
-    this.switchLevelBtnObj = createBtn(40, 233, 200, 36, 'Ganti Level', 0x39ff14, 0x2fe00e, () => {
-      this.levelListContainer.setVisible(!this.levelListContainer.visible);
-    }, '#000000');
-    
-    this.closeSidebarBtnObj = createBtn(40, height - 90, 200, 36, 'Lanjut Main', 0x00e5ff, 0x00c4dc, () => {
-      this._toggleSidebar();
-    }, '#000000');
-    
-    this.exitGameBtnObj = createBtn(40, height - 45, 200, 36, 'Keluar Game', 0xff2e93, 0xe01b7a, () => {
-      window.location.href = 'game.html';
-    }, '#ffffff');
+    /* ── Zoom Slider Group ── */
+    this.currentZoom = (typeof localStorage !== 'undefined' && parseFloat(localStorage.getItem('caretech_zoom'))) || this.registry.get('cameraZoom') || (typeof SCALE !== 'undefined' ? SCALE : 2.0);
+    this.currentZoom = Math.round(Phaser.Math.Clamp(this.currentZoom, 0.5, 3.0) * 10) / 10;
 
-    this.levelListContainer = this.add.container(0, 277).setVisible(false);
-    this.sidebarContainer.add(this.levelListContainer);
+    this.zoomGroup = this.add.container(0, 106);
+    this.sidebarScrollContainer.add(this.zoomGroup);
+
+    const zoomShadow = this.add.graphics().fillStyle(0x000000, 1).fillRoundedRect(42, 2, 200, 56, 8);
+    const zoomPanelBg = this.add.graphics()
+      .fillStyle(0xffffff, 1).fillRoundedRect(40, 0, 200, 56, 8)
+      .lineStyle(2.5, 0x000000, 1).strokeRoundedRect(40, 0, 200, 56, 8);
+
+    this.zoomLabelTxt = this._createSharpText(140, 14, '', {
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#000000'
+    }).setOrigin(0.5);
+
+    const zoomMinusBtn = this.add.container(48, 28);
+    const zoomMinusBg = this.add.graphics();
+    const drawMinusBg = (col) => {
+      zoomMinusBg.clear()
+        .fillStyle(col, 1).fillRoundedRect(0, 0, 24, 22, 6)
+        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 24, 22, 6);
+    };
+    drawMinusBg(0xffe500);
+    const zoomMinusTxt = this._createSharpText(12, 10, '−', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#000000'
+    }).setOrigin(0.5);
+    const zoomMinusZone = this.add.zone(12, 11, 24, 22).setInteractive({ useHandCursor: true });
+    zoomMinusZone.on('pointerdown', () => { drawMinusBg(0xf5cc00); this._setZoom(this.currentZoom - 0.1); });
+    zoomMinusZone.on('pointerup', () => drawMinusBg(0xffe500));
+    zoomMinusZone.on('pointerout', () => drawMinusBg(0xffe500));
+    zoomMinusBtn.add([zoomMinusBg, zoomMinusTxt, zoomMinusZone]);
+
+    const zoomPlusBtn = this.add.container(208, 28);
+    const zoomPlusBg = this.add.graphics();
+    const drawPlusBg = (col) => {
+      zoomPlusBg.clear()
+        .fillStyle(col, 1).fillRoundedRect(0, 0, 24, 22, 6)
+        .lineStyle(2, 0x000000, 1).strokeRoundedRect(0, 0, 24, 22, 6);
+    };
+    drawPlusBg(0xffe500);
+    const zoomPlusTxt = this._createSharpText(12, 10, '+', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#000000'
+    }).setOrigin(0.5);
+    const zoomPlusZone = this.add.zone(12, 11, 24, 22).setInteractive({ useHandCursor: true });
+    zoomPlusZone.on('pointerdown', () => { drawPlusBg(0xf5cc00); this._setZoom(this.currentZoom + 0.1); });
+    zoomPlusZone.on('pointerup', () => drawPlusBg(0xffe500));
+    zoomPlusZone.on('pointerout', () => drawPlusBg(0xffe500));
+    zoomPlusBtn.add([zoomPlusBg, zoomPlusTxt, zoomPlusZone]);
+
+    // Track and thumb
+    this.zoomTrackGfx = this.add.graphics();
+    const trackX = 78, trackY = 35, trackW = 124, trackH = 8;
+    this._trackX = trackX; this._trackY = trackY; this._trackW = trackW; this._trackH = trackH;
+
+    const zoomSliderZone = this.add.zone(trackX + trackW / 2, trackY + trackH / 2, trackW + 16, 26).setInteractive({ useHandCursor: true });
+    const updateZoomFromPointer = (pointer) => {
+      const bounds = this.sidebarContainer;
+      const localX = pointer.x - bounds.x - trackX;
+      const ratio = Phaser.Math.Clamp(localX / trackW, 0, 1);
+      const newZoom = 0.5 + ratio * (3.0 - 0.5);
+      this._setZoom(newZoom);
+    };
+    let isDraggingZoom = false;
+    zoomSliderZone.on('pointerdown', (pointer) => {
+      isDraggingZoom = true;
+      updateZoomFromPointer(pointer);
+    });
+    this.input.on('pointermove', (pointer) => {
+      if (isDraggingZoom) updateZoomFromPointer(pointer);
+    });
+    const stopZoomDrag = () => { isDraggingZoom = false; };
+    this.input.on('pointerup', stopZoomDrag);
+    this.input.on('pointerupoutside', stopZoomDrag);
+
+    this.zoomGroup.add([zoomShadow, zoomPanelBg, this.zoomLabelTxt, zoomMinusBtn, zoomPlusBtn, this.zoomTrackGfx, zoomSliderZone]);
+    this._updateZoomDisplay();
+
+    this.switchLevelBtnObj = createBtn(40, 168, 200, 34, 'Ganti Level', 0x39ff14, 0x2fe00e, () => {
+      this.levelListContainer.setVisible(!this.levelListContainer.visible);
+      this._updateSidebarLayout();
+    }, '#000000');
+
+    this.levelListContainer = this.add.container(0, 208).setVisible(false);
+    this.sidebarScrollContainer.add(this.levelListContainer);
 
     const levelInfos = [
       { key: 'schoolyard', name: {en: 'Hub: Schoolyard', id: 'Pusat: Halaman Sekolah'} },
@@ -273,20 +385,26 @@ class UIScene extends Phaser.Scene {
       const bg = this.add.graphics();
       const drawBg = (color) => {
         bg.clear()
-          .fillStyle(color, 1).fillRoundedRect(35, i * 32, 210, 26, 6)
-          .lineStyle(2, 0x000000, 1).strokeRoundedRect(35, i * 32, 210, 26, 6);
+          .fillStyle(color, 1).fillRoundedRect(40, i * 30, 200, 25, 6)
+          .lineStyle(2, 0x000000, 1).strokeRoundedRect(40, i * 30, 200, 25, 6);
       };
       drawBg(0xffffff);
 
-      const btnTxt = this._createSharpText(140, i * 32 + 13, lvl.name['id'], {
+      const btnTxt = this._createSharpText(140, i * 30 + 12, lvl.name['id'], {
         fontFamily: '"Inter", "Segoe UI", sans-serif', fontSize: '11px', color: '#000000', fontStyle: 'bold'
       }).setOrigin(0.5);
       
-      const zone = this.add.zone(140, i * 32 + 13, 210, 26).setInteractive({ useHandCursor: true });
+      const zone = this.add.zone(140, i * 30 + 12, 200, 25).setInteractive({ useHandCursor: true });
       
+      let lvlDownPos = null;
       zone.on('pointerover', () => { drawBg(0xffe500); btnTxt.setColor('#000000'); });
-      zone.on('pointerout', () => { drawBg(0xffffff); btnTxt.setColor('#000000'); });
-      zone.on('pointerdown', () => {
+      zone.on('pointerout', () => { drawBg(0xffffff); btnTxt.setColor('#000000'); lvlDownPos = null; });
+      zone.on('pointerdown', (pointer) => { lvlDownPos = { x: pointer.x, y: pointer.y }; });
+      zone.on('pointerup', (pointer) => {
+        if (!lvlDownPos) return;
+        const dist = Math.hypot(pointer.x - lvlDownPos.x, pointer.y - lvlDownPos.y);
+        lvlDownPos = null;
+        if (dist > 10) return;
         this._toggleSidebar();
         const world = this.scene.get('World');
         if (world && world._changeMap) {
@@ -303,6 +421,57 @@ class UIScene extends Phaser.Scene {
       this.levelListContainer.add([bg, btnTxt, zone]);
       this.levelButtons.push({txt: btnTxt, name: lvl.name});
     });
+
+    this.closeSidebarBtnObj = createBtn(40, 208, 200, 34, 'Lanjut Main', 0x00e5ff, 0x00c4dc, () => {
+      this._toggleSidebar();
+    }, '#000000');
+    
+    this.exitGameBtnObj = createBtn(40, 248, 200, 34, 'Keluar Game', 0xff2e93, 0xe01b7a, () => {
+      window.location.href = 'game.html';
+    }, '#ffffff');
+
+    // Scrollbar Graphics
+    this.sidebarScrollbarGfx = this.add.graphics();
+    this.sidebarContainer.add(this.sidebarScrollbarGfx);
+
+    // Scrolling interaction listeners
+    this._sidebarScrollY = 0;
+    this._minSidebarScroll = 0;
+    this._maxSidebarScroll = 0;
+
+    let isDraggingSidebar = false;
+    let dragStartY = 0;
+    let dragStartScroll = 0;
+
+    this.input.on('pointerdown', (pointer) => {
+      if (!this.sidebarOpen) return;
+      if (pointer.x >= 0 && pointer.x <= 280 && pointer.y >= 72) {
+        isDraggingSidebar = true;
+        dragStartY = pointer.y;
+        dragStartScroll = this._sidebarScrollY;
+      } else if (pointer.x > 280 && this.sidebarOpen) {
+        this._toggleSidebar();
+      }
+    });
+
+    this.input.on('pointermove', (pointer) => {
+      if (!isDraggingSidebar || !this.sidebarOpen) return;
+      const dy = pointer.y - dragStartY;
+      this._setSidebarScroll(dragStartScroll + dy);
+    });
+
+    const stopSidebarDrag = () => { isDraggingSidebar = false; };
+    this.input.on('pointerup', stopSidebarDrag);
+    this.input.on('pointerupoutside', stopSidebarDrag);
+
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+      if (!this.sidebarOpen) return;
+      if (pointer.x <= 280) {
+        this._setSidebarScroll(this._sidebarScrollY - deltaY * 0.5);
+      }
+    });
+
+    this._updateSidebarLayout();
 
     // ESC to toggle sidebar
     this.sidebarOpen = false;
@@ -549,11 +718,13 @@ class UIScene extends Phaser.Scene {
     sidebarBg.clear();
     sidebarBg.fillStyle(0xe5d9c5, 1).fillRect(0, 0, 280, height);
     sidebarBg.lineStyle(4, 0x000000, 1).lineBetween(280, 0, 280, height);
-    sidebarBg.fillStyle(0xff2e93, 1).fillRect(20, 18, 240, 52);
-    sidebarBg.lineStyle(3, 0x000000, 1).strokeRect(20, 18, 240, 52);
+    sidebarBg.fillStyle(0xff2e93, 1).fillRect(20, 12, 240, 48);
+    sidebarBg.lineStyle(3, 0x000000, 1).strokeRect(20, 12, 240, 48);
 
-    this.closeSidebarBtnObj.btnGroup.setY(height - 90);
-    this.exitGameBtnObj.btnGroup.setY(height - 45);
+    if (this.sidebarMaskGfx) {
+      this.sidebarMaskGfx.clear().fillStyle(0xffffff).fillRect(0, 72, 280, height - 72);
+    }
+    this._updateSidebarLayout();
 
     // Interact Prompt
     this.interactPrompt.setPosition(width / 2, height - 130);
@@ -603,6 +774,7 @@ class UIScene extends Phaser.Scene {
       this.time.delayedCall(400, () => {
         this.cameras.main.fadeIn(800, 0, 0, 0);
         this.cameras.main.once('camerafadeincomplete', () => {
+          this.cameras.main.resetFX();
           this.startDialogue('lvl1_001_narrator');
         });
       });
@@ -624,16 +796,26 @@ class UIScene extends Phaser.Scene {
     const durationSec = options.durationSec || 30;
     this._questOnTimeout = options.onTimeout || null;
 
-    if (this.questBg) this.questBg.clear();
+    if (this.questBg) {
+      this.questBg.clear();
+      if (hasTimer) {
+        this.questBg.fillStyle(0x0f172a, 0.95);
+        this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
+        this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
+        this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
+      } else {
+        this.questBg.fillStyle(0x0f172a, 0.92);
+        this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
+        this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
+        this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
+      }
+    }
 
     if (hasTimer) {
-      this.questBg.fillStyle(0x0f172a, 0.95);
-      this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
-      this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
-      this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
-
-      this.questText.setY(-8).setText(text).setColor('#facc15');
-      this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+      if (this.questText) this.questText.setY(-8).setText(text).setColor('#facc15');
+      if (this.questTimerText) {
+        this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+      }
 
       let remaining = durationSec;
       this._questTimerEvent = this.time.addEvent({
@@ -642,9 +824,11 @@ class UIScene extends Phaser.Scene {
         callback: () => {
           remaining--;
           const secStr = remaining.toString().padStart(2, '0');
-          this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
-          if (remaining <= 5) {
-            this.questTimerText.setColor('#ef4444');
+          if (this.questTimerText) {
+            this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
+            if (remaining <= 5) {
+              this.questTimerText.setColor('#ef4444');
+            }
           }
           if (remaining <= 0) {
             if (this._questTimerEvent) {
@@ -659,13 +843,8 @@ class UIScene extends Phaser.Scene {
         }
       });
     } else {
-      this.questBg.fillStyle(0x0f172a, 0.92);
-      this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
-      this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
-      this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
-
-      this.questText.setY(0).setText(text).setColor('#38bdf8');
-      this.questTimerText.setVisible(false);
+      if (this.questText) this.questText.setY(0).setText(text).setColor('#38bdf8');
+      if (this.questTimerText) this.questTimerText.setVisible(false);
 
       if (options.duration && options.duration > 0) {
         this._questDismissTimer = this.time.delayedCall(options.duration, () => {
@@ -930,6 +1109,14 @@ class UIScene extends Phaser.Scene {
           this.dialogBg.disableInteractive();
           this._showNode(node.next);
         });
+        this.input.keyboard.once('keydown-ENTER', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
+          this.dialogBg.disableInteractive();
+          this._showNode(node.next);
+        });
       });
     } else {
       // End of dialogue — click or press key to close
@@ -938,33 +1125,24 @@ class UIScene extends Phaser.Scene {
       
       this.input.keyboard.removeAllListeners('keydown-E');
       this.input.keyboard.removeAllListeners('keydown-SPACE');
+      this.input.keyboard.removeAllListeners('keydown-ENTER');
       if (this._dialogueTimer) this._dialogueTimer.destroy();
 
       // Delay interaction to prevent same-frame event leakage from previous click
       this._dialogueTimer = this.time.delayedCall(150, () => {
-        this.dialogBg.setInteractive();
-        this.dialogBg.once('pointerdown', () => {
+        const doClose = () => {
           if (this._autoAdvanceTimerEvent) {
             this._autoAdvanceTimerEvent.destroy();
             this._autoAdvanceTimerEvent = null;
           }
           this._closeDialogue();
-        });
+        };
 
-        this.input.keyboard.once('keydown-E', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this._closeDialogue();
-        });
-        this.input.keyboard.once('keydown-SPACE', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this._closeDialogue();
-        });
+        this.dialogBg.setInteractive();
+        this.dialogBg.once('pointerdown', doClose);
+        this.input.keyboard.once('keydown-E', doClose);
+        this.input.keyboard.once('keydown-SPACE', doClose);
+        this.input.keyboard.once('keydown-ENTER', doClose);
       });
     }
   }
@@ -997,6 +1175,7 @@ class UIScene extends Phaser.Scene {
     const lastNodeId = this._currentDialogueNode;
     const lastNode = lastNodeId ? DIALOGUES[lastNodeId] : null;
 
+    if (this.dialogShadow) this.dialogShadow.setVisible(false);
     this.dialogBg.setVisible(false).disableInteractive();
     this.dialogBorder.setVisible(false);
     this.speakerTagShadow.setVisible(false);
@@ -1013,6 +1192,7 @@ class UIScene extends Phaser.Scene {
     this.input.keyboard.removeAllListeners('keydown');
     this.input.keyboard.removeAllListeners('keydown-E');
     this.input.keyboard.removeAllListeners('keydown-SPACE');
+    this.input.keyboard.removeAllListeners('keydown-ENTER');
     
     if (this._dialogueTimer) {
       this._dialogueTimer.destroy();
@@ -1022,8 +1202,17 @@ class UIScene extends Phaser.Scene {
     if (typeof document !== 'undefined' && document.body) {
       document.body.classList.remove('dialogue-active');
     }
-    if (typeof window !== 'undefined' && typeof window.setDialogueActive === 'function') {
-      window.setDialogueActive(false);
+    if (typeof window !== 'undefined') {
+      if (typeof window.setDialogueActive === 'function') {
+        window.setDialogueActive(false);
+      }
+      if (typeof window.focus === 'function') {
+        window.focus();
+      }
+      const canvas = document.querySelector('canvas');
+      if (canvas && typeof canvas.focus === 'function') {
+        canvas.focus();
+      }
     }
 
     this.registry.set('dialogueActive', false);
@@ -1114,6 +1303,8 @@ class UIScene extends Phaser.Scene {
     this.sidebarOpen = !this.sidebarOpen;
     if (this.sidebarOpen) {
       this.levelListContainer.setVisible(false);
+      this._sidebarScrollY = 0;
+      this._updateSidebarLayout();
     }
     this.registry.set('menuOpen', this.sidebarOpen);
 
@@ -1145,6 +1336,106 @@ class UIScene extends Phaser.Scene {
     });
   }
 
+  _setZoom(zoom) {
+    const clamped = Math.round(Phaser.Math.Clamp(zoom, 0.5, 3.0) * 10) / 10;
+    this.currentZoom = clamped;
+    this.registry.set('cameraZoom', clamped);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('caretech_zoom', clamped);
+    }
+    const world = this.scene.get('World');
+    if (world && world.cameras && world.cameras.main) {
+      world.cameras.main.setZoom(clamped);
+    }
+    this._updateZoomDisplay();
+  }
+
+  _updateZoomDisplay() {
+    if (!this.zoomLabelTxt) return;
+    const lang = this.registry.get('lang') || 'id';
+    const pct = Math.round((this.currentZoom / 2.0) * 100);
+    const label = lang === 'en'
+      ? `🔍 Zoom: ${this.currentZoom.toFixed(1)}x (${pct}%)`
+      : `🔍 Zoom: ${this.currentZoom.toFixed(1)}x (${pct}%)`;
+    this.zoomLabelTxt.setText(label);
+    this._drawZoomSlider();
+  }
+
+  _drawZoomSlider() {
+    if (!this.zoomTrackGfx) return;
+    const trackX = this._trackX || 78;
+    const trackY = this._trackY || 35;
+    const trackW = this._trackW || 124;
+    const trackH = this._trackH || 8;
+
+    const ratio = Phaser.Math.Clamp((this.currentZoom - 0.5) / (3.0 - 0.5), 0, 1);
+    const fillW = Math.max(0, ratio * trackW);
+    const thumbX = trackX + ratio * trackW;
+
+    this.zoomTrackGfx.clear();
+    // Track background
+    this.zoomTrackGfx.fillStyle(0xded4c2, 1).fillRoundedRect(trackX, trackY, trackW, trackH, 4)
+      .lineStyle(1.5, 0x000000, 1).strokeRoundedRect(trackX, trackY, trackW, trackH, 4);
+    // Active fill
+    if (fillW > 0) {
+      this.zoomTrackGfx.fillStyle(0x00e5ff, 1).fillRoundedRect(trackX, trackY, fillW, trackH, 4)
+        .lineStyle(1.5, 0x000000, 1).strokeRoundedRect(trackX, trackY, fillW, trackH, 4);
+    }
+    // Thumb shadow
+    this.zoomTrackGfx.fillStyle(0x000000, 1).fillCircle(thumbX + 1.5, trackY + trackH / 2 + 1.5, 8);
+    // Thumb
+    this.zoomTrackGfx.fillStyle(0xffe500, 1).fillCircle(thumbX, trackY + trackH / 2, 8)
+      .lineStyle(2, 0x000000, 1).strokeCircle(thumbX, trackY + trackH / 2, 8);
+  }
+
+  _setSidebarScroll(y) {
+    this._sidebarScrollY = Phaser.Math.Clamp(y, this._minSidebarScroll, this._maxSidebarScroll);
+    if (this.sidebarScrollContainer) {
+      this.sidebarScrollContainer.setY(72 + this._sidebarScrollY);
+    }
+    const viewportH = (this._effHeight || this.cameras.main.height) - 72;
+    const totalContentH = this.exitGameBtnObj ? (this.exitGameBtnObj.btnGroup.y + 44) : 400;
+    this._updateScrollbar(viewportH, totalContentH);
+  }
+
+  _updateSidebarLayout() {
+    if (!this.levelListContainer || !this.closeSidebarBtnObj || !this.exitGameBtnObj) return;
+    const isLevelOpen = this.levelListContainer.visible;
+    const levelListH = isLevelOpen ? (7 * 30 + 8) : 0;
+    const baseAfterLevel = 208 + levelListH;
+
+    this.closeSidebarBtnObj.btnGroup.setY(baseAfterLevel + 8);
+    this.exitGameBtnObj.btnGroup.setY(baseAfterLevel + 46);
+
+    const totalContentH = baseAfterLevel + 46 + 34 + 16;
+    const viewportH = (this._effHeight || this.cameras.main.height) - 72;
+
+    this._maxSidebarScroll = 0;
+    this._minSidebarScroll = Math.min(0, viewportH - totalContentH);
+
+    this._setSidebarScroll(this._sidebarScrollY || 0);
+  }
+
+  _updateScrollbar(viewportH, totalContentH) {
+    if (!this.sidebarScrollbarGfx) return;
+    this.sidebarScrollbarGfx.clear();
+    if (this._minSidebarScroll >= 0) return;
+
+    const trackY = 76;
+    const trackH = Math.max(10, viewportH - 12);
+    const trackX = 274;
+
+    // Track
+    this.sidebarScrollbarGfx.fillStyle(0x000000, 0.15).fillRoundedRect(trackX, trackY, 3, trackH, 1.5);
+
+    // Thumb
+    const ratio = Phaser.Math.Clamp(viewportH / totalContentH, 0.15, 0.85);
+    const thumbH = Math.max(22, trackH * ratio);
+    const scrollRatio = (-this._sidebarScrollY) / (-this._minSidebarScroll);
+    const thumbY = trackY + scrollRatio * (trackH - thumbH);
+
+    this.sidebarScrollbarGfx.fillStyle(0x000000, 0.65).fillRoundedRect(trackX, thumbY, 3, thumbH, 1.5);
+  }
 
   _refreshLanguage() {
     const lang = this.registry.get('lang') || 'id';
@@ -1155,6 +1446,7 @@ class UIScene extends Phaser.Scene {
       const isAnalog = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
       this.analogToggleBtnObj.txt.setText(lang === 'en' ? (isAnalog ? '🕹️ Analog: ON' : '🕹️ Analog: OFF') : (isAnalog ? '🕹️ Analog: AKTIF' : '🕹️ Analog: NONAKTIF'));
     }
+    this._updateZoomDisplay();
     if (this.switchLevelBtnObj) this.switchLevelBtnObj.txt.setText(lang === 'en' ? 'Switch Level' : 'Ganti Level');
     if (this.closeSidebarBtnObj) this.closeSidebarBtnObj.txt.setText(lang === 'en' ? 'Resume' : 'Lanjut Main');
     if (this.exitGameBtnObj) this.exitGameBtnObj.txt.setText(lang === 'en' ? 'Exit Game' : 'Keluar Game');

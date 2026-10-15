@@ -147,8 +147,10 @@
     }
 
     /* ══════════ MENU PRIORITY OVERRIDE ══════════ */
-    /* When pause menu is open, touch events pass through to menu without moving analog */
-    body.menu-open #joystick-zone {
+    /* When pause menu is open, touch events pass through to menu and joystick is hidden */
+    body.menu-open #joystick-zone,
+    body.menu-open #joystick-container {
+      display: none !important;
       pointer-events: none !important;
     }
 
@@ -173,9 +175,8 @@
     .joystick-zone {
       position: fixed;
       bottom: 0; left: 0;
-      width: 48vw;
-      height: calc(100vh - 80px);
-      max-height: 85vh;
+      width: 50vw;
+      height: 60vh;
       pointer-events: auto;
       touch-action: none;
       user-select: none; -webkit-user-select: none;
@@ -785,6 +786,21 @@
       axisY: 0,
       actionJustDown: false
     };
+
+    window.setDialogueActive = (active) => {
+      const isAct = !!active;
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.toggle('dialogue-active', isAct);
+      }
+      const controls = document.getElementById('mobile-controls');
+      if (controls) {
+        controls.classList.toggle('dialogue-active', isAct);
+        controls.classList.remove('dialogue-hidden');
+      }
+      if (isAct && typeof window.resetJoystick === 'function') {
+        window.resetJoystick();
+      }
+    };
     
     document.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('btn-start-mobile');
@@ -822,10 +838,12 @@
       const maxDistance = 44; // max travel radius in px
 
       const setJoystickCenter = (clientX, clientY) => {
-        // Clamp center so the 140px base stays visible and comfortable on screen
-        const minX = halfSize + 10;
-        const maxX = Math.max(minX, window.innerWidth * 0.48);
-        const minY = 85 + halfSize;
+        // Clamp center so the 140px base stays visible and comfortable on screen:
+        // Must not cross 50% width from left (clampedX + halfSize <= window.innerWidth * 0.50)
+        // Must not cross 60% height from below (clampedY - halfSize >= window.innerHeight * 0.40)
+        const minX = halfSize + 8;
+        const maxX = Math.max(minX, window.innerWidth * 0.50 - halfSize);
+        const minY = Math.max(halfSize + 8, window.innerHeight * 0.40 + halfSize);
         const maxY = Math.max(minY, window.innerHeight - halfSize - 10);
 
         const clampedX = Math.max(minX, Math.min(clientX, maxX));
@@ -1051,9 +1069,17 @@
           if (lvlSelectModal) {
             lvlSelectModal.classList.add('hidden');
           }
+          if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
+          window.focus();
+          const canvas = document.querySelector('canvas');
+          if (canvas) canvas.focus();
+
           // Emit event to Phaser game
           const tryStartLevel1 = () => {
-            if (window.game && window.game.events) {
+            const world = window.game && window.game.scene && window.game.scene.getScene('World');
+            if (world && world.scene.isActive() && window.game.events) {
               window.game.events.emit('start_level_1');
             } else {
               setTimeout(tryStartLevel1, 100);
@@ -1079,6 +1105,10 @@
           if (resultModal) {
             resultModal.classList.add('hidden');
           }
+          if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+          }
+          window.focus();
           if (window.game && window.game.registry) {
             window.game.registry.set('harmony', 50);
             window.game.registry.set('level1_003_triggered', false);
@@ -1108,6 +1138,34 @@
           window.location.href = 'index.html';
         });
       }
+
+      // Dialogue state sync: ONLY the analog is gone during dialogue state
+      const setDialogueActive = (active) => {
+        const isAct = !!active;
+        if (document.body) {
+          document.body.classList.toggle('dialogue-active', isAct);
+        }
+        const controls = document.getElementById('mobile-controls');
+        if (controls) {
+          controls.classList.toggle('dialogue-active', isAct);
+          controls.classList.remove('dialogue-hidden');
+        }
+        if (isAct && typeof resetJoystick === 'function') {
+          resetJoystick();
+        }
+      };
+
+      window.setDialogueActive = setDialogueActive;
+
+      // Resume AudioContext on first user gesture (resolves browser autoplay policy warning)
+      const resumeAudio = () => {
+        if (window.game && window.game.sound && window.game.sound.context && window.game.sound.context.state === 'suspended') {
+          window.game.sound.context.resume();
+        }
+      };
+      window.addEventListener('pointerdown', resumeAudio, { once: true });
+      window.addEventListener('keydown', resumeAudio, { once: true });
+      window.addEventListener('touchstart', resumeAudio, { once: true });
 
       // Hide controls during dialogue
       const checkDialogue = setInterval(() => {
