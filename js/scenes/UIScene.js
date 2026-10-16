@@ -773,7 +773,6 @@ class UIScene extends Phaser.Scene {
     this.cameras.main.once('camerafadeincomplete', () => {
       this.startDialogue('lvl1_001_narrator');
     });
-    });
   }
 
   /** Show top quest banner with optional timer */
@@ -1172,6 +1171,7 @@ class UIScene extends Phaser.Scene {
       this._setupDialogueAdvance(() => {
         this._closeDialogue();
       });
+    }
   }
 
   _selectOption(ch) {
