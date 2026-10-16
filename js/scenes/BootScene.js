@@ -79,6 +79,9 @@ class BootScene extends Phaser.Scene {
     // Load tileset image
     this.load.image('tileset', 'assets/sprites/tileset.png?v=' + Date.now());
     this.load.spritesheet('tileset_sheet', 'assets/sprites/tileset.png?v=' + Date.now(), { frameWidth: 64, frameHeight: 64 });
+
+    // Overall school map
+    this.load.image('overall_map', 'assets/sprites/overall_maps_new.png');
   }
 
   create() {

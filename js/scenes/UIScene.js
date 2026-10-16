@@ -85,17 +85,9 @@ class UIScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0, 0.5).setScrollFactor(1).setDepth(103).setAlpha(0);
 
-    /* ══════════ Clock (top-right Yellow Paper Pill) ══════════ */
-    this.clockPanelShadow = this.add.rectangle(width - 9, 11, 88, 26, 0x000000)
-      .setOrigin(1, 0).setScrollFactor(1).setDepth(99);
-    this.clockPanel = this.add.rectangle(width - 12, 8, 88, 26, 0xfffde6)
-      .setOrigin(1, 0).setStrokeStyle(2.5, 0x000000).setScrollFactor(1).setDepth(100);
-    this.clockTxt = this._createSharpText(width - 56, 21, '', {
-      fontFamily: '"Courier New", Courier, monospace',
-      fontSize: '13px',
-      fontStyle: 'bold',
-      color: '#000000'
-    }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
+    /* ══════════ Minimap HUD (top-right Cardboard Cosmos Map) ══════════ */
+    this._initMinimap(width, height);
+    this._initLargeMapModal();
 
     /* ══════════ Quest Banner (top-center) ══════════ */
     this.questContainer = this.add.container(width / 2, -80).setScrollFactor(1).setDepth(300);
@@ -338,7 +330,8 @@ class UIScene extends Phaser.Scene {
     const zoomSliderZone = this.add.zone(trackX + trackW / 2, trackY + trackH / 2, trackW + 16, 26).setInteractive({ useHandCursor: true });
     const updateZoomFromPointer = (pointer) => {
       const bounds = this.sidebarContainer;
-      const localX = pointer.x - bounds.x - trackX;
+      const pt = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const localX = pt.x - bounds.x - trackX;
       const ratio = Phaser.Math.Clamp(localX / trackW, 0, 1);
       const newZoom = 0.5 + ratio * (3.0 - 0.5);
       this._setZoom(newZoom);
@@ -441,18 +434,20 @@ class UIScene extends Phaser.Scene {
 
     this.input.on('pointerdown', (pointer) => {
       if (!this.sidebarOpen) return;
-      if (pointer.x >= 0 && pointer.x <= 280 && pointer.y >= 72) {
+      const pt = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      if (pt.x >= 0 && pt.x <= 280 && pt.y >= 72) {
         isDraggingSidebar = true;
-        dragStartY = pointer.y;
+        dragStartY = pt.y;
         dragStartScroll = this._sidebarScrollY;
-      } else if (pointer.x > 280 && this.sidebarOpen) {
+      } else if (pt.x > 280 && this.sidebarOpen) {
         this._toggleSidebar();
       }
     });
 
     this.input.on('pointermove', (pointer) => {
       if (!isDraggingSidebar || !this.sidebarOpen) return;
-      const dy = pointer.y - dragStartY;
+      const pt = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const dy = pt.y - dragStartY;
       this._setSidebarScroll(dragStartScroll + dy);
     });
 
@@ -462,16 +457,21 @@ class UIScene extends Phaser.Scene {
 
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       if (!this.sidebarOpen) return;
-      if (pointer.x <= 280) {
+      const pt = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      if (pt.x <= 280) {
         this._setSidebarScroll(this._sidebarScrollY - deltaY * 0.5);
       }
     });
 
     this._updateSidebarLayout();
 
-    // ESC to toggle sidebar
+    // ESC to toggle sidebar or close large map
     this.sidebarOpen = false;
     this.input.keyboard.on('keydown-ESC', () => {
+      if (this._largeMapOpen) {
+        this._toggleLargeMap(false);
+        return;
+      }
       this._toggleSidebar();
     });
 
@@ -655,7 +655,11 @@ class UIScene extends Phaser.Scene {
       this._refreshHarmony();
       this._flashHarmonyChange(val - prevVal);
     });
-    this.registry.events.on('changedata-currentMap', () => this._refreshMapName());
+    this.registry.events.on('changedata-currentMap', () => {
+      this._refreshMapName();
+      this._updateMinimapPlayerPos();
+      if (this._largeMapOpen) this._refreshLargeMapMarkers();
+    });
 
     /* ══════════ Initial State ══════════ */
     this._refreshHarmony();
@@ -704,10 +708,11 @@ class UIScene extends Phaser.Scene {
       });
     }
 
-    // Clock
-    this.clockPanelShadow.setPosition(width - 9, 11);
-    this.clockPanel.setPosition(width - 12, 8);
-    this.clockTxt.setPosition(width - 56, 21);
+    // Minimap & Large Map
+    this._updateMinimapLayout();
+    if (this.largeMapContainer && this._largeMapOpen) {
+      this._updateLargeMapLayout();
+    }
 
     // Sidebar
     const sidebarBg = this.sidebarContainer.getAt(0);
@@ -1325,6 +1330,7 @@ class UIScene extends Phaser.Scene {
   }
 
   _refreshClock(t) {
+    if (!this.clockTxt) return;
     const h = Math.floor(t / 60);
     const m = t % 60;
     this.clockTxt.setText(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
@@ -1377,6 +1383,11 @@ class UIScene extends Phaser.Scene {
     const world = this.scene.get('World');
     if (world && world.cameras && world.cameras.main) {
       world.cameras.main.setZoom(clamped);
+      if (world.player && world.player.sprite) {
+        // Re-center on player and lock follow as pivot immediately
+        world.cameras.main.centerOn(world.player.sprite.x, world.player.sprite.y);
+        world.cameras.main.startFollow(world.player.sprite, true, 1, 1);
+      }
     }
     this._updateZoomDisplay();
   }
@@ -1384,7 +1395,7 @@ class UIScene extends Phaser.Scene {
   _updateZoomDisplay() {
     if (!this.zoomLabelTxt) return;
     const lang = this.registry.get('lang') || 'id';
-    const pct = Math.round((this.currentZoom / 2.0) * 100);
+    const pct = Math.round(((this.currentZoom - 0.5) / (3.0 - 0.5)) * 100);
     const label = lang === 'en'
       ? `🔍 Zoom: ${this.currentZoom.toFixed(1)}x (${pct}%)`
       : `🔍 Zoom: ${this.currentZoom.toFixed(1)}x (${pct}%)`;
@@ -1488,6 +1499,15 @@ class UIScene extends Phaser.Scene {
     }
     
     this._refreshMapName();
+    if (this.mapHeaderTxt) this.mapHeaderTxt.setText(lang === 'en' ? '🗺️ MAP' : '🗺️ PETA');
+    if (this.mapHintTxt) this.mapHintTxt.setText(lang === 'en' ? '[ CLICK / M: ZOOM ]' : '[ KLIK / M: ZOOM ]');
+    if (this.largeMapTitleTxt) this.largeMapTitleTxt.setText(lang === 'en' ? '🏫 HARMONIA SCHOOL - OVERALL MAP' : '🏫 DENAH KAWASAN SEKOLAH HARMONIA');
+    if (this.largeMapCloseBtnTxt) this.largeMapCloseBtnTxt.setText(lang === 'en' ? '✕ CLOSE' : '✕ TUTUP');
+    if (this.largeMapFooterTxt) this.largeMapFooterTxt.setText(lang === 'en' ? '[ Click anywhere / Press M or ESC to close ]' : '[ Klik di mana saja / Tekan M atau ESC untuk menutup ]');
+    if (this._largeMapOpen) {
+      this._refreshLargeMapMarkers();
+      this._updateLargeMapPlayerPos();
+    }
     
     if (this.registry.get('dialogueActive')) {
       const activeNode = this._currentDialogueNode;
@@ -1512,4 +1532,414 @@ class UIScene extends Phaser.Scene {
       this.sidebarLevelText.setText(prefix + (names[mapKey] || mapKey.toUpperCase()));
     }
   }
+
+  /* ══════════ Minimap & Overall Map System ══════════ */
+
+  _initMinimap(width, height) {
+    const panelW = 105;
+    const panelH = 88;
+    const rightMargin = 12;
+    const topMargin = 8;
+    const panelX = width - rightMargin;
+    const panelY = topMargin;
+
+    // Shadow panel
+    this.mapPanelShadow = this.add.rectangle(panelX + 3, panelY + 3, panelW, panelH, 0x000000)
+      .setOrigin(1, 0).setScrollFactor(1).setDepth(99);
+
+    // Warm paper card
+    this.mapPanel = this.add.rectangle(panelX, panelY, panelW, panelH, 0xfffdf5)
+      .setOrigin(1, 0).setStrokeStyle(2.5, 0x000000).setScrollFactor(1).setDepth(100)
+      .setInteractive({ useHandCursor: true });
+
+    // Header washi tape / banner
+    this.mapHeaderBg = this.add.rectangle(width - 113, 12, 97, 14, 0xfacc15)
+      .setOrigin(0, 0).setStrokeStyle(1.5, 0x000000).setScrollFactor(1).setDepth(101)
+      .setInteractive({ useHandCursor: true });
+
+    const lang = this.registry.get('lang') || 'id';
+    this.mapHeaderTxt = this._createSharpText(width - 110, 19, lang === 'en' ? '🗺️ MAP' : '🗺️ PETA', {
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '9px',
+      fontStyle: 'bold',
+      color: '#000000'
+    }).setOrigin(0, 0.5).setScrollFactor(1).setDepth(102);
+
+    // In-game clock in header (preserves time display)
+    this.clockTxt = this._createSharpText(width - 18, 19, '', {
+      fontFamily: '"Courier New", Courier, monospace',
+      fontSize: '8.5px',
+      fontStyle: 'bold',
+      color: '#000000'
+    }).setOrigin(1, 0.5).setScrollFactor(1).setDepth(102);
+
+    // Overall Map sprite image (original 97 x 58)
+    this.mapImg = this.add.image(width - 113, 28, 'overall_map')
+      .setOrigin(0, 0).setDisplaySize(97, 58).setScrollFactor(1).setDepth(101)
+      .setInteractive({ useHandCursor: true });
+
+    if (this.mapImg.texture) {
+      this.mapImg.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+
+    // Border around map image
+    this.mapBorder = this.add.rectangle(width - 113, 28, 97, 58)
+      .setOrigin(0, 0).setStrokeStyle(1.5, 0x000000).setScrollFactor(1).setDepth(102);
+
+    // Pulsing player beacon / pin graphics & dot
+    this.mapPulseRing = this.add.graphics().setScrollFactor(1).setDepth(103);
+    this.mapPlayerPin = this.add.circle(0, 0, 3, 0xef4444)
+      .setStrokeStyle(1.5, 0x000000).setScrollFactor(1).setDepth(104);
+
+    // Mini footer hint
+    this.mapHintTxt = this._createSharpText(width - 64, 90, lang === 'en' ? '[ CLICK / M: ZOOM ]' : '[ KLIK / M: ZOOM ]', {
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '7.5px',
+      fontStyle: 'bold',
+      color: '#64748b'
+    }).setOrigin(0.5).setScrollFactor(1).setDepth(102);
+
+    // Click triggers
+    const toggleMap = () => this._toggleLargeMap();
+    this.mapPanel.on('pointerdown', toggleMap);
+    this.mapHeaderBg.on('pointerdown', toggleMap);
+    this.mapImg.on('pointerdown', toggleMap);
+
+    // Keyboard shortcut M
+    this.input.keyboard.on('keydown-M', toggleMap);
+
+    // Start pulsing animation on player pin
+    this._startMinimapPulse();
+
+    // Position player pin initially
+    this._updateMinimapPlayerPos();
+  }
+
+  _startMinimapPulse() {
+    if (this._minimapPulseTween) this._minimapPulseTween.stop();
+
+    this._pulseRadius = 3;
+    this._pulseAlpha = 1;
+
+    this._minimapPulseTween = this.tweens.add({
+      targets: this,
+      _pulseRadius: 8,
+      _pulseAlpha: 0,
+      duration: 1100,
+      repeat: -1,
+      onUpdate: () => {
+        if (!this.mapPulseRing || !this.mapPlayerPin) return;
+        this.mapPulseRing.clear();
+        this.mapPulseRing.lineStyle(1.5, 0xef4444, this._pulseAlpha);
+        this.mapPulseRing.strokeCircle(this.mapPlayerPin.x, this.mapPlayerPin.y, this._pulseRadius);
+      }
+    });
+  }
+
+  _getPlayerMapCoords() {
+    const world = this.scene.get('World');
+    if (!world || !world.player || !world.player.sprite) {
+      const cur = this.registry.get('currentMap') || 'garden';
+      const fallback = {
+        garden:     { x: 54, y: 49 },
+        schoolyard: { x: 55, y: 28 },
+        library:    { x: 86, y: 31 },
+        cafeteria:  { x: 21, y: 29 },
+        classroom:  { x: 55, y: 7  },
+        corridor:   { x: 68, y: 28 },
+        auditorium: { x: 55, y: 18 }
+      };
+      return fallback[cur] || { x: 54, y: 49 };
+    }
+
+    const curMap = this.registry.get('currentMap') || 'garden';
+    const tileX = world.player.sprite.x / 64; // TILE = 64
+    const tileY = world.player.sprite.y / 64;
+
+    const mapDefs = {
+      garden:     { minX: 40, minY: 40, w: 28, h: 18, mapW: 28, mapH: 18 },
+      schoolyard: { minX: 33, minY: 18, w: 43, h: 22, mapW: 43, mapH: 23 },
+      library:    { minX: 76, minY: 21, w: 19, h: 21, mapW: 19, mapH: 21 },
+      cafeteria:  { minX: 9,  minY: 21, w: 24, h: 18, mapW: 31, mapH: 18 },
+      classroom:  { minX: 49, minY: 1,  w: 13, h: 12, mapW: 20, mapH: 15 },
+      corridor:   { minX: 68, minY: 28, w: 7,  h: 10, mapW: 20, mapH: 15 },
+      auditorium: { minX: 50, minY: 18, w: 10, h: 10, mapW: 20, mapH: 15 }
+    };
+
+    const d = mapDefs[curMap] || mapDefs.garden;
+    const normX = Phaser.Math.Clamp(tileX / d.mapW, 0, 1);
+    const normY = Phaser.Math.Clamp(tileY / d.mapH, 0, 1);
+
+    const px = d.minX + normX * d.w;
+    const py = d.minY + normY * d.h;
+
+    return { x: px, y: py };
+  }
+
+  _updateMinimapPlayerPos() {
+    if (!this.mapImg || !this.mapPlayerPin) return;
+
+    const coords = this._getPlayerMapCoords();
+    const pinX = this.mapImg.x + (coords.x / 97) * 97;
+    const pinY = this.mapImg.y + (coords.y / 58) * 58;
+
+    this.mapPlayerPin.setPosition(pinX, pinY);
+  }
+
+  _updateMinimapLayout() {
+    const width = this._effWidth;
+    if (!this.mapPanel) return;
+
+    this.mapPanelShadow.setPosition(width - 9, 11);
+    this.mapPanel.setPosition(width - 12, 8);
+    this.mapHeaderBg.setPosition(width - 113, 12);
+    this.mapHeaderTxt.setPosition(width - 110, 19);
+    this.clockTxt.setPosition(width - 18, 19);
+    this.mapImg.setPosition(width - 113, 28);
+    this.mapBorder.setPosition(width - 113, 28);
+    this.mapHintTxt.setPosition(width - 64, 90);
+
+    this._updateMinimapPlayerPos();
+  }
+
+  _initLargeMapModal() {
+    this._largeMapOpen = false;
+    this.largeMapContainer = this.add.container(0, 0).setScrollFactor(1).setDepth(750).setVisible(false);
+
+    const width = this._effWidth || 800;
+    const height = this._effHeight || 600;
+
+    // Fullscreen dimmed background (clicking anywhere closes)
+    this.largeMapDim = this.add.rectangle(0, 0, width, height, 0x000000, 0.88)
+      .setOrigin(0, 0).setInteractive();
+    this.largeMapDim.on('pointerdown', () => this._toggleLargeMap(false));
+
+    // Full map layer container centered on screen
+    this.largeMapContent = this.add.container(width / 2, height / 2);
+
+    // Map drop shadow
+    this.largeMapShadow = this.add.rectangle(4, 4, 100, 100, 0x000000)
+      .setOrigin(0.5);
+
+    // Pure map image — focused and full, no container cardboard box!
+    this.largeMapImg = this.add.image(0, 0, 'overall_map')
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    if (this.largeMapImg.texture) {
+      this.largeMapImg.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    this.largeMapImg.on('pointerdown', () => this._toggleLargeMap(false));
+
+    // Crisp outline around map image
+    this.largeMapBorder = this.add.rectangle(0, 0, 100, 100)
+      .setOrigin(0.5).setStrokeStyle(2.5, 0x000000);
+
+    // Area tags container
+    this.largeMapMarkersContainer = this.add.container(0, 0);
+
+    // Player position pulse radar & red beacon pin
+    this.largeMapPulseRing = this.add.graphics();
+    this.largeMapPlayerPin = this.add.circle(0, 0, 5.5, 0xef4444)
+      .setStrokeStyle(2, 0xffffff);
+
+    // Floating tag above pin
+    this.largeMapPlayerLabel = this._createSharpText(0, 0, '📍 KAMU', {
+      fontFamily: '"GROBOLD", "Inter", system-ui, sans-serif',
+      fontSize: '9.5px',
+      fontStyle: 'bold',
+      color: '#000000',
+      backgroundColor: '#facc15',
+      padding: { x: 5, y: 2 }
+    }).setOrigin(0.5, 1);
+
+    // Floating title at top
+    const lang = this.registry.get('lang') || 'id';
+    this.largeMapTitleTxt = this._createSharpText(width / 2, 22, lang === 'en' ? '🏫 HARMONIA SCHOOL - OVERALL MAP' : '🏫 DENAH KAWASAN SEKOLAH HARMONIA', {
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      backgroundColor: '#0f172a',
+      padding: { x: 12, y: 5 }
+    }).setOrigin(0.5);
+
+    // Floating close button at top-right
+    this.largeMapCloseBtn = this.add.container(width - 20, 22);
+    const closeBtnShadow = this.add.rectangle(2, 2, 74, 26, 0x000000).setOrigin(1, 0.5);
+    const closeBtnBg = this.add.rectangle(0, 0, 74, 26, 0xff2e93)
+      .setOrigin(1, 0.5).setStrokeStyle(2, 0x000000).setInteractive({ useHandCursor: true });
+    this.largeMapCloseBtnTxt = this._createSharpText(-37, 0, lang === 'en' ? '✕ CLOSE' : '✕ TUTUP', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+    closeBtnBg.on('pointerdown', () => this._toggleLargeMap(false));
+    this.largeMapCloseBtn.add([closeBtnShadow, closeBtnBg, this.largeMapCloseBtnTxt]);
+
+    // Footer hint text
+    this.largeMapFooterTxt = this._createSharpText(width / 2, height - 16, lang === 'en' ? '[ Click anywhere / Press M or ESC to close ]' : '[ Klik di mana saja / Tekan M atau ESC untuk menutup ]', {
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: '#94a3b8'
+    }).setOrigin(0.5);
+
+    this.largeMapContent.add([
+      this.largeMapShadow,
+      this.largeMapImg,
+      this.largeMapBorder,
+      this.largeMapMarkersContainer,
+      this.largeMapPulseRing,
+      this.largeMapPlayerPin,
+      this.largeMapPlayerLabel
+    ]);
+
+    this.largeMapContainer.add([
+      this.largeMapDim,
+      this.largeMapContent,
+      this.largeMapTitleTxt,
+      this.largeMapCloseBtn,
+      this.largeMapFooterTxt
+    ]);
+
+    this._startLargeMapPulse();
+  }
+
+  _startLargeMapPulse() {
+    if (this._largeMapPulseTween) this._largeMapPulseTween.stop();
+
+    this._largePulseRadius = 5.5;
+    this._largePulseAlpha = 1;
+
+    this._largeMapPulseTween = this.tweens.add({
+      targets: this,
+      _largePulseRadius: 18,
+      _largePulseAlpha: 0,
+      duration: 1000,
+      repeat: -1,
+      onUpdate: () => {
+        if (!this.largeMapPulseRing || !this.largeMapPlayerPin || !this._largeMapOpen) return;
+        this.largeMapPulseRing.clear();
+        this.largeMapPulseRing.lineStyle(2, 0xef4444, this._largePulseAlpha);
+        this.largeMapPulseRing.strokeCircle(this.largeMapPlayerPin.x, this.largeMapPlayerPin.y, this._largePulseRadius);
+      }
+    });
+  }
+
+  _updateLargeMapLayout() {
+    const width = this._effWidth || 800;
+    const height = this._effHeight || 600;
+    if (!this.largeMapContainer) return;
+
+    this.largeMapDim.setSize(width, height);
+    this.largeMapContent.setPosition(width / 2, height / 2);
+
+    const padX = 40;
+    const padY = 56;
+    const availW = Math.max(200, width - padX * 2);
+    const availH = Math.max(150, height - padY * 2);
+    const scale = Math.min(availW / 97, availH / 58);
+    const displayW = Math.round(97 * scale);
+    const displayH = Math.round(58 * scale);
+
+    this._largeMapDisplayW = displayW;
+    this._largeMapDisplayH = displayH;
+
+    this.largeMapImg.setDisplaySize(displayW, displayH);
+    this.largeMapShadow.setSize(displayW, displayH).setPosition(4, 4);
+    this.largeMapBorder.setSize(displayW, displayH).setPosition(0, 0);
+
+    this.largeMapTitleTxt.setPosition(width / 2, 22);
+    this.largeMapCloseBtn.setPosition(width - 20, 22);
+    this.largeMapFooterTxt.setPosition(width / 2, height - 16);
+
+    this._refreshLargeMapMarkers();
+    this._updateLargeMapPlayerPos();
+  }
+
+  _updateLargeMapPlayerPos() {
+    if (!this.largeMapPlayerPin || !this._largeMapDisplayW) return;
+
+    const coords = this._getPlayerMapCoords();
+    const displayW = this._largeMapDisplayW;
+    const displayH = this._largeMapDisplayH;
+
+    const localX = -displayW / 2 + (coords.x / 97) * displayW;
+    const localY = -displayH / 2 + (coords.y / 58) * displayH;
+
+    this.largeMapPlayerPin.setPosition(localX, localY);
+    this.largeMapPlayerLabel.setPosition(localX, localY - 9);
+
+    const lang = this.registry.get('lang') || 'id';
+    this.largeMapPlayerLabel.setText(lang === 'en' ? '📍 YOU' : '📍 KAMU');
+  }
+
+  _refreshLargeMapMarkers() {
+    if (!this.largeMapMarkersContainer || !this._largeMapDisplayW) return;
+    this.largeMapMarkersContainer.removeAll(true);
+
+    const lang = this.registry.get('lang') || 'id';
+    const curMap = this.registry.get('currentMap') || 'garden';
+    const displayW = this._largeMapDisplayW;
+    const displayH = this._largeMapDisplayH;
+
+    const zones = [
+      { key: 'classroom',  x: 55, y: 7,  name: { id: 'Ruang Kelas', en: 'Classroom' } },
+      { key: 'cafeteria',  x: 21, y: 29, name: { id: 'Kantin', en: 'Cafeteria' } },
+      { key: 'schoolyard', x: 55, y: 28, name: { id: 'Halaman Utama', en: 'Schoolyard' } },
+      { key: 'library',    x: 86, y: 31, name: { id: 'Perpustakaan', en: 'Library' } },
+      { key: 'garden',     x: 55, y: 49, name: { id: 'Taman Sekolah', en: 'Garden' } }
+    ];
+
+    zones.forEach(z => {
+      const isCurrent = (z.key === curMap) || (curMap === 'corridor' && z.key === 'schoolyard') || (curMap === 'auditorium' && z.key === 'classroom');
+      const px = -displayW / 2 + (z.x / 97) * displayW;
+      const py = -displayH / 2 + (z.y / 58) * displayH;
+
+      // Small area dot
+      const pin = this.add.circle(px, py, 3.5, 0x0f172a)
+        .setStrokeStyle(1.5, 0xffffff);
+      this.largeMapMarkersContainer.add(pin);
+
+      // Area label
+      const badgeY = py < 0 ? py - 12 : py + 12;
+      const txt = this.add.text(px, badgeY, z.name[lang], {
+        fontFamily: '"GROBOLD", "Inter", sans-serif',
+        fontSize: '9px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        backgroundColor: '#0f172a',
+        padding: { x: 5, y: 2 }
+      }).setOrigin(0.5);
+
+      if (txt.texture) txt.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      this.largeMapMarkersContainer.add(txt);
+    });
+  }
+
+  _toggleLargeMap(forceState) {
+    const nextState = (forceState !== undefined) ? !!forceState : !this._largeMapOpen;
+    this._largeMapOpen = nextState;
+
+    if (this._largeMapOpen) {
+      if (this.sidebarOpen) this._toggleSidebar();
+      this.largeMapContainer.setVisible(true);
+      this._updateLargeMapLayout();
+    } else {
+      this.largeMapContainer.setVisible(false);
+    }
+
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('menu-open', this.sidebarOpen || this._largeMapOpen);
+    }
+  }
+
+  update(time, delta) {
+    this._updateMinimapPlayerPos();
+    if (this._largeMapOpen) {
+      this._updateLargeMapPlayerPos();
+    }
+  }
 }
+
