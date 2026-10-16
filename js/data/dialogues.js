@@ -1,263 +1,23 @@
-const DIALOGUES = {
+/* ───────────── data / dialogues.js ─────────────
+   CARE-TECH: Harmonia School
+   Global Dialogues Registry & Ambient Interactions.
+   
+   Level-specific story dialogues are loaded modularly from:
+   js/data/levels/level<X>/dialogues.js
+   
+   Legacy dialogues archive: js/data/dialogues_legacy.js
+   ─────────────────────────────────────────────────────────────── */
 
-  /* ══════════ Level 1 — Detective Emotion (School Garden) ══════════ */
+window.DIALOGUES = window.DIALOGUES || {};
+var DIALOGUES = window.DIALOGUES;
 
-  // 001: Narator
-  lvl1_001_narrator: {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'The recess bell rings. Nakula is walking in the school garden.',
-      id: 'Bel istirahat berbunyi. Nakula berjalan di taman sekolah.' 
-    },
-    next    : null,
-    action  : null,
-    onCloseAction: 'lvl1_start_walk'
-  },
+// Auto-merge modular level dialogues if loaded
+if (window.LEVEL_1_DIALOGUES) {
+  Object.assign(DIALOGUES, window.LEVEL_1_DIALOGUES);
+}
 
-  // 003: ECA trigger saat Nakula mendekat ke Nabula (<= 3 block)
-  lvl1_003_eca: {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_surprised',
-    text    : { 
-      en: 'Wait... someone looks like they are holding back tears over there.',
-      id: 'Eh, tunggu... sepertinya ada yang lagi menahan tangis di sana.' 
-    },
-    next    : 'lvl1_004_choice'
-  },
-
-  // 004: Pilihan Pemain
-  lvl1_004_choice: {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_neutral',
-    text    : { 
-      en: 'What should we do?',
-      id: 'Apa yang harus kita lakukan?' 
-    },
-    choices : [
-      { 
-        label: { en: '1. "Let\'s go talk to her."', id: '1. "Ayo kita bicara dengannya."' },
-        next : 'lvl1_005a_1',
-        harmonyDelta: 25,
-        action: 'vibrate_choice'
-      },
-      { 
-        label: { en: '2. "I don\'t care."', id: '2. "Aku nggak peduli."' },
-        next : 'lvl1_005b_1',
-        harmonyDelta: -35,
-        action: 'vibrate_choice'
-      },
-      { 
-        label: { en: '3. "Maybe it\'s just my imagination."', id: '3. "Mungkin cuma perasaanku aja."' },
-        next : 'lvl1_005c_1',
-        harmonyDelta: -10,
-        action: 'vibrate_choice'
-      }
-    ]
-  },
-
-  /* ── 005a Branch ── */
-  'lvl1_005a_1': {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_neutral',
-    text    : { en: 'Let\'s go talk to her.', id: 'Ayo kita bicara dengannya.' },
-    next    : null,
-    autoAdvanceTimer: 3000,
-    action  : 'lvl1_005a_ready',
-    onCloseAction: 'lvl1_005a_walk'
-  },
-
-  /* ── 005b Branch ── */
-  'lvl1_005b_1': {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_sad',
-    text    : { en: 'I don\'t care.', id: 'Aku nggak peduli.' },
-    next    : 'lvl1_005b_2'
-  },
-  'lvl1_005b_2': {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'Nabula is still sitting alone. Nobody approaches her.',
-      id: 'Nabula masih duduk sendirian. Tidak ada yang menghampirinya.' 
-    },
-    next    : 'lvl1_005b_3'
-  },
-  'lvl1_005b_3': {
-    speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_sad',
-    text    : { 
-      en: '(mumbles softly) "Nobody notices I\'m sad..."',
-      id: '(bergumam pelan) "Nggak ada yang nyadar aku lagi sedih..."' 
-    },
-    next    : 'lvl1_005b_4'
-  },
-  'lvl1_005b_4': {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_sad',
-    text    : { 
-      en: 'Nakula... look, Nabula is still there. I can\'t stop thinking about her.',
-      id: 'Nakula... coba lihat deh, Nabula masih di sana. Aku jadi kepikiran terus, nih.' 
-    },
-    next    : 'lvl1_005b_6'
-  },
-  'lvl1_005b_6': {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_neutral',
-    text    : { 
-      en: 'Should we go back and help her?',
-      id: 'Apakah kita mau kembali membantunya?' 
-    },
-    choices : [
-      {
-        label: { en: '1. "Approach Nabula."', id: '1. "Hampiri Nabula."' },
-        next : null,
-        harmonyDelta: 10,
-        action: 'lvl1_005b_approach'
-      },
-      {
-        label: { en: '2. "Leave it, keep walking."', id: '2. "Biarkan saja, lanjut jalan."' },
-        next : 'lvl1_005b_8_narrator',
-        harmonyDelta: -10,
-        action: 'vibrate_choice'
-      }
-    ]
-  },
-  'lvl1_005b_8_narrator': {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'Nabula finally stands up by herself and walks into the library, without getting a chance to talk to anyone.',
-      id: 'Nabula akhirnya berdiri sendiri dan berjalan masuk ke perpustakaan, tanpa sempat bicara dengan siapa pun.' 
-    },
-    next    : null,
-    autoAdvanceTimer: 5000,
-    action  : 'lvl1_005b_focus_nabula',
-    onCloseAction: 'lvl1_005b_nabula_leaves'
-  },
-  'lvl1_005b_9b_eca': {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_surprised',
-    text    : { 
-      en: 'Nakula... Nabula entered the library. Let\'s go after her before it\'s too late!',
-      id: 'Nakula... Nabula masuk ke perpustakaan. Yuk, susul dia sebelum terlambat!' 
-    },
-    next    : null,
-    action  : null,
-    onCloseAction: 'lvl1_005b_start_timer_quest'
-  },
-  'lvl1_005b_10_narrator': {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'Nakula didn\'t make it in time to catch Nabula that day.',
-      id: 'Nakula tidak sempat menyusul Nabula hari itu.' 
-    },
-    next    : 'lvl1_005b_12_eca',
-    action  : 'lvl1_005b_fail_fade'
-  },
-  'lvl1_005b_12_eca': {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_sad',
-    text    : { 
-      en: 'It\'s okay, Nakula. Sometimes we realize too late that a friend needs help. But tomorrow, we still have another chance to try again.',
-      id: 'Nggak apa-apa, Nakula. Kadang kita telat sadar kalau teman butuh bantuan. Tapi besok, kita masih punya kesempatan buat coba lagi.' 
-    },
-    next    : null,
-    action  : null,
-    onCloseAction: 'lvl1_005b_show_fail_result'
-  },
-
-  /* ── 005c Branch ── */
-  'lvl1_005c_1': {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_sad',
-    text    : { en: 'Maybe it\'s just my imagination.', id: 'Mungkin cuma perasaanku aja.' },
-    next    : 'lvl1_005c_2',
-    action  : 'lvl1_camera_to_nakula'
-  },
-  'lvl1_005c_2': {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_sad',
-    text    : { 
-      en: 'Hmm... are you sure? Even from here, she clearly looks like she\'s holding back tears. Won\'t you regret leaving her alone?',
-      id: 'Hmm... yakin? Soalnya dari sini aja kelihatan dia nahan tangis, lho. Nyesel nggak, kalau kita biarin aja?' 
-    },
-    next    : 'lvl1_005c_3'
-  },
-  'lvl1_005c_3': {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_neutral',
-    text    : { 
-      en: 'Well... you\'re right. We better go check on her.',
-      id: 'Eh... iya juga, ya. Mending kita cek deh.' 
-    },
-    next    : null,
-    action  : 'lvl1_005c_enable_move'
-  },
-
-  /* ── 007 - 011: Dialog Nakula & Nabula ── */
-  lvl1_007_nakula: {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_neutral',
-    text    : { en: 'Nabula?', id: 'Nabula?' },
-    next    : 'lvl1_008_nabula',
-    action  : 'vibrate_soft'
-  },
-  lvl1_008_nabula: {
-    speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_sad',
-    text    : { en: 'Oh... hai, Nakula.', id: 'Oh... hai, Nakula.' },
-    next    : 'lvl1_009_narrator'
-  },
-  lvl1_009_narrator: {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'Nabula quickly wipes her eyes and tries to smile, but her smile looks unusual.',
-      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum, tapi senyumnya kelihatan nggak biasa.' 
-    },
-    next    : 'lvl1_010_nakula'
-  },
-  lvl1_010_nakula: {
-    speaker : { en: 'Nakula', id: 'Nakula' },
-    portrait: 'player_sad',
-    text    : { en: 'Are you okay, Nabula?', id: 'Kamu nggak apa-apa, Nabula?' },
-    next    : 'lvl1_011_nabula'
-  },
-  lvl1_011_nabula: {
-    speaker : { en: 'Nabula', id: 'Nabula' },
-    portrait: 'nabula_sad',
-    text    : { 
-      en: 'I\'m okay... I just wanted to be alone for a bit.',
-      id: 'Aku nggak apa-apa, kok. Cuma... pengen sendirian aja tadi.' 
-    },
-    next    : 'lvl1_012_narrator'
-  },
-  lvl1_012_narrator: {
-    speaker : { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text    : { 
-      en: 'Nabula stands and walks toward the library.',
-      id: 'Nabula berdiri dan berjalan menuju perpustakaan.' 
-    },
-    next    : null,
-    autoAdvanceTimer: 5000,
-    action  : 'lvl1_012_focus_nabula',
-    onCloseAction: 'lvl1_012_nabula_leaves'
-  },
-
-  lvl1_library_not_here: {
-    speaker : { en: 'ECA', id: 'ECA' },
-    portrait: 'player_surprised',
-    text    : { 
-      en: 'Wait... Nabula isn\'t here in the library yet. Maybe she stopped by the school corridor? Let\'s check the corridor!',
-      id: 'Lho... Nabula belum ada di perpustakaan. Jangan-jangan dia tertahan di lorong sekolah? Ayo kita cek ke lorong!' 
-    },
-    next    : null,
-    action  : null,
-    onCloseAction: 'lvl1_quest_check_corridor'
-  },
+// Global Ambient & Campus Environmental Interactions
+Object.assign(DIALOGUES, {
 
   /* ══════════ Level 2 — Empathy Rescue (Corridor & Library) ══════════ */
 
@@ -549,73 +309,117 @@ const DIALOGUES = {
     next    : null
   },
 
-  /* ══════════ Generic NPC Interactions ══════════ */
+  /* ══════════ Generic Student & Faculty Interactions ══════════ */
 
   student_chat_1: {
     speaker : { en: 'Student', id: 'Siswa' },
     portrait: 'student_neutral',
-    text    : { en: 'Hey! Have you checked the bulletin board in the corridor? There\'s something interesting posted.', id: 'Hei! Sudahkah kamu memeriksa papan pengumuman di lorong? Ada sesuatu yang menarik.' },
-    next    : null
-  },
-
-  peer_supporter_chat: {
-    speaker : { en: 'Peer Supporter', id: 'Konselor Sebaya' },
-    portrait: 'student_neutral',
-    text    : { en: 'Hi there! We are here to listen if you or anyone else needs to talk about bullying, stress, or anything at all. You are not alone!', id: 'Hai! Kami di sini untuk mendengarkan jika kamu atau siapa pun butuh teman bicara soal perundungan, stres, atau apa pun. Kamu tidak sendirian!' },
+    text    : { 
+      en: 'Hey! Have you checked the bulletin board in the corridor? There\'s something interesting posted.', 
+      id: 'Hei! Sudahkah kamu memeriksa papan pengumuman di lorong? Ada sesuatu yang menarik.' 
+    },
     next    : null
   },
 
   student_chat_2: {
     speaker : { en: 'Student', id: 'Siswa' },
     portrait: 'student_neutral',
-    text    : { en: 'Harmonia School feels different lately… I hope things get better.', id: 'Sekolah Harmonia terasa berbeda akhir-akhir ini… Kuharap semuanya membaik.' },
+    text    : { 
+      en: 'Harmonia School feels different lately… I hope things get better.', 
+      id: 'Sekolah Harmonia terasa berbeda akhir-akhir ini… Kuharap semuanya membaik.' 
+    },
+    next    : null
+  },
+
+  peer_supporter_chat: {
+    speaker : { en: 'Peer Supporter', id: 'Konselor Sebaya' },
+    portrait: 'student_neutral',
+    text    : { 
+      en: 'Hi there! We are here to listen if you or anyone else needs to talk about bullying, stress, or anything at all. You are not alone!', 
+      id: 'Hai! Kami di sini untuk mendengarkan jika kamu atau siapa pun butuh teman bicara soal perundungan, stres, atau apa pun. Kamu tidak sendirian!' 
+    },
     next    : null
   },
 
   rani_intro: {
     speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
     portrait: 'rani_neutral',
-    text    : { en: 'Hello there. Remember — if you see anything concerning, don\'t hesitate to tell a teacher.', id: 'Halo. Ingat — jika kalian melihat sesuatu yang mengkhawatirkan, jangan ragu untuk melapor.' },
+    text    : { 
+      en: 'Hello there. Remember — if you see anything concerning, don\'t hesitate to tell a teacher.', 
+      id: 'Halo. Ingat — jika kalian melihat sesuatu yang mengkhawatirkan, jangan ragu untuk melapor.' 
+    },
     next    : 'rani_intro_2'
   },
 
   rani_intro_2: {
     speaker : { en: 'Teacher Rani', id: 'Bu Rani' },
     portrait: 'rani_neutral',
-    text    : { en: 'We all have a role to play in making this school a safe place.', id: 'Kita semua punya peran untuk menjadikan sekolah ini tempat yang aman.' },
+    text    : { 
+      en: 'We all have a role to play in making this school a safe place.', 
+      id: 'Kita semua punya peran untuk menjadikan sekolah ini tempat yang aman.' 
+    },
     next    : null
   },
 
   riko_corridor: {
     speaker : { en: 'Riko', id: 'Riko' },
     portrait: 'riko_neutral',
-    text    : { en: '… what are you looking at? Mind your own business.', id: '… apa lihat-lihat? Urus saja urusanmu sendiri.' },
+    text    : { 
+      en: '… what are you looking at? Mind your own business.', 
+      id: '… apa lihat-lihat? Urus saja urusanmu sendiri.' 
+    },
     next    : null
   },
 
-  /* ══════════ Object Interactions ══════════ */
+  /* ══════════ Campus Interactive Objects ══════════ */
 
   board_interact: {
     speaker : { en: '', id: '' },
     portrait: null,
-    text    : { en: '[ A bulletin board. It reads: "Harmonia School Values — Respect, Empathy, Kindness." ]', id: '[ Papan pengumuman. Bertuliskan: "Nilai Sekolah Harmonia — Rasa Hormat, Empati, Kebaikan." ]' },
+    text    : { 
+      en: '[ A bulletin board. It reads: "Harmonia School Values — Respect, Empathy, Kindness." ]', 
+      id: '[ Papan pengumuman. Bertuliskan: "Nilai Sekolah Harmonia — Rasa Hormat, Empati, Kebaikan." ]' 
+    },
     next    : null
   },
 
   desk_interact: {
     speaker : { en: '', id: '' },
     portrait: null,
-    text    : { en: '[ A neat classroom desk. Textbooks and pencils are arranged carefully. ]', id: '[ Meja kelas yang rapi. Buku pelajaran dan pensil tersusun rapi. ]' },
+    text    : { 
+      en: '[ A neat classroom desk. Textbooks and pencils are arranged carefully. ]', 
+      id: '[ Meja kelas yang rapi. Buku pelajaran dan pensil tersusun rapi. ]' 
+    },
+    next    : null
+  },
+
+  bully_taunt: {
+    speaker : { en: 'Bully', id: 'Perundung' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'Ha ha, look at Nabula — pretending she doesn\'t hear us! What a joke.', 
+      id: 'Ha ha, lihat Nabula — pura-pura tidak dengar kita! Lelucon macam apa ini.' 
+    },
+    next    : 'bully_taunt_2'
+  },
+
+  bully_taunt_2: {
+    speaker : { en: 'Bully', id: 'Perundung' },
+    portrait: 'bully_smirk',
+    text    : { 
+      en: 'Hey Nabula! Why so quiet? Cat got your tongue? Hahaha!', 
+      id: 'Hei Nabula! Kenapa diam saja? Kucing makan lidahmu? Hahaha!' 
+    },
     next    : null
   },
 
   librarian_chat: {
-    speaker : { en: 'Librarian', id: 'Pustakawan' },
-    portrait: 'rani_neutral',
+    speaker : { en: 'Mrs. Wati', id: 'Bu Wati' },
+    portrait: 'wati_neutral',
     text    : { 
       en: 'Welcome to Harmonia Library! Please keep your voice down so everyone can read in peace.', 
       id: 'Selamat datang di Perpustakaan Harmonia! Harap tenang agar semua orang dapat membaca dengan nyaman.' 
     },
     next    : null
   }
-};
+});

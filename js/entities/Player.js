@@ -46,11 +46,10 @@ class Player {
     if (this.isCutsceneActive) {
       return;
     }
-
     const body = this.sprite.body;
     if (body) body.setVelocity(0);
 
-    if (this.scene.registry.get('dialogueActive') || this.scene.registry.get('level1_player_locked') || this.scene.registry.get('level2_player_locked') || this.isLocked) {
+    if (this.scene.registry.get('dialogueActive') || this.scene.registry.get('menuOpen') || this.scene.registry.get('level1_player_locked') || this.scene.registry.get('level2_player_locked') || this.isLocked) {
       this.sprite.anims.play('player_idle_' + this.facing, true);
       return;
     }
@@ -107,6 +106,7 @@ class Player {
   }
 
   isInteracting() {
+    if (this.isLocked || this.isCutsceneActive) return false;
     let vAction = false;
     if (window.virtualInput && window.virtualInput.actionJustDown) {
       vAction = true;

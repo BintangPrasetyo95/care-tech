@@ -97,26 +97,22 @@ class UIScene extends Phaser.Scene {
       color: '#000000'
     }).setOrigin(0.5).setScrollFactor(1).setDepth(101);
 
-    /* ══════════ Quest Banner (top-center Yellow Notepad) ══════════ */
-    this.questContainer = this.add.container(width / 2, -60).setScrollFactor(1).setDepth(300);
-    this.questShadow = this.add.graphics();
-    this.questShadow.fillStyle(0x000000, 1).fillRoundedRect(-147, -15, 298, 36, 8);
+    /* ══════════ Quest Banner (top-center) ══════════ */
+    this.questContainer = this.add.container(width / 2, -80).setScrollFactor(1).setDepth(300);
     this.questBg = this.add.graphics();
-    this.questBg.fillStyle(0xfffde6, 1).fillRoundedRect(-150, -18, 298, 36, 8);
-    this.questBg.lineStyle(3, 0x000000, 1).strokeRoundedRect(-150, -18, 298, 36, 8);
-    this.questText = this._createSharpText(0, 0, '★ MISI: Ikuti Nabula ke perpustakaan.', {
+    this.questText = this._createSharpText(0, -8, '', {
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-      fontSize: '12px',
+      fontSize: '11.5px',
       fontStyle: 'bold',
       color: '#000000'
     }).setOrigin(0.5);
     this.questTimerText = this._createSharpText(0, 10, '', {
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-      fontSize: '11px',
+      fontSize: '10.5px',
       fontStyle: 'bold',
       color: '#facc15'
     }).setOrigin(0.5).setVisible(false);
-    this.questContainer.add([this.questShadow, this.questBg, this.questText, this.questTimerText]);
+    this.questContainer.add([this.questBg, this.questText, this.questTimerText]);
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
@@ -767,17 +763,16 @@ class UIScene extends Phaser.Scene {
 
   /* ══════════ Public API ══════════ */
 
-  /** Start Level 1 transition: screen goes dark, then bright, then narrator dialog 001 appears */
+  /** Start Level 1 transition: screen starts dark then smoothly fades in to bright, followed by narrator 001 */
   startLevel1IntroTransition() {
-    this.cameras.main.fadeOut(800, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.time.delayedCall(400, () => {
-        this.cameras.main.fadeIn(800, 0, 0, 0);
-        this.cameras.main.once('camerafadeincomplete', () => {
-          this.cameras.main.resetFX();
-          this.startDialogue('lvl1_001_narrator');
-        });
-      });
+    const worldScene = this.scene.get('World');
+    if (worldScene && worldScene.cameras && worldScene.cameras.main) {
+      worldScene.cameras.main.fadeIn(1000, 0, 0, 0);
+    }
+    this.cameras.main.fadeIn(1000, 0, 0, 0);
+    this.cameras.main.once('camerafadeincomplete', () => {
+      this.startDialogue('lvl1_001_narrator');
+    });
     });
   }
 
@@ -910,6 +905,14 @@ class UIScene extends Phaser.Scene {
   }
 
   hideQuestBanner() {
+    if (this._questDismissTimer) {
+      this._questDismissTimer.destroy();
+      this._questDismissTimer = null;
+    }
+    if (this._questTimerEvent) {
+      this._questTimerEvent.destroy();
+      this._questTimerEvent = null;
+    }
     if (!this.questContainer) return;
     this.tweens.killTweensOf(this.questContainer);
     this.tweens.add({
@@ -961,8 +964,10 @@ class UIScene extends Phaser.Scene {
 
   _showNode(nodeId) {
     this._currentDialogueNode = nodeId;
-    const node = DIALOGUES[nodeId];
+    const allDialogues = (window.DIALOGUES || (typeof DIALOGUES !== 'undefined' ? DIALOGUES : {}));
+    const node = allDialogues[nodeId];
     if (!node) {
+      console.warn('[Dialogue] Node not found in DIALOGUES:', nodeId);
       this._closeDialogue();
       return;
     }
@@ -1049,6 +1054,10 @@ class UIScene extends Phaser.Scene {
           .setVisible(true);
 
         opt.zone.on('pointerdown', () => {
+          if (this._autoAdvanceTimerEvent) {
+            this._autoAdvanceTimerEvent.destroy();
+            this._autoAdvanceTimerEvent = null;
+          }
           this._selectOption(ch);
         });
       } else {
@@ -1059,6 +1068,7 @@ class UIScene extends Phaser.Scene {
     // Keyboard 1-4 to select options
     this.input.keyboard.removeAllListeners('keydown');
     if (choices.length > 0) {
+      this._cleanupDialogueAdvance();
       this.continueText.setVisible(false);
       this.dialogBg.disableInteractive();
       this.input.keyboard.on('keydown', (event) => {
@@ -1072,82 +1082,101 @@ class UIScene extends Phaser.Scene {
         }
       });
     } else if (node.next) {
-      // Auto-advance on click
-      this.continueText.setVisible(true);
-      this.dialogBg.disableInteractive();
-      
-      // Clean up previous listeners and timers
-      this.input.keyboard.removeAllListeners('keydown-E');
-      this.input.keyboard.removeAllListeners('keydown-SPACE');
-      if (this._dialogueTimer) this._dialogueTimer.destroy();
-
-      // Delay interaction to prevent same-frame event leakage from previous click
-      this._dialogueTimer = this.time.delayedCall(150, () => {
-        this.dialogBg.setInteractive();
-        this.dialogBg.once('pointerdown', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this.dialogBg.disableInteractive();
+      // Auto-advance to next node on click anywhere or key press
+      if (node.noManualAdvance) {
+        this._cleanupDialogueAdvance();
+        this.continueText.setVisible(false);
+      } else {
+        this._setupDialogueAdvance(() => {
           this._showNode(node.next);
         });
-
-        this.input.keyboard.once('keydown-E', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this.dialogBg.disableInteractive();
-          this._showNode(node.next);
-        });
-        this.input.keyboard.once('keydown-SPACE', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this.dialogBg.disableInteractive();
-          this._showNode(node.next);
-        });
-        this.input.keyboard.once('keydown-ENTER', () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
-          this.dialogBg.disableInteractive();
-          this._showNode(node.next);
-        });
-      });
+      }
     } else {
-      // End of dialogue — click or press key to close
-      this.continueText.setVisible(true);
-      this.dialogBg.disableInteractive();
-      
-      this.input.keyboard.removeAllListeners('keydown-E');
-      this.input.keyboard.removeAllListeners('keydown-SPACE');
-      this.input.keyboard.removeAllListeners('keydown-ENTER');
-      if (this._dialogueTimer) this._dialogueTimer.destroy();
-
-      // Delay interaction to prevent same-frame event leakage from previous click
-      this._dialogueTimer = this.time.delayedCall(150, () => {
-        const doClose = () => {
-          if (this._autoAdvanceTimerEvent) {
-            this._autoAdvanceTimerEvent.destroy();
-            this._autoAdvanceTimerEvent = null;
-          }
+      // End of dialogue — click anywhere or key press to close (unless noManualAdvance is set for cutscenes)
+      if (node.noManualAdvance) {
+        this._cleanupDialogueAdvance();
+        this.continueText.setVisible(false);
+      } else {
+        this._setupDialogueAdvance(() => {
           this._closeDialogue();
-        };
-
-        this.dialogBg.setInteractive();
-        this.dialogBg.once('pointerdown', doClose);
-        this.input.keyboard.once('keydown-E', doClose);
-        this.input.keyboard.once('keydown-SPACE', doClose);
-        this.input.keyboard.once('keydown-ENTER', doClose);
-      });
+        });
+      }
     }
   }
 
+  _cleanupDialogueAdvance() {
+    if (this._dialogueTimer) {
+      this._dialogueTimer.destroy();
+      this._dialogueTimer = null;
+    }
+    if (this._dialogueAdvanceFn) {
+      this.dialogBg.off('pointerdown', this._dialogueAdvanceFn);
+      this.input.off('pointerdown', this._dialogueAdvanceFn);
+      this.input.keyboard.off('keydown-E', this._dialogueAdvanceFn);
+      this.input.keyboard.off('keydown-SPACE', this._dialogueAdvanceFn);
+      this.input.keyboard.off('keydown-ENTER', this._dialogueAdvanceFn);
+      this._dialogueAdvanceFn = null;
+    }
+    if (this._windowAdvanceHandler) {
+      window.removeEventListener('dialogue_advance_request', this._windowAdvanceHandler);
+      this._windowAdvanceHandler = null;
+    }
+    this.dialogBg.disableInteractive();
+  }
+
+  _setupDialogueAdvance(onTrigger) {
+    this._cleanupDialogueAdvance();
+    this.continueText.setVisible(true);
+
+    let canTrigger = false;
+    this._dialogueTimer = this.time.delayedCall(100, () => {
+      canTrigger = true;
+      this.dialogBg.setInteractive({ useHandCursor: true });
+    });
+
+    const trigger = () => {
+      if (!canTrigger) return;
+      if (this._autoAdvanceTimerEvent) {
+        this._autoAdvanceTimerEvent.destroy();
+        this._autoAdvanceTimerEvent = null;
+      }
+      this._cleanupDialogueAdvance();
+      onTrigger();
+    };
+
+    this._dialogueAdvanceFn = trigger;
+
+    // 1. Klik pada area kotak dialog
+    this.dialogBg.on('pointerdown', trigger);
+
+    // 2. Klik/tap di MANA SAJA pada layar permainan
+    this.input.on('pointerdown', trigger);
+
+    // 3. Tombol keyboard: E, Space, Enter
+    this.input.keyboard.on('keydown-E', trigger);
+    this.input.keyboard.on('keydown-SPACE', trigger);
+    this.input.keyboard.on('keydown-ENTER', trigger);
+
+    // 4. Tombol aksi virtual (mobile E / Touch button)
+    this._windowAdvanceHandler = trigger;
+    window.addEventListener('dialogue_advance_request', trigger);
+  }
+
+  enableDialogueAdvance(targetNode = null) {
+    const nextNode = targetNode || (this._currentNode ? this._currentNode.next : null);
+    if (nextNode) {
+      this._setupDialogueAdvance(() => {
+        this._showNode(nextNode);
+      });
+    } else {
+      this._setupDialogueAdvance(() => {
+        this._closeDialogue();
+      });
+  }
+
   _selectOption(ch) {
+    this._cleanupDialogueAdvance();
+    this.hideQuestBanner();
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
@@ -1167,6 +1196,7 @@ class UIScene extends Phaser.Scene {
   }
 
   _closeDialogue() {
+    this._cleanupDialogueAdvance();
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
@@ -1174,6 +1204,7 @@ class UIScene extends Phaser.Scene {
 
     const lastNodeId = this._currentDialogueNode;
     const lastNode = lastNodeId ? DIALOGUES[lastNodeId] : null;
+    this._currentDialogueNode = null;
 
     if (this.dialogShadow) this.dialogShadow.setVisible(false);
     this.dialogBg.setVisible(false).disableInteractive();

@@ -60,3 +60,9 @@ game.registry.set('currentMap',     'garden');
 game.registry.set('dialogueActive', false);
 game.registry.set('level1_player_locked', true);
 game.registry.set('level1_quest_active', null);
+
+/* ── Connect GameState Single Source of Truth ── */
+if (window.GameState) {
+  window.GameState.bindRegistry(game.registry);
+}
+
