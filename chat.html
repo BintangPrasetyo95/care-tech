@@ -253,9 +253,11 @@
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
             box-shadow: 12px 12px 0 var(--ink);
             padding: 2.2rem;
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         /* Responsive Breakpoints for Chat */
@@ -560,13 +562,45 @@
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 0.6rem; align-items: center;">
+                        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-small" id="btn-esp32-connect" style="background: var(--cy); padding: 0.4rem 0.9rem;" onclick="toggleEsp32()">
+                                ESP32: Sambung 🔌
+                            </button>
+                            <button type="button" class="btn btn-small" id="btn-tts-toggle" style="background: var(--lime); padding: 0.4rem 0.9rem;" onclick="toggleTTS()" title="Aktifkan / Matikan Suara Robot di Speaker Laptop">
+                                Suara: 🔊 ON (Laptop)
+                            </button>
                             <button type="button" class="btn btn-small" style="background: #ffffff; padding: 0.4rem 0.9rem;" onclick="clearChat()">
                                 Bersihkan 🧹
                             </button>
                             <button type="button" class="btn btn-small" id="btn-api-modal-trigger" style="background: var(--sun); padding: 0.4rem 0.9rem;" onclick="toggleApiKeyModal()">
                                 Akses AI ⚙️
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- ESP32 Live Telemetry Strip (Visible when connected) -->
+                    <div id="esp32-telemetry-strip" style="display: none; padding: 0.5rem 1.4rem; background: #e0f2fe; border-bottom: 3px dashed #0284c7; font-family: var(--mono); font-size: 0.88rem; color: #0369a1; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem;">
+                        <div style="display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;">
+                            <span style="font-weight: 800; color: #0284c7; display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="display: inline-block; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span>
+                                ESP32 ROBOT AKTIF:
+                            </span>
+                            <span>🌡️ Suhu: <strong id="esp-val-temp">–</strong></span>
+                            <span>💧 Lembap: <strong id="esp-val-hum">–</strong></span>
+                            <span>☀️ Cahaya: <strong id="esp-val-light">–</strong></span>
+                            <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                🎙️ Mic: <strong id="esp-val-mic">–</strong>
+                                <span id="esp-mic-bar" style="display: inline-block; width: 44px; height: 9px; background: #cbd5e1; border-radius: 4px; overflow: hidden; vertical-align: middle; border: 1px solid #94a3b8;" title="Level Suara INMP441">
+                                    <span id="esp-mic-bar-fill" style="display: block; height: 100%; width: 0%; background: #22c55e; transition: width 0.12s ease;"></span>
+                                </span>
+                            </span>
+                            <span>📶 WiFi: <strong id="esp-val-wifi">–</strong></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-small" id="btn-mic-test" style="background: var(--pink); color: #fff; padding: 0.2rem 0.65rem; font-size: 0.76rem;" onclick="triggerMicTest()" title="Uji Rekam Suara Mic 2 Detik dan Dengarkan di Speaker Laptop">Tes Mic 🎙️</button>
+                            <button type="button" class="btn btn-small" style="background: var(--sun); padding: 0.2rem 0.6rem; font-size: 0.76rem;" onclick="toggleApiKeyModal()" title="Buka Pengaturan WiFi ESP32">WiFi ⚙️</button>
+                            <span id="esp-val-sim" class="tape tape-lime" style="font-size: 0.72rem; padding: 0.1rem 0.5rem; margin: 0;">HARDWARE</span>
+                            <button type="button" class="btn btn-small" style="background: #ffffff; color: #d32f2f; border: 1.5px solid #d32f2f; padding: 0.15rem 0.5rem; font-size: 0.75rem;" onclick="disconnectEsp32()" title="Putus Sambungan Serial">Lepas ✕</button>
                         </div>
                     </div>
 
@@ -616,6 +650,9 @@
                     <!-- Chat Input Bar -->
                     <div class="chat-input-bar">
                         <textarea class="chat-scrapbook-input" id="chat-input" rows="1" placeholder="Tuliskan isi hatimu di sini... (Tekan Enter untuk kirim)" onkeydown="handleKeyDown(event)"></textarea>
+                        <button type="button" class="btn mk" id="btn-laptop-mic" style="background: var(--lime); padding: 0.7rem 1.1rem; flex-shrink: 0;" onclick="toggleLaptopSpeechRecognition()" title="Bicara langsung lewat Mikrofon Laptop (Voice Curhat)">
+                            🎙️ Bicara
+                        </button>
                         <button class="btn mk" id="btn-send" style="background: var(--sun); padding: 0.7rem 1.6rem;" onclick="sendMessage()">
                             Kirim 🚀
                         </button>
@@ -664,10 +701,118 @@
                 <div id="passcode-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.85rem; font-weight: 600;"></div>
             </div>
 
+            <!-- ElevenLabs TTS Settings Section -->
+            <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label style="font-family: var(--imp); font-size: 1.05rem; color: #1e293b; margin: 0;">
+                        🎙️ Suara AI ElevenLabs (TTS):
+                    </label>
+                    <span id="eleven-status-tag" class="tape tape-lime" style="font-size: 0.72rem; padding: 0.15rem 0.6rem; margin: 0;">FLASH V2.5</span>
+                </div>
+                <p style="font-family: var(--mk); font-size: 0.95rem; color: #555; margin-bottom: 0.8rem; line-height: 1.35;">
+                    Ubah suara robot ESA menjadi manusiawi dan penuh kehangatan empati dengan model ElevenLabs Flash v2.5:
+                </p>
+
+                <!-- API Key Input -->
+                <div style="margin-bottom: 0.7rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">ElevenLabs API Key:</label>
+                    <input type="password" id="eleven-key-input" placeholder="sk_..." style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                </div>
+
+                <!-- Voice Selection -->
+                <div style="margin-bottom: 0.8rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Karakter Suara:</label>
+                    <select id="eleven-voice-select" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mk); font-size: 0.92rem; outline: none; background: #fff; box-sizing: border-box;" onchange="handleVoiceSelectChange(this.value)">
+                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Gratis / Free Tier - Ramah, Lembut & Cocok untuk Curhat) ⭐</option>
+                        <option value="pNInz6obpgDQGcFmaJgB">Adam (Gratis / Free Tier - Hangat, Sahabat & Tenang)</option>
+                        <option value="JBFqnCBsd6RMkjVDRZzb">George (Gratis / Free Tier - Naratif Lembut & Mengayomi)</option>
+                        <option value="WQ4h6sgS9p2XXvLsESBT">Suara Library (WQ4h6sg... - Memerlukan Akun Berbayar)</option>
+                        <option value="custom">-- Masukkan Custom Voice ID Lainnya --</option>
+                    </select>
+                    <div id="eleven-custom-row" style="display: none; margin-top: 0.5rem;">
+                        <input type="text" id="eleven-custom-voice" placeholder="Ketik Voice ID ElevenLabs di sini..." style="width: 100%; padding: 0.55rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                    </div>
+                    <p style="font-size: 0.78rem; color: #64748b; margin: 0.35rem 0 0; line-height: 1.3;">
+                        💡 <em>Akun ElevenLabs Free dapat menggunakan suara bawaan (Sarah/Adam/George). Suara Library memerlukan saldo/paket berbayar.</em>
+                    </p>
+                </div>
+
+                <div style="display: flex; gap: 0.6rem; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-small" id="btn-test-eleven" style="background: var(--cy); padding: 0.5rem 0.9rem; font-weight: bold;" onclick="testElevenLabsVoice()">
+                        Tes Suara 🔊
+                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="btn-reset-eleven" class="btn btn-small" style="background: #ffebee; border: 1.5px solid #d32f2f; color: #d32f2f; padding: 0.5rem 0.8rem; font-size: 0.8rem;" onclick="resetElevenLabsKey()">
+                            Reset 🗑️
+                        </button>
+                        <button type="button" class="btn btn-small" style="background: var(--sun); padding: 0.5rem 1rem; font-weight: bold;" onclick="saveElevenLabsSettings()">
+                            Simpan Suara ✓
+                        </button>
+                    </div>
+                </div>
+                <div id="eleven-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.82rem; font-weight: 600;"></div>
+            </div>
+
+            <!-- ESP32 WiFi Configuration Section -->
+            <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label style="font-family: var(--imp); font-size: 1.05rem; color: #1e293b; margin: 0;">
+                        📶 Pengaturan WiFi Robot ESP32:
+                    </label>
+                    <span id="esp-wifi-badge" class="tape tape-sun" style="font-size: 0.72rem; padding: 0.15rem 0.6rem; margin: 0;">BELUM AKTIF</span>
+                </div>
+                <p style="font-family: var(--mk); font-size: 0.95rem; color: #555; margin-bottom: 0.8rem; line-height: 1.35;">
+                    Setel WiFi untuk ESP32 langsung dari browser via kabel USB. ESP32 akan menyimpannya ke memori NVS (permanen):
+                </p>
+
+                <div style="margin-bottom: 0.6rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Nama WiFi (SSID):</label>
+                    <input type="text" id="esp-wifi-ssid" placeholder="Contoh: WiFi_Sekolah / Hotspot_HP" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.88rem; outline: none; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 0.8rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Kata Sandi WiFi:</label>
+                    <input type="password" id="esp-wifi-pass" placeholder="Masukkan password WiFi..." style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.88rem; outline: none; box-sizing: border-box;">
+                </div>
+
+                <div style="display: flex; gap: 0.6rem; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-small" style="background: var(--cy); padding: 0.5rem 1rem; font-weight: bold;" onclick="sendWifiConfigToEsp()">
+                        Kirim ke ESP32 🚀
+                    </button>
+                    <button type="button" class="btn btn-small" style="background: #ffebee; border: 1.5px solid #d32f2f; color: #d32f2f; padding: 0.5rem 0.8rem; font-size: 0.8rem;" onclick="clearWifiOnEsp()">
+                        Putus / Lupakan WiFi 🗑️
+                    </button>
+                </div>
+                <div id="esp-wifi-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.82rem; font-weight: 600;"></div>
+            </div>
+
+            <!-- ESP32 Mic & Speaker Hardware Diagnostics Section -->
+            <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label style="font-family: var(--imp); font-size: 1.05rem; color: #1e293b; margin: 0;">
+                        🎙️ Uji Coba Mikrofon ESP32 (Playback di Laptop):
+                    </label>
+                    <span class="tape tape-pink" style="font-size: 0.72rem; padding: 0.15rem 0.6rem; margin: 0;">LAPTOP AUDIO</span>
+                </div>
+                <p style="font-family: var(--mk); font-size: 0.95rem; color: #555; margin-bottom: 0.8rem; line-height: 1.35;">
+                    Uji mikrofon INMP441 tanpa memerlukan speaker fisik ESP32. ESP32 akan merekam suaramu selama 2 detik, lalu mengirimkan datanya lewat kabel serial dan <strong>langsung memutarnya kembali lewat speaker laptop</strong>:
+                </p>
+
+                <div style="display: flex; gap: 0.6rem; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-small" id="btn-modal-mic-test" style="background: var(--pink); color: #fff; padding: 0.55rem 1.1rem; font-weight: bold;" onclick="triggerMicTest(2)">
+                        Uji Coba Mic (Dengarkan di Laptop) 🎙️
+                    </button>
+                    <div style="font-family: var(--mono); font-size: 0.8rem; color: #64748b;">
+                        Pin INMP441: SD(32), WS(33), SCK(14)
+                    </div>
+                </div>
+                <div id="mic-test-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.84rem; font-weight: 600; padding: 0.5rem; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 6px;"></div>
+            </div>
+
             <!-- Secondary Accordion: Manual API Key (Optional) -->
             <details style="font-family: var(--sans); font-size: 0.88rem; color: #475569; margin-bottom: 1.2rem;">
                 <summary style="cursor: pointer; font-weight: 700; color: #1e293b; padding: 0.3rem 0;">
-                    ⚙️ Opsi Tambahan: Masukkan API Key Pribadi Manual
+                    ⚙️ Opsi Tambahan: Masukkan Gemini API Key Pribadi Manual
                 </summary>
                 <div style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border: 2px dashed #94a3b8; border-radius: 8px;">
                     <p style="margin-bottom: 0.6rem; font-size: 0.82rem; line-height: 1.4;">
@@ -757,6 +902,7 @@
             const keyInput = document.getElementById('api-key-input');
             const passcodeFeedback = document.getElementById('passcode-feedback');
             const passcodeInput = document.getElementById('passcode-input');
+            const wifiSsidInput = document.getElementById('esp-wifi-ssid');
 
             if (modal.style.display === 'flex') {
                 modal.style.display = 'none';
@@ -764,7 +910,14 @@
                 if (passcodeInput) passcodeInput.value = '';
                 if (passcodeFeedback) passcodeFeedback.style.display = 'none';
                 if (keyInput) keyInput.value = geminiKey;
+                if (wifiSsidInput && !wifiSsidInput.value) {
+                    wifiSsidInput.value = localStorage.getItem('caretech_esp_wifi_ssid') || '';
+                }
                 updateApiStatusIndicator();
+                updateElevenLabsUi();
+                if (espWriter) {
+                    sendEsp({ type: "get_wifi" });
+                }
                 modal.style.display = 'flex';
                 setTimeout(() => {
                     if (passcodeInput) passcodeInput.focus();
@@ -829,6 +982,140 @@
                 feedbackEl.textContent = 'Kunci API telah dihapus. ESA beralih ke Mode Otak Bawaan.';
             }
             addMessageToUI("Kunci API telah dilepas. ESA sekarang menggunakan Otak Empati Bawaan.", "ai");
+        }
+
+        // ==========================================
+        // ELEVENLABS STATE & CONTROLS
+        // ==========================================
+        let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_b97b2f7b5917432e5d98fab365037429a3c99258eef691ab";
+        let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
+        let elevenModelId = "eleven_flash_v2_5";
+        let currentAudio = null;
+
+        function handleVoiceSelectChange(val) {
+            const customRow = document.getElementById('eleven-custom-row');
+            if (customRow) customRow.style.display = (val === 'custom') ? 'block' : 'none';
+        }
+
+        function updateElevenLabsUi() {
+            const keyInput = document.getElementById('eleven-key-input');
+            const voiceSelect = document.getElementById('eleven-voice-select');
+            const customRow = document.getElementById('eleven-custom-row');
+            const customInput = document.getElementById('eleven-custom-voice');
+            const statusTag = document.getElementById('eleven-status-tag');
+            const ttsBtn = document.getElementById('btn-tts-toggle');
+
+            if (keyInput) keyInput.value = elevenKey;
+
+            if (voiceSelect) {
+                const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'WQ4h6sgS9p2XXvLsESBT'];
+                if (known.includes(elevenVoiceId)) {
+                    voiceSelect.value = elevenVoiceId;
+                    if (customRow) customRow.style.display = 'none';
+                } else {
+                    voiceSelect.value = 'custom';
+                    if (customRow) customRow.style.display = 'block';
+                    if (customInput) customInput.value = elevenVoiceId;
+                }
+            }
+
+            if (statusTag) {
+                if (elevenKey && elevenKey.startsWith('sk_')) {
+                    statusTag.className = 'tape tape-lime';
+                    statusTag.textContent = 'FLASH V2.5 (AKTIF)';
+                } else {
+                    statusTag.className = 'tape tape-sun';
+                    statusTag.textContent = 'SUARA BAWAAN';
+                }
+            }
+
+            if (ttsBtn && ttsEnabled) {
+                if (elevenKey && elevenKey.startsWith('sk_')) {
+                    ttsBtn.textContent = 'Suara: 🎙️ ElevenLabs (Laptop)';
+                    ttsBtn.style.background = 'var(--lime)';
+                } else {
+                    ttsBtn.textContent = 'Suara: 🔊 ON (Laptop)';
+                    ttsBtn.style.background = 'var(--lime)';
+                }
+            }
+        }
+
+        function saveElevenLabsSettings() {
+            const keyInput = document.getElementById('eleven-key-input');
+            const voiceSelect = document.getElementById('eleven-voice-select');
+            const customInput = document.getElementById('eleven-custom-voice');
+            const feedback = document.getElementById('eleven-feedback');
+
+            const key = (keyInput ? keyInput.value : '').trim();
+            let voice = voiceSelect ? voiceSelect.value : 'EXAVITQu4vr4xnSDxMaL';
+            if (voice === 'custom' && customInput) {
+                voice = customInput.value.trim() || 'EXAVITQu4vr4xnSDxMaL';
+            }
+
+            elevenKey = key;
+            elevenVoiceId = voice;
+            localStorage.setItem('caretech_eleven_key', elevenKey);
+            localStorage.setItem('caretech_eleven_voice', elevenVoiceId);
+
+            updateElevenLabsUi();
+
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.style.color = '#16a34a';
+                feedback.textContent = '✓ Pengaturan ElevenLabs berhasil disimpan!';
+                setTimeout(() => { feedback.style.display = 'none'; }, 3000);
+            }
+        }
+
+        function resetElevenLabsKey() {
+            elevenKey = "";
+            elevenVoiceId = "EXAVITQu4vr4xnSDxMaL";
+            localStorage.removeItem('caretech_eleven_key');
+            localStorage.removeItem('caretech_eleven_voice');
+
+            updateElevenLabsUi();
+
+            const feedback = document.getElementById('eleven-feedback');
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.style.color = '#dc2626';
+                feedback.textContent = 'Pengaturan ElevenLabs telah direset ke suara bawaan browser.';
+                setTimeout(() => { feedback.style.display = 'none'; }, 3000);
+            }
+        }
+
+        async function testElevenLabsVoice() {
+            const feedback = document.getElementById('eleven-feedback');
+            const testBtn = document.getElementById('btn-test-eleven');
+
+            if (testBtn) {
+                testBtn.disabled = true;
+                testBtn.textContent = 'Memuat... ⏳';
+            }
+
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.style.color = '#0284c7';
+                feedback.textContent = 'Sedang membuat sampel audio dari ElevenLabs...';
+            }
+
+            try {
+                await speakText("Halo kawan! Aku robot ESA dari CareTech. Suara ElevenLabs Flash dua koma lima sudah siap mendampingimu!");
+                if (feedback) {
+                    feedback.style.color = '#16a34a';
+                    feedback.textContent = '🎉 Suara berhasil diputar!';
+                }
+            } catch (err) {
+                if (feedback) {
+                    feedback.style.color = '#dc2626';
+                    feedback.textContent = '⚠️ Gagal memutar suara: ' + err.message;
+                }
+            } finally {
+                if (testBtn) {
+                    testBtn.disabled = false;
+                    testBtn.textContent = 'Tes Suara 🔊';
+                }
+            }
         }
 
         function clearChat() {
@@ -916,10 +1203,789 @@
                 return "Ini resep relaksasi instan ala ESA: 🌿\n1. Letakkan satu tangan di dada dan satu di perut.\n2. Pejamkan mata sejenak.\n3. Katakan pada dirimu sendiri: *'Aku sudah berusaha sebaik mungkin hari ini, dan itu sudah cukup.'*\n4. Minum air hangat dan dengarkan suara di sekitarmu.\nCobalah sekarang, rasanya gimana?";
             }
 
+            // Sensory / Room Temperature Query
+            if (lower.includes('suhu') || lower.includes('panas') || lower.includes('dingin') || lower.includes('sensor') || lower.includes('cuaca')) {
+                if (latestEspSensor && latestEspSensor.temp !== undefined) {
+                    const temp = latestEspSensor.temp;
+                    const light = latestEspSensor.light;
+                    let comment = temp > 29 ? "Ruanganmu agak hangat/gerah kawan, jangan lupa sediakan air minum ya! 💧" : "Suhu ruanganmu cukup nyaman dan sejuk untuk beristirahat atau belajar. 🌿";
+                    return `Sensor di tubuh robot fisikku mendeteksi suhu sekitarmu saat ini adalah **${temp}°C** (Kelembapan ${latestEspSensor.hum}% dan Cahaya ${light}). ${comment}`;
+                }
+            }
+
             // Default warm companion reply
             return "Terima kasih banyak sudah mau berbagi cerita denganku! 🌟 Aku mendengarkan setiap katamu dengan seksama. Berbagi apa yang ada di pikiran adalah langkah pertama yang hebat untuk menjaga kesehatan mentalmu. Boleh ceritakan lebih lanjut, apa yang paling kamu butuhkan saat ini—solusi, atau hanya kawan yang mendengarkan?";
         }
 
+        // ==========================================
+        // LAPTOP AUDIO SYNTHESIZER & WEB AUDIO
+        // (Berfungsi untuk efek suara robot, chimes & tes mic saat speaker fisik zonk)
+        // ==========================================
+        let laptopAudioCtx = null;
+        function getLaptopAudioContext() {
+            if (!laptopAudioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) laptopAudioCtx = new AudioCtx();
+            }
+            if (laptopAudioCtx && laptopAudioCtx.state === 'suspended') {
+                laptopAudioCtx.resume();
+            }
+            return laptopAudioCtx;
+        }
+
+        function playLaptopTone(freq, durationMs, type = 'sine', volume = 0.25) {
+            try {
+                const ctx = getLaptopAudioContext();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+                gain.gain.setValueAtTime(volume, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (durationMs / 1000));
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + (durationMs / 1000));
+            } catch (e) {
+                console.warn("Laptop audio error:", e);
+            }
+        }
+
+        function playLaptopRobotChime(type) {
+            if (type === 'start_rec') {
+                // Bip nada tinggi 880Hz tanda mulai rekam
+                playLaptopTone(880, 160, 'sine', 0.28);
+            } else if (type === 'end_rec') {
+                // Bip nada 523Hz tanda selesai rekam
+                playLaptopTone(523, 160, 'sine', 0.25);
+            } else if (type === 'happy') {
+                // Melodi riang C5 - E5 - G5
+                playLaptopTone(523.25, 90, 'triangle', 0.22);
+                setTimeout(() => playLaptopTone(659.25, 100, 'triangle', 0.25), 90);
+                setTimeout(() => playLaptopTone(783.99, 160, 'triangle', 0.28), 190);
+            } else if (type === 'pet') {
+                // Melodi kasih sayang saat disentuh
+                playLaptopTone(392.00, 80, 'sine', 0.20);
+                setTimeout(() => playLaptopTone(523.25, 100, 'sine', 0.24), 80);
+                setTimeout(() => playLaptopTone(659.25, 120, 'sine', 0.26), 180);
+                setTimeout(() => playLaptopTone(1046.5, 180, 'sine', 0.22), 300);
+            }
+        }
+
+        // ==========================================
+        // SPEECH RECOGNITION VIA LAPTOP MICROPHONE
+        // (Bicara langsung ke laptop tanpa ngetik)
+        // ==========================================
+        let laptopRecognition = null;
+        let isLaptopRecognizing = false;
+
+        function toggleLaptopSpeechRecognition() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert("Browser ini belum mendukung fitur Speech Recognition langsung. Silakan gunakan Google Chrome atau Microsoft Edge.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-laptop-mic');
+            const inputEl = document.getElementById('chat-input');
+
+            if (isLaptopRecognizing && laptopRecognition) {
+                try { laptopRecognition.stop(); } catch(e){}
+                isLaptopRecognizing = false;
+                if (btn) {
+                    btn.innerHTML = "🎙️ Bicara";
+                    btn.style.background = "var(--lime)";
+                    btn.style.color = "var(--ink)";
+                }
+                return;
+            }
+
+            try {
+                laptopRecognition = new SpeechRec();
+                laptopRecognition.lang = 'id-ID';
+                laptopRecognition.continuous = false;
+                laptopRecognition.interimResults = true;
+
+                laptopRecognition.onstart = () => {
+                    isLaptopRecognizing = true;
+                    if (btn) {
+                        btn.innerHTML = "🔴 Mendengarkan...";
+                        btn.style.background = "#ef4444";
+                        btn.style.color = "#ffffff";
+                    }
+                    playLaptopRobotChime('start_rec');
+                };
+
+                laptopRecognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    if (inputEl) inputEl.value = transcript;
+                };
+
+                laptopRecognition.onerror = (event) => {
+                    console.warn("Speech recognition error:", event.error);
+                    isLaptopRecognizing = false;
+                    if (btn) {
+                        btn.innerHTML = "🎙️ Bicara";
+                        btn.style.background = "var(--lime)";
+                        btn.style.color = "var(--ink)";
+                    }
+                };
+
+                laptopRecognition.onend = () => {
+                    isLaptopRecognizing = false;
+                    if (btn) {
+                        btn.innerHTML = "🎙️ Bicara";
+                        btn.style.background = "var(--lime)";
+                        btn.style.color = "var(--ink)";
+                    }
+                    playLaptopRobotChime('end_rec');
+                    if (inputEl && inputEl.value.trim().length > 0) {
+                        inputEl.focus();
+                    }
+                };
+
+                laptopRecognition.start();
+            } catch (err) {
+                console.error("SpeechRecognition error:", err);
+                isLaptopRecognizing = false;
+                if (btn) {
+                    btn.innerHTML = "🎙️ Bicara";
+                    btn.style.background = "var(--lime)";
+                    btn.style.color = "var(--ink)";
+                }
+            }
+        }
+
+        // ==========================================
+        // TEXT-TO-SPEECH (TTS) VOICING & SYNTHESIS
+        // ==========================================
+        let ttsEnabled = true;
+        let idVoice = null;
+
+        function initVoices() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            idVoice = voices.find(v => v.lang.startsWith('id') || v.lang.includes('ID') || v.lang.toLowerCase().includes('indonesia')) || null;
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = initVoices;
+            initVoices();
+        }
+
+        function toggleTTS() {
+            ttsEnabled = !ttsEnabled;
+            const btn = document.getElementById('btn-tts-toggle');
+            if (btn) {
+                if (ttsEnabled) {
+                    const isEleven = elevenKey && elevenKey.startsWith('sk_');
+                    btn.textContent = isEleven ? "Suara: 🎙️ ElevenLabs (Laptop)" : "Suara: 🔊 ON (Laptop)";
+                    btn.style.background = "var(--lime)";
+                } else {
+                    btn.textContent = "Suara: 🔇 OFF";
+                    btn.style.background = "#ffffff";
+                }
+            }
+            if (!ttsEnabled) {
+                if (currentAudio) {
+                    try { currentAudio.pause(); currentAudio = null; } catch(e){}
+                }
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+                sendEspAction("idle");
+            }
+        }
+
+        function speakWithBrowserSpeech(text, onComplete) {
+            if (!('speechSynthesis' in window)) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.08; // slightly upbeat & warm
+            if (idVoice) utterance.voice = idVoice;
+
+            let finished = false;
+            const done = () => {
+                if (!finished) {
+                    finished = true;
+                    sendEspAction("idle");
+                    if (onComplete) onComplete();
+                }
+            };
+
+            utterance.onend = done;
+            utterance.onerror = (e) => {
+                console.warn("Browser TTS Event ended with:", e);
+                done();
+            };
+
+            sendEspAction("speaking", { mood: "happy" });
+            window.speechSynthesis.speak(utterance);
+        }
+
+        async function speakText(text, onComplete) {
+            if (!ttsEnabled) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            // Stop any currently playing audio or speech
+            if (currentAudio) {
+                try { currentAudio.pause(); currentAudio = null; } catch(e){}
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            // Strip emojis & markdown symbols for smooth, natural audio
+            const cleanText = text
+                .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*(.*?)\*/g, '$1')
+                .replace(/[#~_`]/g, '')
+                .trim();
+
+            if (!cleanText) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            // 1. Coba ElevenLabs TTS jika Key tersedia
+            if (elevenKey && elevenKey.startsWith('sk_')) {
+                try {
+                    const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
+                    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                        method: 'POST',
+                        headers: {
+                            'xi-api-key': elevenKey,
+                            'Content-Type': 'application/json',
+                            'Accept': 'audio/mpeg'
+                        },
+                        body: JSON.stringify({
+                            text: cleanText,
+                            model_id: elevenModelId || "eleven_flash_v2_5"
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errJson = await response.json().catch(() => ({}));
+                        throw new Error(errJson.detail?.message || `HTTP ${response.status}`);
+                    }
+
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    currentAudio = new Audio(audioUrl);
+
+                    sendEspAction("speaking", { mood: "happy" });
+
+                    let finished = false;
+                    const done = () => {
+                        if (!finished) {
+                            finished = true;
+                            URL.revokeObjectURL(audioUrl);
+                            currentAudio = null;
+                            sendEspAction("idle");
+                            if (onComplete) onComplete();
+                        }
+                    };
+
+                    currentAudio.onended = done;
+                    currentAudio.onerror = (e) => {
+                        console.warn("ElevenLabs audio play error:", e);
+                        done();
+                    };
+
+                    await currentAudio.play();
+                    return; // Berhasil dimainkan oleh ElevenLabs!
+                } catch (err) {
+                    console.warn("ElevenLabs gagal / dibatasi, beralih ke suara bawaan:", err);
+                    // Fallback ke browser speech di bawah
+                }
+            }
+
+            // 2. Fallback ke Suara Browser (Web Speech API)
+            speakWithBrowserSpeech(cleanText, onComplete);
+        }
+
+        // ==========================================
+        // WEB SERIAL ESP32 PHYSICAL COMPANION (OPSI A)
+        // ==========================================
+        let espPort = null;
+        let espWriter = null;
+        let espKeepReading = false;
+        let latestEspSensor = null;
+
+        async function toggleEsp32() {
+            if (espPort) {
+                await disconnectEsp32();
+            } else {
+                await connectEsp32();
+            }
+        }
+
+        async function connectEsp32() {
+            if (!("serial" in navigator)) {
+                alert("Browser ini belum mendukung Web Serial API. Untuk menghubungkan fisik ESP32 ke CareTech, gunakan browser Google Chrome atau Microsoft Edge di PC/Laptop via kabel data USB.");
+                return;
+            }
+
+            const connectBtn = document.getElementById('btn-esp32-connect');
+            try {
+                espPort = await navigator.serial.requestPort();
+                await espPort.open({ baudRate: 115200 });
+            } catch (err) {
+                console.warn("Koneksi Port ESP32 gagal/dibatalkan:", err);
+                if (connectBtn) {
+                    connectBtn.textContent = "ESP32: Batal ⚠️";
+                    connectBtn.style.background = "#fee2e2";
+                    setTimeout(() => {
+                        connectBtn.textContent = "ESP32: Sambung 🔌";
+                        connectBtn.style.background = "var(--cy)";
+                    }, 2500);
+                }
+                return;
+            }
+
+            const encoder = new TextEncoderStream();
+            encoder.readable.pipeTo(espPort.writable);
+            espWriter = encoder.writable.getWriter();
+
+            espKeepReading = true;
+            if (connectBtn) {
+                connectBtn.textContent = "ESP32: Terhubung 🟢";
+                connectBtn.style.background = "var(--lime)";
+            }
+
+            const telemetryStrip = document.getElementById('esp32-telemetry-strip');
+            if (telemetryStrip) telemetryStrip.style.display = 'flex';
+
+            addMessageToUI("🔌 **Robot Fisik ESP32 Terhubung!** Sensor lingkungan, sensor sentuhan, dan kontrol WiFi siap bekerja.", "ai");
+            sendEspAction("happy");
+            playLaptopRobotChime('happy');
+            setTimeout(() => { sendEsp({ type: "get_wifi" }); }, 600);
+            readEspLoop();
+        }
+
+        async function disconnectEsp32() {
+            espKeepReading = false;
+            try { await espWriter?.close(); } catch (e) {}
+            try { await espPort?.close(); } catch (e) {}
+            espPort = null;
+            espWriter = null;
+
+            const connectBtn = document.getElementById('btn-esp32-connect');
+            if (connectBtn) {
+                connectBtn.textContent = "ESP32: Sambung 🔌";
+                connectBtn.style.background = "var(--cy)";
+            }
+
+            const telemetryStrip = document.getElementById('esp32-telemetry-strip');
+            if (telemetryStrip) telemetryStrip.style.display = 'none';
+
+            const wifiVal = document.getElementById('esp-val-wifi');
+            if (wifiVal) wifiVal.textContent = "–";
+
+            addMessageToUI("🔌 **Koneksi ESP32 dilepas.** ESA tetap aktif mendengarkanmu di browser.", "ai");
+        }
+
+        async function readEspLoop() {
+            const decoder = new TextDecoderStream();
+            const closed = espPort.readable.pipeTo(decoder.writable).catch(() => {});
+            const reader = decoder.readable.getReader();
+            let buffer = "";
+
+            try {
+                while (espKeepReading) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += value;
+                    let idx;
+                    while ((idx = buffer.indexOf("\n")) >= 0) {
+                        const line = buffer.slice(0, idx).trim();
+                        buffer = buffer.slice(idx + 1);
+                        handleEspMessage(line);
+                    }
+                }
+            } catch (e) {
+                console.warn("Serial read loop closed:", e);
+            } finally {
+                reader.releaseLock();
+                await closed;
+            }
+        }
+
+        function sendEsp(obj) {
+            if (!espWriter) return;
+            try {
+                espWriter.write(JSON.stringify(obj) + "\n");
+            } catch (e) {
+                console.warn("Serial write error:", e);
+            }
+        }
+
+        function sendEspAction(state, extra = {}) {
+            sendEsp({ type: "action", state: state, ...extra });
+        }
+
+        function handleEspMessage(line) {
+            if (!line) return;
+            let msg;
+            try {
+                msg = JSON.parse(line);
+            } catch (e) {
+                return;
+            }
+
+            if (msg.type === "sensor") {
+                latestEspSensor = msg;
+                const tempEl = document.getElementById('esp-val-temp');
+                const humEl = document.getElementById('esp-val-hum');
+                const lightEl = document.getElementById('esp-val-light');
+                const micEl = document.getElementById('esp-val-mic');
+                const simEl = document.getElementById('esp-val-sim');
+
+                if (tempEl) tempEl.textContent = (msg.temp !== undefined ? msg.temp : "–") + "°C";
+                if (humEl) humEl.textContent = (msg.hum !== undefined ? msg.hum : "–") + "%";
+                if (lightEl) {
+                    let desc = "Normal";
+                    if (msg.light < 600) desc = "Redup 🌙";
+                    else if (msg.light > 2200) desc = "Terang ☀️";
+                    lightEl.textContent = `${msg.light} (${desc})`;
+                }
+                if (micEl) {
+                    if (msg.sound !== undefined) {
+                        let volLabel = "Sunyi 🤫";
+                        if (msg.sound > 1200) volLabel = "Bicara 🗣️";
+                        else if (msg.sound > 400) volLabel = "Aktif 🔊";
+                        micEl.textContent = `${msg.sound} (${volLabel})`;
+
+                        const barFill = document.getElementById('esp-mic-bar-fill');
+                        if (barFill) {
+                            const pct = Math.min(100, Math.max(4, Math.round((msg.sound / 2200) * 100)));
+                            barFill.style.width = pct + '%';
+                            if (pct > 65) barFill.style.background = '#ef4444';
+                            else if (pct > 30) barFill.style.background = '#eab308';
+                            else barFill.style.background = '#22c55e';
+                        }
+                    } else {
+                        micEl.textContent = "–";
+                    }
+                }
+                if (simEl) {
+                    simEl.textContent = msg.simulated ? "SIMULASI" : "FISIK ASLI";
+                    simEl.className = msg.simulated ? "tape tape-sun" : "tape tape-lime";
+                }
+            } else if (msg.type === "touch") {
+                // SENSOR SENTUHAN FISIK TERDETEKSI!
+                playLaptopRobotChime('pet');
+                const robotIcon = document.getElementById('robot-icon');
+                if (robotIcon) {
+                    robotIcon.textContent = "🥰";
+                    robotIcon.style.animation = 'robotWobble 0.25s infinite';
+                    setTimeout(() => {
+                        robotIcon.textContent = "🤖";
+                        robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
+                    }, 2800);
+                }
+
+                // Berikan respons hangat khusus sentuhan kasih sayang / curhat
+                const touchReplies = [
+                    "*(Mata robot berbinar hangat)* Aku merasakan sentuhan lembutmu kawan! 🤗 Kotak kartonku terasa lebih hangat saat kamu menyentuhnya. Aku siap mendengarkan cerita apapun hari ini.",
+                    "*(Robot tersenyum ramah)* Sentuhan fisikmu menenangkan sekali! 💙 Ingat ya, kamu aman dan berharga. Mau cerita apa denganku hari ini?",
+                    "*(Kedipan penuh empati)* Terima kasih sudah membelai robot kartonku! ✨ Keberadaanmu sangat berarti kawan. Luapkan saja apa yang sedang kamu rasakan ya."
+                ];
+                const reply = touchReplies[Math.floor(Math.random() * touchReplies.length)];
+                addMessageToUI(reply, 'ai');
+                finishChatTurn(reply);
+            } else if (msg.type === "voice_detected") {
+                // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
+                const robotIcon = document.getElementById('robot-icon');
+                if (robotIcon && robotIcon.textContent !== "🥰") {
+                    robotIcon.textContent = "👂";
+                    setTimeout(() => {
+                        if (robotIcon.textContent === "👂") robotIcon.textContent = "🤖";
+                    }, 2200);
+                }
+            } else if (msg.type === "wifi") {
+                // STATUS KONEKSI WIFI ESP32
+                const wifiVal = document.getElementById('esp-val-wifi');
+                const wifiBadge = document.getElementById('esp-wifi-badge');
+                const feedback = document.getElementById('esp-wifi-feedback');
+
+                if (msg.status === "connected") {
+                    if (wifiVal) wifiVal.innerHTML = `${msg.ssid} (${msg.ip}) <span style="color:#16a34a">🟢</span>`;
+                    if (wifiBadge) {
+                        wifiBadge.className = 'tape tape-lime';
+                        wifiBadge.textContent = `TERHUBUNG (${msg.ip})`;
+                    }
+                    if (feedback) {
+                        feedback.style.display = 'block';
+                        feedback.style.color = '#16a34a';
+                        feedback.textContent = `🟢 ESP32 Berhasil Tersambung ke ${msg.ssid}! IP: ${msg.ip} (Sinyal: ${msg.rssi} dBm)`;
+                    }
+                } else if (msg.status === "connecting") {
+                    if (wifiVal) wifiVal.innerHTML = `Menghubungkan ke ${msg.ssid || ''}... 🟡`;
+                    if (wifiBadge) {
+                        wifiBadge.className = 'tape tape-sun';
+                        wifiBadge.textContent = 'MENGHUBUNGKAN...';
+                    }
+                    if (feedback) {
+                        feedback.style.display = 'block';
+                        feedback.style.color = '#0284c7';
+                        feedback.textContent = `Sedang menghubungkan ESP32 ke WiFi: ${msg.ssid}...`;
+                    }
+                } else if (msg.status === "failed") {
+                    if (wifiVal) wifiVal.innerHTML = `<span style="color:#dc2626">Gagal Terhubung 🔴</span>`;
+                    if (wifiBadge) {
+                        wifiBadge.className = 'tape tape-pink';
+                        wifiBadge.textContent = 'GAGAL TERSAMBUNG';
+                    }
+                    if (feedback) {
+                        feedback.style.display = 'block';
+                        feedback.style.color = '#dc2626';
+                        feedback.textContent = `⚠️ ${msg.msg || 'Gagal tersambung ke WiFi. Periksa kembali SSID & Password.'}`;
+                    }
+                } else if (msg.status === "disconnected") {
+                    if (wifiVal) wifiVal.textContent = "Tidak Tersambung ⚪";
+                    if (wifiBadge) {
+                        wifiBadge.className = 'tape tape-sun';
+                        wifiBadge.textContent = 'TERPUTUS';
+                    }
+                }
+            } else if (msg.type === "button") {
+                // Physical button on ESP32 (BOOT button)
+                const promptText = msg.text || "Hai ESA! Aku menekan tombol robot fisikmu karena ingin curhat...";
+                sendQuickPrompt(promptText);
+            } else if (msg.type === "chat") {
+                if (msg.text) {
+                    sendQuickPrompt(msg.text);
+                }
+            } else if (msg.type === "mic_test") {
+                // STATUS UJI COBA MIKROFON & SPEAKER FISIK (LOOPBACK)
+                const micBtn = document.getElementById('btn-mic-test');
+                const modalMicBtn = document.getElementById('btn-modal-mic-test');
+                const modalFeedback = document.getElementById('mic-test-feedback');
+                const robotIcon = document.getElementById('robot-icon');
+
+                if (msg.status === "recording") {
+                    playLaptopRobotChime('start_rec');
+                    const dur = msg.duration || 2;
+                    const text = `🔴 Merekam (${dur}d)... Bicaralah!`;
+                    if (micBtn) {
+                        micBtn.textContent = text;
+                        micBtn.style.background = "#dc2626";
+                        micBtn.disabled = true;
+                    }
+                    if (modalMicBtn) {
+                        modalMicBtn.textContent = text;
+                        modalMicBtn.style.background = "#dc2626";
+                        modalMicBtn.disabled = true;
+                    }
+                    if (modalFeedback) {
+                        modalFeedback.style.display = 'block';
+                        modalFeedback.style.color = '#dc2626';
+                        modalFeedback.innerHTML = `🎙️ <strong>Sedang Merekam dari INMP441 (${dur} detik)...</strong><br>Silakan bersuara / bicara di dekat mikrofon robot sekarang!`;
+                    }
+                    if (robotIcon) robotIcon.textContent = "🎙️";
+                } else if (msg.status === "playing") {
+                    const text = `🔊 Memutar di Speaker Laptop...`;
+                    if (micBtn) {
+                        micBtn.textContent = text;
+                        micBtn.style.background = "#0284c7";
+                    }
+                    if (modalMicBtn) {
+                        modalMicBtn.textContent = text;
+                        modalMicBtn.style.background = "#0284c7";
+                    }
+                    if (modalFeedback) {
+                        modalFeedback.style.display = 'block';
+                        modalFeedback.style.color = '#0284c7';
+                        modalFeedback.innerHTML = `🔊 <strong>Memutar Ulang Hasil Rekaman di Speaker Laptop!</strong><br>Dengarkan suaramu keluar dari laptop... (Peak: ${msg.peak || 0})`;
+                    }
+                    if (robotIcon) robotIcon.textContent = "📢";
+                } else if (msg.status === "done") {
+                    playLaptopRobotChime('happy');
+                    if (micBtn) {
+                        micBtn.textContent = "Tes Mic 🎙️";
+                        micBtn.style.background = "var(--pink)";
+                        micBtn.disabled = false;
+                    }
+                    if (modalMicBtn) {
+                        modalMicBtn.textContent = "Uji Coba Mic & Speaker (2 Detik) 🎙️";
+                        modalMicBtn.style.background = "var(--pink)";
+                        modalMicBtn.disabled = false;
+                    }
+                    if (robotIcon) robotIcon.textContent = "🤖";
+
+                    const peak = msg.peak || 0;
+                    if (peak > 150) {
+                        addMessageToUI(`🎙️✅ **Uji Coba Mic INMP441 Berhasil!**<br>Suaramu berhasil direkam oleh mikrofon INMP441 dan diputar ulang lewat **speaker laptop**! (Amplitudo Peak: **${peak}** - Mikrofon bekerja sangat baik).`, 'ai');
+                        if (modalFeedback) {
+                            modalFeedback.style.display = 'block';
+                            modalFeedback.style.color = '#16a34a';
+                            modalFeedback.innerHTML = `✅ <strong>Uji Mic Sukses!</strong> Suara berhasil direkam & dimainkan di speaker laptop. (Amplitudo Peak: <strong>${peak}</strong>).`;
+                        }
+                    } else {
+                        addMessageToUI(`🎙️⚠️ **Tes Selesai, tetapi sinyal suara sangat kecil (Peak: ${peak}).**<br>Jika suaramu belum terdengar di laptop, periksa kembali jumper INMP441:<br>• SD &rarr; GPIO 32, WS &rarr; GPIO 33, SCK &rarr; GPIO 14, L/R &rarr; GND, VDD &rarr; **3.3V** (jangan ke 5V!)`, 'ai');
+                        if (modalFeedback) {
+                            modalFeedback.style.display = 'block';
+                            modalFeedback.style.color = '#ea580c';
+                            modalFeedback.innerHTML = `⚠️ <strong>Amplitudo Suara Rendah (Peak: ${peak})</strong>. Pastikan kabel jumper INMP441 (VDD harus 3.3V, L/R ke GND).`;
+                        }
+                    }
+                } else if (msg.status === "error") {
+                    if (micBtn) {
+                        micBtn.textContent = "Tes Mic 🎙️";
+                        micBtn.style.background = "var(--pink)";
+                        micBtn.disabled = false;
+                    }
+                    if (modalMicBtn) {
+                        modalMicBtn.textContent = "Uji Coba Mic & Speaker (2 Detik) 🎙️";
+                        modalMicBtn.style.background = "var(--pink)";
+                        modalMicBtn.disabled = false;
+                    }
+                    if (robotIcon) robotIcon.textContent = "🤖";
+                    if (modalFeedback) {
+                        modalFeedback.style.display = 'block';
+                        modalFeedback.style.color = '#dc2626';
+                        modalFeedback.textContent = `❌ Gagal: ${msg.msg || 'Terjadi kesalahan memori pada ESP32'}`;
+                    }
+                }
+            } else if (msg.type === "mic_audio") {
+                // Audio rekaman dari INMP441 diterima lewat serial! Mainkan langsung di speaker laptop
+                try {
+                    const binaryString = atob(msg.wav);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const blob = new Blob([bytes], { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    const laptopAudio = new Audio(audioUrl);
+                    laptopAudio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    laptopAudio.play().catch(e => console.warn("Laptop audio play error:", e));
+                } catch (e) {
+                    console.warn("Gagal memainkan rekaman mic di laptop:", e);
+                }
+            }
+        }
+
+        // ==========================================
+        // PENGIRIMAN KONFIGURASI WIFI KE ESP32
+        // ==========================================
+        function sendWifiConfigToEsp() {
+            if (!espWriter) {
+                alert("Harap sambungkan ESP32 via tombol 'ESP32: Sambung 🔌' terlebih dahulu sebelum mengirim konfigurasi WiFi.");
+                return;
+            }
+
+            const ssidInput = document.getElementById('esp-wifi-ssid');
+            const passInput = document.getElementById('esp-wifi-pass');
+            const feedback = document.getElementById('esp-wifi-feedback');
+
+            const ssid = (ssidInput ? ssidInput.value : '').trim();
+            const pass = (passInput ? passInput.value : '').trim();
+
+            if (!ssid) {
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#dc2626';
+                    feedback.textContent = 'Silakan isi Nama WiFi (SSID) terlebih dahulu!';
+                }
+                return;
+            }
+
+            localStorage.setItem('caretech_esp_wifi_ssid', ssid);
+
+            sendEsp({
+                type: "set_wifi",
+                ssid: ssid,
+                pass: pass
+            });
+
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.style.color = '#0284c7';
+                feedback.textContent = `Mengirim perintah WiFi "${ssid}" ke ESP32... Menunggu balasan koneksi...`;
+            }
+        }
+
+        function clearWifiOnEsp() {
+            if (!espWriter) {
+                alert("Harap sambungkan ESP32 via kabel USB terlebih dahulu.");
+                return;
+            }
+            sendEsp({ type: "clear_wifi" });
+            const feedback = document.getElementById('esp-wifi-feedback');
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.style.color = '#d32f2f';
+                feedback.textContent = 'Meminta ESP32 melupakan jaringan WiFi...';
+            }
+        }
+
+        // ==========================================
+        // PENGUJIAN MIC & SPEAKER VIA WEB
+        // ==========================================
+        function triggerMicTest(duration = 2) {
+            if (!espWriter) {
+                alert("Harap sambungkan robot ESP32 terlebih dahulu dengan menekan tombol 'ESP32: Sambung 🔌'!");
+                return;
+            }
+
+            const micBtn = document.getElementById('btn-mic-test');
+            const modalMicBtn = document.getElementById('btn-modal-mic-test');
+            const modalFeedback = document.getElementById('mic-test-feedback');
+
+            if (micBtn) {
+                micBtn.textContent = "Menyiapkan... ⏳";
+                micBtn.disabled = true;
+            }
+            if (modalMicBtn) {
+                modalMicBtn.textContent = "Menyiapkan... ⏳";
+                modalMicBtn.disabled = true;
+            }
+            if (modalFeedback) {
+                modalFeedback.style.display = 'block';
+                modalFeedback.style.color = '#0284c7';
+                modalFeedback.textContent = "Mengirim instruksi tes ke ESP32... Bersiaplah bicara setelah nada bip laptop!";
+            }
+
+            addMessageToUI("🎙️ **Memulai Tes Mikrofon INMP441!**<br>Setelah terdengar nada bip pendek dari laptop, silakan bicara langsung ke arah mikrofon robot selama 2 detik. ESP32 akan langsung mengirim rekaman suaramu dan memutarnya lewat **speaker laptopmu**!", "ai");
+
+            sendEsp({
+                type: "test_mic",
+                duration: duration
+            });
+        }
+
+        // Auto disconnect listener if USB cable is unplugged
+        if ('serial' in navigator) {
+            navigator.serial.addEventListener('disconnect', (event) => {
+                if (espPort && event.target === espPort) {
+                    disconnectEsp32();
+                }
+            });
+        }
+
+        // ==========================================
+        // CHAT TURN & AI PIPELINE
+        // ==========================================
         async function sendMessage() {
             const inputEl = document.getElementById('chat-input');
             const text = inputEl.value.trim();
@@ -941,10 +2007,19 @@
             typingIndicator.style.display = 'block';
             robotIcon.style.animation = 'robotWobble 0.6s infinite';
 
+            // Signal physical ESP32 that ESA is thinking
+            sendEspAction("thinking");
+
+            // Environmental sensor telemetry injection for higher conversational context
+            let sensorContext = "";
+            if (latestEspSensor && latestEspSensor.temp !== undefined) {
+                sensorContext = ` (Data sensor lingkungan fisik siswa saat ini: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Tingkat Cahaya ${latestEspSensor.light}. Jika kondisi suhu ruangan gerah/dingin atau redup, kamu boleh dengan santun dan hangat menanyakan kenyamanan belajarnya.)`;
+            }
+
             // Check if user has an active Gemini key to call real API
             if (geminiKey && geminiKey.length > 15) {
                 try {
-                    const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, bersahabat, dan mendukung bernama Esa (Emotional Support Assistance) untuk siswa sekolah. Dengarkan keluh kesah pengguna dan berikan respons yang suportif, hangat, tidak menghakimi, dan ringkas (maksimal 3 paragraf pendek).";
+                    const systemInstruction = "Kamu adalah teman curhat yang empatik, baik hati, bersahabat, dan mendukung bernama Esa (Emotional Support Assistance) untuk siswa sekolah. Dengarkan keluh kesah pengguna dan berikan respons yang suportif, hangat, tidak menghakimi, dan ringkas (maksimal 3 paragraf pendek)." + sensorContext;
                     
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
@@ -970,7 +2045,7 @@
                             "role": "model",
                             "parts": [{ "text": aiText }]
                         });
-                        finishChatTurn();
+                        finishChatTurn(aiText);
                         return;
                     }
                 } catch (err) {
@@ -986,11 +2061,11 @@
                     "role": "model",
                     "parts": [{ "text": responseText }]
                 });
-                finishChatTurn();
+                finishChatTurn(responseText);
             }, 750);
         }
 
-        function finishChatTurn() {
+        function finishChatTurn(replyText) {
             const btn = document.getElementById('btn-send');
             const typingIndicator = document.getElementById('typing-indicator');
             const robotIcon = document.getElementById('robot-icon');
@@ -998,6 +2073,15 @@
             btn.disabled = false;
             typingIndicator.style.display = 'none';
             robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
+
+            if (replyText) {
+                sendEspAction("speaking", { mood: "happy" });
+                speakText(replyText, () => {
+                    sendEspAction("idle");
+                });
+            } else {
+                sendEspAction("idle");
+            }
         }
 
         function toggleSidebar() {
@@ -1009,7 +2093,11 @@
 
         // Initialize status on startup
         updateApiStatusIndicator();
-        document.addEventListener('DOMContentLoaded', updateApiStatusIndicator);
+        updateElevenLabsUi();
+        document.addEventListener('DOMContentLoaded', () => {
+            updateApiStatusIndicator();
+            updateElevenLabsUi();
+        });
     </script>
     <script src="dropdown.js"></script>
 </body>

@@ -11,7 +11,9 @@ class Player {
    */
   constructor(scene, x, y) {
     this.scene  = scene;
-    this.speed  = 240;           // px / sec
+    this.baseSpeed = 240;        // base px / sec
+    this.speedMultiplier = (typeof window !== 'undefined' && window.__playerSpeedMultiplier) || 1.0;
+    this.speed  = this.baseSpeed * this.speedMultiplier;
     this.facing = 'down';        // last direction faced
 
     /* --- sprite -------------------------------------------------- */
@@ -69,9 +71,16 @@ class Player {
       if (this.cursors.down.isDown  || this.keyS.isDown || (window.virtualInput && window.virtualInput.down)) vy =  1;
     }
 
+    // Calculate dynamic speed with multiplier
+    const mult = (typeof window !== 'undefined' && window.__playerSpeedMultiplier !== undefined)
+      ? window.__playerSpeedMultiplier
+      : (this.speedMultiplier || 1.0);
+    const effSpeed = (this.baseSpeed || 240) * mult;
+    this.speed = effSpeed;
+
     // Normalize speed
     const len = Math.sqrt(vx * vx + vy * vy) || 1;
-    body.setVelocity((vx / len) * this.speed, (vy / len) * this.speed);
+    body.setVelocity((vx / len) * effSpeed, (vy / len) * effSpeed);
 
     // Update facing direction (prioritise dominant axis)
     if (Math.abs(vy) > Math.abs(vx)) {
@@ -82,7 +91,7 @@ class Player {
       else if (vx > 0) this.facing = 'right';
     }
 
-    /* -- play walk / idle animation -- */
+    /* -- play walk / idle animation with synced timeScale -- */
     if (this.facing === 'left') {
       this.sprite.setFlipX(true);
     } else if (this.facing === 'right') {
@@ -90,8 +99,14 @@ class Player {
     }
 
     if (body.velocity.x !== 0 || body.velocity.y !== 0) {
+      if (this.sprite.anims) {
+        this.sprite.anims.timeScale = Math.min(3.0, Math.max(0.5, mult));
+      }
       this.sprite.anims.play('player_walk_' + this.facing, true);
     } else {
+      if (this.sprite.anims) {
+        this.sprite.anims.timeScale = 1.0;
+      }
       this.sprite.anims.play('player_idle_' + this.facing, true);
     }
 
@@ -114,5 +129,14 @@ class Player {
     }
     return Phaser.Input.Keyboard.JustDown(this.actionKey) ||
            Phaser.Input.Keyboard.JustDown(this.spaceKey) || vAction;
+  }
+
+  setSpeedMultiplier(multiplier = 1.0) {
+    this.speedMultiplier = Math.max(0.1, multiplier);
+    this.speed = (this.baseSpeed || 240) * this.speedMultiplier;
+    if (typeof window !== 'undefined') {
+      window.__playerSpeedMultiplier = this.speedMultiplier;
+    }
+    return this.speedMultiplier;
   }
 }

@@ -1766,6 +1766,7 @@ class WorldScene extends Phaser.Scene {
    */
   panCameraTo(x, y, duration = 800, ease = 'Sine.easeInOut', onComplete = null) {
     const cam = this.cameras.main;
+    this._cameraPanning = true;
     cam.stopFollow();
     this.tweens.killTweensOf(cam);
 
@@ -1773,6 +1774,7 @@ class WorldScene extends Phaser.Scene {
     const finish = () => {
       if (completed) return;
       completed = true;
+      this._cameraPanning = false;
       if (typeof onComplete === 'function') onComplete();
     };
 
@@ -2017,6 +2019,13 @@ class WorldScene extends Phaser.Scene {
       this.npcs[i].update(time, delta);
     }
     this._updatePlayerMask();
+
+    // Ensure camera follow stays locked onto player during normal gameplay
+    if (this.player && this.player.sprite && !this.player.isLocked && !this._cameraPanning) {
+      if (!this.cameras.main._follow) {
+        this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
+      }
+    }
 
     /* ── Level 1 Library Scene Trigger (Fallback if not started in create) ── */
     if (this.registry.get('currentMap') === 'library' &&
