@@ -804,6 +804,9 @@ class UIScene extends Phaser.Scene {
     }
 
     if (hasTimer) {
+      if (window.audioManager) {
+        window.audioManager.playLoop('clockTicking', 0.4);
+      }
       if (this.questText) this.questText.setY(-8).setText(text).setColor('#facc15');
       if (this.questTimerText) {
         this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
@@ -862,6 +865,9 @@ class UIScene extends Phaser.Scene {
   }
 
   completeQuest(questName) {
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -902,6 +908,9 @@ class UIScene extends Phaser.Scene {
   }
 
   hideQuestBanner() {
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -1193,6 +1202,9 @@ class UIScene extends Phaser.Scene {
   _selectOption(ch) {
     this._cleanupDialogueAdvance();
     this.hideQuestBanner();
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
@@ -1213,6 +1225,9 @@ class UIScene extends Phaser.Scene {
 
   _closeDialogue() {
     this._cleanupDialogueAdvance();
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;

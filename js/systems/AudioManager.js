@@ -12,6 +12,9 @@ class AudioManager {
     this.ctx = null;
     this.buffers = new Map();
     this.isUnlocked = false;
+    this.activeLoops = new Map();
+    this.pendingLoops = new Map();
+    this.pendingPlays = new Map();
     this._initContext();
     this._attachUnlockListeners();
   }
@@ -69,6 +72,16 @@ class AudioManager {
           (decoded) => {
             this.buffers.set(key, decoded);
             console.log(`%c[AudioManager] Audio '${key}' decoded successfully into memory!`, 'color: #22c55e;');
+            if (this.pendingPlays.has(key)) {
+              const pending = this.pendingPlays.get(key);
+              this.pendingPlays.delete(key);
+              this.playSound(key, pending.volume);
+            }
+            if (this.pendingLoops.has(key)) {
+              const vol = this.pendingLoops.get(key);
+              this.pendingLoops.delete(key);
+              this.playLoop(key, vol);
+            }
           },
           (err) => {
             console.warn(`[AudioManager] Error decoding audio for '${key}':`, err);
@@ -81,7 +94,7 @@ class AudioManager {
   }
 
   /**
-   * Play an in-memory decoded audio buffer
+   * Play an in-memory decoded audio buffer (one-shot)
    */
   playSound(key, volume = 0.7) {
     this.unlock();
@@ -106,6 +119,90 @@ class AudioManager {
   }
 
   /**
+   * Play an in-memory decoded audio buffer on continuous loop (e.g. ambient crowd)
+   */
+  playLoop(key, volume = 0.5) {
+    this.unlock();
+    if (this.activeLoops.has(key)) {
+      // Already playing, just update volume smoothly if changed
+      const loop = this.activeLoops.get(key);
+      if (loop && loop.gainNode && this.ctx) {
+        loop.gainNode.gain.setValueAtTime(volume, this.ctx.currentTime);
+      }
+      return true;
+    }
+
+    if (!this.ctx) return false;
+
+    const buffer = this.buffers.get(key);
+    if (!buffer) {
+      // Buffer not yet ready, queue to play as soon as decode completes
+      this.pendingLoops.set(key, volume);
+      return false;
+    }
+
+    try {
+      const source = this.ctx.createBufferSource();
+      const gainNode = this.ctx.createGain();
+      source.buffer = buffer;
+      source.loop = true;
+
+      gainNode.gain.setValueAtTime(Math.max(0, Math.min(1, volume)), this.ctx.currentTime);
+      source.connect(gainNode);
+      gainNode.connect(this.ctx.destination);
+      source.start(0);
+
+      this.activeLoops.set(key, { source, gainNode, volume });
+      console.log(`%c[AudioManager] Loop '${key}' started at volume ${Math.round(volume * 100)}%`, 'color: #38bdf8;');
+      return true;
+    } catch (e) {
+      console.warn(`[AudioManager] Failed to start loop '${key}':`, e);
+      return false;
+    }
+  }
+
+  /**
+   * Stop an active looping audio with graceful fade out
+   */
+  stopLoop(key, fadeDuration = 0.4) {
+    if (!this.activeLoops.has(key)) {
+      this.pendingLoops.delete(key);
+      return;
+    }
+
+    const loop = this.activeLoops.get(key);
+    this.activeLoops.delete(key);
+    this.pendingLoops.delete(key);
+
+    if (loop && loop.source && loop.gainNode && this.ctx) {
+      try {
+        const curVal = loop.gainNode.gain.value;
+        loop.gainNode.gain.setValueAtTime(curVal, this.ctx.currentTime);
+        loop.gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + fadeDuration);
+        setTimeout(() => {
+          try {
+            loop.source.stop();
+            loop.source.disconnect();
+          } catch (_) {}
+        }, fadeDuration * 1000 + 50);
+        console.log(`%c[AudioManager] Loop '${key}' stopped (fade: ${fadeDuration}s)`, 'color: #94a3b8;');
+      } catch (e) {
+        try { loop.source.stop(); } catch (_) {}
+      }
+    }
+  }
+
+  /**
+   * Stop all active looping sounds (e.g. on scene switch)
+   */
+  stopAllLoops(fadeDuration = 0.3) {
+    for (const key of Array.from(this.activeLoops.keys())) {
+      this.stopLoop(key, fadeDuration);
+    }
+    this.pendingLoops.clear();
+  }
+
+  /**
    * Play school bell chime:
    * First tries decoded 'schoolBell' buffer; if not available, plays procedural chime!
    */
@@ -113,8 +210,8 @@ class AudioManager {
     this.unlock();
     const played = this.playSound('schoolBell', volume);
     if (!played) {
-      console.log('%c[AudioManager] schoolBell belum siap / terhalang, memutar school chime prosedural...', 'color: #38bdf8;');
-      this.playProceduralChime(volume);
+      console.log('%c[AudioManager] schoolBell buffer sedang dimuat, dijadwalkan diputar otomatis setelah decode selesai...', 'color: #38bdf8;');
+      this.pendingPlays.set('schoolBell', { volume });
     }
   }
 
@@ -160,5 +257,7 @@ class AudioManager {
 // Global Singleton
 window.audioManager = new AudioManager();
 
-// Automatically preload schoolBell into in-memory ArrayBuffer
+// Automatically preload assets into in-memory ArrayBuffers (safe from IDM)
 window.audioManager.loadSound('schoolBell', 'assets/audio/sfx/schoolBell.mp3');
+window.audioManager.loadSound('crowd', 'assets/audio/sfx/crowd.mp3');
+window.audioManager.loadSound('clockTicking', 'assets/audio/sfx/clockTicking.mp3');
