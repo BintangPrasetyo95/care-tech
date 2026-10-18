@@ -27,13 +27,13 @@ class WorldScene extends Phaser.Scene {
     /* ── Player ── */
     let defaultSpawnX = 10;
     let defaultSpawnY = 7;
-    if (mapKey === 'garden') { defaultSpawnX = 14; defaultSpawnY = 3.5; }
+    if (mapKey === 'garden') { defaultSpawnX = 14; defaultSpawnY = 1.5; }
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
     if (mapKey === 'library') { defaultSpawnX = 1; defaultSpawnY = 9; }
     if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
 
-    const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
-    const py = this.spawnY || defaultSpawnY * TILE;
+    const px = this.spawnX || (defaultSpawnX * TILE + TILE / 2);
+    const py = this.spawnY || (defaultSpawnY * TILE);
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
     this.physics.world.setBounds(0, 0, mapW * TILE, mapH * TILE);
@@ -57,10 +57,26 @@ class WorldScene extends Phaser.Scene {
     });
 
     const isBranchBCafeteriaArrival = (mapKey === 'cafeteria' && this.registry.get('level1_branch_b_bu_wati_at_cafeteria') && !this.registry.get('level1_branch_b_reached_table'));
-    if (!isBranchBCafeteriaArrival) {
+    const isGardenIntro = (mapKey === 'garden' && !this.registry.get('level1_001_done'));
+
+    if (isGardenIntro) {
+      // Kamera tetap diam terpusat di (3.5, 14): X = 14 * TILE + TILE / 2 = 928, Y = 3.5 * TILE = 224
+      const camX = 14 * TILE + TILE / 2;
+      const camY = 3.5 * TILE;
+      this.cameras.main.centerOn(camX, camY);
+    } else if (!isBranchBCafeteriaArrival) {
       this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
       /* ── Camera Fade In (Gelap ke Terang) ── */
       this.cameras.main.fadeIn(400, 0, 0, 0);
+    }
+
+    // Ambient Audio per Map (Kantin/Cafeteria: crowd.mp3 loop volume 30%)
+    if (window.audioManager) {
+      if (mapKey === 'cafeteria') {
+        window.audioManager.playLoop('crowd', 0.3);
+      } else {
+        window.audioManager.stopLoop('crowd', 0.4);
+      }
     }
     const savedZoom = (typeof localStorage !== 'undefined' && parseFloat(localStorage.getItem('caretech_zoom'))) || this.registry.get('cameraZoom') || SCALE;
     this.registry.set('cameraZoom', savedZoom);
@@ -85,8 +101,11 @@ class WorldScene extends Phaser.Scene {
       this._libraryCutsceneRunning = false;
       const activeQuest = this.registry.get('level1_quest_active');
       const is017Done = this.registry.get('level1_017_done');
+      const isGardenPhaseDone = this.registry.get('level1_nabula_left_garden') === true ||
+        activeQuest === 'ikuti_nabula' ||
+        activeQuest === 'susul_nabula_timed';
 
-      console.log(`%c[Perpus] Masuk map library. activeQuest: "${activeQuest}", 017_done: ${is017Done}`, 'color: #38bdf8; font-weight: bold;');
+      console.log(`%c[Perpus] Masuk map library. activeQuest: "${activeQuest}", 017_done: ${is017Done}, isGardenDone: ${isGardenPhaseDone}`, 'color: #38bdf8; font-weight: bold;');
 
       // JALUR B (Babak 4): Lapor Bu Wati di perpustakaan
       if (activeQuest === 'lapor_bu_wati_branch_b') {
@@ -100,7 +119,7 @@ class WorldScene extends Phaser.Scene {
         if (ui && ui.showQuest) {
           ui.showQuest('QUEST: Cari Bu Wati di perpustakaan.');
         }
-      } else if (!is017Done && !this.registry.get('level1_049_done')) {
+      } else if (isGardenPhaseDone && !is017Done && !this.registry.get('level1_049_done')) {
         this.registry.set('level1_library_arrived', true);
 
         if (activeQuest === 'ikuti_nabula' || activeQuest === 'susul_nabula_timed') {
@@ -131,8 +150,9 @@ class WorldScene extends Phaser.Scene {
       this._cafeteriaCutsceneRunning = false;
       const activeQuest = this.registry.get('level1_quest_active');
       const is049Done = this.registry.get('level1_049_done');
+      const isCluePhaseDone = activeQuest === 'pergi_ke_kantin' || (this.registry.get('level1_clues_found') >= 3);
 
-      console.log(`%c[Kantin 049] Masuk map cafeteria. activeQuest: "${activeQuest}", 049_done: ${is049Done}`, 'color: #38bdf8; font-weight: bold;');
+      console.log(`%c[Kantin 049] Masuk map cafeteria. activeQuest: "${activeQuest}", 049_done: ${is049Done}, isClueDone: ${isCluePhaseDone}`, 'color: #38bdf8; font-weight: bold;');
 
       // Pastikan Nakula selalu menghadap kiri saat tiba di kantin
       if (this.player) {
@@ -143,7 +163,7 @@ class WorldScene extends Phaser.Scene {
         }
       }
 
-      if (!is049Done) {
+      if (isCluePhaseDone && !is049Done) {
         this.registry.set('level1_cafeteria_arrived', true);
 
         if (activeQuest === 'pergi_ke_kantin') {
@@ -237,6 +257,7 @@ class WorldScene extends Phaser.Scene {
     // Pasang helper debug console untuk pengujian cepat
     window.testCutscene017 = () => {
       console.log('%c[DEBUG] Memulai paksa Cutscene 017...', 'color: #f43f5e; font-weight: bold;');
+      this.registry.set('level1_nabula_left_garden', true);
       this.registry.set('level1_017_done', false);
       this._libraryCutsceneRunning = false;
       if (this.registry.get('currentMap') !== 'library') {
@@ -247,6 +268,8 @@ class WorldScene extends Phaser.Scene {
     };
     window.testCutscene049 = () => {
       console.log('%c[DEBUG] Memulai paksa Cutscene 049 di Kantin...', 'color: #f43f5e; font-weight: bold;');
+      this.registry.set('level1_quest_active', 'pergi_ke_kantin');
+      this.registry.set('level1_clues_found', 3);
       this.registry.set('level1_049_done', false);
       this.registry.set('level1_049_triggered', false);
       this._cafeteriaCutsceneRunning = false;
@@ -285,6 +308,8 @@ class WorldScene extends Phaser.Scene {
     window.testChoice058 = () => {
       console.log('%c[DEBUG] Membuka langsung UI 3 Pilihan Strategis 058...', 'color: #f43f5e; font-weight: bold;');
       this._cafeteriaChoiceTimeoutCount = 0;
+      this.registry.set('level1_quest_active', 'pergi_ke_kantin');
+      this.registry.set('level1_clues_found', 3);
       this.registry.set('level1_049_done', true);
       this._cafeteriaCutsceneRunning = false;
       const ui = this.scene.get('UI');
@@ -419,6 +444,110 @@ class WorldScene extends Phaser.Scene {
       if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
         try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
+      } else if (action === 'lvl1_001_intro_walk') {
+        console.log('%c[Level 1 Intro] Memulai intro taman: schoolBell diputar via AudioManager, kamera diam di (3.5, 14), Nakula jalan dari (1.5, 14) ke (3.5, 14)...', 'color: #38bdf8; font-weight: bold;');
+
+        // 1. Kunci kontrol Nakula selama cutscene berjalan
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          this.player.isCutsceneActive = true;
+          if (this.player.sprite && this.player.sprite.body) {
+            this.player.sprite.body.enable = false;
+          }
+        }
+
+        // 2. Mainkan suara schoolBell via AudioManager (in-memory Web Audio, kebal dari download prompt IDM)
+        if (window.audioManager) {
+          window.audioManager.playSchoolBell(0.7);
+        }
+
+        // 3. Pastikan kamera tetap diam di titik (3.5, 14): X = 14 * TILE + TILE / 2 = 928, Y = 3.5 * TILE = 224
+        const targetX = 14 * TILE + TILE / 2;
+        const targetY = 3.5 * TILE;
+        const startX = 14 * TILE + TILE / 2;
+        const startY = 1.5 * TILE;
+
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.centerOn(targetX, targetY);
+
+        // 4. Set posisi awal Nakula di ambang pintu (1.5, 14) dan mulai animasi jalan ke bawah
+        if (this.player && this.player.sprite) {
+          this.player.sprite.setPosition(startX, startY);
+          this.player.facing = 'down';
+          this.player.sprite.setFlipX(false);
+          this.player.sprite.anims.play('player_walk_down', true);
+        }
+
+        // 5. Pantau 2 syarat: Layar selesai terang (fade in selesai) DAN Nakula selesai bergerak ke (3.5, 14)
+        let isFadeInDone = false;
+        let isWalkDone = false;
+
+        const checkCanAdvance = () => {
+          if (isFadeInDone && isWalkDone) {
+            console.log('%c[Level 1 Intro] Layar terang & Nakula sampai di (3.5, 14)! Mengizinkan dialog 001 dilanjutkan...', 'color: #22c55e; font-weight: bold;');
+            if (this.player && this.player.sprite) {
+              this.player.sprite.anims.play('player_idle_down', true);
+              this.player.facing = 'down';
+              if (this.player.sprite.body) {
+                this.player.sprite.body.enable = true;
+                this.player.sprite.body.reset(targetX, targetY);
+              }
+              this.player.isCutsceneActive = false;
+              // Kamera sekarang dihubungkan kembali mengikuti Nakula
+              this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+            }
+            const ui = this.scene.get('UI');
+            if (ui && ui.enableDialogueAdvance) {
+              ui.enableDialogueAdvance();
+            }
+          }
+        };
+
+        // Kondisi A: Fade in kamera
+        const cam = this.cameras.main;
+        const uiScene = this.scene.get('UI');
+        const isFading = (cam && cam._fadeAlpha && cam._fadeAlpha > 0) ||
+                        (uiScene && uiScene.cameras && uiScene.cameras.main && uiScene.cameras.main._fadeAlpha > 0);
+
+        if (isFading) {
+          if (cam) {
+            cam.once('camerafadeincomplete', () => {
+              isFadeInDone = true;
+              checkCanAdvance();
+            });
+          }
+          if (uiScene && uiScene.cameras && uiScene.cameras.main) {
+            uiScene.cameras.main.once('camerafadeincomplete', () => {
+              isFadeInDone = true;
+              checkCanAdvance();
+            });
+          }
+        } else {
+          // Jika kamera sudah terang / tidak sedang fade, berikan timer transisi 1500ms
+          this.time.delayedCall(1500, () => {
+            isFadeInDone = true;
+            checkCanAdvance();
+          });
+        }
+
+        // Kondisi B: Pergerakan Nakula ke bawah menuju targetY (3, 14.5)
+        if (this.player && this.player.sprite) {
+          this.tweens.add({
+            targets: this.player.sprite,
+            y: targetY,
+            duration: 1600,
+            ease: 'Linear',
+            onComplete: () => {
+              isWalkDone = true;
+              checkCanAdvance();
+            }
+          });
+        } else {
+          isWalkDone = true;
+          checkCanAdvance();
+        }
       } else if (action === 'lvl1_start_walk') {
         // Player is now free to walk in the garden (001 continued)
         this.registry.set('level1_player_locked', false);
@@ -1821,6 +1950,15 @@ class WorldScene extends Phaser.Scene {
   }
 
   _startLibraryCutscene() {
+    const isGardenPhaseDone = this.registry.get('level1_nabula_left_garden') === true ||
+      this.registry.get('level1_quest_active') === 'ikuti_nabula' ||
+      this.registry.get('level1_quest_active') === 'susul_nabula_timed';
+
+    if (!isGardenPhaseDone) {
+      console.log('[Perpus 017] Cutscene ditolak: Babak 1 di taman belum selesai.');
+      return;
+    }
+
     if (this._libraryCutsceneRunning || this.registry.get('level1_017_done') || this.registry.get('level1_quest_active') === 'lapor_bu_wati_branch_b' || this.registry.get('level1_049_done')) {
       console.log(`[Perpus 017] _startLibraryCutscene dilewati: running=${this._libraryCutsceneRunning}, done=${this.registry.get('level1_017_done')}`);
       return;
@@ -1861,6 +1999,14 @@ class WorldScene extends Phaser.Scene {
   }
 
   _startCafeteriaCutscene() {
+    const isCluePhaseDone = this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
+      (this.registry.get('level1_clues_found') >= 3);
+
+    if (!isCluePhaseDone) {
+      console.log('[Kantin 049] Cutscene ditolak: Investigasi 3 petunjuk di perpustakaan belum selesai.');
+      return;
+    }
+
     if (this._cafeteriaCutsceneRunning || this.registry.get('level1_049_done')) {
       console.log(`[Kantin 049] _startCafeteriaCutscene dilewati: running=${this._cafeteriaCutsceneRunning}, done=${this.registry.get('level1_049_done')}`);
       return;
@@ -2028,7 +2174,12 @@ class WorldScene extends Phaser.Scene {
     }
 
     /* ── Level 1 Library Scene Trigger (Fallback if not started in create) ── */
+    const isGardenPhaseDoneForUpdate = this.registry.get('level1_nabula_left_garden') === true ||
+      this.registry.get('level1_quest_active') === 'ikuti_nabula' ||
+      this.registry.get('level1_quest_active') === 'susul_nabula_timed';
+
     if (this.registry.get('currentMap') === 'library' &&
+      isGardenPhaseDoneForUpdate &&
       !this.registry.get('level1_017_done') &&
       !this._libraryCutsceneRunning &&
       this.registry.get('level1_quest_active') !== 'lapor_bu_wati_branch_b' &&
@@ -2039,7 +2190,11 @@ class WorldScene extends Phaser.Scene {
     }
 
     /* ── Level 1 Cafeteria Scene Trigger (Fallback if not started in create) ── */
+    const isCluePhaseDoneForUpdate = this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
+      (this.registry.get('level1_clues_found') >= 3);
+
     if (this.registry.get('currentMap') === 'cafeteria' &&
+      isCluePhaseDoneForUpdate &&
       !this.registry.get('level1_049_done') &&
       !this._cafeteriaCutsceneRunning &&
       this.cameras.main && !this.cameras.main._fadeOp) {
@@ -3208,12 +3363,11 @@ class WorldScene extends Phaser.Scene {
         'student', 'student_chat_1', { name: 'Student' }));
 
       // Babak 4C & Babak 5: Spawn Nabula, Bagas, Rio di kantin
-      const canSpawnCafeteriaGroup = (
-        this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
-        this.registry.get('level1_clues_found') >= 3 ||
-        this.registry.get('level1_cafeteria_arrived') ||
-        !this.registry.get('level1_049_done')
-      ) && !this.registry.get('level1_complete');
+      const isClueDoneForCafeteriaSpawn = this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
+        (this.registry.get('level1_clues_found') >= 3) ||
+        this.registry.get('level1_049_done');
+
+      const canSpawnCafeteriaGroup = isClueDoneForCafeteriaSpawn && !this.registry.get('level1_complete');
 
       if (canSpawnCafeteriaGroup) {
         const is049Done = this.registry.get('level1_049_done');
@@ -3300,12 +3454,13 @@ class WorldScene extends Phaser.Scene {
       this.npcs.push(wulan);
 
       // Rio (4, 13) & Bagas (5, 13)
-      // HANYA spawn jika belum masuk Babak 4 / Kantin, dan bukan alur Jalur B / Emergency
+      // HANYA spawn jika alur taman sudah selesai, belum masuk Babak 4 / Kantin, dan bukan alur Jalur B / Emergency
+      const isGardenDoneForLibraryNPCs = this.registry.get('level1_nabula_left_garden') === true;
       const isPastCafeteria = this.registry.get('level1_049_done') || this.registry.get('level1_049_triggered');
       const isBranchBQuest = this.registry.get('level1_quest_active') === 'lapor_bu_wati_branch_b';
       const isEmergencyQuest = this.registry.get('level1_quest_active') === 'emergency_susul_nabula_taman' || this.registry.get('level1_quest_active') === 'emergency_susul_atau_lapor';
 
-      if (!isPastCafeteria && !isBranchBQuest && !isEmergencyQuest) {
+      if (isGardenDoneForLibraryNPCs && !isPastCafeteria && !isBranchBQuest && !isEmergencyQuest) {
         // Rio (4, 13) menghadap kanan & Bagas (5, 13) menghadap kiri
         const rio = new NPC(this, 4 * TILE + TILE / 2, 13 * TILE + TILE / 2,
           'rio', 'lvl1_rio_ambient', { name: 'Rio' });
@@ -3336,7 +3491,7 @@ class WorldScene extends Phaser.Scene {
       // Nabula: (8.5, 16) menghadap kanan.
       // HANYA muncul di perpustakaan jika Nabula sudah meninggalkan taman (012) dan belum kabur di 020
       // Dan BUKAN saat Jalur B (karena di Jalur B, Nabula berada di kantin!)
-      const canSpawnNabula = (this.registry.get('level1_library_arrived') || this.registry.get('level1_nabula_left_garden')) &&
+      const canSpawnNabula = this.registry.get('level1_nabula_left_garden') &&
         !this.registry.get('level1_020_done') && !isPastCafeteria && !isBranchBQuest;
       if (canSpawnNabula) {
         const nabula = new NPC(this, 8.5 * TILE + TILE / 2, 16 * TILE + TILE / 2,
@@ -3423,14 +3578,66 @@ class WorldScene extends Phaser.Scene {
     return false;
   }
 
+  _showDoorBarrierNotice(message, pushBackDir = 'down') {
+    if (this._barrierToastCooldown) return;
+    this._barrierToastCooldown = true;
+    this.time.delayedCall(1500, () => {
+      this._barrierToastCooldown = false;
+    });
+
+    const ui = this.scene.get('UI');
+    if (ui && ui.showQuest) {
+      ui.showQuest(message, { duration: 2500 });
+    }
+    if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
+
+    if (this.player && this.player.sprite) {
+      if (pushBackDir === 'down') {
+        this.player.sprite.y += TILE * 0.75;
+      } else if (pushBackDir === 'right') {
+        this.player.sprite.x += TILE * 0.75;
+      } else if (pushBackDir === 'left') {
+        this.player.sprite.x -= TILE * 0.75;
+      } else if (pushBackDir === 'up') {
+        this.player.sprite.y -= TILE * 0.75;
+      }
+      if (this.player.sprite.body) {
+        this.player.sprite.body.setVelocity(0, 0);
+      }
+    }
+  }
+
   _checkDoor() {
     if (!this.player || !this.player.sprite) return;
     const px = Math.round((this.player.sprite.x - TILE / 2) / TILE);
     const py = Math.round((this.player.sprite.y - TILE / 2) / TILE);
+    const currentMap = this.registry.get('currentMap');
 
     for (let i = 0; i < this.currentTransitions.length; i++) {
       const t = this.currentTransitions[i];
       if (Math.abs(px - t.fromX) <= 1 && Math.abs(py - t.fromY) <= 1) {
+        // Pagar 1: Taman -> Schoolyard saat Babak 1 di taman belum selesai
+        if (currentMap === 'garden' && t.toMap === 'schoolyard' && !this.registry.get('level1_nabula_left_garden')) {
+          this._showDoorBarrierNotice('Aku harus bicara dengan Nabula di taman dulu.', 'down');
+          return;
+        }
+
+        // Pagar 2: Schoolyard -> Library saat Babak 1 di taman belum selesai
+        if (currentMap === 'schoolyard' && t.toMap === 'library' && !this.registry.get('level1_nabula_left_garden')) {
+          this._showDoorBarrierNotice('Aku harus menemui Nabula di taman dulu.', 'left');
+          return;
+        }
+
+        // Pagar 3: Pintu ke Kantin saat investigasi petunjuk belum selesai
+        const isCluePhaseDone = this.registry.get('level1_quest_active') === 'pergi_ke_kantin' ||
+          (this.registry.get('level1_clues_found') >= 3) ||
+          this.registry.get('level1_049_done');
+        if (t.toMap === 'cafeteria' && !isCluePhaseDone && !this.registry.get('level1_complete')) {
+          const pushDir = (currentMap === 'corridor') ? 'up' : 'right';
+          this._showDoorBarrierNotice('Belum saatnya ke kantin. Aku harus mencari petunjuk di perpustakaan dulu.', pushDir);
+          return;
+        }
+
         this._changeMap(t.toMap, t.spawnX * TILE + TILE / 2, t.spawnY * TILE + TILE / 2);
         return;
       }
@@ -3510,6 +3717,9 @@ class WorldScene extends Phaser.Scene {
   _changeMap(newMap, spawnX, spawnY) {
     if (this._isTransitioning) return;
     this._isTransitioning = true;
+    if (window.audioManager && newMap !== 'cafeteria') {
+      window.audioManager.stopLoop('crowd', 0.4);
+    }
     this.registry.set('currentMap', newMap);
     // Fade transition
     this.cameras.main.fadeOut(300, 0, 0, 0);

@@ -821,16 +821,14 @@ class UIScene extends Phaser.Scene {
 
   /* ══════════ Public API ══════════ */
 
-  /** Start Level 1 transition: screen starts dark then smoothly fades in to bright, followed by narrator 001 */
+  /** Start Level 1 transition: screen starts dark then smoothly fades in to bright, accompanied by narrator 001 & schoolBell */
   startLevel1IntroTransition() {
     const worldScene = this.scene.get('World');
     if (worldScene && worldScene.cameras && worldScene.cameras.main) {
-      worldScene.cameras.main.fadeIn(1000, 0, 0, 0);
+      worldScene.cameras.main.fadeIn(1500, 0, 0, 0);
     }
-    this.cameras.main.fadeIn(1000, 0, 0, 0);
-    this.cameras.main.once('camerafadeincomplete', () => {
-      this.startDialogue('lvl1_001_narrator');
-    });
+    this.cameras.main.fadeIn(1500, 0, 0, 0);
+    this.startDialogue('lvl1_001_narrator');
   }
 
   /** Show top quest banner with optional timer */
@@ -917,6 +915,10 @@ class UIScene extends Phaser.Scene {
     }
 
     if (hasTimer) {
+      if (window.audioManager) {
+        window.audioManager.playLoop('clockTicking', 0.4);
+      }
+
       if (this.questText) {
         this.questText.setY(-5)
           .setText(cleanText)
@@ -933,7 +935,6 @@ class UIScene extends Phaser.Scene {
           .lineStyle(1.5, strokeColor, 1).strokeRoundedRect(-pillW / 2, 8, pillW, pillH, 9);
       };
       drawTimerPill(0xffe500);
-
       if (this.questTimerText) {
         this.questTimerText.setVisible(true).setY(17)
           .setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`)
@@ -1002,6 +1003,9 @@ class UIScene extends Phaser.Scene {
   }
 
   completeQuest(questName) {
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -1124,6 +1128,9 @@ class UIScene extends Phaser.Scene {
   }
 
   hideQuestBanner() {
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -1366,6 +1373,24 @@ class UIScene extends Phaser.Scene {
     this.dialogBg.disableInteractive();
   }
 
+  /**
+   * Allow manual dialogue advance for nodes initially marked with noManualAdvance
+   * (e.g. after a cutscene or camera pan completes)
+   */
+  enableDialogueAdvance(onTrigger) {
+    if (this.currentDialogueNode) {
+      this._setupDialogueAdvance(() => {
+        if (typeof onTrigger === 'function') {
+          onTrigger();
+        } else if (this.currentDialogueNode.next) {
+          this._showNode(this.currentDialogueNode.next);
+        } else {
+          this._closeDialogue();
+        }
+      });
+    }
+  }
+
   _setupDialogueAdvance(onTrigger) {
     this._cleanupDialogueAdvance();
     this.continueText.setVisible(true);
@@ -1420,6 +1445,9 @@ class UIScene extends Phaser.Scene {
   _selectOption(ch) {
     this._cleanupDialogueAdvance();
     this.hideQuestBanner();
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
@@ -1440,6 +1468,9 @@ class UIScene extends Phaser.Scene {
 
   _closeDialogue() {
     this._cleanupDialogueAdvance();
+    if (window.audioManager) {
+      window.audioManager.stopLoop('clockTicking', 0.2);
+    }
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
