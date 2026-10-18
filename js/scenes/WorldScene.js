@@ -27,13 +27,13 @@ class WorldScene extends Phaser.Scene {
     /* ── Player ── */
     let defaultSpawnX = 10;
     let defaultSpawnY = 7;
-    if (mapKey === 'garden') { defaultSpawnX = 14; defaultSpawnY = 3.5; }
+    if (mapKey === 'garden') { defaultSpawnX = 14.5; defaultSpawnY = 1; }
     if (mapKey === 'schoolyard') defaultSpawnX = 21;
     if (mapKey === 'library') { defaultSpawnX = 1; defaultSpawnY = 9; }
     if (mapKey === 'cafeteria') { defaultSpawnX = 15; defaultSpawnY = 9; }
 
-    const px = this.spawnX || defaultSpawnX * TILE + TILE / 2;
-    const py = this.spawnY || defaultSpawnY * TILE;
+    const px = this.spawnX || (mapKey === 'garden' ? defaultSpawnX * TILE : defaultSpawnX * TILE + TILE / 2);
+    const py = this.spawnY || (mapKey === 'garden' ? defaultSpawnY * TILE + TILE / 2 : defaultSpawnY * TILE);
     this.player = new Player(this, px, py);
     this.player.sprite.setCollideWorldBounds(true);
     this.physics.world.setBounds(0, 0, mapW * TILE, mapH * TILE);
@@ -57,7 +57,14 @@ class WorldScene extends Phaser.Scene {
     });
 
     const isBranchBCafeteriaArrival = (mapKey === 'cafeteria' && this.registry.get('level1_branch_b_bu_wati_at_cafeteria') && !this.registry.get('level1_branch_b_reached_table'));
-    if (!isBranchBCafeteriaArrival) {
+    const isGardenIntro = (mapKey === 'garden' && !this.registry.get('level1_001_done'));
+
+    if (isGardenIntro) {
+      // Kamera tetap diam terpusat di (3, 14.5) untuk intro pembuka: X = 14.5 * 64 = 928, Y = 3 * 64 + 32 = 224
+      const camX = 14.5 * TILE;
+      const camY = 3 * TILE + TILE / 2;
+      this.cameras.main.centerOn(camX, camY);
+    } else if (!isBranchBCafeteriaArrival) {
       this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
       /* ── Camera Fade In (Gelap ke Terang) ── */
       this.cameras.main.fadeIn(400, 0, 0, 0);
@@ -419,6 +426,110 @@ class WorldScene extends Phaser.Scene {
       if (action === 'complete_level1') {
         this.registry.set('level1_complete', true);
         try { localStorage.setItem('caretech_scenario_1', 'true'); } catch (e) { }
+      } else if (action === 'lvl1_001_intro_walk') {
+        console.log('%c[Level 1 Intro] Memulai intro taman: schoolBell diputar via AudioManager, kamera diam di (3, 14.5), Nakula jalan dari (1, 14.5) ke (3, 14.5)...', 'color: #38bdf8; font-weight: bold;');
+
+        // 1. Kunci kontrol Nakula selama cutscene berjalan
+        this.registry.set('level1_player_locked', true);
+        if (this.player) {
+          this.player.isLocked = true;
+          this.player.isCutsceneActive = true;
+          if (this.player.sprite && this.player.sprite.body) {
+            this.player.sprite.body.enable = false;
+          }
+        }
+
+        // 2. Mainkan suara schoolBell via AudioManager (in-memory Web Audio, kebal dari download prompt IDM)
+        if (window.audioManager) {
+          window.audioManager.playSchoolBell(0.7);
+        }
+
+        // 3. Pastikan kamera tetap diam di titik (3, 14.5): X = 14.5 * 64 = 928, Y = 3 * 64 + 32 = 224
+        const targetX = 14.5 * TILE;
+        const targetY = 3 * TILE + TILE / 2;
+        const startX = 14.5 * TILE;
+        const startY = 1 * TILE + TILE / 2;
+
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.centerOn(targetX, targetY);
+
+        // 4. Set posisi awal Nakula di (1, 14.5) dan mulai animasi jalan ke bawah
+        if (this.player && this.player.sprite) {
+          this.player.sprite.setPosition(startX, startY);
+          this.player.facing = 'down';
+          this.player.sprite.setFlipX(false);
+          this.player.sprite.anims.play('player_walk_down', true);
+        }
+
+        // 5. Pantau 2 syarat: Layar selesai terang (fade in selesai) DAN Nakula selesai bergerak ke (3, 14.5)
+        let isFadeInDone = false;
+        let isWalkDone = false;
+
+        const checkCanAdvance = () => {
+          if (isFadeInDone && isWalkDone) {
+            console.log('%c[Level 1 Intro] Layar terang & Nakula sampai di (3, 14.5)! Mengizinkan dialog 001 dilanjutkan...', 'color: #22c55e; font-weight: bold;');
+            if (this.player && this.player.sprite) {
+              this.player.sprite.anims.play('player_idle_down', true);
+              this.player.facing = 'down';
+              if (this.player.sprite.body) {
+                this.player.sprite.body.enable = true;
+                this.player.sprite.body.reset(targetX, targetY);
+              }
+              this.player.isCutsceneActive = false;
+              // Kamera sekarang dihubungkan kembali mengikuti Nakula
+              this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+            }
+            const ui = this.scene.get('UI');
+            if (ui && ui.enableDialogueAdvance) {
+              ui.enableDialogueAdvance();
+            }
+          }
+        };
+
+        // Kondisi A: Fade in kamera
+        const cam = this.cameras.main;
+        const uiScene = this.scene.get('UI');
+        const isFading = (cam && cam._fadeAlpha && cam._fadeAlpha > 0) ||
+                        (uiScene && uiScene.cameras && uiScene.cameras.main && uiScene.cameras.main._fadeAlpha > 0);
+
+        if (isFading) {
+          if (cam) {
+            cam.once('camerafadeincomplete', () => {
+              isFadeInDone = true;
+              checkCanAdvance();
+            });
+          }
+          if (uiScene && uiScene.cameras && uiScene.cameras.main) {
+            uiScene.cameras.main.once('camerafadeincomplete', () => {
+              isFadeInDone = true;
+              checkCanAdvance();
+            });
+          }
+        } else {
+          // Jika kamera sudah terang / tidak sedang fade, berikan timer transisi 1500ms
+          this.time.delayedCall(1500, () => {
+            isFadeInDone = true;
+            checkCanAdvance();
+          });
+        }
+
+        // Kondisi B: Pergerakan Nakula ke bawah menuju targetY (3, 14.5)
+        if (this.player && this.player.sprite) {
+          this.tweens.add({
+            targets: this.player.sprite,
+            y: targetY,
+            duration: 1600,
+            ease: 'Linear',
+            onComplete: () => {
+              isWalkDone = true;
+              checkCanAdvance();
+            }
+          });
+        } else {
+          isWalkDone = true;
+          checkCanAdvance();
+        }
       } else if (action === 'lvl1_start_walk') {
         // Player is now free to walk in the garden (001 continued)
         this.registry.set('level1_player_locked', false);

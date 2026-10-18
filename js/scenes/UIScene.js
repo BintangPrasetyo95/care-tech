@@ -763,16 +763,14 @@ class UIScene extends Phaser.Scene {
 
   /* ══════════ Public API ══════════ */
 
-  /** Start Level 1 transition: screen starts dark then smoothly fades in to bright, followed by narrator 001 */
+  /** Start Level 1 transition: screen starts dark then smoothly fades in to bright, accompanied by narrator 001 & schoolBell */
   startLevel1IntroTransition() {
     const worldScene = this.scene.get('World');
     if (worldScene && worldScene.cameras && worldScene.cameras.main) {
-      worldScene.cameras.main.fadeIn(1000, 0, 0, 0);
+      worldScene.cameras.main.fadeIn(1500, 0, 0, 0);
     }
-    this.cameras.main.fadeIn(1000, 0, 0, 0);
-    this.cameras.main.once('camerafadeincomplete', () => {
-      this.startDialogue('lvl1_001_narrator');
-    });
+    this.cameras.main.fadeIn(1500, 0, 0, 0);
+    this.startDialogue('lvl1_001_narrator');
   }
 
   /** Show top quest banner with optional timer */
@@ -1121,6 +1119,24 @@ class UIScene extends Phaser.Scene {
       this._windowAdvanceHandler = null;
     }
     this.dialogBg.disableInteractive();
+  }
+
+  /**
+   * Allow manual dialogue advance for nodes initially marked with noManualAdvance
+   * (e.g. after a cutscene or camera pan completes)
+   */
+  enableDialogueAdvance(onTrigger) {
+    if (this.currentDialogueNode) {
+      this._setupDialogueAdvance(() => {
+        if (typeof onTrigger === 'function') {
+          onTrigger();
+        } else if (this.currentDialogueNode.next) {
+          this._showNode(this.currentDialogueNode.next);
+        } else {
+          this._closeDialogue();
+        }
+      });
+    }
   }
 
   _setupDialogueAdvance(onTrigger) {

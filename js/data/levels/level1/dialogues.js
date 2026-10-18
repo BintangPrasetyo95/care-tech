@@ -15,7 +15,8 @@ window.LEVEL_1_DIALOGUES = {
       id: 'Bel istirahat berbunyi. Nakula berjalan di taman sekolah.'
     },
     next: null,
-    action: null,
+    action: 'lvl1_001_intro_walk',
+    noManualAdvance: true,
     onCloseAction: [
       { type: 'player_lock', value: false }
     ]
