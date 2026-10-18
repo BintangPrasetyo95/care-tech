@@ -241,9 +241,10 @@
         }
 
         .character-guide-avatar img {
-            width: 88%;
-            height: 88%;
-            object-fit: contain;
+            width: 135%;
+            height: 135%;
+            object-fit: cover;
+            object-position: top 10% center;
             image-rendering: pixelated;
         }
 
@@ -477,11 +478,12 @@
 
             // Pick character game sprite
             const charAvatarMap = {
-                'nakula': 'assets/sprites/characters/nakula.png',
+                'nakula': 'assets/sprites/characters/detailed/nakula/nakula.png',
+                'nabula': 'assets/sprites/characters/detailed/nabula/nabula.png',
                 'mei': 'assets/sprites/characters/mei.png',
-                'bagas': 'assets/sprites/characters/bagas.png'
+                'bagas': 'assets/sprites/characters/detailed/bagas/bagas.png'
             };
-            const avatarSrc = charAvatarMap[item.character] || 'assets/sprites/characters/nakula.png';
+            const avatarSrc = charAvatarMap[item.character] || 'assets/sprites/characters/detailed/nakula/nakula.png';
             const charName = item.characterName || 'Nakula';
 
             const html = `

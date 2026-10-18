@@ -89,22 +89,58 @@ class UIScene extends Phaser.Scene {
     this._initMinimap(width, height);
     this._initLargeMapModal();
 
-    /* ══════════ Quest Banner (top-center) ══════════ */
-    this.questContainer = this.add.container(width / 2, -80).setScrollFactor(1).setDepth(300);
+    /* ══════════ Quest Banner (top-center Cardboard Notepad) ══════════ */
+    this.questContainer = this.add.container(width / 2, -100).setScrollFactor(1).setDepth(300);
+    
+    // Hard drop shadow
+    this.questShadow = this.add.graphics();
+
+    // Main notepad/cardboard background
     this.questBg = this.add.graphics();
-    this.questText = this._createSharpText(0, -8, '', {
+
+    // Washi tape badge (shadow, background, text)
+    this.questTapeShadow = this.add.graphics();
+    this.questTapeBg = this.add.graphics();
+    this.questTagText = this._createSharpText(0, -22, '★ MISI AKTIF', {
+      fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      letterSpacing: 1
+    }).setOrigin(0.5);
+
+    // Main quest description text
+    this.questText = this._createSharpText(0, 2, '', {
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
       fontSize: '11.5px',
       fontStyle: 'bold',
-      color: '#000000'
+      color: '#000000',
+      align: 'center'
     }).setOrigin(0.5);
-    this.questTimerText = this._createSharpText(0, 10, '', {
-      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-      fontSize: '10.5px',
+
+    // Timer pill badge & text
+    this.questTimerBadge = this.add.graphics().setVisible(false);
+    this.questTimerText = this._createSharpText(0, 16, '', {
+      fontFamily: '"Courier New", Courier, monospace',
+      fontSize: '11px',
       fontStyle: 'bold',
-      color: '#facc15'
+      color: '#000000'
     }).setOrigin(0.5).setVisible(false);
-    this.questContainer.add([this.questBg, this.questText, this.questTimerText]);
+
+    // Celebratory stars container for quest complete
+    this.questCelebrationStars = this.add.container(0, 0).setVisible(false);
+
+    this.questContainer.add([
+      this.questShadow,
+      this.questBg,
+      this.questTapeShadow,
+      this.questTapeBg,
+      this.questTagText,
+      this.questText,
+      this.questTimerBadge,
+      this.questTimerText,
+      this.questCelebrationStars
+    ]);
 
     /* ══════════ QTE Timer ══════════ */
     this.qteTimerTxt = this._createSharpText(width / 2, height / 4, '', {
@@ -270,6 +306,7 @@ class UIScene extends Phaser.Scene {
         const on = typeof window.isAnalogActive === 'function' ? window.isAnalogActive() : false;
         this.analogToggleBtnObj.drawBg(on ? 0x39ff14 : 0xffffff);
       }
+      this._updatePetLayout(true);
     });
 
     /* ── Zoom Slider Group ── */
@@ -510,9 +547,9 @@ class UIScene extends Phaser.Scene {
       .setVisible(false);
 
     // Portrait image
-    this.portraitImage = this.add.image(this._boxX + 42, this._boxY - 32, 'player_neutral')
+    this.portraitImage = this.add.image(this._boxX + 75, this._boxY - 116, 'player_neutral')
       .setScrollFactor(1)
-      .setDepth(203)
+      .setDepth(198)
       .setVisible(false);
 
     // Speaker Name Tag (Pink Washi Tape Style)
@@ -660,6 +697,14 @@ class UIScene extends Phaser.Scene {
       this._updateMinimapPlayerPos();
       if (this._largeMapOpen) this._refreshLargeMapMarkers();
     });
+    this.registry.events.on('changedata-dialogueActive', (_, val) => {
+      if (this.petSprite) {
+        this.petSprite.setVisible(!val);
+      }
+    });
+
+    /* ══════════ Pet ECA (bottom-right Screen UI) ══════════ */
+    this._initPet(width, height);
 
     /* ══════════ Initial State ══════════ */
     this._refreshHarmony();
@@ -714,6 +759,9 @@ class UIScene extends Phaser.Scene {
       this._updateLargeMapLayout();
     }
 
+    // Pet ECA
+    this._updatePetLayout();
+
     // Sidebar
     const sidebarBg = this.sidebarContainer.getAt(0);
     sidebarBg.clear();
@@ -730,13 +778,18 @@ class UIScene extends Phaser.Scene {
     // Interact Prompt
     this.interactPrompt.setPosition(width / 2, height - 130);
 
+    // Quest Banner
+    if (this.questContainer) {
+      this.questContainer.setX(width / 2);
+    }
+
     // Dialogue Box
     this._boxW = width - 16;
     this._boxY = height - this._boxH - 4;
 
     this.dialogShadow.setSize(this._boxW, this._boxH).setPosition(this._boxX + 5, this._boxY + 5);
     this.dialogBg.setSize(this._boxW, this._boxH).setPosition(this._boxX, this._boxY);
-    this.portraitImage.setPosition(this._boxX + 42, this._boxY - 32);
+    this._updatePortraitLayout();
     this.speakerTagShadow.setPosition(this._boxX + 14, this._boxY - 14);
     this.speakerTagBg.setPosition(this._boxX + 12, this._boxY - 16);
     this.speakerTxt.setPosition(this._boxX + 18, this._boxY - 12);
@@ -790,30 +843,101 @@ class UIScene extends Phaser.Scene {
       this._questTimerEvent.destroy();
       this._questTimerEvent = null;
     }
+    if (this.questCelebrationStars) {
+      this.questCelebrationStars.removeAll(true).setVisible(false);
+    }
 
     const hasTimer = !!options.hasTimer;
     const durationSec = options.durationSec || 30;
     this._questOnTimeout = options.onTimeout || null;
 
+    const rawText = text || '';
+    let tagStr = '★ MISI AKTIF';
+    let tapeColor = 0xff2e93; // Pink tape
+    let tapeTextColor = '#ffffff';
+
+    if (hasTimer || /BATAS WAKTU/i.test(rawText)) {
+      tagStr = '⏱ BATAS WAKTU';
+      tapeColor = 0xff8a00; // Orange tape
+      tapeTextColor = '#ffffff';
+    } else if (/DARURAT/i.test(rawText)) {
+      tagStr = '🚨 MISI DARURAT';
+      tapeColor = 0xff2e93; // Pink tape
+      tapeTextColor = '#ffffff';
+    } else if (/PROGRES/i.test(rawText) || /\d+\/\d+/.test(rawText)) {
+      tagStr = '★ PROGRES MISI';
+      tapeColor = 0x00e5ff; // Cyan tape
+      tapeTextColor = '#000000';
+    }
+
+    let cleanText = rawText
+      .replace(/^QUEST\s*\([^)]*\)\s*:\s*/i, '')
+      .replace(/^QUEST\s*:\s*/i, '')
+      .replace(/^PROGRES\s*:\s*/i, '')
+      .trim();
+    if (!cleanText) cleanText = rawText;
+
+    const boxW = Math.min(370, Math.max(300, cleanText.length * 7.5 + 40));
+    const boxH = hasTimer ? 58 : 42;
+
+    if (this.questShadow) {
+      this.questShadow.clear()
+        .fillStyle(0x000000, 1)
+        .fillRoundedRect(-boxW / 2 + 4, -boxH / 2 + 4, boxW, boxH, 8);
+    }
+
     if (this.questBg) {
-      this.questBg.clear();
-      if (hasTimer) {
-        this.questBg.fillStyle(0x0f172a, 0.95);
-        this.questBg.fillRoundedRect(-170, -25, 340, 50, 10);
-        this.questBg.lineStyle(1.5, 0xfacc15, 0.9);
-        this.questBg.strokeRoundedRect(-170, -25, 340, 50, 10);
-      } else {
-        this.questBg.fillStyle(0x0f172a, 0.92);
-        this.questBg.fillRoundedRect(-155, -18, 310, 36, 10);
-        this.questBg.lineStyle(1.5, 0x38bdf8, 0.85);
-        this.questBg.strokeRoundedRect(-155, -18, 310, 36, 10);
+      this.questBg.clear()
+        .fillStyle(hasTimer ? 0xfffde6 : 0xfffdf5, 1)
+        .fillRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8)
+        .lineStyle(3, 0x000000, 1)
+        .strokeRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
+    }
+
+    // Top washi tape badge
+    if (this.questTagText) {
+      this.questTagText.setText(tagStr).setColor(tapeTextColor);
+      const tapeW = Math.max(120, this.questTagText.width + 20);
+      const tapeH = 20;
+      const tapeY = -boxH / 2;
+
+      if (this.questTapeShadow) {
+        this.questTapeShadow.clear()
+          .fillStyle(0x000000, 1)
+          .fillRoundedRect(-tapeW / 2 + 2, tapeY - tapeH / 2 + 2, tapeW, tapeH, 4);
       }
+      if (this.questTapeBg) {
+        this.questTapeBg.clear()
+          .fillStyle(tapeColor, 1)
+          .fillRoundedRect(-tapeW / 2, tapeY - tapeH / 2, tapeW, tapeH, 4)
+          .lineStyle(2, 0x000000, 1)
+          .strokeRoundedRect(-tapeW / 2, tapeY - tapeH / 2, tapeW, tapeH, 4);
+      }
+      this.questTagText.setPosition(0, tapeY);
     }
 
     if (hasTimer) {
-      if (this.questText) this.questText.setY(-8).setText(text).setColor('#facc15');
+      if (this.questText) {
+        this.questText.setY(-5)
+          .setText(cleanText)
+          .setColor('#000000')
+          .setStyle({ wordWrap: { width: boxW - 28 } });
+      }
+
+      const drawTimerPill = (color, strokeColor = 0x000000) => {
+        if (!this.questTimerBadge) return;
+        const pillW = 160;
+        const pillH = 18;
+        this.questTimerBadge.clear().setVisible(true)
+          .fillStyle(color, 1).fillRoundedRect(-pillW / 2, 8, pillW, pillH, 9)
+          .lineStyle(1.5, strokeColor, 1).strokeRoundedRect(-pillW / 2, 8, pillW, pillH, 9);
+      };
+      drawTimerPill(0xffe500);
+
       if (this.questTimerText) {
-        this.questTimerText.setVisible(true).setY(10).setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`).setColor('#facc15');
+        this.questTimerText.setVisible(true).setY(17)
+          .setText(`⏱ Sisa Waktu: 00:${durationSec.toString().padStart(2, '0')}`)
+          .setColor('#000000');
       }
 
       let remaining = durationSec;
@@ -826,7 +950,9 @@ class UIScene extends Phaser.Scene {
           if (this.questTimerText) {
             this.questTimerText.setText(`⏱ Sisa Waktu: 00:${secStr}`);
             if (remaining <= 5) {
-              this.questTimerText.setColor('#ef4444');
+              drawTimerPill(0xff2e93);
+              this.questTimerText.setColor('#ffffff');
+              if (navigator.vibrate) navigator.vibrate(60);
             }
           }
           if (remaining <= 0) {
@@ -842,7 +968,13 @@ class UIScene extends Phaser.Scene {
         }
       });
     } else {
-      if (this.questText) this.questText.setY(0).setText(text).setColor('#38bdf8');
+      if (this.questText) {
+        this.questText.setY(2)
+          .setText(cleanText)
+          .setColor('#000000')
+          .setStyle({ wordWrap: { width: boxW - 28 } });
+      }
+      if (this.questTimerBadge) this.questTimerBadge.setVisible(false);
       if (this.questTimerText) this.questTimerText.setVisible(false);
 
       if (options.duration && options.duration > 0) {
@@ -854,11 +986,12 @@ class UIScene extends Phaser.Scene {
 
     if (this.questContainer) {
       this.tweens.killTweensOf(this.questContainer);
-      this.questContainer.setY(-80);
+      this.questContainer.setY(-100).setScale(1).setAngle(-1);
       this.tweens.add({
         targets: this.questContainer,
-        y: 45,
-        duration: 500,
+        y: 50,
+        angle: 0,
+        duration: 450,
         ease: 'Back.easeOut'
       });
     }
@@ -877,29 +1010,111 @@ class UIScene extends Phaser.Scene {
       this._questTimerEvent.destroy();
       this._questTimerEvent = null;
     }
+    if (this.questTimerBadge) this.questTimerBadge.setVisible(false);
     if (this.questTimerText) this.questTimerText.setVisible(false);
 
+    let cleanName = (questName || '')
+      .replace(/^QUEST\s*:\s*/i, '')
+      .replace(/^✓\s*/, '')
+      .trim();
+    if (!cleanName) cleanName = questName || '';
+
+    const boxW = Math.min(370, Math.max(300, cleanName.length * 7.5 + 44));
+    const boxH = 46;
+
+    if (this.questShadow) {
+      this.questShadow.clear()
+        .fillStyle(0x000000, 1)
+        .fillRoundedRect(-boxW / 2 + 4, -boxH / 2 + 4, boxW, boxH, 8);
+    }
+
     if (this.questBg) {
-      this.questBg.clear();
-      this.questBg.fillStyle(0x064e3b, 0.96);
-      this.questBg.fillRoundedRect(-170, -18, 340, 36, 10);
-      this.questBg.lineStyle(2, 0x22c55e, 1);
-      this.questBg.strokeRoundedRect(-170, -18, 340, 36, 10);
+      this.questBg.clear()
+        .fillStyle(0x39ff14, 1) // Neon Lime Green
+        .fillRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8)
+        .lineStyle(3.5, 0x000000, 1)
+        .strokeRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
+    }
+
+    // Top washi tape badge in Sun Yellow
+    if (this.questTagText) {
+      this.questTagText.setText('★ QUEST SELESAI! ★').setColor('#000000');
+      const tapeW = Math.max(135, this.questTagText.width + 20);
+      const tapeH = 20;
+      const tapeY = -boxH / 2;
+
+      if (this.questTapeShadow) {
+        this.questTapeShadow.clear()
+          .fillStyle(0x000000, 1)
+          .fillRoundedRect(-tapeW / 2 + 2, tapeY - tapeH / 2 + 2, tapeW, tapeH, 4);
+      }
+      if (this.questTapeBg) {
+        this.questTapeBg.clear()
+          .fillStyle(0xffe500, 1) // Yellow tape
+          .fillRoundedRect(-tapeW / 2, tapeY - tapeH / 2, tapeW, tapeH, 4)
+          .lineStyle(2, 0x000000, 1)
+          .strokeRoundedRect(-tapeW / 2, tapeY - tapeH / 2, tapeW, tapeH, 4);
+      }
+      this.questTagText.setPosition(0, tapeY);
     }
 
     if (this.questText) {
-      this.questText.setY(0).setColor('#4ade80').setText(`✓ QUEST SELESAI: ${questName}`);
+      this.questText.setY(3)
+        .setColor('#000000')
+        .setText(`✓ ${cleanName}`)
+        .setStyle({ wordWrap: { width: boxW - 28 } });
+    }
+
+    // Celebratory burst particles
+    if (this.questCelebrationStars) {
+      this.questCelebrationStars.removeAll(true).setVisible(true);
+      const starColors = ['#ffe500', '#ff2e93', '#00e5ff', '#ffffff'];
+      for (let i = 0; i < 6; i++) {
+        const rad = (i * 60) * (Math.PI / 180);
+        const dist = 32;
+        const sx = Math.cos(rad) * 40;
+        const sy = Math.sin(rad) * 16;
+        const star = this._createSharpText(sx, sy, '★', {
+          fontFamily: '"GROBOLD", sans-serif',
+          fontSize: '14px',
+          color: starColors[i % starColors.length],
+          stroke: '#000000',
+          strokeThickness: 2
+        }).setOrigin(0.5);
+        this.questCelebrationStars.add(star);
+        this.tweens.add({
+          targets: star,
+          x: sx + Math.cos(rad) * dist,
+          y: sy + Math.sin(rad) * dist,
+          alpha: { from: 1, to: 0 },
+          scale: { from: 1.2, to: 0.4 },
+          duration: 650,
+          ease: 'Cubic.easeOut'
+        });
+      }
     }
 
     if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
 
     if (this.questContainer) {
       this.tweens.killTweensOf(this.questContainer);
+      this.questContainer.setY(50).setScale(0.7).setAngle(-2);
       this.tweens.add({
         targets: this.questContainer,
-        y: 45,
-        duration: 400,
-        ease: 'Back.easeOut'
+        scaleX: 1.08,
+        scaleY: 1.08,
+        angle: 1,
+        duration: 250,
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          this.tweens.add({
+            targets: this.questContainer,
+            scaleX: 1,
+            scaleY: 1,
+            angle: 0,
+            duration: 150
+          });
+        }
       });
     }
 
@@ -921,9 +1136,16 @@ class UIScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.questContainer);
     this.tweens.add({
       targets: this.questContainer,
-      y: -80,
-      duration: 400,
-      ease: 'Power2'
+      y: -100,
+      scaleX: 0.9,
+      scaleY: 0.9,
+      duration: 350,
+      ease: 'Back.easeIn',
+      onComplete: () => {
+        if (this.questCelebrationStars) {
+          this.questCelebrationStars.removeAll(true).setVisible(false);
+        }
+      }
     });
   }
 
@@ -1011,10 +1233,26 @@ class UIScene extends Phaser.Scene {
 
     this.dialogText.setVisible(true).setText(textStr);
 
-    if (node.portrait) {
-      this.portraitImage.setTexture(node.portrait).setVisible(true);
+    const isECA = speakerName.trim().toUpperCase() === 'ECA';
+    if (node.portrait && !isECA) {
+      let portraitKey = node.portrait;
+      // Handle fallback if key is just character name
+      if (!this.textures.exists(portraitKey)) {
+        if (this.textures.exists(`${portraitKey}_neutral`)) {
+          portraitKey = `${portraitKey}_neutral`;
+        }
+      }
+
+      if (this.textures.exists(portraitKey)) {
+        this.portraitImage.setTexture(portraitKey).setVisible(true);
+        this._updatePortraitPosition(portraitKey);
+      } else {
+        this.portraitImage.setVisible(false);
+        this._resetSpeakerTagPosition();
+      }
     } else {
       this.portraitImage.setVisible(false);
+      this._resetSpeakerTagPosition();
     }
 
     // ── Render option buttons: CARDS if dialogue width is long, full-width rows if short ──
@@ -1219,6 +1457,7 @@ class UIScene extends Phaser.Scene {
     this.speakerTxt.setVisible(false);
     this.dialogText.setVisible(false);
     this.portraitImage.setVisible(false);
+    this._resetSpeakerTagPosition();
     this.continueText.setVisible(false);
     this.optionButtons.forEach(opt => {
       opt.container.setVisible(false);
@@ -1255,6 +1494,91 @@ class UIScene extends Phaser.Scene {
 
     if (lastNode && lastNode.onCloseAction) {
       this.registry.events.emit('dialogue_action', lastNode.onCloseAction);
+    }
+  }
+
+  /* ══════════ Dialogue Portrait Layout & Positioning ══════════ */
+  _updatePortraitPosition(portraitKey) {
+    if (!this.portraitImage || !this.portraitImage.visible) return;
+
+    const tex = this.textures.get(portraitKey);
+    const srcImg = tex ? tex.getSourceImage() : null;
+    const isDetailed = srcImg && srcImg.height >= 120;
+
+    if (isDetailed) {
+      // Detailed character bust (149x200 or 122x160)
+      // Rendered at depth 198 (behind cardboard dialog box depth 200 so lower body is cleanly framed!)
+      const isAntagonist = portraitKey.startsWith('bagas') || portraitKey.startsWith('bully');
+      
+      // Scale: 2.25x (0.75 of previous 3x, responsive to available height)
+      const headToWaistH = isAntagonist ? 93 : 104;
+      const availableH = Math.max(80, this._boxY - 8);
+      const portraitScale = Math.min(2.25, Math.max(1.4, availableH / headToWaistH));
+
+      this.portraitImage
+        .setDepth(198)
+        .setScale(portraitScale)
+        .setOrigin(0.5, 0);
+
+      if (isAntagonist) {
+        // Antagonist / Bully on the RIGHT side, naturally facing left into the conversation
+        // Visual width of Bagas at portraitScale is ~56 * portraitScale
+        const targetX = Math.round(this._boxX + this._boxW - (25 + 28 * portraitScale));
+        // Align Bagas waistline (y=103) with the top rim of the dialogue box
+        const targetY = Math.round(this._boxY - (103 * portraitScale));
+        this.portraitImage.setPosition(targetX, targetY).setFlipX(false);
+
+        // Speaker tag stays on the left
+        this._resetSpeakerTagPosition();
+      } else {
+        // Protagonist (Nakula, Player) & Nabula on the LEFT side, naturally facing right into dialogue
+        // Visual width of Nakula/Nabula at portraitScale is ~59 * portraitScale
+        const targetX = Math.round(this._boxX + (20 + 30 * portraitScale));
+        // Align Nakula/Nabula waistline (y=116) with top rim of dialogue box
+        const targetY = Math.round(this._boxY - (116 * portraitScale));
+        this.portraitImage.setPosition(targetX, targetY).setFlipX(false);
+
+        // Position speaker tag to the right of the character bust
+        const tagX = Math.round(targetX + (30 * portraitScale) + 12);
+        this.speakerTagShadow.setX(tagX + 2);
+        this.speakerTagBg.setX(tagX);
+        this.speakerTxt.setX(tagX + 6);
+      }
+    } else {
+      // 64x64 Placeholder or small portrait
+      this.portraitImage
+        .setDepth(203)
+        .setScale(1)
+        .setOrigin(0.5, 0.5)
+        .setPosition(this._boxX + 42, this._boxY - 32)
+        .setFlipX(false);
+
+      const tagX = this._boxX + 78;
+      this.speakerTagShadow.setX(tagX + 2);
+      this.speakerTagBg.setX(tagX);
+      this.speakerTxt.setX(tagX + 6);
+    }
+  }
+
+  _resetSpeakerTagPosition() {
+    if (!this.speakerTagBg) return;
+    this.speakerTagShadow.setX(this._boxX + 14);
+    this.speakerTagBg.setX(this._boxX + 12);
+    this.speakerTxt.setX(this._boxX + 18);
+  }
+
+  _updatePortraitLayout() {
+    if (this._currentDialogueNode) {
+      const allDialogues = Object.assign({}, window.DIALOGUES || {}, window.LEVEL_1_DIALOGUES || {});
+      const node = allDialogues[this._currentDialogueNode];
+      const lang = this.registry.get('lang') || 'id';
+      const speakerName = (typeof node?.speaker === 'object' ? node.speaker[lang] : node?.speaker) || '';
+      const isECA = speakerName.trim().toUpperCase() === 'ECA';
+      if (node && node.portrait && !isECA) {
+        this._updatePortraitPosition(node.portrait);
+      } else {
+        this._resetSpeakerTagPosition();
+      }
     }
   }
 
@@ -1700,6 +2024,64 @@ class UIScene extends Phaser.Scene {
     this.mapHintTxt.setPosition(width - 64, 90);
 
     this._updateMinimapPlayerPos();
+  }
+
+  /* ══════════ Pet ECA System ══════════ */
+  _isAnalogActive() {
+    if (typeof window.isAnalogActive === 'function') {
+      return window.isAnalogActive();
+    }
+    if (typeof document !== 'undefined' && document.body) {
+      if (document.body.classList.contains('analog-enabled')) return true;
+      if (document.body.classList.contains('analog-disabled')) return false;
+      return document.body.classList.contains('mobile-active');
+    }
+    return false;
+  }
+
+  _initPet(width, height) {
+    this.petSprite = this.add.image(0, 0, 'eca_pet')
+      .setOrigin(0.5, 1)
+      .setScrollFactor(1)
+      .setDepth(150);
+
+    if (this.petSprite.texture) {
+      this.petSprite.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+
+    this._updatePetLayout(false);
+
+    if (this.registry.get('dialogueActive')) {
+      this.petSprite.setVisible(false);
+    }
+  }
+
+  _updatePetLayout(animate = false) {
+    if (!this.petSprite) return;
+    const width = this._effWidth;
+    const height = this._effHeight;
+    const isAnalog = this._isAnalogActive();
+
+    // When analog is active, #btn-action is at bottom: 44px, right: 36px, width: 78px, height: 78px.
+    // Center of button is at 75px from right (36 + 78/2).
+    // Top of button is at 122px from bottom (44 + 78), plus 14px gap = 136px.
+    // ECA is placed directly ABOVE the action button.
+    // When analog is inactive, ECA sits at the bottom right corner (14px margin from right & bottom).
+    const targetX = isAnalog ? (width - Math.round(75 / this.uiZoom)) : (width - 14 - 23);
+    const targetY = isAnalog ? (height - Math.ceil(136 / this.uiZoom)) : (height - 14);
+
+    if (animate && this.tweens) {
+      this.tweens.killTweensOf(this.petSprite);
+      this.tweens.add({
+        targets: this.petSprite,
+        x: targetX,
+        y: targetY,
+        duration: 220,
+        ease: 'Cubic.easeOut'
+      });
+    } else {
+      this.petSprite.setPosition(targetX, targetY);
+    }
   }
 
   _initLargeMapModal() {

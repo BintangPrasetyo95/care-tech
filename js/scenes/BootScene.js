@@ -82,6 +82,71 @@ class BootScene extends Phaser.Scene {
 
     // Overall school map
     this.load.image('overall_map', 'assets/sprites/overall_maps_new.png');
+
+    // Pet ECA
+    this.load.image('eca_pet', 'assets/sprites/characters/eca.png');
+    this.load.image('eca', 'assets/sprites/characters/eca.png');
+
+    /* ── Detailed Character Portraits for Dialogue ── */
+    const detailedPortraits = {
+      // Bagas
+      'bagas_neutral': 'assets/sprites/characters/detailed/bagas/bagas.png',
+      'bagas_angry': 'assets/sprites/characters/detailed/bagas/bagas_angry.png',
+      'bagas_dissapointed': 'assets/sprites/characters/detailed/bagas/bagas_dissapointed.png',
+      'bagas_disappointed': 'assets/sprites/characters/detailed/bagas/bagas_dissapointed.png',
+      'bagas_furious': 'assets/sprites/characters/detailed/bagas/bagas_furious.png',
+      'bagas_happy': 'assets/sprites/characters/detailed/bagas/bagas_happy.png',
+      'bagas_regret': 'assets/sprites/characters/detailed/bagas/bagas_regret.png',
+      'bagas_sarcasm': 'assets/sprites/characters/detailed/bagas/bagas_sarcasm.png',
+      'bagas_smirk': 'assets/sprites/characters/detailed/bagas/bagas_smirk.png',
+      'bagas_surprised': 'assets/sprites/characters/detailed/bagas/bagas_surprised.png',
+      // Bully aliases to Bagas
+      'bully_neutral': 'assets/sprites/characters/detailed/bagas/bagas.png',
+      'bully_smirk': 'assets/sprites/characters/detailed/bagas/bagas_smirk.png',
+      'bully_angry': 'assets/sprites/characters/detailed/bagas/bagas_angry.png',
+
+      // Nabula
+      'nabula_neutral': 'assets/sprites/characters/detailed/nabula/nabula.png',
+      'nabula_angry': 'assets/sprites/characters/detailed/nabula/nabula_angry.png',
+      'nabula_dissapointed': 'assets/sprites/characters/detailed/nabula/nabula_dissapointed.png',
+      'nabula_disappointed': 'assets/sprites/characters/detailed/nabula/nabula_dissapointed.png',
+      'nabula_excited': 'assets/sprites/characters/detailed/nabula/nabula_excited.png',
+      'nabula_happy': 'assets/sprites/characters/detailed/nabula/nabula_happy.png',
+      'nabula_panic': 'assets/sprites/characters/detailed/nabula/nabula_panic.png',
+      'nabula_sad': 'assets/sprites/characters/detailed/nabula/nabula_sad.png',
+      'nabula_smile': 'assets/sprites/characters/detailed/nabula/nabula_happy.png',
+      'nabula_surprised': 'assets/sprites/characters/detailed/nabula/nabula_panic.png',
+      'nabula_worried': 'assets/sprites/characters/detailed/nabula/nabula_sad.png',
+
+      // Nakula
+      'nakula_neutral': 'assets/sprites/characters/detailed/nakula/nakula_neutral.png',
+      'nakula_angry': 'assets/sprites/characters/detailed/nakula/nakula_angry.png',
+      'nakula_dissapointed': 'assets/sprites/characters/detailed/nakula/nakula_dissapointed.png',
+      'nakula_disappointed': 'assets/sprites/characters/detailed/nakula/nakula_dissapointed.png',
+      'nakula_excited': 'assets/sprites/characters/detailed/nakula/nakula_excited.png',
+      'nakula_happy': 'assets/sprites/characters/detailed/nakula/nakula_happy.png',
+      'nakula_relieved': 'assets/sprites/characters/detailed/nakula/nakula_relieved.png',
+      'nakula_sad': 'assets/sprites/characters/detailed/nakula/nakula_sad.png',
+      'nakula_weirded': 'assets/sprites/characters/detailed/nakula/nakula_weirded.png',
+
+      // Player aliases to Nakula
+      'player_neutral': 'assets/sprites/characters/detailed/nakula/nakula_neutral.png',
+      'player_happy': 'assets/sprites/characters/detailed/nakula/nakula_happy.png',
+      'player_sad': 'assets/sprites/characters/detailed/nakula/nakula_sad.png',
+      'player_angry': 'assets/sprites/characters/detailed/nakula/nakula_angry.png',
+      'player_serious': 'assets/sprites/characters/detailed/nakula/nakula_neutral.png',
+      'player_surprised': 'assets/sprites/characters/detailed/nakula/nakula_excited.png',
+      'player_worried': 'assets/sprites/characters/detailed/nakula/nakula_sad.png',
+      'player_relief': 'assets/sprites/characters/detailed/nakula/nakula_relieved.png',
+      'player_relieved': 'assets/sprites/characters/detailed/nakula/nakula_relieved.png',
+      'player_disappointed': 'assets/sprites/characters/detailed/nakula/nakula_dissapointed.png',
+      'player_dissapointed': 'assets/sprites/characters/detailed/nakula/nakula_dissapointed.png',
+      'player_weirded': 'assets/sprites/characters/detailed/nakula/nakula_weirded.png',
+    };
+
+    Object.entries(detailedPortraits).forEach(([key, path]) => {
+      this.load.image(key, path);
+    });
   }
 
   create() {
@@ -154,7 +219,10 @@ class BootScene extends Phaser.Scene {
 
     ['player', 'nabula', 'bagas', 'rio', 'wulan', 'raya', 'mei', 'wati', 'riko', 'rani', 'bully', 'student'].forEach(char => {
       ['neutral', 'happy', 'sad', 'smile', 'surprised', 'smirk', 'angry', 'serious', 'worried', 'relief'].forEach(emotion => {
-        makePortrait(`${char}_${emotion}`, portraitColors[char]);
+        const key = `${char}_${emotion}`;
+        if (!this.textures.exists(key)) {
+          makePortrait(key, portraitColors[char]);
+        }
       });
     });
 
