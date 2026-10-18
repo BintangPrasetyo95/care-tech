@@ -86,7 +86,7 @@ Object.assign(DIALOGUES, {
 
   corridor_eca_react: {
     speaker : { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text    : { 
       en: 'Nakula! Did you see that?! Nabula was so overwhelmed she ran out into the schoolyard toward the library. Let\'s go after her through the library\'s main entrance across the yard!', 
       id: 'Nakula! Kamu lihat itu kan?! Nabula sampai lari keluar ke lapangan menuju perpustakaan. Ayo cepat kita susul dia lewat pintu utama perpustakaan di seberang lapangan!' 

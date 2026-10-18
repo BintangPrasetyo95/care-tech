@@ -25,7 +25,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_003_eca: {
     id: '003',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: 'Wait... someone looks like they are holding back tears over there.',
       id: 'Eh, tunggu... sepertinya ada yang lagi menahan tangis di sana.'
@@ -37,7 +37,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_004_choice: {
     id: '004',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca',
     text: {
       en: 'What should we do?',
       id: 'Apa yang harus kita lakukan?'
@@ -107,7 +107,7 @@ window.LEVEL_1_DIALOGUES = {
   'lvl1_005b_4': {
     id: '005b-4',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: 'Nakula... look, Nabula is still there. I can\'t stop thinking about her.',
       id: 'Nakula... coba lihat deh, Nabula masih di sana. Aku jadi kepikiran terus, nih.'
@@ -117,7 +117,7 @@ window.LEVEL_1_DIALOGUES = {
   'lvl1_005b_6': {
     id: '005b-6',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: 'Should we go back and help her?',
       id: 'Apakah kita mau kembali membantunya?'
@@ -153,7 +153,7 @@ window.LEVEL_1_DIALOGUES = {
   'lvl1_005b_9b_eca': {
     id: '005b-9b',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: 'Nakula... Nabula entered the library. Let\'s go after her before it\'s too late!',
       id: 'Nakula... Nabula masuk ke perpustakaan. Yuk, susul dia sebelum terlambat!'
@@ -176,7 +176,7 @@ window.LEVEL_1_DIALOGUES = {
   'lvl1_005b_12_eca': {
     id: '005b-12',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: 'It\'s okay, Nakula. Sometimes we realize too late that a friend needs help. But tomorrow, we still have another chance to try again.',
       id: 'Nggak apa-apa, Nakula. Kadang kita telat sadar kalau teman butuh bantuan. Tapi besok, kita masih punya kesempatan buat coba lagi.'
@@ -198,7 +198,7 @@ window.LEVEL_1_DIALOGUES = {
   'lvl1_005c_2': {
     id: '005c-2',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_confused',
     text: {
       en: 'Hmm... are you sure? Even from here, she clearly looks like she\'s holding back tears. Won\'t you regret leaving her alone?',
       id: 'Hmm... yakin? Soalnya dari sini aja kelihatan dia nahan tangis, lho. Nyesel nggak, kalau kita biarin aja?'
@@ -354,7 +354,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_023_eca: {
     id: '023',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: '"Wait, hold on! I\'m upset hearing them talk like that too. But if we confront them right now, it might make things worse. How about we find out what\'s really going on with Nabula first?"',
       id: '"Eh, tunggu dulu! Aku juga kesel, lho, denger mereka ngomong gitu. Tapi kalau kita samperin sekarang, takutnya malah tambah runyam. Gimana kalau kita cari tahu dulu apa yang sebenarnya terjadi sama Nabula?"'
@@ -399,7 +399,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_029_eca: {
     id: '029',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: '"Hmm, this doesn\'t look like an accident. Look, the tears are so neat, only on the parts with handwriting."',
       id: '"Hmm, ini kayaknya bukan robek karena kecelakaan, deh. Coba lihat, robekannya rapi banget, cuma di bagian yang ada tulisannya."'
@@ -519,7 +519,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_045_eca: {
     id: '045',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: '"Three places, three incidents. This isn\'t a misunderstanding, it\'s a pattern."',
       id: '"Tiga tempat, tiga kejadian. Ini bukan salah paham, ini pola."'
@@ -647,7 +647,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_057_eca: {
     id: '057',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca',
     text: {
       en: '"Now you see for yourself, right? Nabula really is being bullied."',
       id: '"Nah, sekarang kamu lihat sendiri, kan? Nabula beneran lagi diganggu."'
@@ -658,7 +658,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_057b_eca: {
     id: '057b',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: '"Before making a choice, pause for a moment. If we do something right now, what might happen to Nabula? And to us?"',
       id: '"Sebelum memilih, coba berhenti sebentar. Kalau kita lakukan sesuatu sekarang, apa yang mungkin terjadi pada Nabula? Dan pada kita?"'
@@ -721,7 +721,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_058x_2_eca: {
     id: '058x-2',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: '"Nakula? Calm down, no need to rush. Think: who can help Nabula right now?" (-15 Harmony)',
       id: '"Eh, Nakula? Tenang, nggak perlu buru-buru. Coba pikirkan dulu: siapa yang bisa bantu Nabula sekarang?" (-15 Harmoni)'
@@ -756,7 +756,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_058x_7_eca: {
     id: '058x-7',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: '"Nakula, this is our last chance. Hurry, follow Nabula to the garden before it\'s too late!"',
       id: '"Nakula, ini kesempatan terakhir. Cepat susul Nabula ke taman sebelum terlambat!"'
@@ -780,7 +780,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_058x_12_eca: {
     id: '058x-12',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_panic',
     text: {
       en: '"It\'s okay, Nakula. Sometimes we are late to make a decision. But tomorrow, we still have another chance to try again."',
       id: '"Nggak apa-apa, Nakula. Kadang kita emang telat ambil keputusan. Tapi besok, kita masih punya kesempatan buat coba lagi."'
@@ -907,7 +907,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_059a_12_eca: {
     id: '059a-12',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You were really brave just now. But the problem might not be over yet. Let\'s make sure to tell Bu Wati later, so an adult can help keep watch."',
       id: '"Kamu berani banget tadi. Tapi masalahnya belum tentu selesai. Nanti kita ceritakan juga ke Bu Wati, ya, supaya ada orang dewasa yang ikut menjaga."'
@@ -1234,7 +1234,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_059c_17_eca: {
     id: '059c-17',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca',
     text: {
       en: '"Hey, I agree with Nakula. Reporting doesn\'t mean making the problem bigger, in fact it\'s one of the safest ways for you."',
       id: '"Eh, aku setuju sama Nakula. Melapor itu bukan berarti bikin masalah makin besar, kok, justru itu salah satu cara paling aman buat kamu."'
@@ -1371,7 +1371,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_060c_eca: {
     id: '060c',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_thinking',
     text: {
       en: '"Sometimes a friend who knows something is also scared to speak up. That\'s natural. We can\'t force them, but we can show that we\'re ready to listen."',
       id: '"Kadang teman yang tahu sesuatu juga takut buat bicara. Itu wajar, lho. Kita nggak bisa maksa, tapi kita bisa tunjukin kalau kita siap mendengarkan."'
@@ -1384,7 +1384,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_061a_eca: {
     id: '061a',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You were really brave to speak up directly to them earlier. This method is quick and assertive, but can carry risks if they get angry. That\'s why adults still need to help look out for Nabula."',
       id: '"Tadi kamu berani banget langsung bicara ke mereka. Cara ini cepat dan tegas, tapi bisa berisiko kalau mereka malah marah. Makanya orang dewasa tetap perlu ikut menjaga Nabula."'
@@ -1394,7 +1394,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_061b_eca: {
     id: '061b',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You went straight to get an adult\'s help earlier. That\'s awesome. This method is safer, though it takes time for adults to step in. Knowing when to ask for help is also a form of courage."',
       id: '"Kamu langsung cari bantuan orang dewasa tadi. Itu keren, lho. Cara ini lebih aman, tapi butuh waktu sampai orang dewasa bertindak. Tahu kapan harus minta tolong juga bentuk keberanian."'
@@ -1404,7 +1404,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_061b_x_eca: {
     id: '061b-x',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_confused',
     text: {
       en: '"Hesitated for a moment earlier, huh? It\'s okay, what matters is you ultimately still sought help for Nabula. Next time, try to believe in yourself more."',
       id: '"Sempat ragu tadi, ya? Nggak apa-apa, yang penting akhirnya kamu tetap nyari bantuan buat Nabula. Lain kali, coba lebih percaya sama diri sendiri."'
@@ -1414,7 +1414,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_061c_eca: {
     id: '061c',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You listened to Nabula first before taking action earlier. She felt accompanied, but the problem hasn\'t stopped on its own, so adult support remains vital. I like your way."',
       id: '"Kamu dengerin Nabula dulu sebelum bertindak tadi. Dia merasa ditemani, tapi masalahnya belum berhenti sendiri, jadi bantuan orang dewasa tetap penting. Aku suka caramu."'
@@ -1424,7 +1424,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_061c_x_eca: {
     id: '061c-x',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_confused',
     text: {
       en: '"You were a bit confused about what to do earlier, but in the end you still approached Nabula. That\'s also an effort, even if a little late."',
       id: '"Tadi kamu sempat bingung harus ngapain, tapi akhirnya kamu tetap nyamperin Nabula. Itu juga bentuk usaha, lho, biarpun telat dikit."'
@@ -1434,7 +1434,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_062_eca: {
     id: '062',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"Peluk atau berikan dukungan hangat untuk teman yang sedang sedih. Terima kasih sudah belajar menjadi teman yang peduli hari ini!"',
       id: '"Peluk atau berikan dukungan hangat untuk teman yang sedang sedih. Terima kasih sudah belajar menjadi teman yang peduli hari ini!"'
@@ -1467,7 +1467,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_064a_eca: {
     id: '064a-1',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You were brave enough to speak up directly. Want to continue or try another way?"',
       id: '"Kamu sudah berani bicara langsung. Mau lanjut atau coba cara lain?"'
@@ -1478,7 +1478,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_064b_eca: {
     id: '064b-1',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You reported to an adult. Awesome! Want to continue or try another way?"',
       id: '"Kamu sudah melapor ke orang dewasa. Hebat! Mau lanjut atau coba cara lain?"'
@@ -1489,7 +1489,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_064c_eca: {
     id: '064c-1',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca_excited',
     text: {
       en: '"You listened to Nabula first. Very cool! Want to continue or try another way?"',
       id: '"Kamu sudah mendengarkan Nabula dulu. Keren! Mau lanjut atau coba cara lain?"'
@@ -1500,7 +1500,7 @@ window.LEVEL_1_DIALOGUES = {
   lvl1_064x_eca: {
     id: '064x-1',
     speaker: { en: 'ECA', id: 'ECA' },
-    portrait: null,
+    portrait: 'eca',
     text: {
       en: '"You\'ve tried to help Nabula, and that matters. Let\'s try again and pay close attention to signs when a friend needs you!"',
       id: '"Kamu sudah berusaha menolong Nabula, dan itu penting. Yuk, coba lagi dan perhatikan tanda-tanda saat teman butuh kamu!"'
