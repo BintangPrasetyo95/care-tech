@@ -1240,8 +1240,7 @@ class UIScene extends Phaser.Scene {
 
     this.dialogText.setVisible(true).setText(textStr);
 
-    const isECA = speakerName.trim().toUpperCase() === 'ECA';
-    if (node.portrait && !isECA) {
+    if (node.portrait) {
       let portraitKey = node.portrait;
       // Handle fallback if key is just character name
       if (!this.textures.exists(portraitKey)) {
@@ -1534,17 +1533,19 @@ class UIScene extends Phaser.Scene {
 
     const tex = this.textures.get(portraitKey);
     const srcImg = tex ? tex.getSourceImage() : null;
-    const isDetailed = srcImg && srcImg.height >= 120;
+    const isECA = portraitKey.startsWith('eca');
+    const isDetailed = srcImg && (srcImg.height >= 90 || isECA);
 
     if (isDetailed) {
-      // Detailed character bust (149x200 or 122x160)
+      // Detailed character bust (149x200, 122x160, or ECA 69x96 / 80x108)
       // Rendered at depth 198 (behind cardboard dialog box depth 200 so lower body is cleanly framed!)
       const isAntagonist = portraitKey.startsWith('bagas') || portraitKey.startsWith('bully');
       
-      // Scale: 2.25x (0.75 of previous 3x, responsive to available height)
-      const headToWaistH = isAntagonist ? 93 : 104;
+      // Scale calculation responsive to available height
+      const headToWaistH = isECA ? 56 : (isAntagonist ? 93 : 104);
       const availableH = Math.max(80, this._boxY - 8);
-      const portraitScale = Math.min(2.25, Math.max(1.4, availableH / headToWaistH));
+      const maxScale = isECA ? 2.3 : 2.25;
+      const portraitScale = Math.min(maxScale, Math.max(1.4, availableH / headToWaistH));
 
       this.portraitImage
         .setDepth(198)
@@ -1562,15 +1563,20 @@ class UIScene extends Phaser.Scene {
         // Speaker tag stays on the left
         this._resetSpeakerTagPosition();
       } else {
-        // Protagonist (Nakula, Player) & Nabula on the LEFT side, naturally facing right into dialogue
-        // Visual width of Nakula/Nabula at portraitScale is ~59 * portraitScale
-        const targetX = Math.round(this._boxX + (20 + 30 * portraitScale));
-        // Align Nakula/Nabula waistline (y=116) with top rim of dialogue box
-        const targetY = Math.round(this._boxY - (116 * portraitScale));
+        // Protagonist (Nakula, Player), Nabula, or ECA on the LEFT side, naturally facing right into dialogue
+        // Visual width: Nakula/Nabula ~30 half-width, ECA ~24 half-width
+        const halfW = isECA ? 24 : 30;
+        const targetX = Math.round(this._boxX + (20 + halfW * portraitScale));
+
+        // Align waistline/feet with top rim of dialogue box:
+        // Nakula/Nabula: waistline y=116
+        // ECA: mascot standing proudly on top of dialogue box (waistY=88, or 100 for jumping excited pose)
+        const waistY = isECA ? (portraitKey === 'eca_excited' ? 100 : 88) : 116;
+        const targetY = Math.round(this._boxY - (waistY * portraitScale));
         this.portraitImage.setPosition(targetX, targetY).setFlipX(false);
 
         // Position speaker tag to the right of the character bust
-        const tagX = Math.round(targetX + (30 * portraitScale) + 12);
+        const tagX = Math.round(targetX + (halfW * portraitScale) + 12);
         this.speakerTagShadow.setX(tagX + 2);
         this.speakerTagBg.setX(tagX);
         this.speakerTxt.setX(tagX + 6);
@@ -1602,10 +1608,7 @@ class UIScene extends Phaser.Scene {
     if (this._currentDialogueNode) {
       const allDialogues = Object.assign({}, window.DIALOGUES || {}, window.LEVEL_1_DIALOGUES || {});
       const node = allDialogues[this._currentDialogueNode];
-      const lang = this.registry.get('lang') || 'id';
-      const speakerName = (typeof node?.speaker === 'object' ? node.speaker[lang] : node?.speaker) || '';
-      const isECA = speakerName.trim().toUpperCase() === 'ECA';
-      if (node && node.portrait && !isECA) {
+      if (node && node.portrait) {
         this._updatePortraitPosition(node.portrait);
       } else {
         this._resetSpeakerTagPosition();

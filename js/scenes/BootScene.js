@@ -85,10 +85,21 @@ class BootScene extends Phaser.Scene {
 
     // Pet ECA
     this.load.image('eca_pet', 'assets/sprites/characters/eca.png');
-    this.load.image('eca', 'assets/sprites/characters/eca.png');
 
     /* ── Detailed Character Portraits for Dialogue ── */
     const detailedPortraits = {
+      // ECA (Detailed interactive companion & guide)
+      'eca': 'assets/sprites/characters/detailed/eca/eca.png',
+      'eca_neutral': 'assets/sprites/characters/detailed/eca/eca.png',
+      'eca_thinking': 'assets/sprites/characters/detailed/eca/eca_thinking.png',
+      'eca_confused': 'assets/sprites/characters/detailed/eca/eca_confused.png',
+      'eca_panic': 'assets/sprites/characters/detailed/eca/eca_panic.png',
+      'eca_excited': 'assets/sprites/characters/detailed/eca/eca_excited.png',
+      // ECA aliases
+      'eca_happy': 'assets/sprites/characters/detailed/eca/eca_excited.png',
+      'eca_sad': 'assets/sprites/characters/detailed/eca/eca_panic.png',
+      'eca_worried': 'assets/sprites/characters/detailed/eca/eca_panic.png',
+
       // Bagas
       'bagas_neutral': 'assets/sprites/characters/detailed/bagas/bagas.png',
       'bagas_angry': 'assets/sprites/characters/detailed/bagas/bagas_angry.png',
