@@ -115,13 +115,15 @@ void initI2SSpeaker() {
     .channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
     .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
-    .dma_buf_count        = 6,
-    .dma_buf_len          = 128,
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 256,
     .use_apll             = false,
-    .tx_desc_auto_clear   = true
+    .tx_desc_auto_clear   = true,
+    .fixed_mclk           = 0
   };
 
   i2s_pin_config_t pin_config = {
+    .mck_io_num   = I2S_PIN_NO_CHANGE,
     .bck_io_num   = I2S_SPK_BCLK,
     .ws_io_num    = I2S_SPK_LRC,
     .data_out_num = I2S_SPK_DIN,
@@ -329,12 +331,15 @@ void initI2SMic() {
     .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
     .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
-    .dma_buf_count        = 4,
-    .dma_buf_len          = 128,
-    .use_apll             = false
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 256,
+    .use_apll             = false,
+    .tx_desc_auto_clear   = false,
+    .fixed_mclk           = 0
   };
 
   i2s_pin_config_t pin_config = {
+    .mck_io_num   = I2S_PIN_NO_CHANGE,
     .bck_io_num   = I2S_MIC_SCK,
     .ws_io_num    = I2S_MIC_WS,
     .data_out_num = I2S_PIN_NO_CHANGE,
@@ -345,9 +350,12 @@ void initI2SMic() {
   i2s_set_pin(I2S_MIC_PORT, &pin_config);
 }
 
+// Filter DC-blocker (high-pass) agar offset mic tidak merusak pembacaan audio
+static float micDcPrevIn = 0, micDcPrevOut = 0;
+
 // Membaca level RMS mikrofon INMP441 secara real-time
 int readMicLevel() {
-  int32_t samples[64];
+  int32_t samples[128];
   size_t bytesRead = 0;
   i2s_read(I2S_MIC_PORT, samples, sizeof(samples), &bytesRead, 10);
 
@@ -356,10 +364,22 @@ int readMicLevel() {
   int count = bytesRead / sizeof(int32_t);
   long long sumSquare = 0;
   for (int i = 0; i < count; i++) {
-    int16_t sample16 = samples[i] >> 14; // Normalisasi ke 16-bit dengan penguatan 4x
-    sumSquare += (long long)sample16 * sample16;
+    // INMP441: data 24-bit rata kiri di dalam frame 32-bit -> ambil 16-bit teratas
+    float x = (float)(samples[i] >> 16);
+
+    // DC blocker
+    float y = x - micDcPrevIn + 0.995f * micDcPrevOut;
+    micDcPrevIn = x;
+    micDcPrevOut = y;
+
+    int32_t s = (int32_t)(y * 2);
+    if (abs(s) < 60) s = 0;
+    if (s > 32767)  s = 32767;
+    if (s < -32768) s = -32768;
+
+    sumSquare += (long long)s * s;
   }
-  return (int)sqrt(sumSquare / count);
+  return count > 0 ? (int)sqrt(sumSquare / count) : 0;
 }
 
 // Deteksi Aktivitas Suara (VAD), Barge-in, & Pelaporan ke Web
@@ -464,30 +484,37 @@ void createWavHeader8Bit(uint8_t* header, uint32_t numSamples, uint32_t sampleRa
   header[43] = (uint8_t)((numSamples >> 24) & 0xFF);
 }
 
-// Rekam suara dari INMP441 secara dinamis (hingga 5-6 detik) dengan Smart VAD & Auto-Cut jeda hening
-void recordAndStreamAudio(int durationSeconds = 5, const char* context = "chat", bool loopbackToSpeaker = false) {
-  if (durationSeconds < 2) durationSeconds = 2;
-  if (durationSeconds > 6) durationSeconds = 6;
+// Rekam suara dari INMP441 dengan sistem TOGGLE murni (Hidupkan & Matikan manual)
+void recordAndStreamAudio(int durationSeconds = 15, const char* context = "chat", bool loopbackToSpeaker = false) {
+  // Hitung target kapasitas buffer (8kHz mono 8-bit = 8000 bytes/detik)
+  if (durationSeconds <= 0) durationSeconds = 15;
+  if (durationSeconds > 15) durationSeconds = 15;
 
-  int allocatedSeconds = durationSeconds;
-  int totalSamples8k = 8000 * allocatedSeconds;
-  uint8_t* wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
+  int targetSamples = durationSeconds * 8000;
 
-  // Alokasi bertingkat (tiered fallback) untuk menjamin stabilitas RAM ESP32
-  if (!wavBuffer && allocatedSeconds > 4) {
-    allocatedSeconds = 4;
-    totalSamples8k = 8000 * allocatedSeconds;
-    wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
+  // Periksa sisa heap kontigu ESP32 dengan batas aman sistem
+  size_t maxAlloc = ESP.getMaxAllocHeap();
+  size_t safeTarget = (maxAlloc > 8192) ? (maxAlloc - 8192) : 16000;
+  if (targetSamples > (int)safeTarget) {
+    targetSamples = (int)safeTarget;
   }
-  if (!wavBuffer && allocatedSeconds > 3) {
-    allocatedSeconds = 3;
-    totalSamples8k = 8000 * allocatedSeconds;
-    wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
-  }
-  if (!wavBuffer && allocatedSeconds > 2) {
-    allocatedSeconds = 2;
-    totalSamples8k = 8000 * allocatedSeconds;
-    wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
+
+  // Alokasi buffer audio dengan fallback bertingkat (15s -> 12s -> 10s -> 8s -> 6s -> 4s -> 2s)
+  int totalSamples8k = targetSamples;
+  uint8_t* wavBuffer = nullptr;
+
+  const int sampleTiers[] = { targetSamples, 96000, 80000, 64000, 48000, 32000, 16000 };
+  int numTiers = sizeof(sampleTiers) / sizeof(sampleTiers[0]);
+
+  for (int t = 0; t < numTiers; t++) {
+    int trySamples = sampleTiers[t];
+    if (trySamples <= 0) continue;
+    if (t > 0 && trySamples >= targetSamples) continue;
+    wavBuffer = (uint8_t*)malloc(44 + trySamples);
+    if (wavBuffer) {
+      totalSamples8k = trySamples;
+      break;
+    }
   }
 
   if (!wavBuffer) {
@@ -503,22 +530,19 @@ void recordAndStreamAudio(int durationSeconds = 5, const char* context = "chat",
   createWavHeader8Bit(wavBuffer, totalSamples8k, 8000);
   uint8_t* pcmData = wavBuffer + 44;
 
-  // Notifikasi status rekam ke chat.html
   currentState = STATE_RECORDING;
   digitalWrite(LED_PIN, HIGH);
 
   JsonDocument recDoc;
-  recDoc["type"]        = "rec_status";
-  recDoc["status"]      = "recording";
-  recDoc["duration"]    = allocatedSeconds;
-  recDoc["max_seconds"] = allocatedSeconds;
-  recDoc["context"]     = context;
+  recDoc["type"]    = "rec_status";
+  recDoc["status"]  = "recording";
+  recDoc["context"] = context;
   sendDoc(recDoc);
 
-  playRobotChime(5); // Bip penanda mulai bicara
-  delay(120);
+  playRobotChime(5); // Bip penanda mic mulai aktif
+  delay(80);
 
-  // Bersihkan buffer serial dan buang sisa data I2S sebelum mulai merekam
+  // Bersihkan buffer serial dan buang sisa data I2S
   inputBuffer = "";
   size_t dummyBytes = 0;
   int32_t dummyBuf[64];
@@ -526,82 +550,104 @@ void recordAndStreamAudio(int durationSeconds = 5, const char* context = "chat",
 
   int samplesRead16k = 0;
   int samplesStored8k = 0;
-  int32_t rawSamples[64];
+  int32_t rawSamples[256]; // 256 sampel per pembacaan DMA I2S
   long long maxPeak = 0;
+  float recDcIn = 0, recDcOut = 0;
 
   unsigned long startTime = millis();
-  unsigned long lastVoiceTime = startTime;
-  bool userHasSpoken = false;
   bool earlyStop = false;
-  bool btnWasReleased = (digitalRead(BUTTON_PIN) == HIGH);
 
-  unsigned long maxTimeout = (allocatedSeconds * 1000) + 1200;
+  // Konfigurasi deteksi tombol fisik:
+  // HANYA aktif jika rekam dipicu dari tombol fisik robot ("button_curhat").
+  // JIKA DIPICU DARI WEB CHAT ("chat"), JANGAN PERNAH MENGECEK BUTTON_PIN!
+  // Ini mencegah sirkuit USB-UART DTR / noise GPIO 0 mematikan rekam secara prematur.
+  bool isHardwareButtonContext = (strcmp(context, "button_curhat") == 0);
+  bool btnArmedForStop = false;
+  unsigned long btnHighStartTime = 0;
+  int btnLowDebounceCount = 0;
 
-  while (samplesStored8k < totalSamples8k && (millis() - startTime < maxTimeout) && !earlyStop) {
-    // 1. Cek instruksi stop dari Serial (hanya izinkan setelah 800ms untuk mencegah double-click web)
+  // Merekam terus (Toggle ON) sampai pengguna mematikan (Toggle OFF) atau buffer maksimal tercapai
+  while (samplesStored8k < totalSamples8k && !earlyStop) {
+    // 1. Cek perintah stop dari Web Serial ("stop_rec")
     while (Serial.available()) {
       char c = Serial.read();
       if (c == '\n') {
-        if (inputBuffer.indexOf("stop_rec") >= 0 && (millis() - startTime >= 800)) {
+        if (inputBuffer.indexOf("stop_rec") >= 0) {
           earlyStop = true;
         }
         inputBuffer = "";
-      } else if (c != '\r' && inputBuffer.length() < 256) {
+      } else if (c != '\r' && inputBuffer.length() < 128) {
         inputBuffer += c;
+        if (inputBuffer.indexOf("stop_rec") >= 0) {
+          earlyStop = true;
+          inputBuffer = "";
+          break;
+        }
       }
     }
     if (earlyStop) break;
 
-    // 2. Cek tombol BOOT fisik (wajib sempat dilepas HIGH dulu, lalu ditekan LOW lagi setelah 1 detik)
-    if (digitalRead(BUTTON_PIN) == HIGH) {
-      btnWasReleased = true;
-    }
-    if (btnWasReleased && (millis() - startTime >= 1000) && digitalRead(BUTTON_PIN) == LOW) {
-      earlyStop = true;
-      break;
+    // 2. Cek tombol fisik BOOT HANYA jika dipicu secara fisik (Toggle OFF manual)
+    if (isHardwareButtonContext) {
+      if (digitalRead(BUTTON_PIN) == HIGH) {
+        if (btnHighStartTime == 0) {
+          btnHighStartTime = millis();
+        }
+        // Tombol harus benar-benar dilepas stabil minimal 200ms dan minimal 800ms telah berlalu
+        if (!btnArmedForStop && (millis() - btnHighStartTime >= 200) && (millis() - startTime >= 800)) {
+          btnArmedForStop = true;
+        }
+        btnLowDebounceCount = 0;
+      } else {
+        // Tombol ditekan kembali (LOW)
+        btnHighStartTime = 0;
+        if (btnArmedForStop) {
+          btnLowDebounceCount++;
+          // Minimal 3 kali bacaan berturut-turut (~50-70ms) untuk mencegah noise
+          if (btnLowDebounceCount >= 3) {
+            earlyStop = true;
+            break;
+          }
+        }
+      }
     }
 
-    // 3. Baca sampel audio dari INMP441
+    // 3. Baca sampel audio dari INMP441 (Sesuai sketsa passthrough yang berhasil)
     size_t bytesRead = 0;
-    i2s_read(I2S_MIC_PORT, rawSamples, sizeof(rawSamples), &bytesRead, 30);
+    i2s_read(I2S_MIC_PORT, rawSamples, sizeof(rawSamples), &bytesRead, 50);
     if (bytesRead == 0) continue;
 
     int count = bytesRead / sizeof(int32_t);
     for (int i = 0; i < count && samplesStored8k < totalSamples8k; i++) {
-      int16_t val = (int16_t)(rawSamples[i] >> 14);
-      int16_t absVal = abs(val);
-      if (absVal > maxPeak) maxPeak = absVal;
+      // INMP441: data 24-bit rata kiri di dalam frame 32-bit -> ambil 16-bit teratas
+      float x = (float)(rawSamples[i] >> 16);
 
-      // Smart VAD: Deteksi suara setelah gema bip awal mereda (lewat 400ms)
-      if ((millis() - startTime > 400) && absVal > 480) {
-        userHasSpoken = true;
-        lastVoiceTime = millis();
-      }
+      // DC blocker filter (high-pass) untuk membuang offset DC mikrofon
+      float y = x - recDcIn + 0.995f * recDcOut;
+      recDcIn = x;
+      recDcOut = y;
+
+      int32_t s = (int32_t)(y * 2); // Penguatan digital (GAIN = 2)
+      if (abs(s) < 60) s = 0;       // Noise gate sederhana
+      if (s > 32767)  s = 32767;
+      if (s < -32768) s = -32768;
+
+      int absVal = abs(s);
+      if (absVal > maxPeak) maxPeak = absVal;
 
       // Downsample 16kHz ke 8kHz & normalisasi PCM 8-bit unsigned
       if ((samplesRead16k % 2) == 0) {
-        int32_t scaled = ((int32_t)val * 4) / 256 + 128;
-        if (scaled < 0) scaled = 0;
+        int32_t scaled = (s / 256) + 128;
+        if (scaled < 0)   scaled = 0;
         if (scaled > 255) scaled = 255;
         pcmData[samplesStored8k++] = (uint8_t)scaled;
       }
       samplesRead16k++;
     }
-
-    // 4. SMART AUTO-CUT JEDA HENING (VAD):
-    // Jika siswa sudah berbicara, lalu hening/diam selama >= 1.2 detik (minimal rekam berjalan 1.8 detik)
-    if (userHasSpoken && (millis() - lastVoiceTime >= 1200) && (millis() - startTime >= 1800)) {
-      break;
-    }
-
-    // Jika siswa menyalakan mic tetapi tidak berbicara sama sekali selama 4.5 detik awal -> Auto Cut
-    if (!userHasSpoken && (millis() - startTime >= 4500)) {
-      break;
-    }
   }
 
   digitalWrite(LED_PIN, LOW);
-  playRobotChime(6); // Bip penanda selesai bicara
+  playRobotChime(6); // Bip penanda mic telah dimatikan
   delay(60);
 
   // Kunci flag tombol jika tombol BOOT masih ditekan agar tidak re-trigger
@@ -628,16 +674,16 @@ void recordAndStreamAudio(int durationSeconds = 5, const char* context = "chat",
   // Jika mode tes loopback, putar juga ke speaker MAX98357A
   if (loopbackToSpeaker && samplesStored8k > 0) {
     playToneI2S(1046, 70, 0.25);
-    int16_t spkBuffer[64 * 2];
-    for (int i = 0; i < samplesStored8k; i += 64) {
-      int chunk = (samplesStored8k - i > 64) ? 64 : (samplesStored8k - i);
+    int16_t spkBuffer[128 * 2];
+    for (int i = 0; i < samplesStored8k; i += 128) {
+      int chunk = (samplesStored8k - i > 128) ? 128 : (samplesStored8k - i);
       for (int j = 0; j < chunk; j++) {
-        int16_t s = (int16_t)((pcmData[i + j] - 128) * 128);
+        int16_t s = (int16_t)((pcmData[i + j] - 128) * 256);
         spkBuffer[j * 2]     = s;
         spkBuffer[j * 2 + 1] = s;
       }
       size_t bw = 0;
-      i2s_write(I2S_SPK_PORT, spkBuffer, chunk * 4, &bw, 50);
+      i2s_write(I2S_SPK_PORT, spkBuffer, chunk * 2 * sizeof(int16_t), &bw, portMAX_DELAY);
     }
   }
 
@@ -710,9 +756,9 @@ void handleLine(String line) {
     // Selesai rekam manual via web chat
     currentState = STATE_IDLE;
   } else if (type == "start_rec") {
-    // Merekam curhat suara siswa dari mikrofon INMP441 (dinamis hingga 5-6 detik dengan Smart VAD)
+    // Merekam curhat suara siswa dari mikrofon INMP441 (Sistem Toggle ON/OFF)
     stopSpeakerAudio(); // Pastikan speaker mati saat rekam dimulai
-    int dur = doc["duration"] | 5;
+    int dur = doc["duration"] | 15;
     recordAndStreamAudio(dur, "chat", false);
   } else if (type == "play_tone") {
     float freq = doc["freq"] | 440.0f;
@@ -779,8 +825,8 @@ void checkCurhatButton() {
 
       playRobotChime(2);
 
-      // Otomatis picu rekam suara curhat langsung dari robot! (Dinamis hingga 5-6s dengan Smart VAD)
-      recordAndStreamAudio(5, "button_curhat", false);
+      // Otomatis picu rekam suara curhat langsung dari robot! (Sistem Toggle ON/OFF)
+      recordAndStreamAudio(15, "button_curhat", false);
     } else if (reading == HIGH) {
       buttonPressedSent = false;
     }

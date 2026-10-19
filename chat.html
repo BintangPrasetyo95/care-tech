@@ -647,8 +647,8 @@
                     <!-- Chat Input Bar -->
                     <div class="chat-input-bar">
                         <textarea class="chat-scrapbook-input" id="chat-input" rows="1" placeholder="Tuliskan isi hatimu di sini... (Tekan Enter untuk kirim)" onkeydown="handleKeyDown(event)"></textarea>
-                        <button type="button" class="btn mk" id="btn-esp-mic" style="display: none; background: var(--pink); color: #ffffff; padding: 0.7rem 1.1rem; flex-shrink: 0;" onclick="toggleEspMicCurhat()" title="Bicara langsung lewat Mikrofon Robot ESP32 (INMP441) - Otomatis potong jeda hening / klik untuk selesai">
-                            🎙️ Mic Robot
+                        <button type="button" class="btn mk" id="btn-esp-mic" style="display: none; background: var(--pink); color: #ffffff; padding: 0.7rem 1.1rem; flex-shrink: 0;" onclick="toggleEspMicCurhat()" title="Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim">
+                            🎙️ Mic Robot: OFF
                         </button>
                         <button type="button" class="btn mk" id="btn-laptop-mic" style="background: var(--lime); padding: 0.7rem 1.1rem; flex-shrink: 0;" onclick="toggleLaptopSpeechRecognition()" title="Bicara langsung lewat Mikrofon Laptop (Voice Curhat)">
                             🎙️ Bicara
@@ -1761,7 +1761,12 @@
             if (telemetryStrip) telemetryStrip.style.display = 'none';
 
             const espMicBtn = document.getElementById('btn-esp-mic');
-            if (espMicBtn) espMicBtn.style.display = 'none';
+            if (espMicBtn) {
+                espMicBtn.style.display = 'none';
+                espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
+                espMicBtn.style.background = "var(--pink)";
+                espMicBtn.disabled = false;
+            }
 
             speakerOutputMode = 'laptop';
             updateSpeakerUi();
@@ -1875,15 +1880,16 @@
                         espRecSeconds++;
                         const b = document.getElementById('btn-esp-mic');
                         if (b && isEspRecording) {
-                            b.innerHTML = `⏹️ Selesai Bicara (${espRecSeconds}s)`;
+                            b.innerHTML = `🔴 Mic Robot: ON (${espRecSeconds}s)`;
                         }
                     }, 1000);
 
                     if (espMicBtn) {
-                        espMicBtn.innerHTML = `⏹️ Selesai Bicara (0s)`;
+                        espMicBtn.innerHTML = `🔴 Mic Robot: ON (0s)`;
                         espMicBtn.style.background = "#dc2626";
-                        espMicBtn.disabled = false; // Aktif agar bisa diklik untuk berhenti seketika
-                        espMicBtn.title = "Klik untuk selesai bicara sekarang (atau diam sejenak agar berhenti otomatis)";
+                        espMicBtn.style.color = "#ffffff";
+                        espMicBtn.disabled = false;
+                        espMicBtn.title = "Mic sedang AKTIF! Klik di sini untuk MEMATIKAN mic dan mengirim suara";
                     }
                     if (micBtn) {
                         micBtn.textContent = `🔴 Merekam...`;
@@ -1898,7 +1904,7 @@
                     if (modalFeedback && msg.context === "test") {
                         modalFeedback.style.display = 'block';
                         modalFeedback.style.color = '#dc2626';
-                        modalFeedback.innerHTML = `🎙️ <strong>Sedang Merekam dari INMP441...</strong><br>Silakan bicara sekarang! Otomatis berhenti ketika kamu selesai bicara (jeda hening).`;
+                        modalFeedback.innerHTML = `🎙️ <strong>Sedang Merekam dari INMP441...</strong><br>Bicaralah sekarang! Klik tombol untuk mematikan mic.`;
                     }
                     if (robotIcon) robotIcon.textContent = "🎙️";
                 } else if (msg.status === "done") {
@@ -1906,10 +1912,11 @@
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
                     playLaptopRobotChime('happy');
                     if (espMicBtn) {
-                        espMicBtn.innerHTML = "🎙️ Mic Robot";
+                        espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
                         espMicBtn.style.background = "var(--pink)";
+                        espMicBtn.style.color = "#ffffff";
                         espMicBtn.disabled = false;
-                        espMicBtn.title = "Bicara langsung lewat Mikrofon Robot ESP32 (INMP441) - Otomatis potong jeda hening / klik untuk selesai";
+                        espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
                     }
                     if (micBtn) {
                         micBtn.textContent = "Tes Mic 🎙️";
@@ -1926,8 +1933,9 @@
                     isEspRecording = false;
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
                     if (espMicBtn) {
-                        espMicBtn.innerHTML = "🎙️ Mic Robot";
+                        espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
                         espMicBtn.style.background = "var(--pink)";
+                        espMicBtn.style.color = "#ffffff";
                         espMicBtn.disabled = false;
                     }
                     if (micBtn) {
@@ -2062,39 +2070,40 @@
             }
 
             const now = Date.now();
-            if (now - lastEspMicClickTime < 700) {
-                // Abaikan klik ganda / double-click tak sengaja
+            if (now - lastEspMicClickTime < 400) {
                 return;
             }
             lastEspMicClickTime = now;
 
             if (isEspRecording) {
-                // Pengguna mengklik tombol untuk selesai bicara lebih awal (Manual Stop / Push-to-Talk)
+                // TOGGLE OFF: Matikan mic dan kirim suara ke AI
                 sendEsp({ type: "stop_rec" });
                 const btn = document.getElementById('btn-esp-mic');
                 if (btn) {
-                    btn.innerHTML = "Menyimpan... ⏳";
+                    btn.innerHTML = "⏳ Mengirim...";
                     btn.disabled = true;
                 }
             } else {
-                triggerEspMicCurhat(5);
+                // TOGGLE ON: Hidupkan mic robot
+                triggerEspMicCurhat();
             }
         }
 
-        function triggerEspMicCurhat(duration = 5) {
+        function triggerEspMicCurhat() {
             if (!espWriter) {
                 alert("Harap sambungkan robot ESP32 terlebih dahulu dengan tombol 'ESP32: Sambung 🔌'!");
                 return;
             }
 
-            stopAllAudioAndSpeech(); // Hentikan suara seketika saat mulai merekam curhat!
+            stopAllAudioAndSpeech(); // Hentikan suara speaker saat mic dihidupkan
 
             const btn = document.getElementById('btn-esp-mic');
             if (btn) {
-                btn.innerHTML = "⏹️ Selesai Bicara (0s)";
+                btn.innerHTML = "🔴 Mic Robot: ON (0s)";
                 btn.style.background = "#dc2626";
+                btn.style.color = "#ffffff";
                 btn.disabled = false;
-                btn.title = "Klik untuk selesai bicara sekarang (atau diam sejenak agar berhenti otomatis)";
+                btn.title = "Mic sedang AKTIF! Klik di sini untuk MEMATIKAN mic dan mengirim suara";
             }
             isEspRecording = true;
             espRecSeconds = 0;
@@ -2103,13 +2112,12 @@
                 espRecSeconds++;
                 const b = document.getElementById('btn-esp-mic');
                 if (b && isEspRecording) {
-                    b.innerHTML = `⏹️ Selesai Bicara (${espRecSeconds}s)`;
+                    b.innerHTML = `🔴 Mic Robot: ON (${espRecSeconds}s)`;
                 }
             }, 1000);
 
             sendEsp({
                 type: "start_rec",
-                duration: duration,
                 context: "chat"
             });
         }
@@ -2119,13 +2127,18 @@
             const typingIndicator = document.getElementById('typing-indicator');
             const robotIcon = document.getElementById('robot-icon');
 
-            // Tambahkan bubble audio pesan suara user ke chat
+            const msgId = 'voice-msg-' + Date.now();
+
+            // Tambahkan bubble pesan suara user ke chat lengkap dengan wadah transkripsi teks
             const voiceHtml = `
                 <div style="font-weight: 700; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 6px;">
                     <span>🎙️</span>
                     <span>Curhat Suara via Robot (INMP441)</span>
                 </div>
-                <audio controls src="${audioUrl}" style="height: 38px; width: 100%; max-width: 250px; outline: none; margin-top: 2px;"></audio>
+                <div id="${msgId}-text" style="font-size: 0.95rem; font-style: italic; background: rgba(0,0,0,0.06); padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.4rem; color: #1e293b; line-height: 1.4;">
+                    ${peak === 0 ? '⚠️ <span style="color: #b91c1c; font-weight: 600;">Mikrofon hening (Peak: 0).</span> <span style="font-size: 0.82rem; color: #475569;">Pastikan pin L/R dihubungkan ke GND, dan kabel SD (GPIO 32), WS (GPIO 33), SCK (GPIO 14) sudah tersambung kencang.</span>' : '⏳ <em>Mentranskripsi suara ke teks...</em>'}
+                </div>
+                <audio controls src="${audioUrl}" style="height: 38px; width: 100%; max-width: 260px; outline: none; margin-top: 2px;"></audio>
                 <div style="font-size: 0.76rem; color: #64748b; margin-top: 4px;">Amplitudo Peak: ${peak} • Durasi: ${duration}s</div>
             `;
             addMessageToUI(voiceHtml, 'user');
@@ -2138,13 +2151,16 @@
 
             let sensorContext = "";
             if (latestEspSensor && latestEspSensor.temp !== undefined) {
-                sensorContext = ` (Data sensor lingkungan fisik siswa saat ini: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Tingkat Cahaya ${latestEspSensor.light}.)`;
+                sensorContext = ` (Data sensor fisik lingkungan: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Cahaya ${latestEspSensor.light}.)`;
             }
 
-            // Panggil Gemini Multimodal Audio jika API key tersedia
+            // Panggil Gemini Multimodal Audio dengan instruksi TRANSKRIPSI & BALASAN
             if (geminiKey && geminiKey.length > 15) {
                 try {
-                    const systemInstruction = "Kamu adalah robot sahabat curhat siswa bernama ESA (CareTech). Pengguna baru saja berbicara langsung kepadamu lewat mikrofon robot. Wajib patuhi format ini: berikan balasan yang SANGAT SINGKAT, yaitu HANYA 1 HINGGA 2 KALIMAT PENDEK saja (maksimal 20-25 kata)! Gaya bicara hangat, penuh empati, ramah, dan santai layaknya teman akrab tatap muka. DILARANG memberikan balasan panjang dan DILARANG memakai poin-poin." + sensorContext;
+                    const systemInstruction = `Kamu adalah robot sahabat curhat siswa bernama ESA (CareTech). Siswa baru saja berbicara langsung kepadamu lewat mikrofon robot.
+Tugasmu:
+1. TRANSKRIPSIKAN kata demi kata apa yang diucapkan siswa secara persis dalam bahasa Indonesia pada field "transcription". Jika audio hening atau tidak jelas, tulis "(Suara hening / tidak terdengar)".
+2. Berikan BALASAN yang SANGAT SINGKAT pada field "reply", yaitu HANYA 1 HINGGA 2 KALIMAT PENDEK saja (maksimal 20-25 kata)! Gaya bicara hangat, penuh empati, ramah, dan santai layaknya teman akrab tatap muka. DILARANG ceramah panjang dan DILARANG memakai poin-poin.` + sensorContext;
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
@@ -2154,12 +2170,15 @@
                         },
                         body: JSON.stringify({
                             system_instruction: { parts: [{ text: systemInstruction }] },
+                            generationConfig: {
+                                response_mime_type: "application/json"
+                            },
                             contents: [
                                 ...chatHistory,
                                 {
                                     role: "user",
                                     parts: [
-                                        { text: "Dengarkan curhat suara siswa dari mikrofon robot INMP441 berikut dan tanggapi dengan 1-2 kalimat pendek yang hangat:" },
+                                        { text: "Dengarkan rekaman suara siswa berikut. Kembalikan JSON valid berisi 'transcription' (teks ucapan siswa) dan 'reply' (balasan hangat 1-2 kalimat):" },
                                         {
                                             inline_data: {
                                                 mime_type: "audio/wav",
@@ -2174,11 +2193,37 @@
 
                     const data = await response.json();
                     if (response.ok && data.candidates && data.candidates[0].content) {
-                        const aiText = data.candidates[0].content.parts[0].text;
+                        const rawContent = data.candidates[0].content.parts[0].text;
+                        let transcription = "";
+                        let aiText = "";
+
+                        try {
+                            const parsed = JSON.parse(rawContent);
+                            transcription = parsed.transcription || "";
+                            aiText = parsed.reply || "";
+                        } catch (e) {
+                            aiText = rawContent;
+                        }
+
+                        // Tampilkan hasil transkripsi nyata di bubble pesan siswa
+                        const textEl = document.getElementById(`${msgId}-text`);
+                        if (textEl) {
+                            if (transcription && !transcription.includes("hening") && !transcription.includes("tidak terdengar")) {
+                                textEl.innerHTML = `💬 <strong>Transkripsi:</strong> "${transcription}"`;
+                                textEl.style.fontStyle = "normal";
+                            } else if (peak === 0) {
+                                textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada gelombang suara yang tertangkap. Periksa sambungan kabel INMP441 (terutama pin L/R ke GND).`;
+                            } else {
+                                textEl.innerHTML = `💬 <strong>Transkripsi:</strong> <em>${transcription || "(Suara tidak terdengar jelas)"}</em>`;
+                            }
+                        }
+
+                        if (!aiText) aiText = "Aku menyimak suaramu kawan! Ceritakan lebih banyak apa yang sedang kamu rasakan ya.";
+
                         addMessageToUI(aiText, 'ai');
                         chatHistory.push({
                             "role": "user",
-                            "parts": [{ "text": "(Siswa berbicara langsung melalui mikrofon INMP441 robot)" }]
+                            "parts": [{ "text": transcription ? `Siswa: "${transcription}"` : "(Siswa mengirim suara via mikrofon robot)" }]
                         });
                         chatHistory.push({
                             "role": "model",
@@ -2194,6 +2239,13 @@
 
             // Fallback Empatik Bawaan jika offline (1-2 Kalimat Pendek)
             setTimeout(() => {
+                const textEl = document.getElementById(`${msgId}-text`);
+                if (textEl && peak === 0) {
+                    textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada sinyal audio yang terdeteksi dari modul INMP441.`;
+                } else if (textEl) {
+                    textEl.innerHTML = `🎙️ <em>Suara terekam (${duration}s, Peak ${peak}). Mode offline aktif.</em>`;
+                }
+
                 const voiceResponses = [
                     "Aku menyimak suaramu kawan! Tarik napas perlahan ya, aku selalu siap mendengarkanmu.",
                     "Senang mendengar suaramu langsung! Kamu aman bercerita denganku, ada hal lain yang mau kamu luapkan?",
