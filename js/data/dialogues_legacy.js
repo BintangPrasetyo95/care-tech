@@ -214,8 +214,8 @@ const DIALOGUES = {
     speaker : { en: 'Narator', id: 'Narator' },
     portrait: null,
     text    : { 
-      en: 'Nabula quickly wipes her eyes and tries to smile, but her smile looks unusual.',
-      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum, tapi senyumnya kelihatan nggak biasa.' 
+      en: 'Nabula quickly wipes her eyes and tries to smile. But her smile looks different from usual.',
+      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum. Tapi senyumnya terlihat berbeda dari biasanya.' 
     },
     next    : 'lvl1_010_nakula'
   },
@@ -238,8 +238,8 @@ const DIALOGUES = {
     speaker : { en: 'Narator', id: 'Narator' },
     portrait: null,
     text    : { 
-      en: 'Nabula stands and walks toward the library.',
-      id: 'Nabula berdiri dan berjalan menuju perpustakaan.' 
+      en: 'Soon after, Nabula stands up and walks toward the library. She leaves alone, carrying something she hadn\'t had the chance to share.',
+      id: 'Tak lama kemudian, Nabula berdiri dan berjalan menuju perpustakaan. Ia pergi sendirian, membawa sesuatu yang belum sempat ia ceritakan.' 
     },
     next    : null,
     autoAdvanceTimer: 5000,

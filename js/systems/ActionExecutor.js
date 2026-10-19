@@ -304,15 +304,31 @@ class ActionExecutor {
 
   _actionStartQuest(action) {
     const ui = this.scene.scene.get('UI');
+    const lang = this.scene.registry.get('language') || 'id';
+    let questText = null;
+
+    if (typeof action.text === 'string') {
+      questText = action.text;
+    } else if (typeof action.title === 'string') {
+      questText = action.title;
+    } else if (action.title && typeof action.title === 'object') {
+      questText = action.title[lang] || action.title.id || action.title.en;
+    } else if (action.text && typeof action.text === 'object') {
+      questText = action.text[lang] || action.text.id || action.text.en;
+    }
+
+    // Hanya jalankan jika questText benar-benar memiliki isi
+    if (!questText || (typeof questText === 'string' && !questText.trim())) return;
+
     if (ui && ui.showQuest) {
-      ui.showQuest(action.text, {
+      ui.showQuest(questText, {
         hasTimer: !!action.hasTimer,
         durationSec: action.durationSec || 30,
         onTimeout: action.onTimeout
       });
     }
     if (window.GameState) {
-      window.GameState.setActiveQuest(action.questId || action.text);
+      window.GameState.setActiveQuest(action.questId || questText);
     }
   }
 

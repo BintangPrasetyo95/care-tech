@@ -90,7 +90,7 @@ class UIScene extends Phaser.Scene {
     this._initLargeMapModal();
 
     /* ══════════ Quest Banner (top-center Cardboard Notepad) ══════════ */
-    this.questContainer = this.add.container(width / 2, -100).setScrollFactor(1).setDepth(300);
+    this.questContainer = this.add.container(width / 2, -100).setScrollFactor(1).setDepth(300).setVisible(false);
     
     // Hard drop shadow
     this.questShadow = this.add.graphics();
@@ -777,6 +777,7 @@ class UIScene extends Phaser.Scene {
 
     // Interact Prompt
     this.interactPrompt.setPosition(width / 2, height - 130);
+    if (this.toastText) this.toastText.setPosition(width / 2, height - 120);
 
     // Quest Banner
     if (this.questContainer) {
@@ -833,6 +834,12 @@ class UIScene extends Phaser.Scene {
 
   /** Show top quest banner with optional timer */
   showQuest(text, options = {}) {
+    // Guard Clause: Jangan tampilkan banner jika tidak ada teks misi yang valid!
+    if (!text || (typeof text === 'string' && !text.trim())) {
+      this.hideQuestBanner();
+      return;
+    }
+
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -987,6 +994,7 @@ class UIScene extends Phaser.Scene {
 
     if (this.questContainer) {
       this.tweens.killTweensOf(this.questContainer);
+      this.questContainer.setVisible(true);
       this.questContainer.setY(-100).setScale(1).setAngle(-1);
       this.tweens.add({
         targets: this.questContainer,
@@ -1149,6 +1157,9 @@ class UIScene extends Phaser.Scene {
       duration: 350,
       ease: 'Back.easeIn',
       onComplete: () => {
+        if (this.questContainer) {
+          this.questContainer.setVisible(false);
+        }
         if (this.questCelebrationStars) {
           this.questCelebrationStars.removeAll(true).setVisible(false);
         }
@@ -1193,9 +1204,89 @@ class UIScene extends Phaser.Scene {
     }
   }
 
+  /** Show a temporary warning/info toast badge (e.g. door barrier notice) without closing quest banner */
+  showToast(text, duration = 2000) {
+    if (!this.toastText) {
+      const { width, height } = this.scale;
+      this.toastText = this._createSharpText(width / 2, height - 120, '', {
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
+        fontSize: '12px',
+        color: '#ffffff',
+        backgroundColor: '#ff2e93',
+        padding: { x: 14, y: 7 }
+      }).setOrigin(0.5).setScrollFactor(1).setDepth(250).setAlpha(0);
+    }
+
+    if (this._toastTimer) {
+      this._toastTimer.destroy();
+      this._toastTimer = null;
+    }
+
+    this.toastText.setText(text);
+    this.tweens.killTweensOf(this.toastText);
+    this.toastText.setScale(0.9);
+
+    this.tweens.add({
+      targets: this.toastText,
+      alpha: 1,
+      scale: 1,
+      duration: 180,
+      ease: 'Back.easeOut'
+    });
+
+    this._toastTimer = this.time.delayedCall(duration, () => {
+      this.tweens.add({
+        targets: this.toastText,
+        alpha: 0,
+        scale: 0.9,
+        duration: 250,
+        ease: 'Power2'
+      });
+    });
+  }
+
   /* ══════════ Dialogue Rendering ══════════ */
 
   _showNode(nodeId) {
+    // lvl1_003_eca: Pastikan kamera mengarah ke Nabula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_003_eca' && !this._lvl1_003_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_003_focus_nabula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_003_eca') {
+      this._lvl1_003_camera_done = false;
+    }
+
+    // lvl1_005a_1: Pastikan kamera selesai bergerak mengarah ke Nakula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_005a_1' && !this._lvl1_005a_1_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_005a_focus_nakula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_005a_1') {
+      this._lvl1_005a_1_camera_done = false;
+    }
+
+    // lvl1_005b_2: Pastikan kamera selesai bergerak mengarah ke Nabula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_005b_2' && !this._lvl1_005b_2_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_005b_1_focus_nabula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_005b_2') {
+      this._lvl1_005b_2_camera_done = false;
+    }
+
     this._currentDialogueNode = nodeId;
     const allDialogues = (window.DIALOGUES || (typeof DIALOGUES !== 'undefined' ? DIALOGUES : {}));
     const node = allDialogues[nodeId];
@@ -1207,6 +1298,17 @@ class UIScene extends Phaser.Scene {
 
     if (node.action) {
       this.registry.events.emit('dialogue_action', node.action);
+    }
+
+    // Direct SFX triggers for Level 1 dialogue milestones
+    if (nodeId === 'lvl1_005b_10_narrator' || nodeId === 'lvl1_058x_10_narrator') {
+      if (window.audioManager) {
+        window.audioManager.playSchoolBell(0.7);
+      }
+    } else if (nodeId === 'lvl1_058_choice' || (node && node.action === 'lvl1_058_start_timer')) {
+      if (window.audioManager) {
+        window.audioManager.playLoop('clockTicking', 0.4);
+      }
     }
 
     // Handle auto-advance timer if specified on dialogue node
@@ -1429,7 +1531,9 @@ class UIScene extends Phaser.Scene {
   }
 
   enableDialogueAdvance(targetNode = null) {
-    const nextNode = targetNode || (this._currentNode ? this._currentNode.next : null);
+    const allDialogues = (window.DIALOGUES || (typeof DIALOGUES !== 'undefined' ? DIALOGUES : {}));
+    const cur = this._currentDialogueNode ? allDialogues[this._currentDialogueNode] : null;
+    const nextNode = (typeof targetNode === 'string' ? targetNode : null) || (cur ? cur.next : null);
     if (nextNode) {
       this._setupDialogueAdvance(() => {
         this._showNode(nextNode);
@@ -1463,6 +1567,10 @@ class UIScene extends Phaser.Scene {
     } else {
       this._closeDialogue();
     }
+  }
+
+  closeDialogue() {
+    this._closeDialogue();
   }
 
   _closeDialogue() {
