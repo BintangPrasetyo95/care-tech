@@ -428,29 +428,40 @@ static const char B64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
 
 void writeBase64Stream(const uint8_t* data, size_t len) {
   size_t i = 0;
+  char outBuf[128];
+  size_t outPos = 0;
+
   while (i + 3 <= len) {
     uint32_t a = data[i++];
     uint32_t b = data[i++];
     uint32_t c = data[i++];
     uint32_t triple = (a << 16) | (b << 8) | c;
-    Serial.write(B64_CHARS[(triple >> 18) & 0x3F]);
-    Serial.write(B64_CHARS[(triple >> 12) & 0x3F]);
-    Serial.write(B64_CHARS[(triple >> 6) & 0x3F]);
-    Serial.write(B64_CHARS[triple & 0x3F]);
+    outBuf[outPos++] = B64_CHARS[(triple >> 18) & 0x3F];
+    outBuf[outPos++] = B64_CHARS[(triple >> 12) & 0x3F];
+    outBuf[outPos++] = B64_CHARS[(triple >> 6) & 0x3F];
+    outBuf[outPos++] = B64_CHARS[triple & 0x3F];
+
+    if (outPos >= 120) {
+      Serial.write((const uint8_t*)outBuf, outPos);
+      outPos = 0;
+    }
   }
   if (i < len) {
     uint32_t a = data[i++];
     uint32_t b = (i < len) ? data[i++] : 0;
     uint32_t triple = (a << 16) | (b << 8);
-    Serial.write(B64_CHARS[(triple >> 18) & 0x3F]);
-    Serial.write(B64_CHARS[(triple >> 12) & 0x3F]);
+    outBuf[outPos++] = B64_CHARS[(triple >> 18) & 0x3F];
+    outBuf[outPos++] = B64_CHARS[(triple >> 12) & 0x3F];
     if (i == len && b != 0) {
-      Serial.write(B64_CHARS[(triple >> 6) & 0x3F]);
-      Serial.write('=');
+      outBuf[outPos++] = B64_CHARS[(triple >> 6) & 0x3F];
+      outBuf[outPos++] = '=';
     } else {
-      Serial.write('=');
-      Serial.write('=');
+      outBuf[outPos++] = '=';
+      outBuf[outPos++] = '=';
     }
+  }
+  if (outPos > 0) {
+    Serial.write((const uint8_t*)outBuf, outPos);
   }
 }
 
@@ -659,6 +670,14 @@ void recordAndStreamAudio(int durationSeconds = 15, const char* context = "chat"
   createWavHeader8Bit(wavBuffer, samplesStored8k, 8000);
 
   float actualDuration = (float)samplesStored8k / 8000.0f;
+
+  // Beritahu web chat seketika bahwa mikrofon sudah mati dan audio mulai ditransfer
+  JsonDocument transDoc;
+  transDoc["type"]     = "rec_status";
+  transDoc["status"]   = "transferring";
+  transDoc["context"]  = context;
+  transDoc["duration"] = actualDuration;
+  sendDoc(transDoc);
 
   // Kirim payload WAV Base64 ke chat.html
   Serial.print("{\"type\":\"mic_audio\",\"context\":\"");

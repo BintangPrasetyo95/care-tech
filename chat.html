@@ -1981,16 +1981,40 @@ Contoh respons ideal untuk bullying:
                         modalFeedback.innerHTML = `🎙️ <strong>Sedang Merekam dari INMP441...</strong><br>Bicaralah sekarang! Klik tombol untuk mematikan mic.`;
                     }
                     if (robotIcon) robotIcon.textContent = "🎙️";
+                } else if (msg.status === "transferring") {
+                    isEspRecording = false;
+                    if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
+                    const durText = msg.duration ? ` (${msg.duration}s)` : '';
+                    if (espMicBtn) {
+                        espMicBtn.innerHTML = `⏳ Mengirim suara${durText}...`;
+                        espMicBtn.style.background = "var(--sun)";
+                        espMicBtn.style.color = "var(--ink)";
+                        espMicBtn.disabled = true;
+                        espMicBtn.title = "Sedang mentransfer rekaman audio dari robot...";
+                    }
+                    if (micBtn) {
+                        micBtn.textContent = `⏳ Memproses...`;
+                        micBtn.style.background = "var(--sun)";
+                        micBtn.disabled = true;
+                    }
+                    if (modalMicBtn) {
+                        modalMicBtn.textContent = `⏳ Memproses...`;
+                        modalMicBtn.style.background = "var(--sun)";
+                        modalMicBtn.disabled = true;
+                    }
+                    if (robotIcon) robotIcon.textContent = "⏳";
                 } else if (msg.status === "done") {
                     isEspRecording = false;
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
                     playLaptopRobotChime('happy');
-                    if (espMicBtn) {
-                        espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
-                        espMicBtn.style.background = "var(--pink)";
-                        espMicBtn.style.color = "#ffffff";
-                        espMicBtn.disabled = false;
-                        espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
+                    if (msg.context !== "chat" && msg.context !== "button_curhat") {
+                        if (espMicBtn) {
+                            espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
+                            espMicBtn.style.background = "var(--pink)";
+                            espMicBtn.style.color = "#ffffff";
+                            espMicBtn.disabled = false;
+                            espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
+                        }
                     }
                     if (micBtn) {
                         micBtn.textContent = "Tes Mic 🎙️";
@@ -2151,11 +2175,21 @@ Contoh respons ideal untuk bullying:
 
             if (isEspRecording) {
                 // TOGGLE OFF: Matikan mic dan kirim suara ke AI
+                isEspRecording = false; // Segera tandai berhenti agar timer tidak menimpa status tombol
+                if (espRecTimer) {
+                    clearInterval(espRecTimer);
+                    espRecTimer = null;
+                }
+
                 sendEsp({ type: "stop_rec" });
+
                 const btn = document.getElementById('btn-esp-mic');
                 if (btn) {
-                    btn.innerHTML = "⏳ Mengirim...";
+                    btn.innerHTML = `⏳ Mengirim (${espRecSeconds}s)...`;
+                    btn.style.background = "var(--sun)";
+                    btn.style.color = "var(--ink)";
                     btn.disabled = true;
+                    btn.title = "Sedang mentransfer audio dari robot ke laptop...";
                 }
             } else {
                 // TOGGLE ON: Hidupkan mic robot
@@ -2220,6 +2254,15 @@ Contoh respons ideal untuk bullying:
             btn.disabled = true;
             typingIndicator.style.display = 'block';
             robotIcon.style.animation = 'robotWobble 0.6s infinite';
+
+            const espMicBtn = document.getElementById('btn-esp-mic');
+            if (espMicBtn) {
+                espMicBtn.innerHTML = "🤖 ESA berpikir...";
+                espMicBtn.style.background = "var(--cy)";
+                espMicBtn.style.color = "var(--ink)";
+                espMicBtn.disabled = true;
+                espMicBtn.title = "ESA sedang memproses curhatmu...";
+            }
 
             sendEspAction("thinking");
 
@@ -2452,12 +2495,21 @@ Kembalikan format JSON valid dengan 2 field:
 
         function finishChatTurn(replyText) {
             const btn = document.getElementById('btn-send');
+            const espMicBtn = document.getElementById('btn-esp-mic');
             const typingIndicator = document.getElementById('typing-indicator');
             const robotIcon = document.getElementById('robot-icon');
 
             btn.disabled = false;
             typingIndicator.style.display = 'none';
             robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
+
+            if (espMicBtn && espPort) {
+                espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
+                espMicBtn.style.background = "var(--pink)";
+                espMicBtn.style.color = "#ffffff";
+                espMicBtn.disabled = false;
+                espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
+            }
 
             if (replyText) {
                 speakText(replyText, () => {
