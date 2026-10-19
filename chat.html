@@ -1472,9 +1472,17 @@ Contoh respons ideal untuk bullying:
             initVoices();
         }
 
+        let activeUtterance = null;
+        let speechKeepAliveInterval = null;
+
         // Menghentikan seketika seluruh pemutaran suara (Speaker Robot, Laptop, & Web Speech)
         function stopAllAudioAndSpeech() {
             isAiSpeaking = false;
+            if (speechKeepAliveInterval) {
+                clearInterval(speechKeepAliveInterval);
+                speechKeepAliveInterval = null;
+            }
+            activeUtterance = null;
 
             // 1. Matikan suara di amplifier fisik robot (MAX98357A)
             if (espPort) {
@@ -1533,11 +1541,13 @@ Contoh respons ideal untuk bullying:
                 const b64 = btoa(binary);
                 sendEsp({ type: "play_chunk", data: b64 });
 
-                // Jeda 26 milidetik per chunk (256 sampel @ 8000 Hz = 32ms audio)
-                await new Promise(r => setTimeout(r, 26));
+                // Jeda 30 milidetik per chunk (256 sampel @ 8000 Hz = 32ms audio)
+                await new Promise(r => setTimeout(r, 30));
             }
 
             if (isAiSpeaking) {
+                // Tunggu 280ms agar sampel audio terakhir di buffer DMA ESP32 tuntas dimainkan
+                await new Promise(r => setTimeout(r, 280));
                 sendEsp({ type: "play_end" });
                 sendEspAction("idle");
             }
@@ -1611,7 +1621,13 @@ Contoh respons ideal untuk bullying:
                 return;
             }
 
+            if (speechKeepAliveInterval) {
+                clearInterval(speechKeepAliveInterval);
+                speechKeepAliveInterval = null;
+            }
+
             const utterance = new SpeechSynthesisUtterance(text);
+            activeUtterance = utterance; // Referensi persisten agar tidak di-garbage-collect oleh Chrome
             utterance.lang = 'id-ID';
             utterance.rate = 1.0;
             utterance.pitch = 1.08; // slightly upbeat & warm
@@ -1621,6 +1637,11 @@ Contoh respons ideal untuk bullying:
             const done = () => {
                 if (!finished) {
                     finished = true;
+                    if (speechKeepAliveInterval) {
+                        clearInterval(speechKeepAliveInterval);
+                        speechKeepAliveInterval = null;
+                    }
+                    activeUtterance = null;
                     isAiSpeaking = false;
                     sendEspAction("idle");
                     if (onComplete) onComplete();
@@ -1632,6 +1653,19 @@ Contoh respons ideal untuk bullying:
                 console.warn("Browser TTS Event ended with:", e);
                 done();
             };
+
+            // Heartbeat keep-alive mencegah bug Chrome SpeechSynthesis terpotong otomatis di detik ke-14
+            speechKeepAliveInterval = setInterval(() => {
+                if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                    window.speechSynthesis.pause();
+                    window.speechSynthesis.resume();
+                } else {
+                    if (speechKeepAliveInterval) {
+                        clearInterval(speechKeepAliveInterval);
+                        speechKeepAliveInterval = null;
+                    }
+                }
+            }, 8000);
 
             isAiSpeaking = true;
             sendEspAction("speaking", { mood: "happy" });
@@ -1710,6 +1744,16 @@ Contoh respons ideal untuk bullying:
                         }
                     }
 
+                    // Koordinasi pemutaran paralel aman (Laptop + Robot)
+                    let laptopDone = !(speakerOutputMode === 'laptop' || speakerOutputMode === 'both');
+                    let espDone = !(espPort && pcmForEsp && (speakerOutputMode === 'robot' || speakerOutputMode === 'both'));
+
+                    const checkAllComplete = () => {
+                        if (laptopDone && espDone) {
+                            if (onComplete) onComplete();
+                        }
+                    };
+
                     // Putar di Laptop jika mode laptop atau both
                     if (speakerOutputMode === 'laptop' || speakerOutputMode === 'both') {
                         const audioUrl = URL.createObjectURL(audioBlob);
@@ -1717,17 +1761,32 @@ Contoh respons ideal untuk bullying:
                         currentAudio.onended = () => {
                             URL.revokeObjectURL(audioUrl);
                             currentAudio = null;
-                            if (onComplete) onComplete();
+                            laptopDone = true;
+                            checkAllComplete();
                         };
-                        await currentAudio.play().catch(e => console.warn("Laptop audio play err:", e));
+                        currentAudio.onerror = () => {
+                            URL.revokeObjectURL(audioUrl);
+                            currentAudio = null;
+                            laptopDone = true;
+                            checkAllComplete();
+                        };
+                        await currentAudio.play().catch(e => {
+                            console.warn("Laptop audio play err:", e);
+                            laptopDone = true;
+                            checkAllComplete();
+                        });
                     }
 
                     // Putar suara ElevenLabs langsung di speaker fisik robot MAX98357A!
-                    if (pcmForEsp) {
+                    if (pcmForEsp && espPort && (speakerOutputMode === 'robot' || speakerOutputMode === 'both')) {
                         await streamPcmToEsp(pcmForEsp);
+                        espDone = true;
+                        checkAllComplete();
+                    } else {
+                        espDone = true;
+                        checkAllComplete();
                     }
 
-                    if (onComplete && speakerOutputMode === 'robot') onComplete();
                     return;
                 } catch (err) {
                     console.warn("ElevenLabs gagal / dibatasi, beralih ke suara bawaan:", err);

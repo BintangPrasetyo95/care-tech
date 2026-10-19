@@ -387,19 +387,14 @@ void checkMicActivity() {
   if (millis() - lastMicCheckMs < 60) return;
   lastMicCheckMs = millis();
 
-  int currentRms = readMicLevel();
-  soundLevel = currentRms;
-
-  // FITUR INTERUPSI (BARGE-IN): Jika robot sedang bicara dan siswa mulai berbicara ke mic,
-  // speaker fisik seketika langsung MATI!
-  if (currentState == STATE_SPEAKING && currentRms > 1600) {
-    stopSpeakerAudio();
-    JsonDocument doc;
-    doc["type"]   = "interrupted";
-    doc["reason"] = "user_speaking";
-    sendDoc(doc);
+  // Saat speaker sedang aktif bersuara (STATE_SPEAKING), jangan memproses audio mic
+  // agar speaker tidak memotong suaranya sendiri akibat acoustic feedback!
+  if (currentState == STATE_SPEAKING) {
     return;
   }
+
+  int currentRms = readMicLevel();
+  soundLevel = currentRms;
 
   // Kirim data level mic secara berkala untuk meter visual di web chat
   if (millis() - lastSoundReportMs >= SOUND_REPORT_INTERVAL_MS && currentState == STATE_IDLE) {
@@ -753,8 +748,12 @@ void handleLine(String line) {
     if (b64) {
       playAudioChunk8k(b64);
     }
-  } else if (type == "play_end" || type == "stop_audio") {
-    // Hentikan suara speaker seketika
+  } else if (type == "play_end") {
+    // Selesai streaming chunk: biarkan DMA buffer menghabiskan sisa audio secara alami tanpa zeroing
+    currentState = STATE_IDLE;
+    digitalWrite(LED_PIN, LOW);
+  } else if (type == "stop_audio") {
+    // Hentikan suara speaker seketika (interupsi paksa / mute)
     stopSpeakerAudio();
   } else if (type == "test_speaker") {
     // Perintah uji coba speaker MAX98357A langsung
