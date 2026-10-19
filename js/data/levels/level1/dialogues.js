@@ -880,8 +880,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bagas and Rio leave the cafeteria table.',
-      id: 'Bagas dan Rio meninggalkan meja kantin.'
+      en: 'Without another word, Bagas and Rio stand up and leave the table.',
+      id: 'Tanpa berkata apa-apa lagi, Bagas dan Rio berdiri dan meninggalkan meja.'
     },
     action: 'lvl1_059a_bullies_leave',
     noManualAdvance: true,
@@ -1345,8 +1345,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula realizes that Nabula\'s problem has actually been going on in multiple places, not just an isolated incident.',
-      id: 'Nakula menyadari bahwa masalah Nabula ternyata sudah berlangsung di beberapa tempat dan bukan hanya kejadian sekali.'
+      en: 'Nakula now understands. The troubles Nabula experienced had actually been happening in many places, and not just once.',
+      id: 'Nakula pun mengerti. Masalah yang dialami Nabula ternyata terjadi di banyak tempat, dan bukan hanya sekali.'
     },
     next: 'lvl1_060b_narrator'
   },
