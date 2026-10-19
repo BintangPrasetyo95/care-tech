@@ -11,8 +11,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'The recess bell rings. Nakula is walking in the school garden.',
-      id: 'Bel istirahat berbunyi. Nakula berjalan di taman sekolah.'
+      en: 'Clang, clang! The recess bell rings. Students rush out of their classrooms, and Nakula decides to take a stroll in the school garden.',
+      id: 'Kring, kring! Bel istirahat berbunyi. Anak-anak berhamburan keluar kelas, dan Nakula memilih berjalan santai di taman sekolah.'
     },
     next: null,
     action: 'lvl1_001_intro_walk',
@@ -31,6 +31,7 @@ window.LEVEL_1_DIALOGUES = {
       en: 'Wait... someone looks like they are holding back tears over there.',
       id: 'Eh, tunggu... sepertinya ada yang lagi menahan tangis di sana.'
     },
+    action: 'lvl1_003_focus_nabula',
     next: 'lvl1_004_choice'
   },
 
@@ -83,15 +84,28 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Nakula', id: 'Nakula' },
     portrait: 'player_sad',
     text: { en: 'I don\'t care.', id: 'Aku nggak peduli.' },
-    next: 'lvl1_005b_2'
+    next: null,
+    autoAdvanceTimer: 3000,
+    action: 'lvl1_camera_to_nakula',
+    onCloseAction: 'lvl1_005b_1_focus_nabula'
   },
   'lvl1_005b_2': {
     id: '005b-2',
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula is still sitting alone. Nobody approaches her.',
-      id: 'Nabula masih duduk sendirian. Tidak ada yang menghampirinya.'
+      en: 'Nabula is still sitting alone on the garden bench. Nobody approaches her.',
+      id: 'Nabula masih duduk sendirian di bangku taman. Tidak ada satu pun yang menghampirinya.'
+    },
+    next: 'lvl1_005b_2b_narrator'
+  },
+  'lvl1_005b_2b_narrator': {
+    id: '005b-2b',
+    speaker: { en: 'Narator', id: 'Narator' },
+    portrait: null,
+    text: {
+      en: 'Nabula looks down and whispers to herself.',
+      id: 'Nabula menunduk dan berbisik pada dirinya sendiri.'
     },
     next: 'lvl1_005b_3'
   },
@@ -100,8 +114,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Nabula', id: 'Nabula' },
     portrait: 'nabula_sad',
     text: {
-      en: '(mumbles softly) "Nobody notices I\'m sad..."',
-      id: '(bergumam pelan) "Nggak ada yang nyadar aku lagi sedih..."'
+      en: '"Nobody notices I\'m sad..."',
+      id: '“Nggak ada yang nyadar aku lagi sedih...”'
     },
     next: 'lvl1_005b_4'
   },
@@ -131,7 +145,7 @@ window.LEVEL_1_DIALOGUES = {
         action: 'lvl1_005b_approach'
       },
       {
-        label: { en: '2. "Leave it, keep walking." (-10)', id: '2. "Biarkan saja, lanjut jalan." (-10)' },
+        label: { en: '2. "Leave it." (-10)', id: '2. "Biarkan saja." (-10)' },
         next: 'lvl1_005b_8_narrator',
         harmonyDelta: -10,
         action: { type: 'vibrate', pattern: [60, 40, 60] }
@@ -143,8 +157,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula finally stands up by herself and walks into the library, without getting a chance to talk to anyone.',
-      id: 'Nabula akhirnya berdiri sendiri dan berjalan masuk ke perpustakaan, tanpa sempat bicara dengan siapa pun.'
+      en: 'Soon after, Nabula stands up and walks toward the library. She leaves alone, without getting a chance to talk to anyone.',
+      id: 'Tak lama kemudian, Nabula berdiri dan berjalan menuju perpustakaan. Ia pergi sendirian, tanpa sempat bercerita pada siapa pun.'
     },
     next: null,
     autoAdvanceTimer: 5000,
@@ -168,8 +182,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula didn\'t make it in time to catch Nabula that day.',
-      id: 'Nakula tidak sempat menyusul Nabula hari itu.'
+      en: 'The bell rings again, and Nakula didn\'t make it in time to catch Nabula. That day simply passed by.',
+      id: 'Bel berbunyi lagi, dan Nakula belum sempat menyusul Nabula. Hari itu pun berlalu begitu saja.'
     },
     next: 'lvl1_005b_12_eca',
     action: 'lvl1_005b_fail_fade'
@@ -239,8 +253,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula quickly wipes her eyes and tries to smile, but her smile looks unusual.',
-      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum, tapi senyumnya kelihatan nggak biasa.'
+      en: 'Nabula quickly wipes her eyes and tries to smile. But her smile looks different from usual.',
+      id: 'Nabula buru-buru menyeka matanya dan mencoba tersenyum. Tapi senyumnya terlihat berbeda dari biasanya.'
     },
     next: 'lvl1_010_nakula'
   },
@@ -268,8 +282,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula stands and walks toward the library.',
-      id: 'Nabula berdiri dan berjalan menuju perpustakaan.'
+      en: 'Soon after, Nabula stands up and walks toward the library. She leaves alone, carrying something she hadn\'t had the chance to share.',
+      id: 'Tak lama kemudian, Nabula berdiri dan berjalan menuju perpustakaan. Ia pergi sendirian, membawa sesuatu yang belum sempat ia ceritakan.'
     },
     next: null,
     noManualAdvance: true,
@@ -282,19 +296,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bagas and Rio\'s voices can be heard faintly from behind the bookshelf. Nabula can\'t see them, but she can hear what they are saying.',
-      id: 'Suara Bagas dan Rio terdengar samar dari balik rak. Nabula tidak melihat mereka, tetapi dapat mendengar pembicaraan mereka.'
-    },
-    next: 'lvl1_018_bagas',
-    action: null
-  },
-  rlvl1_017_narrator: {
-    id: '017',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'Bagas and Rio\'s voices can be heard faintly from behind the bookshelf. Nabula can\'t see them, but she can hear what they are saying.',
-      id: 'Suara Bagas dan Rio terdengar samar dari balik rak. Nabula tidak melihat mereka, tetapi dapat mendengar pembicaraan mereka.'
+      en: 'While Nabula is sitting alone, suddenly faint voices can be heard from behind the bookshelf. It\'s Bagas and Rio. She can\'t see them, but can hear everything.',
+      id: 'Saat Nabula duduk sendirian, tiba-tiba terdengar suara samar dari balik rak. Itu Bagas dan Rio. Ia tidak bisa melihat mereka, tapi bisa mendengar semuanya.'
     },
     next: 'lvl1_018_bagas',
     action: null
@@ -331,8 +334,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Hearing that, Nabula suddenly runs away until she disappears around the corner of the shelf.',
-      id: 'Nabula yang mendengarkan sontak berlari sampai ia menghilang di tikungan rak.'
+      en: 'Hearing that, Nabula is startled. She quickly stands up, then runs and disappears around the corner of the shelf.',
+      id: 'Mendengar itu, Nabula terkejut. Ia buru-buru berdiri, lalu berlari dan menghilang di tikungan rak.'
     },
     next: null,
     noManualAdvance: true,
@@ -382,8 +385,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula finds an assignment book lying between the shelves.',
-      id: 'Nakula menemukan sebuah buku tergeletak di sela rak.'
+      en: 'While searching, Nakula spots something lying on the floor. It turns out to be a book.',
+      id: 'Saat mencari, Nakula melihat sesuatu tergeletak di lantai. Ternyata sebuah buku.'
     },
     next: 'lvl1_028_nakula'
   },
@@ -402,8 +405,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'ECA', id: 'ECA' },
     portrait: 'eca_thinking',
     text: {
-      en: '"Hmm, this doesn\'t look like an accident. Look, the tears are so neat, only on the parts with handwriting."',
-      id: '"Hmm, ini kayaknya bukan robek karena kecelakaan, deh. Coba lihat, robekannya rapi banget, cuma di bagian yang ada tulisannya."'
+      en: '"There\'s Nabula\'s name in this book... It makes me sad seeing it. The tears are so neat, only on the parts with handwriting. Someone must have torn it on purpose."',
+      id: '"Ada nama Nabula di buku ini... Aku jadi sedih lihatnya. Robekannya rapi banget, cuma di bagian yang ada tulisannya. Pasti ada yang sengaja merobeknya."'
     },
     next: null,
     onCloseAction: 'lvl1_030_clue_found_book'
@@ -468,8 +471,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'The two students don\'t realize Nakula is standing not far from them.',
-      id: 'Dua siswa itu tidak menyadari Nakula berada tidak jauh dari mereka.'
+      en: 'Raya and Mei are engrossed in conversation. They don\'t realize Nakula is not far from them.',
+      id: 'Raya dan Mei sedang asyik mengobrol. Mereka tidak menyadari Nakula berada tidak jauh dari mereka.'
     },
     next: 'lvl1_040_raya'
   },
@@ -609,8 +612,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bagas and Rio sit near Nabula. Nabula looks uncomfortable and starts eating faster.',
-      id: 'Bagas dan Rio duduk di dekat Nabula. Nabula terlihat tidak nyaman dan mulai mempercepat makannya.'
+      en: 'Nabula looks uncomfortable and starts eating faster.',
+      id: 'Nabula terlihat tidak nyaman dan mulai mempercepat makannya.'
     },
     next: 'lvl1_053_narrator'
   },
@@ -619,8 +622,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula tries to ignore them, but Bagas continues to bother her.',
-      id: 'Nabula mencoba mengabaikan mereka, tetapi Bagas terus mengganggunya.'
+      en: 'Nabula tries not to care and keeps looking down at her food. But Bagas and Rio do not stop bothering her.',
+      id: 'Nabula berusaha tidak peduli dan terus menatap makanannya. Tapi Bagas dan Rio tidak berhenti mengganggunya.'
     },
     next: 'lvl1_054_bagas'
   },
@@ -731,24 +734,13 @@ window.LEVEL_1_DIALOGUES = {
   },
 
   /* ── 058x: Timeout 2 (Terlambat, Pengurangan -15 Poin) ── */
-  lvl1_058x_5_narrator: {
-    id: '058x-5',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'Because Nakula kept hesitating, Bagas and Rio left before anyone confronted them. (-15 Harmony)',
-      id: 'Karena Nakula terus ragu, Bagas dan Rio keburu pergi duluan sebelum sempat ditegur siapa pun. (-15 Harmoni)'
-    },
-    next: 'lvl1_058x_6_narrator',
-    action: 'lvl1_058x_bullies_leave'
-  },
   lvl1_058x_6_narrator: {
     id: '058x-6',
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula hastily leaves the cafeteria, looking even more saddened.',
-      id: 'Nabula buru-buru meninggalkan kantin, terlihat semakin sedih.'
+      en: 'Nakula stands silent, confused about what to do. Bagas and Rio continue their harassment, and Nabula looks down before standing up and leaving the cafeteria.',
+      id: 'Nakula terdiam, bingung harus berbuat apa. Bagas dan Rio masih terus mengganggu, dan Nabula pun menunduk lalu beranjak pergi meninggalkan kantin.'
     },
     action: 'lvl1_058x_nabula_leaves',
     noManualAdvance: true,
@@ -772,8 +764,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula did not manage to find Nabula in time.',
-      id: 'Nakula tidak sempat menemukan Nabula tepat waktu.'
+      en: 'The bell rings, and Nakula still hasn\'t found Nabula. The opportunity for that day slipped away just like that.',
+      id: 'Bel berbunyi, dan Nakula belum juga menemukan Nabula. Kesempatan hari itu pun terlewat begitu saja.'
     },
     next: 'lvl1_058x_12_eca',
     action: 'lvl1_058x_fade_out'
@@ -796,8 +788,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nakula automatically steps forward towards Nabula\'s table in the cafeteria.',
-      id: 'Nakula otomatis melangkah maju mendekati meja Nabula di kantin.'
+      en: 'Without a second thought, Nakula steps forward towards Nabula\'s table in the cafeteria.',
+      id: 'Tanpa pikir panjang, Nakula melangkah maju mendekati meja Nabula di kantin.'
     },
     next: null,
     action: 'lvl1_059a_walk_to_table'
@@ -817,8 +809,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bagas and Rio fall silent for a moment and turn towards Nakula. Nabula looks surprised.',
-      id: 'Bagas dan Rio terdiam sejenak lalu menoleh ke arah Nakula. Nabula terlihat terkejut.'
+      en: 'Bagas and Rio fall silent for a moment, then turn towards Nakula. Nabula is surprised to see Nakula standing there.',
+      id: 'Bagas dan Rio terdiam sejenak, lalu menoleh ke arah Nakula. Nabula pun terkejut melihat Nakula berdiri di sana.'
     },
     action: 'lvl1_059a_bullies_turn',
     next: 'lvl1_059a_4_bagas'
@@ -868,8 +860,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bagas falls silent. Rio looks uncomfortable.',
-      id: 'Bagas terdiam. Rio terlihat tidak nyaman.'
+      en: 'Nakula\'s words make Bagas fall silent. Rio looks away, an uncomfortable expression on his face.',
+      id: 'Kata-kata Nakula membuat Bagas terdiam. Rio mengalihkan pandangan, wajahnya terlihat tidak nyaman.'
     },
     next: 'lvl1_059a_9_bagas'
   },
@@ -920,8 +912,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Nabula nods gently. Nakula smiles, accompanying her.',
-      id: 'Nabula mengangguk pelan. Nakula tersenyum, menemaninya.'
+      en: 'Nabula nods gently. Nakula smiles and stays by her side, so Nabula doesn\'t feel alone.',
+      id: 'Nabula mengangguk pelan. Nakula tersenyum dan tetap menemaninya, supaya Nabula tidak merasa sendirian.'
     },
     action: 'lvl1_059a_complete',
     next: 'lvl1_060_narrator'

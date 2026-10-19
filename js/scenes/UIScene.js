@@ -90,7 +90,7 @@ class UIScene extends Phaser.Scene {
     this._initLargeMapModal();
 
     /* ══════════ Quest Banner (top-center Cardboard Notepad) ══════════ */
-    this.questContainer = this.add.container(width / 2, -100).setScrollFactor(1).setDepth(300);
+    this.questContainer = this.add.container(width / 2, -100).setScrollFactor(1).setDepth(300).setVisible(false);
     
     // Hard drop shadow
     this.questShadow = this.add.graphics();
@@ -833,6 +833,12 @@ class UIScene extends Phaser.Scene {
 
   /** Show top quest banner with optional timer */
   showQuest(text, options = {}) {
+    // Guard Clause: Jangan tampilkan banner jika tidak ada teks misi yang valid!
+    if (!text || (typeof text === 'string' && !text.trim())) {
+      this.hideQuestBanner();
+      return;
+    }
+
     if (this._questDismissTimer) {
       this._questDismissTimer.destroy();
       this._questDismissTimer = null;
@@ -987,6 +993,7 @@ class UIScene extends Phaser.Scene {
 
     if (this.questContainer) {
       this.tweens.killTweensOf(this.questContainer);
+      this.questContainer.setVisible(true);
       this.questContainer.setY(-100).setScale(1).setAngle(-1);
       this.tweens.add({
         targets: this.questContainer,
@@ -1149,6 +1156,9 @@ class UIScene extends Phaser.Scene {
       duration: 350,
       ease: 'Back.easeIn',
       onComplete: () => {
+        if (this.questContainer) {
+          this.questContainer.setVisible(false);
+        }
         if (this.questCelebrationStars) {
           this.questCelebrationStars.removeAll(true).setVisible(false);
         }
@@ -1196,6 +1206,45 @@ class UIScene extends Phaser.Scene {
   /* ══════════ Dialogue Rendering ══════════ */
 
   _showNode(nodeId) {
+    // lvl1_003_eca: Pastikan kamera mengarah ke Nabula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_003_eca' && !this._lvl1_003_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_003_focus_nabula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_003_eca') {
+      this._lvl1_003_camera_done = false;
+    }
+
+    // lvl1_005a_1: Pastikan kamera selesai bergerak mengarah ke Nakula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_005a_1' && !this._lvl1_005a_1_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_005a_focus_nakula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_005a_1') {
+      this._lvl1_005a_1_camera_done = false;
+    }
+
+    // lvl1_005b_2: Pastikan kamera selesai bergerak mengarah ke Nabula terlebih dahulu sebelum dialog dimunculkan
+    if (nodeId === 'lvl1_005b_2' && !this._lvl1_005b_2_camera_done) {
+      const world = this.scene.get('World');
+      if (world && world.scene && world.scene.isActive()) {
+        this._closeDialogue();
+        this.registry.events.emit('dialogue_action', 'lvl1_005b_1_focus_nabula');
+        return;
+      }
+    }
+    if (nodeId === 'lvl1_005b_2') {
+      this._lvl1_005b_2_camera_done = false;
+    }
+
     this._currentDialogueNode = nodeId;
     const allDialogues = (window.DIALOGUES || (typeof DIALOGUES !== 'undefined' ? DIALOGUES : {}));
     const node = allDialogues[nodeId];
@@ -1207,6 +1256,17 @@ class UIScene extends Phaser.Scene {
 
     if (node.action) {
       this.registry.events.emit('dialogue_action', node.action);
+    }
+
+    // Direct SFX triggers for Level 1 dialogue milestones
+    if (nodeId === 'lvl1_005b_10_narrator' || nodeId === 'lvl1_058x_10_narrator') {
+      if (window.audioManager) {
+        window.audioManager.playSchoolBell(0.7);
+      }
+    } else if (nodeId === 'lvl1_058_choice' || (node && node.action === 'lvl1_058_start_timer')) {
+      if (window.audioManager) {
+        window.audioManager.playLoop('clockTicking', 0.4);
+      }
     }
 
     // Handle auto-advance timer if specified on dialogue node

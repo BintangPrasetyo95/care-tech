@@ -33,13 +33,10 @@ class AudioManager {
   _attachUnlockListeners() {
     const unlockHandler = () => {
       this.unlock();
-      window.removeEventListener('pointerdown', unlockHandler);
-      window.removeEventListener('keydown', unlockHandler);
-      window.removeEventListener('touchstart', unlockHandler);
     };
-    window.addEventListener('pointerdown', unlockHandler, { once: true, passive: true });
-    window.addEventListener('keydown', unlockHandler, { once: true, passive: true });
-    window.addEventListener('touchstart', unlockHandler, { once: true, passive: true });
+    window.addEventListener('pointerdown', unlockHandler, { passive: true });
+    window.addEventListener('keydown', unlockHandler, { passive: true });
+    window.addEventListener('touchstart', unlockHandler, { passive: true });
   }
 
   unlock() {
@@ -47,6 +44,11 @@ class AudioManager {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().then(() => {
         this.isUnlocked = true;
+        for (const [key, loop] of this.activeLoops.entries()) {
+          if (loop && loop.gainNode) {
+            loop.gainNode.gain.setValueAtTime(loop.volume, this.ctx.currentTime);
+          }
+        }
       }).catch(() => {});
     } else if (this.ctx) {
       this.isUnlocked = true;
