@@ -2,95 +2,83 @@
   =============================================================================
   CARETECH - ESA INTERACTIVE PHYSICAL ROBOT COMPANION
   =============================================================================
-  Board: ESP32 Dev Module (NodeMCU-32S / ESP32-WROOM-32)
-  Komunikasi: USB Serial (Web Serial API - 115200 baud) ke chat.html
+  Board: ESP32 Dev Module (NodeMCU-32S / ESP32-WROOM-32 30-pin & 38-pin)
+  Komunikasi: USB Serial Langsung (Web Serial API - 115200 baud) ke chat.html
+  Tanpa WiFi & Tanpa Sensor Sentuh: Murni pemrosesan audio I2S (Mic & Speaker)
 
-  PETA HARDWARE & PINOUT:
-  -----------------------------------------------------------------------------
+  =============================================================================
+  PETA HARDWARE & PINOUT RESMI (OFFICIAL PINOUT):
+  =============================================================================
+
   1. SPEAKER AMPLIFIER (MAX98357A I2S Mono DAC - Papan Ungu):
-     - VIN  -> ESP32 VIN (5V) atau 3V3 (Disarankan 5V agar suara lantang)
-     - GND  -> ESP32 GND
-     - BCLK -> ESP32 GPIO 26 (Bit Clock)
-     - LRC  -> ESP32 GPIO 25 (Word Select / Left-Right Clock)
-     - DIN  -> ESP32 GPIO 22 (Serial Data Out dari ESP32)
-     - Speaker 3W dipasang ke terminal sekrup hijau (+ dan -)
+     -------------------------------------------------------------------------
+     Pin MAX98357A | Pin ESP32 | Keterangan
+     ------------- | --------- | ---------------------------------------------
+     VIN           | VIN (5V)  | Disarankan 5V (USB) agar daya speaker 3W maksimal & lantang.
+     GND           | GND       | Ground bersama ESP32.
+     BCLK          | GPIO 26   | Bit Clock I2S (Port I2S_NUM_1 Audio Out).
+     LRC           | GPIO 25   | Word Select / Left-Right Clock (I2S_NUM_1).
+     DIN           | GPIO 22   | Serial Data In ke Amplifier (I2S_NUM_1).
+     GAIN          | LEPAS/GND | Gain 9dB (lepas) atau 12dB (hubungkan ke GND).
+     SD_MODE       | LEPAS     | Otomatis mencampur channel stereo (L+R)/2.
+     Terminal +/-  | Speaker   | Sambungkan speaker 4 Ohm / 8 Ohm 3 Watt.
 
-  2. MICROPHONE (INMP441 I2S MEMS - Papan Bundar Kuning):
-     - VDD  -> ESP32 3V3 (3.3V) [JANGAN ke 5V!]
-     - GND  -> ESP32 GND
-     - SD   -> ESP32 GPIO 32 (Serial Data Masuk ke ESP32)
-     - WS   -> ESP32 GPIO 33 (Word Select Clock)
-     - SCK  -> ESP32 GPIO 14 (Serial Clock)
-     - L/R  -> ESP32 GND (Pilih channel kiri)
+  2. MIKROFON (INMP441 I2S MEMS Omnidirectional - Papan Bundar Hitam/Kuning):
+     -------------------------------------------------------------------------
+     Pin INMP441   | Pin ESP32 | Keterangan
+     ------------- | --------- | ---------------------------------------------
+     VDD           | 3V3       | ⚠️ WAJIB 3.3V! JANGAN sambungkan ke 5V (merusak modul!).
+     GND           | GND       | Ground bersama ESP32.
+     SD            | GPIO 32   | Serial Data Out dari mic ke ESP32 (I2S_NUM_0).
+     WS            | GPIO 33   | Word Select Clock (I2S_NUM_0 Audio In).
+     SCK           | GPIO 14   | Serial Clock / Bit Clock (I2S_NUM_0).
+     L/R           | GND       | Hubungkan ke GND untuk memilih Channel Kiri.
 
-  3. SENSOR SENTUH (TTP223 - Papan Merah Bertuliskan "TOUCH"):
-     - VCC  -> ESP32 3V3
-     - GND  -> ESP32 GND
-     - I/O  -> ESP32 GPIO 4 (Digital Input, HIGH saat disentuh)
-
-  4. STATUS & KONTROL BAWAAN:
-     - GPIO 2 : Onboard LED (Ekspresi Standby, Berpikir, Bicara, Sentuh)
-     - GPIO 0 : Onboard BOOT Button (Pemicu Curhat Cepat)
-     - GPIO 34: ADC Sensor Cahaya (LDR)
-
-  5. PENGATURAN WIFI FLEKSIBEL:
-     - Disetel langsung dari browser (chat.html) & disimpan permanen di NVS.
+  3. KONTROL INTERAKSI & STATUS ONBOARD:
+     -------------------------------------------------------------------------
+     Pin ESP32     | Fungsi & Keterangan
+     ------------- | ---------------------------------------------------------
+     GPIO 2        | Onboard Blue LED (Ekspresi Standby, Berpikir, Bicara, Rekam).
+     GPIO 0        | Onboard BOOT Button (Tekan untuk pemicu rekam curhat cepat).
   =============================================================================
 */
 
 #include <ArduinoJson.h>
-#include <WiFi.h>
-#include <Preferences.h>
 #include <driver/i2s.h>
 #include <math.h>
 
 // ---------- PIN ASSIGNMENT ----------
-const int LED_PIN    = 2;    // Built-in LED
-const int BUTTON_PIN = 0;    // BOOT Button
-const int TOUCH_PIN  = 4;    // TTP223 Touch Module Input (GPIO 4)
-const int LIGHT_PIN  = 34;   // LDR Sensor (ADC)
+const int LED_PIN    = 2;    // Built-in LED onboard
+const int BUTTON_PIN = 0;    // BOOT Button onboard
 
-// MAX98357A I2S Speaker (Port I2S_NUM_1)
+// MAX98357A I2S Speaker (Port I2S_NUM_1 - TX)
 #define I2S_SPK_PORT I2S_NUM_1
 #define I2S_SPK_BCLK 26
 #define I2S_SPK_LRC  25
 #define I2S_SPK_DIN  22
 
-// INMP441 I2S Microphone (Port I2S_NUM_0)
+// INMP441 I2S Microphone (Port I2S_NUM_0 - RX)
 #define I2S_MIC_PORT I2S_NUM_0
 #define I2S_MIC_SCK  14
 #define I2S_MIC_WS   33
 #define I2S_MIC_SD   32
 
-#define SIMULATE_SENSORS true
-
-// Storage Flash NVS
-Preferences preferences;
-
-// Status Robot
+// Status Robot ESA
 enum RobotState {
   STATE_IDLE,
   STATE_THINKING,
   STATE_SPEAKING,
-  STATE_TOUCHED
+  STATE_RECORDING
 };
 
 RobotState currentState = STATE_IDLE;
 unsigned long lastStateAnimMs = 0;
 bool ledState = false;
-unsigned long touchResetMs = 0;
 
-// Sensor & Telemetri
-float temperatureC = 27.6;
-float humidityPct  = 58.0;
-int   lightLevel   = 650;
-int   soundLevel   = 0;
-bool  manualOverride = false;
-
-// Serial Timing
+// Serial Buffer & Timing
 String inputBuffer;
-unsigned long lastSensorMs = 0;
-const unsigned long SENSOR_INTERVAL_MS = 2000;
+unsigned long lastSoundReportMs = 0;
+const unsigned long SOUND_REPORT_INTERVAL_MS = 250; // Update level mic ke web tiap 250ms
 
 // Debounce Tombol BOOT
 int lastButtonReading = HIGH;
@@ -98,22 +86,10 @@ unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 60;
 bool buttonPressedSent = false;
 
-// Sensor Sentuh TTP223
-bool isTouchActive = false;
-unsigned long lastTouchCheckMs = 0;
-unsigned long lastTouchTriggerMs = 0;
-const unsigned long touchCooldownMs = 1500;
-
 // Microphone VAD (Voice Activity Detection)
 unsigned long lastMicCheckMs = 0;
-int micNoiseFloor = 250;
-bool isUserSpeakingNearMic = false;
+int soundLevel = 0;
 unsigned long lastVoiceNoticeMs = 0;
-
-// WiFi State Machine
-bool wifiConnecting = false;
-unsigned long wifiConnectStartMs = 0;
-const unsigned long wifiTimeoutMs = 18000;
 
 // ---------- FUNGSI PROTOKOL SERIAL ----------
 void sendDoc(JsonDocument& doc) {
@@ -157,7 +133,7 @@ void initI2SSpeaker() {
   i2s_zero_dma_buffer(I2S_SPK_PORT);
 }
 
-// Memainkan nada murni sinusoidal lewat MAX98357A
+// Memainkan nada sinusoidal halus tanpa hentakan DC/klik pada MAX98357A
 void playToneI2S(float frequency, int durationMs, float volume = 0.35f) {
   if (frequency <= 0) {
     delay(durationMs);
@@ -171,44 +147,174 @@ void playToneI2S(float frequency, int durationMs, float volume = 0.35f) {
 
   float phase = 0;
   float phaseIncrement = (2.0f * PI * frequency) / sampleRate;
-  int amp = (int)(32767.0f * volume);
+  int maxAmp = (int)(32767.0f * volume);
 
   int samplesRemaining = numSamples;
+  int sampleIndex = 0;
+
   while (samplesRemaining > 0) {
     int chunk = (samplesRemaining > 64) ? 64 : samplesRemaining;
     for (int i = 0; i < chunk; i++) {
-      int16_t sample = (int16_t)(sin(phase) * amp);
+      // Soft attack & decay envelope untuk mencegah hentakan arus DC
+      float env = 1.0f;
+      if (sampleIndex < 70) {
+        env = (float)sampleIndex / 70.0f;
+      } else if (samplesRemaining - i < 70) {
+        env = (float)(samplesRemaining - i) / 70.0f;
+      }
+
+      int16_t sample = (int16_t)(sin(phase) * (maxAmp * env));
       phase += phaseIncrement;
       if (phase >= 2.0f * PI) phase -= 2.0f * PI;
-      buffer[i * 2]     = sample; // L
-      buffer[i * 2 + 1] = sample; // R
+
+      buffer[i * 2]     = sample; // Left
+      buffer[i * 2 + 1] = sample; // Right
+      sampleIndex++;
     }
     i2s_write(I2S_SPK_PORT, buffer, chunk * 4, &bytesWritten, portMAX_DELAY);
     samplesRemaining -= chunk;
   }
 }
 
-// Efek suara robot ESA
+// Melodi & Efek Suara Robot ESA
 void playRobotChime(int type) {
   if (type == 1) {
-    // Sapaan Ceria / Robot Ready (Do - Mi - Sol)
-    playToneI2S(523.25, 70, 0.30); // C5
-    playToneI2S(659.25, 80, 0.35); // E5
-    playToneI2S(783.99, 130, 0.40); // G5
+    // Sapaan Ceria / Robot Ready (Do - Mi - Sol - Do Tinggi)
+    playToneI2S(523.25, 60, 0.30); // C5
+    playToneI2S(659.25, 70, 0.32); // E5
+    playToneI2S(783.99, 90, 0.35); // G5
+    playToneI2S(1046.50, 150, 0.38); // C6
   } else if (type == 2) {
     // Tombol BOOT ditekan (Nada ramah naik)
-    playToneI2S(440.00, 60, 0.30); // A4
-    playToneI2S(880.00, 100, 0.35); // A5
-  } else if (type == 3) {
-    // Sentuhan Sayang / Pet Chime (Melodi lembut hangat)
-    playToneI2S(392.00, 80, 0.25); // G4
-    playToneI2S(523.25, 90, 0.30); // C5
-    playToneI2S(659.25, 120, 0.35); // E5
-    playToneI2S(1046.50, 180, 0.30); // C6
+    playToneI2S(440.00, 50, 0.28); // A4
+    playToneI2S(880.00, 90, 0.32); // A5
   } else if (type == 4) {
     // Thinking Hum
-    playToneI2S(330.00, 70, 0.20);
-    playToneI2S(392.00, 90, 0.25);
+    playToneI2S(330.00, 60, 0.18);
+    playToneI2S(392.00, 80, 0.22);
+  } else if (type == 5) {
+    // Mulai Merekam Suara (Bip Awas 880Hz)
+    playToneI2S(880.00, 90, 0.35);
+  } else if (type == 6) {
+    // Selesai Merekam (Bip Turun Ganda)
+    playToneI2S(880.00, 60, 0.28);
+    playToneI2S(659.25, 90, 0.25);
+  } else if (type == 7) {
+    // UJI COBA SPEAKER RESMI CARETECH (Melodi Bahagia 6 Nada)
+    playToneI2S(523.25, 80, 0.30); // C5
+    playToneI2S(587.33, 80, 0.32); // D5
+    playToneI2S(659.25, 80, 0.35); // E5
+    playToneI2S(783.99, 100, 0.38); // G5
+    playToneI2S(880.00, 110, 0.38); // A5
+    playToneI2S(1046.50, 220, 0.40); // C6
+  }
+}
+
+// Suara Robotik Ekspresif ESA (Procedural Robotic Speech)
+// Menghasilkan nada bicara robotik yang hidup dan hangat melalui speaker MAX98357A
+void playRobotSpeech(int syllables, const String& mood = "happy") {
+  if (syllables <= 0) syllables = 6;
+  if (syllables > 24) syllables = 24;
+
+  float basePitches[] = { 440.0f, 493.88f, 523.25f, 587.33f, 659.25f, 698.46f, 783.99f };
+  int numPitches = sizeof(basePitches) / sizeof(basePitches[0]);
+
+  digitalWrite(LED_PIN, HIGH);
+  for (int i = 0; i < syllables; i++) {
+    int pIdx = random(0, numPitches);
+    float pitch1 = basePitches[pIdx];
+    float pitch2 = pitch1 * (random(0, 2) == 0 ? 1.15f : 0.88f);
+    int dur = random(45, 95);
+
+    playToneI2S(pitch1, dur / 2, 0.30f);
+    playToneI2S(pitch2, dur / 2, 0.28f);
+
+    digitalWrite(LED_PIN, (i % 2 == 0) ? HIGH : LOW);
+    delay(random(15, 35));
+  }
+  digitalWrite(LED_PIN, LOW);
+}
+
+// ==========================================
+// PEMUTARAN AUDIO NYATA AI KE SPEAKER MAX98357A
+// ==========================================
+static const int8_t B64_INDEX[256] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,
+  52,53,54,55,56,57,58,59,60,61,-1,-1,-1, 0,-1,-1,
+  -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,
+  15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,
+  -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+  41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+};
+
+int decodeBase64Pcm(const char* input, uint8_t* output, int maxLen) {
+  int len = 0;
+  uint32_t val = 0;
+  int valb = -8;
+  for (const char* p = input; *p && *p != '='; p++) {
+    int8_t d = B64_INDEX[(uint8_t)*p];
+    if (d == -1) continue;
+    val = (val << 6) | d;
+    valb += 6;
+    if (valb >= 0) {
+      if (len < maxLen) output[len++] = (uint8_t)((val >> valb) & 0xFF);
+      valb -= 8;
+    }
+  }
+  return len;
+}
+
+// Menghentikan pemutaran audio di speaker secara seketika (Mute/Cut-off)
+void stopSpeakerAudio() {
+  i2s_zero_dma_buffer(I2S_SPK_PORT);
+  currentState = STATE_IDLE;
+  digitalWrite(LED_PIN, LOW);
+}
+
+// Memainkan chunk audio PCM 8-bit mono 8kHz langsung ke DAC MAX98357A
+void playAudioChunk8k(const char* b64Data) {
+  uint8_t rawPcm[384];
+  int numSamples = decodeBase64Pcm(b64Data, rawPcm, sizeof(rawPcm));
+  if (numSamples <= 0) return;
+
+  currentState = STATE_SPEAKING;
+
+  // Ubah PCM 8-bit unsigned mono (8kHz) menjadi 16-bit signed stereo (16kHz)
+  // Tiap sampel diduplikasi 2x agar sesuai dengan clock 16kHz MAX98357A
+  int16_t spkBuffer[128 * 2];
+  int bufIdx = 0;
+
+  for (int i = 0; i < numSamples; i++) {
+    // Normalisasi dan penguatan gain yang aman
+    int16_t s16 = (int16_t)((rawPcm[i] - 128) * 180);
+
+    // Frame 1
+    spkBuffer[bufIdx++] = s16; // Left
+    spkBuffer[bufIdx++] = s16; // Right
+    // Frame 2
+    spkBuffer[bufIdx++] = s16; // Left
+    spkBuffer[bufIdx++] = s16; // Right
+
+    if (bufIdx >= 256) {
+      size_t bytesWritten = 0;
+      i2s_write(I2S_SPK_PORT, spkBuffer, 256 * sizeof(int16_t), &bytesWritten, 40);
+      bufIdx = 0;
+    }
+  }
+
+  if (bufIdx > 0) {
+    size_t bytesWritten = 0;
+    i2s_write(I2S_SPK_PORT, spkBuffer, bufIdx * sizeof(int16_t), &bytesWritten, 40);
   }
 }
 
@@ -239,7 +345,7 @@ void initI2SMic() {
   i2s_set_pin(I2S_MIC_PORT, &pin_config);
 }
 
-// Membaca level kebisingan suara di sekitar mic (RMS)
+// Membaca level RMS mikrofon INMP441 secara real-time
 int readMicLevel() {
   int32_t samples[64];
   size_t bytesRead = 0;
@@ -250,25 +356,44 @@ int readMicLevel() {
   int count = bytesRead / sizeof(int32_t);
   long long sumSquare = 0;
   for (int i = 0; i < count; i++) {
-    int16_t sample16 = samples[i] >> 14; // Normalisasi ke 16-bit
+    int16_t sample16 = samples[i] >> 14; // Normalisasi ke 16-bit dengan penguatan 4x
     sumSquare += (long long)sample16 * sample16;
   }
   return (int)sqrt(sumSquare / count);
 }
 
-// Cek aktivitas suara siswa dekat microphone
+// Deteksi Aktivitas Suara (VAD), Barge-in, & Pelaporan ke Web
 void checkMicActivity() {
-  if (millis() - lastMicCheckMs < 100) return;
+  if (millis() - lastMicCheckMs < 60) return;
   lastMicCheckMs = millis();
 
   int currentRms = readMicLevel();
   soundLevel = currentRms;
 
-  // Jika suara melompat tinggi di atas rata-rata ruangan (suara bicara dekat)
+  // FITUR INTERUPSI (BARGE-IN): Jika robot sedang bicara dan siswa mulai berbicara ke mic,
+  // speaker fisik seketika langsung MATI!
+  if (currentState == STATE_SPEAKING && currentRms > 1600) {
+    stopSpeakerAudio();
+    JsonDocument doc;
+    doc["type"]   = "interrupted";
+    doc["reason"] = "user_speaking";
+    sendDoc(doc);
+    return;
+  }
+
+  // Kirim data level mic secara berkala untuk meter visual di web chat
+  if (millis() - lastSoundReportMs >= SOUND_REPORT_INTERVAL_MS && currentState == STATE_IDLE) {
+    lastSoundReportMs = millis();
+    JsonDocument doc;
+    doc["type"]  = "sound_meter";
+    doc["sound"] = soundLevel;
+    sendDoc(doc);
+  }
+
+  // Jika suara melompat tinggi (siswa sedang bicara dekat robot)
   if (currentRms > 1200 && (millis() - lastVoiceNoticeMs > 3500) && currentState == STATE_IDLE) {
     lastVoiceNoticeMs = millis();
 
-    // Beri tahu browser bahwa ada suara terdeteksi
     JsonDocument doc;
     doc["type"]  = "voice_detected";
     doc["level"] = currentRms;
@@ -277,7 +402,7 @@ void checkMicActivity() {
 }
 
 // ==========================================
-// PENGUJIAN MIC INMP441 & STREAM AUDIO KE LAPTOP (LOOPBACK)
+// STREAMING AUDIO INMP441 KE CHAT (BASE64 WAV)
 // ==========================================
 static const char B64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -339,24 +464,36 @@ void createWavHeader8Bit(uint8_t* header, uint32_t numSamples, uint32_t sampleRa
   header[43] = (uint8_t)((numSamples >> 24) & 0xFF);
 }
 
-void executeMicTestLoopback(int durationSeconds = 2) {
-  if (durationSeconds < 1) durationSeconds = 1;
-  if (durationSeconds > 3) durationSeconds = 3;
+// Rekam suara dari INMP441 secara dinamis (hingga 5-6 detik) dengan Smart VAD & Auto-Cut jeda hening
+void recordAndStreamAudio(int durationSeconds = 5, const char* context = "chat", bool loopbackToSpeaker = false) {
+  if (durationSeconds < 2) durationSeconds = 2;
+  if (durationSeconds > 6) durationSeconds = 6;
 
-  int totalSamples8k = 8000 * durationSeconds;
-
-  // Alokasi memori buffer WAV 8-bit (Header 44 byte + totalSamples8k)
+  int allocatedSeconds = durationSeconds;
+  int totalSamples8k = 8000 * allocatedSeconds;
   uint8_t* wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
-  if (!wavBuffer) {
-    durationSeconds = 1;
-    totalSamples8k  = 8000 * durationSeconds;
+
+  // Alokasi bertingkat (tiered fallback) untuk menjamin stabilitas RAM ESP32
+  if (!wavBuffer && allocatedSeconds > 4) {
+    allocatedSeconds = 4;
+    totalSamples8k = 8000 * allocatedSeconds;
+    wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
+  }
+  if (!wavBuffer && allocatedSeconds > 3) {
+    allocatedSeconds = 3;
+    totalSamples8k = 8000 * allocatedSeconds;
+    wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
+  }
+  if (!wavBuffer && allocatedSeconds > 2) {
+    allocatedSeconds = 2;
+    totalSamples8k = 8000 * allocatedSeconds;
     wavBuffer = (uint8_t*)malloc(44 + totalSamples8k);
   }
 
   if (!wavBuffer) {
-    sendStatus("error", "Gagal mengalokasikan memori RAM untuk perekaman suara.");
+    sendStatus("error", "Memori RAM ESP32 tidak mencukupi untuk buffer audio.");
     JsonDocument failDoc;
-    failDoc["type"]   = "mic_test";
+    failDoc["type"]   = "rec_status";
     failDoc["status"] = "error";
     failDoc["msg"]    = "RAM penuh";
     sendDoc(failDoc);
@@ -366,16 +503,26 @@ void executeMicTestLoopback(int durationSeconds = 2) {
   createWavHeader8Bit(wavBuffer, totalSamples8k, 8000);
   uint8_t* pcmData = wavBuffer + 44;
 
-  // Tahap 1: Mulai Rekam
+  // Notifikasi status rekam ke chat.html
+  currentState = STATE_RECORDING;
+  digitalWrite(LED_PIN, HIGH);
+
   JsonDocument recDoc;
-  recDoc["type"]     = "mic_test";
-  recDoc["status"]   = "recording";
-  recDoc["duration"] = durationSeconds;
+  recDoc["type"]        = "rec_status";
+  recDoc["status"]      = "recording";
+  recDoc["duration"]    = allocatedSeconds;
+  recDoc["max_seconds"] = allocatedSeconds;
+  recDoc["context"]     = context;
   sendDoc(recDoc);
 
-  digitalWrite(LED_PIN, HIGH);
-  playToneI2S(880, 100, 0.35); // Bip hardware jika ada speaker
+  playRobotChime(5); // Bip penanda mulai bicara
   delay(120);
+
+  // Bersihkan buffer serial dan buang sisa data I2S sebelum mulai merekam
+  inputBuffer = "";
+  size_t dummyBytes = 0;
+  int32_t dummyBuf[64];
+  i2s_read(I2S_MIC_PORT, dummyBuf, sizeof(dummyBuf), &dummyBytes, 20);
 
   int samplesRead16k = 0;
   int samplesStored8k = 0;
@@ -383,18 +530,55 @@ void executeMicTestLoopback(int durationSeconds = 2) {
   long long maxPeak = 0;
 
   unsigned long startTime = millis();
-  unsigned long timeout = (durationSeconds * 1000) + 1500;
+  unsigned long lastVoiceTime = startTime;
+  bool userHasSpoken = false;
+  bool earlyStop = false;
+  bool btnWasReleased = (digitalRead(BUTTON_PIN) == HIGH);
 
-  while (samplesStored8k < totalSamples8k && (millis() - startTime < timeout)) {
+  unsigned long maxTimeout = (allocatedSeconds * 1000) + 1200;
+
+  while (samplesStored8k < totalSamples8k && (millis() - startTime < maxTimeout) && !earlyStop) {
+    // 1. Cek instruksi stop dari Serial (hanya izinkan setelah 800ms untuk mencegah double-click web)
+    while (Serial.available()) {
+      char c = Serial.read();
+      if (c == '\n') {
+        if (inputBuffer.indexOf("stop_rec") >= 0 && (millis() - startTime >= 800)) {
+          earlyStop = true;
+        }
+        inputBuffer = "";
+      } else if (c != '\r' && inputBuffer.length() < 256) {
+        inputBuffer += c;
+      }
+    }
+    if (earlyStop) break;
+
+    // 2. Cek tombol BOOT fisik (wajib sempat dilepas HIGH dulu, lalu ditekan LOW lagi setelah 1 detik)
+    if (digitalRead(BUTTON_PIN) == HIGH) {
+      btnWasReleased = true;
+    }
+    if (btnWasReleased && (millis() - startTime >= 1000) && digitalRead(BUTTON_PIN) == LOW) {
+      earlyStop = true;
+      break;
+    }
+
+    // 3. Baca sampel audio dari INMP441
     size_t bytesRead = 0;
-    i2s_read(I2S_MIC_PORT, rawSamples, sizeof(rawSamples), &bytesRead, 50);
+    i2s_read(I2S_MIC_PORT, rawSamples, sizeof(rawSamples), &bytesRead, 30);
+    if (bytesRead == 0) continue;
 
     int count = bytesRead / sizeof(int32_t);
     for (int i = 0; i < count && samplesStored8k < totalSamples8k; i++) {
       int16_t val = (int16_t)(rawSamples[i] >> 14);
-      if (abs(val) > maxPeak) maxPeak = abs(val);
+      int16_t absVal = abs(val);
+      if (absVal > maxPeak) maxPeak = absVal;
 
-      // Downsample 16kHz ke 8kHz (ambil tiap kelipatan 2) dan beri gain 4x
+      // Smart VAD: Deteksi suara setelah gema bip awal mereda (lewat 400ms)
+      if ((millis() - startTime > 400) && absVal > 480) {
+        userHasSpoken = true;
+        lastVoiceTime = millis();
+      }
+
+      // Downsample 16kHz ke 8kHz & normalisasi PCM 8-bit unsigned
       if ((samplesRead16k % 2) == 0) {
         int32_t scaled = ((int32_t)val * 4) / 256 + 128;
         if (scaled < 0) scaled = 0;
@@ -403,185 +587,81 @@ void executeMicTestLoopback(int durationSeconds = 2) {
       }
       samplesRead16k++;
     }
+
+    // 4. SMART AUTO-CUT JEDA HENING (VAD):
+    // Jika siswa sudah berbicara, lalu hening/diam selama >= 1.2 detik (minimal rekam berjalan 1.8 detik)
+    if (userHasSpoken && (millis() - lastVoiceTime >= 1200) && (millis() - startTime >= 1800)) {
+      break;
+    }
+
+    // Jika siswa menyalakan mic tetapi tidak berbicara sama sekali selama 4.5 detik awal -> Auto Cut
+    if (!userHasSpoken && (millis() - startTime >= 4500)) {
+      break;
+    }
   }
 
   digitalWrite(LED_PIN, LOW);
-  delay(100);
+  playRobotChime(6); // Bip penanda selesai bicara
+  delay(60);
 
-  // Tahap 2: Kirim Audio ke Browser Laptop
-  JsonDocument playDoc;
-  playDoc["type"]   = "mic_test";
-  playDoc["status"] = "playing";
-  playDoc["peak"]   = maxPeak;
-  sendDoc(playDoc);
+  // Kunci flag tombol jika tombol BOOT masih ditekan agar tidak re-trigger
+  if (digitalRead(BUTTON_PIN) == LOW) {
+    buttonPressedSent = true;
+  }
 
-  // Stream WAV Base64 langsung ke Laptop via Serial! (Laptop speaker akan memainkan suaramu)
-  Serial.print("{\"type\":\"mic_audio\",\"peak\":");
+  // Buat header WAV berdasarkan jumlah sampel NYATA yang terekam
+  createWavHeader8Bit(wavBuffer, samplesStored8k, 8000);
+
+  float actualDuration = (float)samplesStored8k / 8000.0f;
+
+  // Kirim payload WAV Base64 ke chat.html
+  Serial.print("{\"type\":\"mic_audio\",\"context\":\"");
+  Serial.print(context);
+  Serial.print("\",\"duration\":");
+  Serial.print(actualDuration, 2);
+  Serial.print(",\"peak\":");
   Serial.print(maxPeak);
   Serial.print(",\"wav\":\"");
   writeBase64Stream(wavBuffer, 44 + samplesStored8k);
   Serial.println("\"}");
 
-  // Jika suatu saat speaker MAX98357A aktif kembali, putar juga ke hardware
-  playToneI2S(1046, 100, 0.30);
-  int16_t spkBuffer[64 * 2];
-  for (int i = 0; i < samplesStored8k; i += 64) {
-    int chunk = (samplesStored8k - i > 64) ? 64 : (samplesStored8k - i);
-    for (int j = 0; j < chunk; j++) {
-      int16_t s = (int16_t)((pcmData[i + j] - 128) * 128);
-      spkBuffer[j * 2]     = s;
-      spkBuffer[j * 2 + 1] = s;
+  // Jika mode tes loopback, putar juga ke speaker MAX98357A
+  if (loopbackToSpeaker && samplesStored8k > 0) {
+    playToneI2S(1046, 70, 0.25);
+    int16_t spkBuffer[64 * 2];
+    for (int i = 0; i < samplesStored8k; i += 64) {
+      int chunk = (samplesStored8k - i > 64) ? 64 : (samplesStored8k - i);
+      for (int j = 0; j < chunk; j++) {
+        int16_t s = (int16_t)((pcmData[i + j] - 128) * 128);
+        spkBuffer[j * 2]     = s;
+        spkBuffer[j * 2 + 1] = s;
+      }
+      size_t bw = 0;
+      i2s_write(I2S_SPK_PORT, spkBuffer, chunk * 4, &bw, 50);
     }
-    size_t bw = 0;
-    i2s_write(I2S_SPK_PORT, spkBuffer, chunk * 4, &bw, 50);
   }
 
   free(wavBuffer);
+  currentState = STATE_IDLE;
 
-  // Tahap 3: Selesai
-  delay(150);
   JsonDocument doneDoc;
-  doneDoc["type"]   = "mic_test";
-  doneDoc["status"] = "done";
-  doneDoc["peak"]   = maxPeak;
+  doneDoc["type"]     = "rec_status";
+  doneDoc["status"]   = "done";
+  doneDoc["context"]  = context;
+  doneDoc["duration"] = actualDuration;
+  doneDoc["peak"]     = maxPeak;
   sendDoc(doneDoc);
-
-  playRobotChime(1);
 }
 
 // ==========================================
-// PENGATURAN WIFI (NVS FLASH)
-// ==========================================
-void reportWifiStatus() {
-  JsonDocument doc;
-  doc["type"] = "wifi";
-
-  if (WiFi.status() == WL_CONNECTED) {
-    doc["status"] = "connected";
-    doc["ip"]     = WiFi.localIP().toString();
-    doc["ssid"]   = WiFi.SSID();
-    doc["rssi"]   = WiFi.RSSI();
-  } else if (wifiConnecting) {
-    doc["status"] = "connecting";
-    doc["ssid"]   = preferences.getString("ssid", "");
-  } else {
-    doc["status"] = "disconnected";
-  }
-  sendDoc(doc);
-}
-
-void startWifiConnect(const String& ssid, const String& pass) {
-  if (ssid.length() == 0) return;
-
-  WiFi.disconnect(true);
-  delay(100);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), pass.c_str());
-
-  wifiConnecting = true;
-  wifiConnectStartMs = millis();
-
-  JsonDocument doc;
-  doc["type"]   = "wifi";
-  doc["status"] = "connecting";
-  doc["ssid"]   = ssid;
-  sendDoc(doc);
-}
-
-void checkWifiLoop() {
-  if (wifiConnecting) {
-    if (WiFi.status() == WL_CONNECTED) {
-      wifiConnecting = false;
-      playRobotChime(1); // Sapaan ceria saat WiFi tersambung
-      reportWifiStatus();
-    } else if (millis() - wifiConnectStartMs >= wifiTimeoutMs) {
-      wifiConnecting = false;
-      JsonDocument doc;
-      doc["type"]   = "wifi";
-      doc["status"] = "failed";
-      doc["msg"]    = "Gagal tersambung (Waktu habis / Password keliru)";
-      sendDoc(doc);
-    }
-  }
-}
-
-// ==========================================
-// SENSOR SENTUH TTP223 (MODUL MERAH)
-// ==========================================
-void checkTouchSensor() {
-  if (millis() - lastTouchCheckMs < 50) return;
-  lastTouchCheckMs = millis();
-
-  // Modul TTP223 mengeluarkan logika HIGH saat disentuh
-  bool isTouched = (digitalRead(TOUCH_PIN) == HIGH);
-
-  if (isTouched && !isTouchActive && (millis() - lastTouchTriggerMs >= touchCooldownMs)) {
-    isTouchActive = true;
-    lastTouchTriggerMs = millis();
-
-    // Reaksi fisik robot
-    currentState = STATE_TOUCHED;
-    touchResetMs = millis() + 1500;
-    digitalWrite(LED_PIN, HIGH);
-    
-    // Putar melodi kasih sayang lewat speaker fisik MAX98357A
-    playRobotChime(3);
-
-    // Kirim notifikasi sentuh ke chat.html
-    JsonDocument doc;
-    doc["type"]   = "touch";
-    doc["action"] = "pet";
-    doc["text"]   = "(Siswa menyentuh modul sensor ESA dengan lembut)";
-    sendDoc(doc);
-  } else if (!isTouched) {
-    isTouchActive = false;
-  }
-
-  if (currentState == STATE_TOUCHED && millis() > touchResetMs) {
-    currentState = STATE_IDLE;
-    digitalWrite(LED_PIN, LOW);
-  }
-}
-
-// ==========================================
-// SENSOR LINGKUNGAN
-// ==========================================
-void updateSensors() {
-#if SIMULATE_SENSORS
-  if (!manualOverride) {
-    temperatureC += (random(-5, 6)) / 20.0f;
-    humidityPct  += (random(-5, 6)) / 10.0f;
-    lightLevel   += random(-25, 26);
-    temperatureC = constrain(temperatureC, 21.0f, 35.0f);
-    humidityPct  = constrain(humidityPct, 42.0f, 85.0f);
-    lightLevel   = constrain(lightLevel, 120, 3600);
-  }
-#else
-  lightLevel = analogRead(LIGHT_PIN);
-#endif
-}
-
-void sendSensorData() {
-  JsonDocument doc;
-  doc["type"]      = "sensor";
-  doc["temp"]      = round(temperatureC * 10) / 10.0;
-  doc["hum"]       = round(humidityPct * 10) / 10.0;
-  doc["light"]     = lightLevel;
-  doc["sound"]     = soundLevel;
-  doc["simulated"] = SIMULATE_SENSORS ? true : false;
-  sendDoc(doc);
-}
-
-// ==========================================
-// PARSING PERINTAH DARI CHAT.HTML
+// PARSING PERINTAH DARI BROWSER (CHAT.HTML)
 // ==========================================
 void handleAction(const String& state) {
   if (state == "thinking") {
     currentState = STATE_THINKING;
-    playRobotChime(4); // Soft thinking sound
+    playRobotChime(4);
   } else if (state == "speaking") {
     currentState = STATE_SPEAKING;
-    playRobotChime(1); // Suara menyapa saat mulai berbicara
   } else if (state == "happy") {
     playRobotChime(1);
   } else {
@@ -602,52 +682,57 @@ void handleLine(String line) {
 
   if (type == "action") {
     handleAction(doc["state"].as<String>());
+  } else if (type == "play_chunk") {
+    // Aliran suara nyata AI dari browser ke speaker MAX98357A
+    const char* b64 = doc["data"];
+    if (b64) {
+      playAudioChunk8k(b64);
+    }
+  } else if (type == "play_end" || type == "stop_audio") {
+    // Hentikan suara speaker seketika
+    stopSpeakerAudio();
+  } else if (type == "test_speaker") {
+    // Perintah uji coba speaker MAX98357A langsung
+    playRobotChime(7);
+    sendStatus("status", "Melodi uji coba MAX98357A selesai dimainkan");
+  } else if (type == "speak") {
+    // Robot bersuara ekspresif lewat speaker MAX98357A disinkronkan dengan chat
+    int syllables = doc["syllables"] | 8;
+    String mood   = doc["mood"] | "happy";
+    currentState  = STATE_SPEAKING;
+    playRobotSpeech(syllables, mood);
+    currentState  = STATE_IDLE;
   } else if (type == "test_mic") {
-    // Perintah uji coba mic dari web (rekam 3 detik & putar balik ke speaker)
-    int dur = doc["duration"] | 3;
-    executeMicTestLoopback(dur);
+    // Uji coba mic INMP441 & loopback ke speaker (dinamis hingga 4 detik)
+    int dur = doc["duration"] | 4;
+    recordAndStreamAudio(dur, "test", true);
+  } else if (type == "stop_rec") {
+    // Selesai rekam manual via web chat
+    currentState = STATE_IDLE;
+  } else if (type == "start_rec") {
+    // Merekam curhat suara siswa dari mikrofon INMP441 (dinamis hingga 5-6 detik dengan Smart VAD)
+    stopSpeakerAudio(); // Pastikan speaker mati saat rekam dimulai
+    int dur = doc["duration"] | 5;
+    recordAndStreamAudio(dur, "chat", false);
   } else if (type == "play_tone") {
-    // Browser bisa meminta ESP32 membunyikan frekuensi tertentu!
     float freq = doc["freq"] | 440.0f;
     int dur    = doc["dur"]  | 100;
     playToneI2S(freq, dur, 0.35f);
-  } else if (type == "set_wifi") {
-    String ssid = doc["ssid"].as<String>();
-    String pass = doc["pass"].as<String>();
-
-    preferences.putString("ssid", ssid);
-    preferences.putString("pass", pass);
-
-    startWifiConnect(ssid, pass);
-  } else if (type == "get_wifi") {
-    reportWifiStatus();
-  } else if (type == "clear_wifi") {
-    preferences.remove("ssid");
-    preferences.remove("pass");
-    WiFi.disconnect(true);
-    reportWifiStatus();
-  } else if (type == "set_sensor") {
-    if (doc["temp"].is<float>())  temperatureC = doc["temp"];
-    if (doc["hum"].is<float>())   humidityPct  = doc["hum"];
-    if (doc["light"].is<int>())   lightLevel   = doc["light"];
-    manualOverride = true;
-    sendSensorData();
-  } else if (type == "auto_sensor") {
-    manualOverride = false;
-    sendStatus("status", "Sensor kembali otomatis");
   } else if (type == "ping") {
     sendStatus("status", "pong");
   }
 }
 
 // ==========================================
-// ANIMASI EKSPRESI LED
+// ANIMASI EKSPRESI LED ONBOARD
 // ==========================================
 void updateLedAnimation() {
   unsigned long now = millis();
 
-  if (currentState == STATE_THINKING) {
-    if (now - lastStateAnimMs >= 100) {
+  if (currentState == STATE_RECORDING) {
+    digitalWrite(LED_PIN, HIGH);
+  } else if (currentState == STATE_THINKING) {
+    if (now - lastStateAnimMs >= 90) {
       lastStateAnimMs = now;
       ledState = !ledState;
       digitalWrite(LED_PIN, ledState ? HIGH : LOW);
@@ -658,10 +743,8 @@ void updateLedAnimation() {
       ledState = !ledState;
       digitalWrite(LED_PIN, ledState ? HIGH : LOW);
     }
-  } else if (currentState == STATE_TOUCHED) {
-    digitalWrite(LED_PIN, HIGH);
   } else {
-    // Mode Standby: Denyut lembut tiap 3 detik
+    // Mode Standby: Denyut lembut per 3 detik
     unsigned long cycle = now % 3000;
     if (cycle < 60) {
       digitalWrite(LED_PIN, HIGH);
@@ -672,7 +755,7 @@ void updateLedAnimation() {
 }
 
 // ==========================================
-// TOMBOL BOOT FISIK (GPIO 0)
+// TOMBOL BOOT FISIK ONBOARD (GPIO 0)
 // ==========================================
 void checkCurhatButton() {
   int reading = digitalRead(BUTTON_PIN);
@@ -684,13 +767,20 @@ void checkCurhatButton() {
   if ((millis() - lastDebounceTime) > debounceDelay) {
     if (reading == LOW && !buttonPressedSent) {
       buttonPressedSent = true;
+
+      // Jika robot sedang bicara, langsung potong suara speaker seketika!
+      if (currentState == STATE_SPEAKING) {
+        stopSpeakerAudio();
+        JsonDocument intDoc;
+        intDoc["type"]   = "interrupted";
+        intDoc["reason"] = "button_press";
+        sendDoc(intDoc);
+      }
+
       playRobotChime(2);
 
-      JsonDocument doc;
-      doc["type"]   = "button";
-      doc["action"] = "curhat";
-      doc["text"]   = "Hai ESA! Aku menekan tombol di robotmu karena ingin curhat...";
-      sendDoc(doc);
+      // Otomatis picu rekam suara curhat langsung dari robot! (Dinamis hingga 5-6s dengan Smart VAD)
+      recordAndStreamAudio(5, "button_curhat", false);
     } else if (reading == HIGH) {
       buttonPressedSent = false;
     }
@@ -710,38 +800,25 @@ void setup() {
   digitalWrite(LED_PIN, LOW);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(TOUCH_PIN, INPUT); // TTP223 Red Module
 
   randomSeed(esp_random());
-  delay(300);
+  delay(200);
 
-  // Inisialisasi Audio I2S
-  initI2SSpeaker(); // MAX98357A pada I2S_NUM_1
-  initI2SMic();     // INMP441 pada I2S_NUM_0
+  // Inisialisasi Audio Hardware I2S (Tanpa radio WiFi - bebas RF noise!)
+  initI2SSpeaker(); // MAX98357A pada I2S_NUM_1 (GPIO 26, 25, 22)
+  initI2SMic();     // INMP441 pada I2S_NUM_0 (GPIO 14, 33, 32)
 
-  // Inisialisasi Memori WiFi
-  preferences.begin("caretech", false);
-  String savedSSID = preferences.getString("ssid", "");
-  String savedPass = preferences.getString("pass", "");
+  sendStatus("status", "CareTech ESA Siap! (MAX98357A Speaker + INMP441 Mic)");
 
-  sendStatus("status", "CareTech ESA Robot Siap! (I2S Speaker + Mic + TTP223 Touch + Web WiFi)");
-  
-  // Bunyi nada sapaan awal lewat speaker fisik MAX98357A!
+  // Mainkan sapaan ceria awal lewat speaker MAX98357A
   playRobotChime(1);
-  sendSensorData();
-
-  if (savedSSID.length() > 0) {
-    startWifiConnect(savedSSID, savedPass);
-  } else {
-    reportWifiStatus();
-  }
 }
 
 // ==========================================
-// LOOP
+// MAIN LOOP
 // ==========================================
 void loop() {
-  // 1. Baca Perintah Masuk dari Web chat.html
+  // 1. Baca Perintah Masuk dari Browser chat.html
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n') {
@@ -752,25 +829,12 @@ void loop() {
     }
   }
 
-  // 2. Cek Sensor Sentuh TTP223 (GPIO 4)
-  checkTouchSensor();
-
-  // 3. Cek Mikrofon INMP441 (Aktivitas Suara)
+  // 2. Cek Mikrofon INMP441 (Aktivitas Suara / VAD)
   checkMicActivity();
 
-  // 4. Cek Tombol BOOT (GPIO 0)
+  // 3. Cek Tombol BOOT (GPIO 0)
   checkCurhatButton();
 
-  // 5. Cek Status Koneksi WiFi
-  checkWifiLoop();
-
-  // 6. Animasi LED
+  // 4. Animasi LED Onboard
   updateLedAnimation();
-
-  // 7. Pengiriman Sensor Lingkungan Berkala
-  if (millis() - lastSensorMs >= SENSOR_INTERVAL_MS) {
-    lastSensorMs = millis();
-    updateSensors();
-    sendSensorData();
-  }
 }
