@@ -928,16 +928,6 @@ window.LEVEL_1_DIALOGUES = {
       en: '"I will report to Bu Wati."',
       id: '"Aku akan lapor ke Bu Wati."'
     },
-    next: 'lvl1_059b_2_ui'
-  },
-  lvl1_059b_2_ui: {
-    id: '059b-2',
-    speaker: { en: 'QUEST', id: 'QUEST' },
-    portrait: null,
-    text: {
-      en: 'QUEST: "Find Bu Wati in the library."',
-      id: 'QUEST: "Cari Bu Wati di perpustakaan."'
-    },
     next: null,
     onCloseAction: 'lvl1_059b_start_quest'
   },
@@ -967,9 +957,11 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'The screen dims momentarily as Bu Wati and Nakula head towards the cafeteria.',
-      id: 'Layar menggelap sejenak, menandakan perjalanan Bu Wati dan Nakula menuju kantin.'
+      en: 'Bu Wati nods, then quickly walks with Nakula towards the cafeteria.',
+      id: 'Bu Wati mengangguk, lalu bersama Nakula ia berjalan cepat menuju kantin.'
     },
+    action: 'lvl1_059b_walk_out_library',
+    noManualAdvance: true,
     next: null,
     onCloseAction: 'lvl1_059b_transition_to_cafeteria'
   },
@@ -1009,8 +1001,8 @@ window.LEVEL_1_DIALOGUES = {
     speaker: { en: 'Narator', id: 'Narator' },
     portrait: null,
     text: {
-      en: 'Bu Wati and Nakula automatically walk over to Nabula\'s table.',
-      id: 'Bu Wati dan Nakula otomatis berjalan menghampiri meja Nabula.'
+      en: 'Bu Wati and Nakula walk over to Nabula\'s table. Bagas and Rio haven\'t noticed their presence yet.',
+      id: 'Bu Wati dan Nakula berjalan menghampiri meja Nabula. Bagas dan Rio belum menyadari kehadiran mereka.'
     },
     action: 'lvl1_059b_walk_to_table',
     noManualAdvance: true,
@@ -1034,16 +1026,6 @@ window.LEVEL_1_DIALOGUES = {
       en: '"...Yes, Ma\'am."',
       id: '"...Iya, Bu."'
     },
-    next: 'lvl1_059b_14_narrator'
-  },
-  lvl1_059b_14_narrator: {
-    id: '059b-14',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'Bagas and Rio stand up reluctantly near Bu Wati. No one is scolded publicly.',
-      id: 'Bagas dan Rio berdiri dengan enggan di dekat Bu Wati. Tidak ada yang dimarahi di depan umum.'
-    },
     next: 'lvl1_059b_15_bu_wati'
   },
   lvl1_059b_15_bu_wati: {
@@ -1064,17 +1046,7 @@ window.LEVEL_1_DIALOGUES = {
       en: 'The screen dims for a moment. Bu Wati, Bagas, and Rio leave the cafeteria table towards the next room.',
       id: 'Layar menggelap sejenak. Bu Wati, Bagas, dan Rio meninggalkan meja kantin menuju ruang sebelah.'
     },
-    next: null,
-    onCloseAction: 'lvl1_059b_bullies_leave_with_teacher'
-  },
-  lvl1_059b_15c_effect: {
-    id: '059b-15c',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'The screen brightens again. Only Nakula and Nabula remain at the cafeteria table.',
-      id: 'Layar kembali terang. Hanya Nakula dan Nabula di meja kantin.'
-    },
+    action: 'lvl1_059b_fade_out_cafeteria',
     next: 'lvl1_059b_16_nabula'
   },
   lvl1_059b_16_nabula: {
@@ -1085,6 +1057,7 @@ window.LEVEL_1_DIALOGUES = {
       en: '"They do that often... Thank you, Nakula, for reporting."',
       id: '"Mereka sering melakukan itu... Makasih, Nakula, sudah mau lapor."'
     },
+    action: 'lvl1_059b_fade_in_cafeteria',
     next: 'lvl1_059b_17_narrator'
   },
   lvl1_059b_17_narrator: {
@@ -1121,16 +1094,6 @@ window.LEVEL_1_DIALOGUES = {
     },
     action: 'lvl1_059c_nabula_runs_away',
     noManualAdvance: true,
-    next: 'lvl1_059c_5_ui'
-  },
-  lvl1_059c_5_ui: {
-    id: '059c-5',
-    speaker: { en: 'QUEST', id: 'QUEST' },
-    portrait: null,
-    text: {
-      en: 'QUEST: "Find Nabula in the garden."',
-      id: 'QUEST: "Cari Nabula di taman."'
-    },
     next: null,
     onCloseAction: 'lvl1_059c_start_garden_quest'
   },
@@ -1262,28 +1225,8 @@ window.LEVEL_1_DIALOGUES = {
       en: 'Nabula nods gently, then stands up together with Nakula.',
       id: 'Nabula mengangguk pelan, lalu berdiri bersama Nakula.'
     },
-    next: 'lvl1_059c_21_ui'
-  },
-  lvl1_059c_21_ui: {
-    id: '059c-21',
-    speaker: { en: 'QUEST', id: 'QUEST' },
-    portrait: null,
-    text: {
-      en: 'QUEST: "Meet Bu Wati in the library together with Nabula."',
-      id: 'QUEST: "Temui Bu Wati di perpustakaan bersama Nabula."'
-    },
     next: null,
     onCloseAction: 'lvl1_059c_transition_to_library'
-  },
-  lvl1_059c_23_effect: {
-    id: '059c-23',
-    speaker: { en: 'Narator', id: 'Narator' },
-    portrait: null,
-    text: {
-      en: 'The screen brightens again. Nakula and Nabula are now inside the library.',
-      id: 'Layar kembali terang. Nakula dan Nabula kini berada di dalam perpustakaan.'
-    },
-    next: 'lvl1_059c_24_effect'
   },
   lvl1_059c_24_effect: {
     id: '059c-24',

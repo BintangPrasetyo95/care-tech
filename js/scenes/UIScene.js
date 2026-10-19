@@ -777,6 +777,7 @@ class UIScene extends Phaser.Scene {
 
     // Interact Prompt
     this.interactPrompt.setPosition(width / 2, height - 130);
+    if (this.toastText) this.toastText.setPosition(width / 2, height - 120);
 
     // Quest Banner
     if (this.questContainer) {
@@ -1203,6 +1204,47 @@ class UIScene extends Phaser.Scene {
     }
   }
 
+  /** Show a temporary warning/info toast badge (e.g. door barrier notice) without closing quest banner */
+  showToast(text, duration = 2000) {
+    if (!this.toastText) {
+      const { width, height } = this.scale;
+      this.toastText = this._createSharpText(width / 2, height - 120, '', {
+        fontFamily: '"GROBOLD", "Inter", "Segoe UI", system-ui, sans-serif',
+        fontSize: '12px',
+        color: '#ffffff',
+        backgroundColor: '#ff2e93',
+        padding: { x: 14, y: 7 }
+      }).setOrigin(0.5).setScrollFactor(1).setDepth(250).setAlpha(0);
+    }
+
+    if (this._toastTimer) {
+      this._toastTimer.destroy();
+      this._toastTimer = null;
+    }
+
+    this.toastText.setText(text);
+    this.tweens.killTweensOf(this.toastText);
+    this.toastText.setScale(0.9);
+
+    this.tweens.add({
+      targets: this.toastText,
+      alpha: 1,
+      scale: 1,
+      duration: 180,
+      ease: 'Back.easeOut'
+    });
+
+    this._toastTimer = this.time.delayedCall(duration, () => {
+      this.tweens.add({
+        targets: this.toastText,
+        alpha: 0,
+        scale: 0.9,
+        duration: 250,
+        ease: 'Power2'
+      });
+    });
+  }
+
   /* ══════════ Dialogue Rendering ══════════ */
 
   _showNode(nodeId) {
@@ -1489,7 +1531,9 @@ class UIScene extends Phaser.Scene {
   }
 
   enableDialogueAdvance(targetNode = null) {
-    const nextNode = targetNode || (this._currentNode ? this._currentNode.next : null);
+    const allDialogues = (window.DIALOGUES || (typeof DIALOGUES !== 'undefined' ? DIALOGUES : {}));
+    const cur = this._currentDialogueNode ? allDialogues[this._currentDialogueNode] : null;
+    const nextNode = (typeof targetNode === 'string' ? targetNode : null) || (cur ? cur.next : null);
     if (nextNode) {
       this._setupDialogueAdvance(() => {
         this._showNode(nextNode);
@@ -1523,6 +1567,10 @@ class UIScene extends Phaser.Scene {
     } else {
       this._closeDialogue();
     }
+  }
+
+  closeDialogue() {
+    this._closeDialogue();
   }
 
   _closeDialogue() {

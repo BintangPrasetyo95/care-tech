@@ -236,7 +236,7 @@ class WorldScene extends Phaser.Scene {
 
     /* ── Check Level 1 Branch C: Arrival at Library with Nabula ── */
     if (mapKey === 'library' && this.registry.get('level1_branch_c_nabula_at_library') && !this.registry.get('level1_branch_c_reached_wati')) {
-      console.log('%c[Perpustakaan 059c] Nakula & Nabula tiba di perpustakaan! Memulai cutscene 059c-23...', 'color: #38bdf8; font-weight: bold;');
+      console.log('%c[Perpustakaan 059c] Nakula & Nabula tiba di perpustakaan...', 'color: #38bdf8; font-weight: bold;');
       this.registry.set('level1_player_locked', true);
       if (this.player) {
         this.player.isLocked = true;
@@ -246,12 +246,26 @@ class WorldScene extends Phaser.Scene {
           this.player.sprite.anims.play('player_idle_right', true);
         }
       }
-      this.time.delayedCall(400, () => {
+
+      const onScreenFullyBright = () => {
+        console.log('%c[Perpustakaan 059c] Layar sudah 100% terang! Menampilkan dialog lvl1_059c_24_effect...', 'color: #22c55e; font-weight: bold;');
         const ui = this.scene.get('UI');
         if (ui && ui.startDialogue) {
-          ui.startDialogue('lvl1_059c_23_effect');
+          ui.startDialogue('lvl1_059c_24_effect');
         }
-      });
+      };
+
+      // Pastikan layar sudah 100% terang baru dialog 059c-24 muncul dan action walk_to_wati berjalan
+      if (this.cameras.main.fadeEffect && this.cameras.main.fadeEffect.isRunning) {
+        this.cameras.main.once('camerafadeincomplete', () => {
+          this.time.delayedCall(100, onScreenFullyBright);
+        });
+      } else {
+        this.cameras.main.fadeIn(500, 0, 0, 0);
+        this.cameras.main.once('camerafadeincomplete', () => {
+          this.time.delayedCall(100, onScreenFullyBright);
+        });
+      }
     }
 
     // Pasang helper debug console untuk pengujian cepat
@@ -1029,7 +1043,7 @@ class WorldScene extends Phaser.Scene {
 
         const ui = this.scene.get('UI');
         if (ui && ui.showQuest) {
-          ui.showQuest('PROGRES: Temukan petunjuk (0/3)');
+          ui.showQuest('PROGRES: Temukan petunjuk di perpustakaan (0/3)');
         }
         if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
       } else if (action === 'lvl1_030_clue_found_book') {
@@ -1067,7 +1081,7 @@ class WorldScene extends Phaser.Scene {
         if (this.player) this.player.isLocked = false;
         const ui = this.scene.get('UI');
         if (ui && ui.showQuest) {
-          ui.showQuest('3/3 — Semua petunjuk terkumpul.');
+          ui.showQuest('3/3 — Semua petunjuk di perpustakaan terkumpul.');
         }
         if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
 
@@ -1236,16 +1250,68 @@ class WorldScene extends Phaser.Scene {
           nabula.showEmotion('😮');
         }
       } else if (action === 'lvl1_059a_bullies_leave') {
-        console.log('%c[Kantin 059a] Bagas dan Rio meninggalkan meja kantin berurutan lewat lorong aman...', 'color: #f59e0b; font-weight: bold;');
+        console.log('%c[Kantin 059a] Bagas dan Rio meninggalkan meja kantin berurutan, Nakula duduk di depan Nabula...', 'color: #f59e0b; font-weight: bold;');
+        let bulliesDone = false;
+        let nakulaDone = false;
+
+        const checkBothDone = () => {
+          if (bulliesDone && nakulaDone) {
+            console.log('%c[Kantin 059a] Bagas/Rio telah bubar dan Nakula sudah duduk di depan Nabula. Mengizinkan lanjut dialog...', 'color: #10b981; font-weight: bold;');
+            const ui = this.scene.get('UI');
+            if (ui && ui.enableDialogueAdvance) {
+              ui.enableDialogueAdvance('lvl1_059a_11_nabula');
+            } else if (ui && ui._setupDialogueAdvance) {
+              ui._setupDialogueAdvance(() => {
+                ui._showNode('lvl1_059a_11_nabula');
+              });
+            }
+          }
+        };
+
         this._bulliesLeaveCafeteria(() => {
-          console.log('%c[Kantin 059a] Bagas & Rio selesai meninggalkan kantin. Mengizinkan pemain melanjutkan ke 059a-11...', 'color: #10b981; font-weight: bold;');
-          const ui = this.scene.get('UI');
-          if (ui && ui.enableDialogueAdvance) {
-            ui.enableDialogueAdvance('lvl1_059a_11_nabula');
-          } else if (ui && ui._setupDialogueAdvance) {
-            ui._setupDialogueAdvance(() => {
-              ui._showNode('lvl1_059a_11_nabula');
+          bulliesDone = true;
+          checkBothDone();
+        });
+
+        // Setelah Bagas & Rio mulai bergerak turun menjauhi meja (jeda 700ms), Nakula berjalan ke kursi di depan Nabula (13.3, 6)
+        this.time.delayedCall(700, () => {
+          if (this.player && this.player.sprite) {
+            const p = this.player.sprite;
+            p.setFlipX(false);
+            p.anims.play('player_walk_right', true);
+
+            this.tweens.chain({
+              targets: p,
+              tweens: [
+                {
+                  x: 13.3 * TILE + TILE / 2,
+                  duration: 250,
+                  ease: 'Linear',
+                  onComplete: () => {
+                    p.anims.play('player_walk_up', true);
+                  }
+                },
+                {
+                  y: 6 * TILE + TILE / 2,
+                  duration: 250,
+                  ease: 'Linear',
+                  onComplete: () => {
+                    p.setFlipX(true);
+                    p.anims.play('player_idle_left', true);
+                    this.player.facing = 'left';
+                    const nabula = this.npcs.find(n => n.key === 'nabula');
+                    if (nabula && nabula.sprite) {
+                      nabula.sprite.anims.play('nabula_idle_right', true);
+                    }
+                    nakulaDone = true;
+                    checkBothDone();
+                  }
+                }
+              ]
             });
+          } else {
+            nakulaDone = true;
+            checkBothDone();
           }
         });
       } else if (action === 'lvl1_059a_complete') {
@@ -1279,9 +1345,103 @@ class WorldScene extends Phaser.Scene {
         if (wati && wati.clearEmotion) {
           wati.clearEmotion();
         }
-      } else if (action === 'lvl1_059b_fade_out_library') {
-        console.log('%c[Perpustakaan 059b] Layar menggelap (fade out ke hitam)...', 'color: #64748b; font-weight: bold;');
-        this.cameras.main.fadeOut(600, 0, 0, 0);
+      } else if (action === 'lvl1_059b_walk_out_library') {
+        console.log('%c[Perpustakaan 059b] Bu Wati & Nakula berjalan keluar perpustakaan menuju kantin, layar menggelap...', 'color: #3b82f6; font-weight: bold;');
+        this.registry.set('level1_player_locked', true);
+        const wati = this.npcs.find(n => n.key === 'wati');
+
+        // Layar langsung menggelap begitu dialog muncul
+        this.cameras.main.fadeOut(800, 0, 0, 0);
+
+        // Bu Wati berjalan memimpin ke arah pintu keluar (1, 9.5)
+        if (wati && wati.sprite) {
+          const ws = wati.sprite;
+          ws.setFlipX(false);
+          ws.anims.play('wati_walk_down', true);
+
+          this.tweens.chain({
+            targets: ws,
+            tweens: [
+              {
+                y: 3.5 * TILE + TILE / 2,
+                duration: 400,
+                ease: 'Linear',
+                onComplete: () => {
+                  ws.setFlipX(true);
+                  ws.anims.play('wati_walk_left', true);
+                }
+              },
+              {
+                x: 6.5 * TILE + TILE / 2,
+                duration: 400,
+                ease: 'Linear',
+                onComplete: () => {
+                  ws.setFlipX(false);
+                  ws.anims.play('wati_walk_down', true);
+                }
+              },
+              {
+                y: 9.5 * TILE + TILE / 2,
+                duration: 600,
+                ease: 'Linear',
+                onComplete: () => {
+                  ws.setFlipX(true);
+                  ws.anims.play('wati_walk_left', true);
+                }
+              },
+              {
+                x: 1 * TILE + TILE / 2,
+                duration: 600,
+                ease: 'Linear'
+              }
+            ]
+          });
+        }
+
+        // Nakula mengikuti di belakang Bu Wati
+        if (this.player && this.player.sprite) {
+          const p = this.player.sprite;
+          p.setFlipX(true);
+          p.anims.play('player_walk_left', true);
+
+          this.tweens.chain({
+            targets: p,
+            tweens: [
+              {
+                x: 6.5 * TILE + TILE / 2,
+                duration: 400,
+                ease: 'Linear',
+                onComplete: () => {
+                  p.setFlipX(false);
+                  p.anims.play('player_walk_down', true);
+                }
+              },
+              {
+                y: 9.5 * TILE + TILE / 2,
+                duration: 600,
+                ease: 'Linear',
+                onComplete: () => {
+                  p.setFlipX(true);
+                  p.anims.play('player_walk_left', true);
+                }
+              },
+              {
+                x: 1.8 * TILE + TILE / 2,
+                duration: 600,
+                ease: 'Linear'
+              }
+            ]
+          });
+        }
+
+        // Tunggu 5 detik baru pemain bisa melanjutkan / next dialog (bukan menunggu gerakan selesai)
+        this.time.delayedCall(5000, () => {
+          console.log('%c[Perpustakaan 059b] 5 detik berlalu. Mengizinkan pemain melanjutkan / next dialog...', 'color: #10b981; font-weight: bold;');
+          const ui = this.scene.get('UI');
+          if (ui && ui.enableDialogueAdvance) {
+            ui.enableDialogueAdvance();
+          }
+        });
       } else if (action === 'lvl1_059b_transition_to_cafeteria') {
         console.log('%c[Perpustakaan 059b] Transisi ke kantin bersama Bu Wati...', 'color: #38bdf8; font-weight: bold;');
         this.registry.set('level1_quest_active', null);
@@ -1412,28 +1572,49 @@ class WorldScene extends Phaser.Scene {
             });
           });
         }
-      } else if (action === 'lvl1_059b_bullies_leave_with_teacher') {
-        console.log('%c[Kantin 059b] Bu Wati membawa Bagas dan Rio keluar ke ruang sebelah...', 'color: #f59e0b; font-weight: bold;');
+      } else if (action === 'lvl1_059b_fade_out_cafeteria') {
+        console.log('%c[Kantin 059b] Layar menggelap seketika saat dialog 059b-15b muncul...', 'color: #64748b; font-weight: bold;');
         const bagas = this.npcs.find(n => n.key === 'bagas');
         const rio = this.npcs.find(n => n.key === 'rio');
         const wati = this.npcs.find(n => n.key === 'wati');
         this.registry.set('level1_058x_bullies_left', true);
         this.registry.set('level1_branch_b_bu_wati_at_cafeteria', false);
 
-        this.cameras.main.fadeOut(500, 0, 0, 0);
+        // Langsung fadeOut
+        this.cameras.main.fadeOut(600, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
           if (bagas && bagas.sprite) bagas.sprite.setVisible(false);
           if (rio && rio.sprite) rio.sprite.setVisible(false);
           if (wati && wati.sprite) wati.sprite.setVisible(false);
-
-          this.cameras.main.fadeIn(500, 0, 0, 0);
-          this.time.delayedCall(300, () => {
-            const ui = this.scene.get('UI');
-            if (ui && ui.startDialogue) {
-              ui.startDialogue('lvl1_059b_15c_effect');
-            }
-          });
         });
+      } else if (action === 'lvl1_059b_fade_in_cafeteria') {
+        console.log('%c[Kantin 059b] Dialog 059b-16 muncul! Nakula duduk di depan Nabula dan layar kembali terang...', 'color: #10b981; font-weight: bold;');
+        const bagas = this.npcs.find(n => n.key === 'bagas');
+        const rio = this.npcs.find(n => n.key === 'rio');
+        const wati = this.npcs.find(n => n.key === 'wati');
+        if (bagas && bagas.sprite) bagas.sprite.setVisible(false);
+        if (rio && rio.sprite) rio.sprite.setVisible(false);
+        if (wati && wati.sprite) wati.sprite.setVisible(false);
+
+        // Reposisi Nakula di depan Nabula (13.3, 6) menghadap kiri
+        if (this.player && this.player.sprite) {
+          this.player.sprite.x = 13.3 * TILE + TILE / 2;
+          this.player.sprite.y = 6 * TILE + TILE / 2;
+          this.player.sprite.setFlipX(true);
+          this.player.sprite.anims.play('player_idle_left', true);
+          this.player.facing = 'left';
+        }
+        const nabula = this.npcs.find(n => n.key === 'nabula');
+        if (nabula && nabula.sprite) {
+          nabula.sprite.anims.play('nabula_idle_right', true);
+        }
+
+        this.cameras.main.stopFollow();
+        this.tweens.killTweensOf(this.cameras.main);
+        this.cameras.main.centerOn(12.6 * TILE + TILE / 2, 6 * TILE + TILE / 2);
+
+        // Layar kembali terang
+        this.cameras.main.fadeIn(600, 0, 0, 0);
       } else if (action === 'lvl1_059b_complete') {
         console.log('%c[Kantin 059b] Jalur B selesai! Transisi ke Node 060...', 'color: #10b981; font-weight: bold;');
         this.registry.set('level1_branch_b_done', true);
@@ -1482,18 +1663,17 @@ class WorldScene extends Phaser.Scene {
                         onComplete: () => {
                           ns.setVisible(false);
                           console.log('%c[Kantin 059c] Nabula keluar dari pintu kantin. Kamera kembali ke Nakula...', 'color: #22c55e; font-weight: bold;');
-                          if (this.player && this.player.sprite) {
-                            this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 700, 'Sine.easeInOut', () => {
-                              const ui = this.scene.get('UI');
-                              if (ui && ui.startDialogue) {
-                                ui.startDialogue('lvl1_059c_5_ui');
-                              }
-                            });
-                          } else {
+                          const finishNabulaRunsAway = () => {
                             const ui = this.scene.get('UI');
-                            if (ui && ui.startDialogue) {
-                              ui.startDialogue('lvl1_059c_5_ui');
+                            if (ui && ui.closeDialogue) {
+                              ui.closeDialogue();
                             }
+                          };
+
+                          if (this.player && this.player.sprite) {
+                            this.panCameraTo(this.player.sprite.x, this.player.sprite.y, 700, 'Sine.easeInOut', finishNabulaRunsAway);
+                          } else {
+                            finishNabulaRunsAway();
                           }
                         }
                       });
@@ -1525,15 +1705,20 @@ class WorldScene extends Phaser.Scene {
           ui.showQuest('QUEST: Cari Nabula di taman.');
         }
       } else if (action === 'lvl1_059c_transition_to_library') {
-        console.log('%c[Taman 059c] Transisi ke perpustakaan bersama Nabula...', 'color: #38bdf8; font-weight: bold;');
-        this.registry.set('level1_quest_active', null);
-        this.registry.set('level1_branch_c_nabula_at_library', true);
-        this.registry.set('level1_nabula_at_garden_branch_c', false);
-        const ui = this.scene.get('UI');
-        if (ui && ui.completeQuest) {
-          ui.completeQuest('Temui Bu Wati di perpustakaan bersama Nabula.');
-        }
-        this._changeMap('library', 1 * TILE + TILE / 2, 9 * TILE + TILE / 2);
+        console.log('%c[Taman 059c] Dialog 059c-20 dilanjutkan! Layar menggelap sebelum transisi ke perpustakaan...', 'color: #38bdf8; font-weight: bold;');
+        this.registry.set('level1_player_locked', true);
+        this.cameras.main.fadeOut(600, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          console.log('%c[Taman 059c] Layar sudah gelap 100%, menjalankan transisi ke perpustakaan...', 'color: #38bdf8; font-weight: bold;');
+          this.registry.set('level1_quest_active', null);
+          this.registry.set('level1_branch_c_nabula_at_library', true);
+          this.registry.set('level1_nabula_at_garden_branch_c', false);
+          const ui = this.scene.get('UI');
+          if (ui && ui.completeQuest) {
+            ui.completeQuest('Temui Bu Wati di perpustakaan bersama Nabula.');
+          }
+          this._changeMap('library', 1 * TILE + TILE / 2, 9 * TILE + TILE / 2);
+        });
       } else if (action === 'lvl1_059c_walk_to_wati') {
         console.log('%c[Perpustakaan 059c] Nakula dan Nabula berjalan menuju meja Bu Wati lewat lorong bebas hambatan...', 'color: #3b82f6; font-weight: bold;');
         this.registry.set('level1_player_locked', true);
@@ -1930,7 +2115,7 @@ class WorldScene extends Phaser.Scene {
       this.tweens.killTweensOf(this.cameras.main);
       this.cameras.main.startFollow(this.player.sprite, true, 1, 1);
       if (ui && ui.showQuest) {
-        ui.showQuest(`PROGRES: Temukan petunjuk (${count}/3)`);
+        ui.showQuest(`PROGRES: Temukan petunjuk di perpustakaan (${count}/3)`);
       }
       if (navigator.vibrate) navigator.vibrate(60);
     } else {
@@ -2059,6 +2244,21 @@ class WorldScene extends Phaser.Scene {
       if (navigator.vibrate) navigator.vibrate(60);
       if (typeof onComplete === 'function') onComplete();
     });
+  }
+
+  _blockLibraryExit() {
+    if (this._libraryBlockDebounce && this.time.now < this._libraryBlockDebounce) return;
+    this._libraryBlockDebounce = this.time.now + 1200;
+
+    if (this.player && this.player.sprite) {
+      this.player.sprite.setVelocity(0, 0);
+      this.player.sprite.x = 2.2 * TILE; // Dorong mundur ke kanan menjauhi pintu
+    }
+    if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+    const ui = this.scene.get('UI');
+    if (ui && ui.showToast) {
+      ui.showToast('Temukan semua petunjuk di perpustakaan dulu!', 2200);
+    }
   }
 
   _startLibraryCutscene() {
@@ -2607,7 +2807,11 @@ class WorldScene extends Phaser.Scene {
       const currentMap = this.registry.get('currentMap');
 
       if (currentMap === 'library' && (tileRow === 9 || tileRow === 10) && this.player.sprite.x <= 1.2 * TILE) {
-        this._changeMap('schoolyard', 41 * TILE + TILE / 2, (tileRow === 9 ? 13 : 14) * TILE + TILE / 2);
+        if (this.registry.get('level1_clue_quest_active') && (this.registry.get('level1_clues_found') || 0) < 3) {
+          this._blockLibraryExit();
+        } else {
+          this._changeMap('schoolyard', 41 * TILE + TILE / 2, (tileRow === 9 ? 13 : 14) * TILE + TILE / 2);
+        }
       } else if (currentMap === 'schoolyard' && (tileRow === 13 || tileRow === 14) && this.player.sprite.x <= 1.2 * TILE) {
         this._changeMap('cafeteria', 29 * TILE + TILE / 2, tileRow * TILE + TILE / 2);
       }
@@ -3744,6 +3948,10 @@ class WorldScene extends Phaser.Scene {
     for (let i = 0; i < this.currentTransitions.length; i++) {
       const t = this.currentTransitions[i];
       if (Math.abs(px - t.fromX) <= 1 && Math.abs(py - t.fromY) <= 1) {
+        if (this.registry.get('currentMap') === 'library' && this.registry.get('level1_clue_quest_active') && (this.registry.get('level1_clues_found') || 0) < 3) {
+          this._blockLibraryExit();
+          return;
+        }
         // Free roam: Pemain bebas menjelajahi seluruh area sekolah kapan saja!
         this._changeMap(t.toMap, t.spawnX * TILE + TILE / 2, t.spawnY * TILE + TILE / 2);
         return;
