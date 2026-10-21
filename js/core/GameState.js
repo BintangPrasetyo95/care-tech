@@ -34,7 +34,7 @@ class GameStateManager {
       if (key === 'harmony') {
         this.harmony = value;
         this.emit('harmony:changed', value);
-      } else if (key.startsWith('flag_') || key.startsWith('level')) {
+      } else if (key === 'debugMode' || key.startsWith('flag_') || key.startsWith('level')) {
         this.flags[key] = value;
         this.emit('flag:changed', { key, value });
       }
@@ -204,12 +204,24 @@ class GameStateManager {
     this.emit('state:reset', levelNum);
   }
 
+  /**
+   * Set or toggle debug mode via console controller
+   * @param {boolean} [enable]
+   */
+  setDebug(enable) {
+    if (typeof window.setDebugMode === 'function') {
+      return window.setDebugMode(enable);
+    }
+    return false;
+  }
+
   /** Debug dump to console */
   dump() {
     console.table({
       Harmony: this.harmony,
       Level: this.currentLevel,
-      ActiveQuest: JSON.stringify(this.activeQuest)
+      ActiveQuest: JSON.stringify(this.activeQuest),
+      DebugMode: !!this.getFlag('debugMode', false)
     });
     console.log('[GameState Flags]:', this.flags);
   }

@@ -22,6 +22,8 @@ class WorldScene extends Phaser.Scene {
     const mapData = this._getMapData(mapKey);
     const mapW = mapData[0].length;
     const mapH = mapData.length;
+    this.mapW = mapW;
+    this.mapH = mapH;
     this._buildMap(mapKey, mapData);
 
     /* ── Player ── */
@@ -2071,6 +2073,7 @@ class WorldScene extends Phaser.Scene {
     });
 
     this.events.on('shutdown', () => {
+      this._clearDebugGrid();
       this.registry.events.off('dialogue_action');
       if (this.game && this.game.events) {
         this.game.events.off('start_level_1');
@@ -2078,7 +2081,10 @@ class WorldScene extends Phaser.Scene {
     });
 
     /* ── Debug Grid (Row, Col) ── */
-    this._drawDebugGrid(mapW, mapH);
+    const isDebugActive = Boolean(this.registry.get('debugMode') || (typeof window !== 'undefined' && window.debugMode && window.debugMode.valueOf && window.debugMode.valueOf() === true));
+    if (isDebugActive) {
+      this.setDebugMode(true);
+    }
   }
 
   /* ── Helper: Level 1 Clue Tracker (026 - 047) ── */
@@ -2736,19 +2742,55 @@ class WorldScene extends Phaser.Scene {
     );
   }
 
-  /* ────── Debug Grid ────── */
+  /* ────── Debug Grid & Mode ────── */
+  setDebugMode(enabled) {
+    if (enabled) {
+      this._drawDebugGrid(this.mapW, this.mapH);
+      if (this.physics && this.physics.world) {
+        this.physics.world.drawDebug = true;
+        if (!this.physics.world.debugGraphic && typeof this.physics.world.createDebugGraphic === 'function') {
+          this.physics.world.createDebugGraphic();
+        }
+        if (this.physics.world.debugGraphic) {
+          this.physics.world.debugGraphic.setVisible(true);
+        }
+      }
+    } else {
+      this._clearDebugGrid();
+      if (this.physics && this.physics.world) {
+        this.physics.world.drawDebug = false;
+        if (this.physics.world.debugGraphic) {
+          this.physics.world.debugGraphic.clear();
+          this.physics.world.debugGraphic.setVisible(false);
+        }
+      }
+    }
+  }
+
   _drawDebugGrid(mapW, mapH) {
-    const W = mapW || 20, H = mapH || 15;
+    this._clearDebugGrid();
+    const W = mapW || this.mapW || 20, H = mapH || this.mapH || 15;
+    this.debugGridContainer = this.add.container(0, 0);
+    this.debugGridContainer.setDepth(1000);
+
     for (let r = 0; r < H; r++) {
       for (let c = 0; c < W; c++) {
-        this.add.text(c * TILE + TILE / 2, r * TILE + TILE / 2, `${r},${c}`, {
+        const text = this.add.text(c * TILE + TILE / 2, r * TILE + TILE / 2, `${r},${c}`, {
           fontFamily: 'monospace',
           fontSize: '9px',
           color: '#ffffff',
           stroke: '#000000',
           strokeThickness: 2
-        }).setOrigin(0.5).setDepth(1000).setAlpha(0.6);
+        }).setOrigin(0.5).setAlpha(0.6);
+        this.debugGridContainer.add(text);
       }
+    }
+  }
+
+  _clearDebugGrid() {
+    if (this.debugGridContainer) {
+      this.debugGridContainer.destroy(true);
+      this.debugGridContainer = null;
     }
   }
 

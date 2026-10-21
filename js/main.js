@@ -60,9 +60,97 @@ game.registry.set('currentMap',     'garden');
 game.registry.set('dialogueActive', false);
 game.registry.set('level1_player_locked', true);
 game.registry.set('level1_quest_active', null);
+game.registry.set('debugMode', false);
 
 /* ── Connect GameState Single Source of Truth ── */
 if (window.GameState) {
   window.GameState.bindRegistry(game.registry);
 }
 
+/* ── Debug Mode Control ──
+   Default: OFF
+   Can be switched manually via the browser DevTools console:
+     debugMode(true)  / debugMode = true  -> Turn ON
+     debugMode(false) / debugMode = false -> Turn OFF
+     debugMode()                          -> Toggle ON/OFF
+     setDebugMode(true/false)
+     toggleDebug()
+*/
+let _debugMode = false;
+
+window.setDebugMode = function(enabled) {
+  _debugMode = (enabled === undefined) ? !_debugMode : Boolean(enabled);
+  if (window.game && window.game.registry) {
+    window.game.registry.set('debugMode', _debugMode);
+  }
+  if (window.GameState) {
+    window.GameState.setFlag('debugMode', _debugMode);
+  }
+
+  // Apply immediately to WorldScene if currently active
+  const worldScene = window.game && window.game.scene ? window.game.scene.getScene('World') : null;
+  if (worldScene && typeof worldScene.setDebugMode === 'function') {
+    worldScene.setDebugMode(_debugMode);
+  }
+
+  if (_debugMode) {
+    console.log(
+      '%c[CARE-TECH DEBUG MODE: ACTIVATED] %c\n' +
+      '• Tile Coordinate Grid   : ENABLED\n' +
+      '• Arcade Physics Hitboxes: ENABLED\n\n' +
+      '🛠️ Available Console Test Commands:\n' +
+      '  - debugMode(false) or debugMode = false : Turn off debug mode\n' +
+      '  - debugLevel1State()                    : Inspect Level 1 state flags\n' +
+      '  - GameState.dump()                      : Dump global game state\n' +
+      '  - testCutscene017()                     : Trigger Cutscene 017 (Library)\n' +
+      '  - testCutscene049()                     : Trigger Cutscene 049 (Cafeteria)\n' +
+      '  - testChoice058()                       : Open 3 strategic choices dialog\n' +
+      '  - testBranchA(), testBranchB(), testBranchC() : Jump to dialogue branches\n' +
+      '  - testTimeout1(), testTimeout2()        : Test branch timeouts\n' +
+      '  - testEmergencyQuest()                  : Test 30s emergency quest',
+      'background: #059669; color: #ffffff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'color: #38bdf8; font-size: 11px;'
+    );
+  } else {
+    console.log(
+      '%c[CARE-TECH DEBUG MODE: DEACTIVATED] %c\n' +
+      '• Tile Coordinate Grid   : DISABLED\n' +
+      '• Arcade Physics Hitboxes: DISABLED\n' +
+      'Type debugMode(true) or debugMode = true to re-enable.',
+      'background: #475569; color: #ffffff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'color: #94a3b8; font-size: 11px;'
+    );
+  }
+  return _debugMode;
+};
+
+window.toggleDebug = function() {
+  return window.setDebugMode(!_debugMode);
+};
+window.toggleDebugMode = window.toggleDebug;
+
+Object.defineProperty(window, 'debugMode', {
+  get() {
+    const fn = function(val) {
+      return window.setDebugMode(val);
+    };
+    fn.enabled = _debugMode;
+    fn.toString = () => _debugMode ? 'debugMode: ON (true)' : 'debugMode: OFF (false)';
+    fn.valueOf = () => _debugMode;
+    return fn;
+  },
+  set(val) {
+    window.setDebugMode(val);
+  },
+  configurable: true
+});
+
+// Startup notification in console
+console.log(
+  '%c[CareTech] 🎮 Debug mode is OFF by default. Type %cdebugMode(true)%c or %cdebugMode = true%c in console to activate.',
+  'color: #94a3b8; font-size: 11px;',
+  'color: #38bdf8; font-weight: bold;',
+  'color: #94a3b8;',
+  'color: #38bdf8; font-weight: bold;',
+  'color: #94a3b8;'
+);
