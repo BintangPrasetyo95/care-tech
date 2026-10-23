@@ -749,12 +749,12 @@
           <div class="play-tag">▶ Mainkan</div>
         </div>
 
-        <!-- Level 2 (LOCKED) -->
-        <div class="level-card locked" title="Terkunci - Selesaikan Level 1">
+        <!-- Level 2 (Bypassed for Dev & Testing) -->
+        <div class="level-card" id="btn-select-level-2" tabindex="0">
           <div class="level-num-badge">2</div>
           <div class="level-title">Level 2</div>
-          <div class="level-sub">Penyelamatan Empati<br>(Lorong)</div>
-          <div class="lock-tag">🔒 Terkunci</div>
+          <div class="level-sub">Mengelola Emosi<br>(Kelas & Kantin)</div>
+          <div class="play-tag">▶ Mainkan</div>
         </div>
 
         <!-- Level 3 (LOCKED) -->
@@ -849,6 +849,9 @@
 
   <!-- Level Data Modules (Data-Driven Architecture) -->
   <script src="js/data/levels/level1/dialogues.js?v=lib_v20261018_18"></script>
+  <script src="js/data/levels/level2/dialogues.js?v=lib_v20261024_01"></script>
+  <script src="js/data/levels/level1/actions.js?v=lib_v20261024_01"></script>
+  <script src="js/data/levels/level2/actions.js?v=lib_v20261024_01"></script>
 
   <!-- Game modules — loaded in strict dependency order -->
   <script src="js/data/dialogues.js?v=lib_v20261018_18"></script>
@@ -1150,6 +1153,7 @@
 
       // Level 1 Selection Handler
       const lvl1Btn = document.getElementById('btn-select-level-1');
+      const lvl2Btn = document.getElementById('btn-select-level-2');
       const lvlSelectModal = document.getElementById('level-select-modal');
 
       const resetAllLevel1State = () => {
@@ -1177,7 +1181,94 @@
         reg.set('level1_039_triggered', false);
         reg.set('level1_043_done', false);
         reg.set('level1_045_done', false);
+        reg.set('level1_049_done', false);
+        reg.set('level1_058x_nabula_left', false);
+        reg.set('level1_058x_bullies_left', false);
+        reg.set('level1_branch_b_bu_wati_at_cafeteria', false);
         reg.set('level1_complete', false);
+
+        // Bersihkan seluruh flag Level 2 agar tidak bocor ke Level 1
+        reg.set('level2_started', false);
+        reg.set('level2_branch_choice', null);
+        reg.set('level2_breathing_done', false);
+        reg.set('level2_cafeteria_arrived', false);
+        reg.set('level2_queue_joined', false);
+        reg.set('level2_020_done', false);
+        reg.set('level2_complete', false);
+      };
+
+      const resetAllLevel2State = () => {
+        if (!window.game || !window.game.registry) return;
+        const reg = window.game.registry;
+        reg.set('harmony', 50);
+
+        // Bersihkan seluruh flag Level 1 agar tidak bocor ke Level 2
+        reg.set('level1_quest_active', null);
+        reg.set('level1_001_done', false);
+        reg.set('level1_003_triggered', false);
+        reg.set('level1_nabula_left_garden', false);
+        reg.set('level1_library_arrived', false);
+        reg.set('level1_017_triggered', false);
+        reg.set('level1_017_done', false);
+        reg.set('level1_020_done', false);
+        reg.set('level1_clue_quest_active', false);
+        reg.set('level1_clues_found', 0);
+        reg.set('level1_clue_book_found', false);
+        reg.set('level1_clue_wulan_found', false);
+        reg.set('level1_clue_students_found', false);
+        reg.set('level1_039_triggered', false);
+        reg.set('level1_043_done', false);
+        reg.set('level1_045_done', false);
+        reg.set('level1_049_done', false);
+        reg.set('level1_058x_nabula_left', false);
+        reg.set('level1_058x_bullies_left', false);
+        reg.set('level1_branch_b_bu_wati_at_cafeteria', false);
+        reg.set('level1_complete', false);
+
+        // Inisialisasi status Level 2
+        reg.set('level2_started', true);
+        reg.set('level2_branch_choice', null);
+        reg.set('level2_breathing_done', false);
+        reg.set('level2_cafeteria_arrived', false);
+        reg.set('level2_queue_joined', false);
+        reg.set('level2_020_done', false);
+        reg.set('level2_complete', false);
+        reg.set('level2_player_locked', true);
+        reg.set('dialogueActive', false);
+        if (window.audioManager) {
+          window.audioManager.stopAllLoops(0.2);
+        }
+      };
+
+      window.startLevel2 = function() {
+        if (window.audioManager) {
+          window.audioManager.unlock();
+        }
+        if (lvlSelectModal) {
+          lvlSelectModal.classList.add('hidden');
+        }
+        const resModal = document.getElementById('level-result-modal');
+        if (resModal) {
+          resModal.classList.add('hidden');
+        }
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+        window.focus();
+        const canvas = document.querySelector('canvas');
+        if (canvas) canvas.focus();
+
+        resetAllLevel2State();
+
+        const tryStartLevel2 = () => {
+          const world = window.game && window.game.scene && window.game.scene.getScene('World');
+          if (world && world.scene.isActive()) {
+            world.startLevel2();
+          } else {
+            setTimeout(tryStartLevel2, 100);
+          }
+        };
+        tryStartLevel2();
       };
 
       if (lvl1Btn) {
@@ -1209,7 +1300,13 @@
         });
       }
 
-      // Helper: Menampilkan modal hasil Level 1
+      if (lvl2Btn) {
+        lvl2Btn.addEventListener('click', () => {
+          window.startLevel2();
+        });
+      }
+
+      // Helper: Menampilkan modal hasil Level 1 & Level 2
       const updateAndShowResultModal = (data = {}) => {
         const resultModal = document.getElementById('level-result-modal');
         if (!resultModal) return;
@@ -1222,26 +1319,41 @@
         const scoreDesc = resultModal.querySelector('.result-score-desc');
         const actionsContainer = resultModal.querySelector('.result-actions');
 
-        const isSuccess = data.isSuccess !== undefined ? data.isSuccess : (data.score >= 60);
+        const level = data.level || 1;
+        const passThreshold = level === 2 ? 75 : 60;
+        const isSuccess = data.isSuccess !== undefined ? data.isSuccess : (data.score >= passThreshold);
         const score = data.score !== undefined ? data.score : 0;
         const status = data.status || (isSuccess ? 'Harmonia Bersinar' : 'Harmonia Padam');
         const orb = data.orb || (isSuccess ? '🟢' : '⚫');
-        const message = data.message || (isSuccess
-          ? 'Kamu berhasil membantu Nabula mendapatkan dukungan dari guru dan lingkungan sekolah!'
-          : 'Nabula nggak sempat dapat bantuan kali ini. Tapi ini bukan akhir, yuk coba lagi dan perhatikan tanda-tanda saat teman butuh kamu.');
+
+        let defaultMsg = '';
+        if (level === 2) {
+          defaultMsg = isSuccess
+            ? 'Kamu berhasil mengelola emosi dengan tenang, berani bersikap asertif membela ketertiban, dan mendampingi Eca dengan penuh empati!'
+            : 'Nakula belum berhasil mengelola emosinya dengan tenang kali ini. Jangan menyerah, latih pernapasan dan hadapi situasi dengan kepala dingin!';
+        } else {
+          defaultMsg = isSuccess
+            ? 'Kamu berhasil membantu Nabula mendapatkan dukungan dari guru dan lingkungan sekolah!'
+            : 'Nabula nggak sempat dapat bantuan kali ini. Tapi ini bukan akhir, yuk coba lagi dan perhatikan tanda-tanda saat teman butuh kamu.';
+        }
+        const message = data.message || defaultMsg;
 
         if (card) {
           card.classList.toggle('is-success', isSuccess);
         }
 
         if (tag) {
-          tag.textContent = isSuccess ? '★ LEVEL 1 SELESAI ★' : '★ ENDING ALTERNATIF ★';
+          tag.textContent = isSuccess ? `★ LEVEL ${level} SELESAI ★` : '★ ENDING ALTERNATIF ★';
         }
         if (title) {
-          title.textContent = isSuccess ? 'LEVEL 1 SELESAI' : 'LEVEL 1 SELESAI';
+          title.textContent = `LEVEL ${level} SELESAI`;
         }
         if (sub) {
-          sub.textContent = isSuccess ? '"Bantu Nabula mendapatkan dukungan."' : '"Nabula masih butuh dukunganmu."';
+          if (level === 2) {
+            sub.textContent = isSuccess ? '"Kelola Emosi & Hadapi dengan Tegas."' : '"Emosi perlu dikelola dengan baik."';
+          } else {
+            sub.textContent = isSuccess ? '"Bantu Nabula mendapatkan dukungan."' : '"Nabula masih butuh dukunganmu."';
+          }
         }
         if (scoreTitle) {
           scoreTitle.textContent = `${orb} Harmoni: ${score}/100 — ${status}`;
@@ -1250,31 +1362,47 @@
           scoreDesc.textContent = `"${message}"`;
         }
 
-        // Render tombol aksi sesuai status
+        // Render tombol aksi sesuai status dan level
         if (actionsContainer) {
-          if (isSuccess) {
-            actionsContainer.innerHTML = `
-              <button id="btn-next-level-2" class="btn-action-primary">🚀 Lanjut ke Level 2</button>
-              <button id="btn-replay-level-1" class="btn-action-secondary">🔄 Coba Cara Lain di Level 1</button>
-              <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
-            `;
+          if (level === 2) {
+            if (isSuccess) {
+              actionsContainer.innerHTML = `
+                <button id="btn-next-level-3" class="btn-action-primary">🚀 Lanjut ke Level 3</button>
+                <button id="btn-replay-level-2" class="btn-action-secondary">🔄 Coba Cara Lain di Level 2</button>
+                <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+              `;
+            } else {
+              actionsContainer.innerHTML = `
+                <button id="btn-replay-level-2" class="btn-action-primary btn-action-retry">🔄 Main Ulang Level 2</button>
+                <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+                <button class="btn-action-locked" disabled>🔒 Lanjut ke Level 3 (Capai skor ≥ 75)</button>
+              `;
+            }
           } else {
-            actionsContainer.innerHTML = `
-              <button id="btn-replay-level-1" class="btn-action-primary btn-action-retry">🔄 Main Ulang Level 1</button>
-              <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
-              <button class="btn-action-locked" disabled>🔒 Lanjut ke Level 2 (Capai skor ≥ 60)</button>
-            `;
+            if (isSuccess) {
+              actionsContainer.innerHTML = `
+                <button id="btn-next-level-2" class="btn-action-primary">🚀 Lanjut ke Level 2</button>
+                <button id="btn-replay-level-1" class="btn-action-secondary">🔄 Coba Cara Lain di Level 1</button>
+                <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+              `;
+            } else {
+              actionsContainer.innerHTML = `
+                <button id="btn-replay-level-1" class="btn-action-primary btn-action-retry">🔄 Main Ulang Level 1</button>
+                <button id="btn-return-home" class="btn-action-secondary">🏠 Kembali ke Beranda</button>
+                <button class="btn-action-locked" disabled>🔒 Lanjut ke Level 2 (Capai skor ≥ 60)</button>
+              `;
+            }
           }
-          attachModalActionListeners();
+          attachModalActionListeners(level);
         }
 
         resultModal.classList.remove('hidden');
       };
 
-      const attachModalActionListeners = () => {
-        const replayBtn = document.getElementById('btn-replay-level-1');
-        if (replayBtn) {
-          replayBtn.onclick = () => {
+      const attachModalActionListeners = (level = 1) => {
+        const replayBtn1 = document.getElementById('btn-replay-level-1');
+        if (replayBtn1) {
+          replayBtn1.onclick = () => {
             const resultModal = document.getElementById('level-result-modal');
             if (resultModal) resultModal.classList.add('hidden');
             resetAllLevel1State();
@@ -1293,6 +1421,13 @@
           };
         }
 
+        const replayBtn2 = document.getElementById('btn-replay-level-2');
+        if (replayBtn2) {
+          replayBtn2.onclick = () => {
+            window.startLevel2();
+          };
+        }
+
         const returnHomeBtn = document.getElementById('btn-return-home');
         if (returnHomeBtn) {
           returnHomeBtn.onclick = () => {
@@ -1303,19 +1438,37 @@
         const nextLvlBtn = document.getElementById('btn-next-level-2');
         if (nextLvlBtn) {
           nextLvlBtn.onclick = () => {
-            alert('🎉 Hebat! Kamu telah menuntaskan Level 1: Detective Emotion dengan sangat baik!\n\nLevel 2 sedang dalam tahap persiapan dan akan segera hadir di update petualangan berikutnya. ✨');
+            window.startLevel2();
+          };
+        }
+
+        const nextLvl3Btn = document.getElementById('btn-next-level-3');
+        if (nextLvl3Btn) {
+          nextLvl3Btn.onclick = () => {
+            alert('🎉 Luar Biasa! Kamu berhasil menuntaskan Level 2: Mengelola Emosi dengan gemilang! ✨\n\nLevel 3: Kasus Misteri (Ruang Kelas) sedang disiapkan untuk petualangan selanjutnya!');
           };
         }
       };
 
       // Listen for alternate ending modal (005b timeout/fail)
       window.addEventListener('show_level_fail_modal', (e) => {
-        updateAndShowResultModal(e.detail || { score: 0, isSuccess: false });
+        updateAndShowResultModal(Object.assign({ level: 1, score: 0, isSuccess: false }, e.detail || {}));
       });
 
       // Listen for level complete modal (064 normal/success)
       window.addEventListener('show_level_complete_modal', (e) => {
-        updateAndShowResultModal(e.detail || {});
+        updateAndShowResultModal(Object.assign({ level: 1 }, e.detail || {}));
+      });
+
+      // Listen for Level 2 fail modal (020w)
+      window.addEventListener('show_level2_fail_modal', (e) => {
+        updateAndShowResultModal(Object.assign({ level: 2, score: 15, isSuccess: false }, e.detail || {}));
+      });
+
+      // Listen for Level 2 complete modal (033)
+      window.addEventListener('show_level2_complete_modal', (e) => {
+        const det = e.detail || {};
+        updateAndShowResultModal(Object.assign({ level: 2, isSuccess: ((det.score || 0) >= 75) }, det));
       });
 
       // ══════════ Developer Console Cheat Code ══════════

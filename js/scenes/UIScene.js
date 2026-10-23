@@ -832,6 +832,20 @@ class UIScene extends Phaser.Scene {
     this.startDialogue('lvl1_001_narrator');
   }
 
+  /** Start Level 2 transition: screen starts dark then smoothly fades in, bell rings, narrator 001 triggers */
+  startLevel2IntroTransition() {
+    const worldScene = this.scene.get('World');
+    if (worldScene && worldScene.cameras && worldScene.cameras.main) {
+      worldScene.cameras.main.fadeIn(1500, 0, 0, 0);
+    }
+    this.cameras.main.fadeIn(1500, 0, 0, 0);
+    if (window.audioManager) {
+      window.audioManager.playSchoolBell(0.7);
+    }
+    this.showQuest('★ LEVEL 2: MENGELOLA EMOSI\nKerjakan tugas kelas dan perhatikan sekitarmu.');
+    this.startDialogue('lvl2_001_narrator');
+  }
+
   /** Show top quest banner with optional timer */
   showQuest(text, options = {}) {
     // Guard Clause: Jangan tampilkan banner jika tidak ada teks misi yang valid!
@@ -1300,15 +1314,25 @@ class UIScene extends Phaser.Scene {
       this.registry.events.emit('dialogue_action', node.action);
     }
 
-    // Direct SFX triggers for Level 1 dialogue milestones
-    if (nodeId === 'lvl1_005b_10_narrator' || nodeId === 'lvl1_058x_10_narrator') {
+    // Direct SFX triggers for Level 1 & Level 2 dialogue milestones
+    if (nodeId === 'lvl1_005b_10_narrator' || nodeId === 'lvl1_058x_10_narrator' || nodeId === 'lvl2_001_narrator' || nodeId === 'lvl2_015_narrator') {
       if (window.audioManager) {
         window.audioManager.playSchoolBell(0.7);
       }
-    } else if (nodeId === 'lvl1_058_choice' || (node && node.action === 'lvl1_058_start_timer')) {
+    } else if (nodeId === 'lvl1_058_choice' || (node && node.action === 'lvl1_058_start_timer') || nodeId === 'lvl2_020_timed_choice' || (node && node.action === 'lvl2_020_timed_choice')) {
       if (window.audioManager) {
         window.audioManager.playLoop('clockTicking', 0.4);
       }
+      this.showQuest('⏱ BATAS WAKTU: Ambil Sikap di Antrean Kantin', { hasTimer: true, durationSec: 30 });
+    }
+
+    // Special Level 2 UI triggers
+    if (node.action === 'lvl2_start_breathing_minigame') {
+      this.startBreathingMinigame();
+      return;
+    }
+    if (node.action === 'lvl2_030_prompt_hug') {
+      this.showHugEcaButton();
     }
 
     // Handle auto-advance timer if specified on dialogue node
@@ -1319,7 +1343,9 @@ class UIScene extends Phaser.Scene {
     if (node.autoAdvanceTimer && node.autoAdvanceTimer > 0) {
       this._autoAdvanceTimerEvent = this.time.delayedCall(node.autoAdvanceTimer, () => {
         this._autoAdvanceTimerEvent = null;
-        if (node.next) {
+        if (node.timeoutTarget) {
+          this._showNode(node.timeoutTarget);
+        } else if (node.next) {
           this._showNode(node.next);
         } else {
           this._closeDialogue();
@@ -1581,6 +1607,11 @@ class UIScene extends Phaser.Scene {
     if (this._autoAdvanceTimerEvent) {
       this._autoAdvanceTimerEvent.destroy();
       this._autoAdvanceTimerEvent = null;
+    }
+    if (this._hugButtonContainer) {
+      this.tweens.killTweensOf(this._hugButtonContainer);
+      this._hugButtonContainer.destroy();
+      this._hugButtonContainer = null;
     }
 
     const lastNodeId = this._currentDialogueNode;
@@ -2457,6 +2488,291 @@ class UIScene extends Phaser.Scene {
     if (typeof document !== 'undefined' && document.body) {
       document.body.classList.toggle('menu-open', this.sidebarOpen || this._largeMapOpen);
     }
+  }
+
+  /* ══════════ Level 2 Interactive Features: Breathing & Hug ══════════ */
+
+  /**
+   * Level 2 Breathing Exercise Mini-Game (Node 010)
+   * Guides player through 3 cycles of Inhale (4s), Hold (4s), Exhale (4s)
+   * with visual expanding circle and interactive "Genggam Tangan Eca" hold button.
+   */
+  startBreathingMinigame() {
+    // Close dialogue box while breathing exercise is open
+    this._closeDialogue();
+
+    if (this._breathingContainer) {
+      this._breathingContainer.destroy();
+      this._breathingContainer = null;
+    }
+
+    const { width, height } = this.scale;
+    const container = this.add.container(0, 0).setDepth(600);
+    this._breathingContainer = container;
+
+    // Dark backdrop
+    const bg = this.add.rectangle(0, 0, width, height, 0x0f172a, 0.85)
+      .setOrigin(0, 0)
+      .setInteractive();
+    container.add(bg);
+
+    // Main Cardboard Panel
+    const panelW = Math.min(width - 40, 480);
+    const panelH = Math.min(height - 40, 360);
+    const panelX = width / 2;
+    const panelY = height / 2;
+
+    const shadow = this.add.rectangle(panelX + 4, panelY + 4, panelW, panelH, 0x000000, 0.4)
+      .setOrigin(0.5);
+    const panel = this.add.rectangle(panelX, panelY, panelW, panelH, 0xffeedd, 1)
+      .setOrigin(0.5)
+      .setStrokeStyle(3, 0xd4a373);
+    container.add([shadow, panel]);
+
+    // Top Header Tape
+    const tape = this.add.rectangle(panelX, panelY - panelH / 2 + 18, 280, 26, 0x00e5ff, 1)
+      .setOrigin(0.5);
+    const tapeText = this.add.text(panelX, panelY - panelH / 2 + 18, '★ LATIHAN PERNAPASAN BERSAMA ECA ★', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif',
+      fontSize: '11px',
+      color: '#000000'
+    }).setOrigin(0.5);
+    container.add([tape, tapeText]);
+
+    // Subtitle instruction
+    const subText = this.add.text(panelX, panelY - panelH / 2 + 42, 'Tarik napas perlahan, tahan sejenak, lalu hembuskan.', {
+      fontFamily: '"Inter", "Segoe UI", sans-serif',
+      fontSize: '12px',
+      color: '#475569'
+    }).setOrigin(0.5);
+    container.add(subText);
+
+    // Eca Avatar Icon
+    let ecaPortrait = null;
+    if (this.textures.exists('eca_thinking')) {
+      ecaPortrait = this.add.image(panelX - panelW / 2 + 45, panelY - 15, 'eca_thinking')
+        .setDisplaySize(60, 60);
+      container.add(ecaPortrait);
+    }
+
+    // Breathing circle visual
+    const circleCenterY = panelY - 15;
+    const circleGfx = this.add.graphics();
+    container.add(circleGfx);
+
+    // Breath instruction text
+    const breathStatusText = this.add.text(panelX, circleCenterY - 8, 'Siap-siap...', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif',
+      fontSize: '16px',
+      color: '#0284c7'
+    }).setOrigin(0.5);
+
+    const breathTimerText = this.add.text(panelX, circleCenterY + 14, '', {
+      fontFamily: '"Inter", sans-serif',
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#0369a1'
+    }).setOrigin(0.5);
+
+    // Cycle progress text
+    const cycleText = this.add.text(panelX, panelY + panelH / 2 - 80, 'Siklus: 1 / 3', {
+      fontFamily: '"Inter", sans-serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#64748b'
+    }).setOrigin(0.5);
+    container.add([breathStatusText, breathTimerText, cycleText]);
+
+    // Interactive Button: "Genggam Tangan Eca" (Touch & hold or click)
+    const holdBtnW = 200;
+    const holdBtnH = 34;
+    const holdBtnY = panelY + panelH / 2 - 40;
+
+    const holdBtnBg = this.add.rectangle(panelX - 70, holdBtnY, holdBtnW, holdBtnH, 0xff70a6, 1)
+      .setOrigin(0.5)
+      .setStrokeStyle(2, 0xff2e93)
+      .setInteractive({ useHandCursor: true });
+    const holdBtnTxt = this.add.text(panelX - 70, holdBtnY, '🤝 Genggam Tangan Eca', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif',
+      fontSize: '12px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+    container.add([holdBtnBg, holdBtnTxt]);
+
+    // Skip / Finish Button
+    const skipBtnW = 110;
+    const skipBtnH = 34;
+    const skipBtnBg = this.add.rectangle(panelX + 100, holdBtnY, skipBtnW, skipBtnH, 0xe2e8f0, 1)
+      .setOrigin(0.5)
+      .setStrokeStyle(1.5, 0x94a3b8)
+      .setInteractive({ useHandCursor: true });
+    const skipBtnTxt = this.add.text(panelX + 100, holdBtnY, 'Selesai ✨', {
+      fontFamily: '"Inter", sans-serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#334155'
+    }).setOrigin(0.5);
+    container.add([skipBtnBg, skipBtnTxt]);
+
+    let isHoldingHand = false;
+    holdBtnBg.on('pointerdown', () => {
+      isHoldingHand = true;
+      holdBtnBg.setFillStyle(0xff2e93, 1);
+      holdBtnTxt.setText('💖 Bergandengan Erat');
+      if (ecaPortrait) ecaPortrait.setScale(1.1);
+    });
+    const releaseHold = () => {
+      if (isHoldingHand) {
+        isHoldingHand = false;
+        holdBtnBg.setFillStyle(0xff70a6, 1);
+        holdBtnTxt.setText('🤝 Genggam Tangan Eca');
+        if (ecaPortrait) ecaPortrait.setScale(1.0);
+      }
+    };
+    holdBtnBg.on('pointerup', releaseHold);
+    holdBtnBg.on('pointerout', releaseHold);
+
+    // Animation variables
+    let currentCycle = 1;
+    const totalCycles = 3;
+    let isMinigameActive = true;
+
+    const drawCircle = (radius, fillColor, strokeColor) => {
+      circleGfx.clear();
+      // Outer glow
+      circleGfx.fillStyle(fillColor, 0.25);
+      circleGfx.fillCircle(panelX, circleCenterY, radius + 10);
+      // Inner circle
+      circleGfx.fillStyle(fillColor, 0.85);
+      circleGfx.fillCircle(panelX, circleCenterY, radius);
+      // Stroke
+      circleGfx.lineStyle(3, strokeColor, 1);
+      circleGfx.strokeCircle(panelX, circleCenterY, radius);
+    };
+
+    const runPhase = (phaseName, duration, startR, endR, fillColor, strokeColor, textColor, onComplete) => {
+      if (!isMinigameActive) return;
+      breathStatusText.setText(phaseName).setColor(textColor);
+
+      let elapsed = 0;
+      const interval = 50;
+      const timerEv = this.time.addEvent({
+        delay: interval,
+        repeat: Math.floor(duration / interval),
+        callback: () => {
+          if (!isMinigameActive) {
+            timerEv.destroy();
+            return;
+          }
+          elapsed += interval;
+          const progress = Math.min(1, elapsed / duration);
+          const currentR = Phaser.Math.Linear(startR, endR, progress);
+          drawCircle(currentR, fillColor, strokeColor);
+          const remainingSec = Math.ceil((duration - elapsed) / 1000);
+          breathTimerText.setText(`${remainingSec}s`);
+
+          if (progress >= 1) {
+            timerEv.destroy();
+            if (onComplete) onComplete();
+          }
+        }
+      });
+    };
+
+    const runCycle = () => {
+      if (!isMinigameActive) return;
+      cycleText.setText(`Siklus: ${currentCycle} / ${totalCycles}`);
+
+      // Phase 1: Inhale (Tarik Napas) - 4s, expands from 35 to 80
+      runPhase('Tarik Napas...', 4000, 35, 80, 0x38bdf8, 0x0284c7, '#0284c7', () => {
+        // Phase 2: Hold (Tahan Napas) - 4s, stays at 80
+        runPhase('Tahan Napas...', 4000, 80, 80, 0x34d399, 0x059669, '#059669', () => {
+          // Phase 3: Exhale (Hembuskan Napas) - 4s, contracts from 80 to 35
+          runPhase('Hembuskan Perlahan...', 4000, 80, 35, 0xa78bfa, 0x7c3aed, '#7c3aed', () => {
+            currentCycle++;
+            if (currentCycle <= totalCycles) {
+              this.time.delayedCall(400, runCycle);
+            } else {
+              finishBreathing();
+            }
+          });
+        });
+      });
+    };
+
+    const finishBreathing = () => {
+      if (!isMinigameActive) return;
+      isMinigameActive = false;
+      breathStatusText.setText('✨ Sangat Bagus!').setColor('#059669');
+      breathTimerText.setText('Pikiran terasa lebih tenang');
+      drawCircle(65, 0x34d399, 0x059669);
+
+      this.time.delayedCall(1200, () => {
+        if (this._breathingContainer) {
+          this._breathingContainer.destroy();
+          this._breathingContainer = null;
+        }
+        this.registry.set('level2_breathing_done', true);
+        this.startDialogue('lvl2_011_narrator');
+      });
+    };
+
+    skipBtnBg.on('pointerdown', finishBreathing);
+
+    // Start first cycle
+    runCycle();
+  }
+
+  /**
+   * Display interactive "Peluk Eca 🤗" button for Node 030
+   */
+  showHugEcaButton() {
+    if (this._hugButtonContainer) {
+      this._hugButtonContainer.destroy();
+      this._hugButtonContainer = null;
+    }
+
+    const { width, height } = this.scale;
+    const btnW = 180;
+    const btnH = 38;
+    const btnX = width / 2;
+    const btnY = this._boxY - 30; // Float right above the dialogue box
+
+    const container = this.add.container(btnX, btnY).setDepth(450);
+    this._hugButtonContainer = container;
+
+    const bgShadow = this.add.rectangle(2, 2, btnW, btnH, 0x000000, 0.35)
+      .setOrigin(0.5);
+    const bg = this.add.rectangle(0, 0, btnW, btnH, 0xff70a6, 1)
+      .setOrigin(0.5)
+      .setStrokeStyle(2.5, 0xffffff)
+      .setInteractive({ useHandCursor: true });
+
+    const txt = this.add.text(0, 0, '🤗 Peluk Eca', {
+      fontFamily: '"GROBOLD", "Inter", sans-serif',
+      fontSize: '14px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+
+    container.add([bgShadow, bg, txt]);
+
+    // Subtle gentle bounce tween
+    this.tweens.add({
+      targets: container,
+      scaleX: 1.06,
+      scaleY: 1.06,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    bg.on('pointerdown', () => {
+      this.tweens.killTweensOf(container);
+      container.destroy();
+      this._hugButtonContainer = null;
+      this.startDialogue('lvl2_030_hug_eca');
+    });
   }
 
   update(time, delta) {

@@ -27,6 +27,17 @@ class ActionExecutor {
   }
 
   /**
+   * Register multiple action handlers from a dictionary object
+   * @param {Object<string, Function>} handlersObj
+   */
+  registerHandlers(handlersObj) {
+    if (!handlersObj) return;
+    for (const [key, handler] of Object.entries(handlersObj)) {
+      this.customHandlers.set(key, handler);
+    }
+  }
+
+  /**
    * Execute a sequence of atomic action objects sequentially
    * @param {Array<Object|string>} steps
    * @returns {Promise<void>}
@@ -46,8 +57,16 @@ class ActionExecutor {
   async executeAction(action) {
     if (!action) return;
 
-    // Backward-compatible string action
+    // Array of actions sequence
+    if (Array.isArray(action)) {
+      return this.executeSequence(action);
+    }
+
+    // Backward-compatible or named level string action
     if (typeof action === 'string') {
+      if (this.customHandlers.has(action)) {
+        return this.customHandlers.get(action).call(this.scene, this.scene, action);
+      }
       return this._executeLegacyStringAction(action);
     }
 
@@ -55,7 +74,7 @@ class ActionExecutor {
 
     // Check custom handlers first
     if (this.customHandlers.has(type)) {
-      return this.customHandlers.get(type)(action, this.scene);
+      return this.customHandlers.get(type).call(this.scene, action, this.scene);
     }
 
     switch (type) {

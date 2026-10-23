@@ -15,6 +15,9 @@ var DIALOGUES = window.DIALOGUES;
 if (window.LEVEL_1_DIALOGUES) {
   Object.assign(DIALOGUES, window.LEVEL_1_DIALOGUES);
 }
+if (window.LEVEL_2_DIALOGUES) {
+  Object.assign(DIALOGUES, window.LEVEL_2_DIALOGUES);
+}
 
 // Global Ambient & Campus Environmental Interactions
 Object.assign(DIALOGUES, {
