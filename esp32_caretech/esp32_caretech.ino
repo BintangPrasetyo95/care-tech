@@ -1,12 +1,21 @@
 /*
   =============================================================================
-  CARETECH - ESA INTERACTIVE PHYSICAL ROBOT COMPANION
+  CARETECH - ESA INTERACTIVE PHYSICAL ROBOT COMPANION (DUAL MODE)
   =============================================================================
   Board: ESP32 Dev Module (NodeMCU-32S / ESP32-WROOM-32 30-pin & 38-pin)
-  Komunikasi: USB Serial Langsung (Web Serial API - 115200 baud) ke chat.html
-  Tanpa WiFi & Tanpa Sensor Sentuh: Murni pemrosesan audio I2S (Mic & Speaker)
+  Komunikasi: 
+    1. NIRKABEL (Opsi A): WiFi + WebSocket Server (Port 81) & mDNS (esa-robot.local)
+    2. KABEL USB (Fallback): USB Web Serial (115200 baud)
+  Pemrosesan Audio: Murni I2S Hardware Audio (INMP441 Mic + MAX98357A Speaker DAC)
+  Sumber Daya: Baterai 3.7V (18650 / LiPo) + Modul Boost 5V (MH-CD42) atau USB Type-C
 
   =============================================================================
+  LIBRARY ARDUINO YANG DIBUTUHKAN:
+  =============================================================================
+  1. ArduinoJson (oleh Benoit Blanchon - versi 6 atau 7)
+  2. WebSockets (oleh Markus Sattler - install via Library Manager)
+  =============================================================================
+
   PETA HARDWARE & PINOUT RESMI (OFFICIAL PINOUT):
   =============================================================================
 
@@ -14,7 +23,7 @@
      -------------------------------------------------------------------------
      Pin MAX98357A | Pin ESP32 | Keterangan
      ------------- | --------- | ---------------------------------------------
-     VIN           | VIN (5V)  | Disarankan 5V (USB) agar daya speaker 3W maksimal & lantang.
+     VIN           | VIN (5V)  | Wajib 5V (dari modul boost baterai / USB) agar daya 3W maksimal.
      GND           | GND       | Ground bersama ESP32.
      BCLK          | GPIO 26   | Bit Clock I2S (Port I2S_NUM_1 Audio Out).
      LRC           | GPIO 25   | Word Select / Left-Right Clock (I2S_NUM_1).
@@ -34,22 +43,69 @@
      SCK           | GPIO 14   | Serial Clock / Bit Clock (I2S_NUM_0).
      L/R           | GND       | Hubungkan ke GND untuk memilih Channel Kiri.
 
-  3. KONTROL INTERAKSI & STATUS ONBOARD:
+  3. SENSOR TEKANAN FISIK (FSR402):
+     -------------------------------------------------------------------------
+     Pin ESP32     | Komponen & Keterangan
+     ------------- | ---------------------------------------------------------
+     GPIO 34       | FSR 1 (Sensor Tekanan Kepala/Elusan) - Divider 10k ke GND.
+     GPIO 35       | FSR 2 (Sensor Tekanan Pipi/Pelukan)  - Divider 10k ke GND.
+
+  4. KONTROL INTERAKSI & STATUS ONBOARD:
      -------------------------------------------------------------------------
      Pin ESP32     | Fungsi & Keterangan
      ------------- | ---------------------------------------------------------
-     GPIO 2        | Onboard Blue LED (Ekspresi Standby, Berpikir, Bicara, Rekam).
-     GPIO 0        | Onboard BOOT Button (Tekan untuk pemicu rekam curhat cepat).
+     GPIO 4        | Tombol Fisik 12mm PBS (Push-To-Talk di Tangan Boneka) - Kaki 1 ke GPIO 4, Kaki 2 ke GND.
+     GPIO 0        | Onboard BOOT Button (Pemicu cadangan di board ESP32).
+     GPIO 2        | Onboard Blue LED (Ekspresi Standby, Berpikir, Bicara, Rekam, Sentuhan).
   =============================================================================
 */
 
 #include <ArduinoJson.h>
 #include <driver/i2s.h>
+#include <driver/adc.h>
 #include <math.h>
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WebSocketsServer.h>
+
+// ---------- KONFIGURASI WIFI & WEBSOCKET ----------
+// Ganti dengan SSID dan Password WiFi / Hotspot Anda:
+const char* WIFI_SSID     = "NAMA_WIFI_ANDA";     
+const char* WIFI_PASS     = "PASSWORD_WIFI_ANDA"; 
+
+// Hotspot Cadangan Mandiri (AP Mode) jika WiFi di atas tidak ditemukan:
+const char* AP_SSID       = "CareTech-ESA-Robot";
+const char* AP_PASS       = "caretech123";
+const int   WS_PORT       = 81;
+
+// Subclass untuk mengaktifkan broadcast fragmented frame WebSocket (RFC 6455)
+class CareTechWebSocketServer : public WebSocketsServer {
+public:
+  using WebSocketsServer::WebSocketsServer;
+
+  void broadcastWsFrame(WSopcode_t opcode, const uint8_t* payload, size_t length, bool fin) {
+    for (uint8_t i = 0; i < WEBSOCKETS_SERVER_CLIENT_MAX; i++) {
+      WSclient_t* client = &_clients[i];
+      if (clientIsConnected(client)) {
+        sendFrame(client, opcode, (uint8_t*)payload, length, fin);
+      }
+    }
+  }
+};
+
+CareTechWebSocketServer webSocket(WS_PORT);
+int  wsConnectedClients   = 0;
+bool wifiConnected        = false;
 
 // ---------- PIN ASSIGNMENT ----------
-const int LED_PIN    = 2;    // Built-in LED onboard
-const int BUTTON_PIN = 0;    // BOOT Button onboard
+const int LED_PIN        = 2;    // Built-in LED onboard
+const int BUTTON_PIN     = 0;    // BOOT Button onboard (Pemicu cadangan di board)
+const int EXT_BUTTON_PIN = 4;    // Tombol Fisik 12mm PBS di Tangan Boneka (Push-To-Talk)
+
+// Deteksi jika tombol fisik 12mm eksternal (GPIO 4) ATAU tombol BOOT onboard (GPIO 0) ditekan
+inline bool isAnyButtonPressed() {
+  return (digitalRead(BUTTON_PIN) == LOW || digitalRead(EXT_BUTTON_PIN) == LOW);
+}
 
 // MAX98357A I2S Speaker (Port I2S_NUM_1 - TX)
 #define I2S_SPK_PORT I2S_NUM_1
@@ -62,6 +118,13 @@ const int BUTTON_PIN = 0;    // BOOT Button onboard
 #define I2S_MIC_SCK  14
 #define I2S_MIC_WS   33
 #define I2S_MIC_SD   32
+
+// FSR402 Force-Sensing Resistors (Port ADC1 - Aman Digunakan Bersama WiFi & I2S)
+const int FSR1_PIN   = 34;   // FSR 1: Sensor Tekanan Kepala / Elusan (GPIO 34)
+const int FSR2_PIN   = 35;   // FSR 2: Sensor Tekanan Pipi / Pelukan (GPIO 35)
+const adc1_channel_t FSR1_ADC_CHAN = ADC1_CHANNEL_6; // Kanal ADC1 GPIO 34
+const adc1_channel_t FSR2_ADC_CHAN = ADC1_CHANNEL_7; // Kanal ADC1 GPIO 35
+
 
 // Status Robot ESA
 enum RobotState {
@@ -91,10 +154,31 @@ unsigned long lastMicCheckMs = 0;
 int soundLevel = 0;
 unsigned long lastVoiceNoticeMs = 0;
 
-// ---------- FUNGSI PROTOKOL SERIAL ----------
+// Sensor Tekanan FSR402 State, Filtering & Timing
+const int FSR_NOISE_FLOOR  = 350; // Ambang batas noise ADC: nilai di bawah 350 dianggap 0 (mati total, bebas kedip)
+const int FSR_TOUCH_THRESH = 800; // Ambang batas sentuhan nyata untuk memicu event touch ke browser
+unsigned long lastFsrCheckMs = 0;
+unsigned long lastFsrReportMs = 0;
+bool fsr1Pressed = false;
+bool fsr2Pressed = false;
+int fsr1Level = 0;
+int fsr2Level = 0;
+int fsr1Smoothed = 0;
+int fsr2Smoothed = 0;
+
+// ---------- FUNGSI BROADCAST DUAL MODE (SERIAL + WEBSOCKET) ----------
+void broadcastWsFrame(WSopcode_t opcode, const uint8_t* payload, size_t length, bool fin) {
+  webSocket.broadcastWsFrame(opcode, payload, length, fin);
+}
+
 void sendDoc(JsonDocument& doc) {
-  serializeJson(doc, Serial);
-  Serial.println();
+  String output;
+  serializeJson(doc, output);
+  Serial.println(output); // Kirim via USB Serial
+  
+  if (wsConnectedClients > 0) {
+    webSocket.broadcastTXT(output); // Kirim via Nirkabel WebSocket
+  }
 }
 
 void sendStatus(const char* type, const String& msg) {
@@ -421,7 +505,7 @@ void checkMicActivity() {
 // ==========================================
 static const char B64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-void writeBase64Stream(const uint8_t* data, size_t len) {
+void streamBase64Data(const uint8_t* data, size_t len, bool streamWs) {
   size_t i = 0;
   char outBuf[128];
   size_t outPos = 0;
@@ -438,6 +522,9 @@ void writeBase64Stream(const uint8_t* data, size_t len) {
 
     if (outPos >= 120) {
       Serial.write((const uint8_t*)outBuf, outPos);
+      if (streamWs) {
+        broadcastWsFrame(WSop_continuation, (const uint8_t*)outBuf, outPos, false);
+      }
       outPos = 0;
     }
   }
@@ -457,6 +544,9 @@ void writeBase64Stream(const uint8_t* data, size_t len) {
   }
   if (outPos > 0) {
     Serial.write((const uint8_t*)outBuf, outPos);
+    if (streamWs) {
+      broadcastWsFrame(WSop_continuation, (const uint8_t*)outBuf, outPos, false);
+    }
   }
 }
 
@@ -593,23 +683,39 @@ void recordAndStreamAudio(int durationSeconds = 15, const char* context = "chat"
     }
     if (earlyStop) break;
 
-    // 2. Cek tombol fisik BOOT HANYA jika dipicu secara fisik (Toggle OFF manual)
+    // 2. Cek tombol fisik (12mm PBS GPIO 4 & BOOT GPIO 0) HANYA jika dipicu secara fisik
     if (isHardwareButtonContext) {
-      if (digitalRead(BUTTON_PIN) == HIGH) {
+      bool pressed = isAnyButtonPressed();
+
+      if (!pressed) {
+        // Tombol sedang dalam posisi DILEPAS (HIGH)
         if (btnHighStartTime == 0) {
           btnHighStartTime = millis();
         }
-        // Tombol harus benar-benar dilepas stabil minimal 200ms dan minimal 800ms telah berlalu
-        if (!btnArmedForStop && (millis() - btnHighStartTime >= 200) && (millis() - startTime >= 800)) {
+
+        unsigned long heldDuration = (btnHighStartTime > startTime) ? (btnHighStartTime - startTime) : 0;
+        unsigned long releasedDuration = millis() - btnHighStartTime;
+
+        // MODE A: PUSH-TO-TALK (HOLD-TO-TALK)
+        // Jika pengguna menahan tombol saat bicara (>= 600ms), lalu melepas tombol selama >= 150ms:
+        // Langsung selesaikan perekaman seketika! (Lepas tombol = selesai bicara & langsung kirim suara)
+        if (heldDuration >= 600 && releasedDuration >= 150) {
+          earlyStop = true;
+          break;
+        }
+
+        // MODE B: TOGGLE (KLIK UNTUK BICARA, KLIK LAGI UNTUK SELESAI)
+        // Jika tombol dilepas cepat (< 600ms), persiapkan sistem agar tombol tekan berikutnya mematikan mic
+        if (!btnArmedForStop && releasedDuration >= 200 && (millis() - startTime >= 400)) {
           btnArmedForStop = true;
         }
         btnLowDebounceCount = 0;
       } else {
-        // Tombol ditekan kembali (LOW)
+        // Tombol sedang dalam posisi DITEKAN (LOW)
         btnHighStartTime = 0;
         if (btnArmedForStop) {
           btnLowDebounceCount++;
-          // Minimal 3 kali bacaan berturut-turut (~50-70ms) untuk mencegah noise
+          // Minimal 3 kali bacaan berturut-turut (~50-70ms) untuk mencegah noise/bouncing
           if (btnLowDebounceCount >= 3) {
             earlyStop = true;
             break;
@@ -656,8 +762,8 @@ void recordAndStreamAudio(int durationSeconds = 15, const char* context = "chat"
   playRobotChime(6); // Bip penanda mic telah dimatikan
   delay(60);
 
-  // Kunci flag tombol jika tombol BOOT masih ditekan agar tidak re-trigger
-  if (digitalRead(BUTTON_PIN) == LOW) {
+  // Kunci flag tombol jika tombol fisik masih ditekan agar tidak re-trigger
+  if (isAnyButtonPressed()) {
     buttonPressedSent = true;
   }
 
@@ -674,16 +780,25 @@ void recordAndStreamAudio(int durationSeconds = 15, const char* context = "chat"
   transDoc["duration"] = actualDuration;
   sendDoc(transDoc);
 
-  // Kirim payload WAV Base64 ke chat.html
-  Serial.print("{\"type\":\"mic_audio\",\"context\":\"");
-  Serial.print(context);
-  Serial.print("\",\"duration\":");
-  Serial.print(actualDuration, 2);
-  Serial.print(",\"peak\":");
-  Serial.print(maxPeak);
-  Serial.print(",\"wav\":\"");
-  writeBase64Stream(wavBuffer, 44 + samplesStored8k);
+  // Kirim payload WAV Base64 ke chat.html (via USB Serial & WebSocket Nirkabel)
+  bool streamWs = (wsConnectedClients > 0);
+
+  String prefix = "{\"type\":\"mic_audio\",\"context\":\"" + String(context) +
+                  "\",\"duration\":" + String(actualDuration, 2) +
+                  ",\"peak\":" + String(maxPeak) +
+                  ",\"wav\":\"";
+  Serial.print(prefix);
+  if (streamWs) {
+    broadcastWsFrame(WSop_text, (const uint8_t*)prefix.c_str(), prefix.length(), false);
+  }
+
+  streamBase64Data(wavBuffer, 44 + samplesStored8k, streamWs);
+
   Serial.println("\"}");
+  if (streamWs) {
+    const char* suffix = "\"}";
+    broadcastWsFrame(WSop_continuation, (const uint8_t*)suffix, strlen(suffix), true);
+  }
 
   // Jika mode tes loopback, putar juga ke speaker MAX98357A
   if (loopbackToSpeaker && samplesStored8k > 0) {
@@ -782,8 +897,85 @@ void handleLine(String line) {
     float freq = doc["freq"] | 440.0f;
     int dur    = doc["dur"]  | 100;
     playToneI2S(freq, dur, 0.35f);
+  } else if (type == "test_fsr") {
+    JsonDocument fsrDoc;
+    fsrDoc["type"] = "fsr_status";
+    fsrDoc["fsr1"] = fsr1Level;
+    fsrDoc["fsr2"] = fsr2Level;
+    sendDoc(fsrDoc);
   } else if (type == "ping") {
     sendStatus("status", "pong");
+  }
+}
+
+// ==========================================
+// SENSOR TEKANAN FSR402 & INDIKATOR LED (DIMMER)
+// ==========================================
+// Fungsi pembacaan ADC1 dengan oversampling 8x untuk meredam jitter/noise tegangan ESP32
+int readAdc1Smoothed(adc1_channel_t chan) {
+  int sum = 0;
+  for (int i = 0; i < 8; i++) {
+    sum += adc1_get_raw(chan);
+  }
+  return sum / 8;
+}
+
+void checkPressureSensors() {
+  if (millis() - lastFsrCheckMs < 30) return; // Update berkala ~33 Hz
+  lastFsrCheckMs = millis();
+
+  // 1. Baca nilai ADC dengan peredam jitter oversampling 8x
+  int raw1 = readAdc1Smoothed(FSR1_ADC_CHAN);
+  int raw2 = readAdc1Smoothed(FSR2_ADC_CHAN);
+
+  // 2. Low-Pass Filter (Exponential Moving Average) untuk kestabilan sinyal bebas kedip
+  fsr1Smoothed = (fsr1Smoothed * 3 + raw1) / 4;
+  fsr2Smoothed = (fsr2Smoothed * 3 + raw2) / 4;
+  fsr1Level = fsr1Smoothed;
+  fsr2Level = fsr2Smoothed;
+
+  // 3. Deteksi Event Sentuhan Stabil (Ambang sentuhan nyata > 800)
+  bool touched1 = (fsr1Smoothed > FSR_TOUCH_THRESH);
+  bool touched2 = (fsr2Smoothed > FSR_TOUCH_THRESH);
+
+  // Sentuhan FSR 1: Kepala / Elusan
+  if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 1200)) {
+    lastFsrReportMs = millis();
+    fsr1Pressed = true;
+
+    JsonDocument doc;
+    doc["type"]   = "touch";
+    doc["sensor"] = "fsr1";
+    doc["target"] = "head";
+    doc["level"]  = fsr1Smoothed;
+    doc["action"] = "pat";
+    sendDoc(doc);
+
+    if (currentState == STATE_IDLE) {
+      playRobotChime(1); // Sapaan / nada ceria
+    }
+  } else if (!touched1 && (fsr1Smoothed < FSR_NOISE_FLOOR)) {
+    fsr1Pressed = false;
+  }
+
+  // Sentuhan FSR 2: Pipi / Pelukan
+  if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 1200)) {
+    lastFsrReportMs = millis();
+    fsr2Pressed = true;
+
+    JsonDocument doc;
+    doc["type"]   = "touch";
+    doc["sensor"] = "fsr2";
+    doc["target"] = "hug";
+    doc["level"]  = fsr2Smoothed;
+    doc["action"] = "hug";
+    sendDoc(doc);
+
+    if (currentState == STATE_IDLE) {
+      playRobotChime(2); // Nada ramah hangat
+    }
+  } else if (!touched2 && (fsr2Smoothed < FSR_NOISE_FLOOR)) {
+    fsr2Pressed = false;
   }
 }
 
@@ -792,6 +984,12 @@ void handleLine(String line) {
 // ==========================================
 void updateLedAnimation() {
   unsigned long now = millis();
+
+  // Jika salah satu sensor FSR sedang disentuh nyata, nyalakan LED onboard (GPIO 2) sebagai respon fisik
+  if (fsr1Pressed || fsr2Pressed || fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH) {
+    digitalWrite(LED_PIN, HIGH);
+    return;
+  }
 
   if (currentState == STATE_RECORDING) {
     digitalWrite(LED_PIN, HIGH);
@@ -808,21 +1006,16 @@ void updateLedAnimation() {
       digitalWrite(LED_PIN, ledState ? HIGH : LOW);
     }
   } else {
-    // Mode Standby: Denyut lembut per 3 detik
-    unsigned long cycle = now % 3000;
-    if (cycle < 60) {
-      digitalWrite(LED_PIN, HIGH);
-    } else {
-      digitalWrite(LED_PIN, LOW);
-    }
+    // Mode Standby: LED Onboard mati total (tidak berkedip sendiri saat idle)
+    digitalWrite(LED_PIN, LOW);
   }
 }
 
 // ==========================================
-// TOMBOL BOOT FISIK ONBOARD (GPIO 0)
+// TOMBOL PUSH-TO-TALK FISIK (12mm PBS GPIO 4 & BOOT GPIO 0)
 // ==========================================
 void checkCurhatButton() {
-  int reading = digitalRead(BUTTON_PIN);
+  int reading = isAnyButtonPressed() ? LOW : HIGH;
 
   if (reading != lastButtonReading) {
     lastDebounceTime = millis();
@@ -854,6 +1047,105 @@ void checkCurhatButton() {
 }
 
 // ==========================================
+// DRIVER NIRKABEL: WIFI & WEBSOCKET SERVER
+// ==========================================
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  switch (type) {
+    case WStype_DISCONNECTED:
+      if (wsConnectedClients > 0) wsConnectedClients--;
+      Serial.printf("[WS] Client #%u Terputus. Sisa Client: %d\n", num, wsConnectedClients);
+      break;
+
+    case WStype_CONNECTED: {
+      wsConnectedClients++;
+      IPAddress ip = webSocket.remoteIP(num);
+      Serial.printf("[WS] Client #%u Terhubung dari: %s\n", num, ip.toString().c_str());
+
+      // Kirim salam sambutan & status siap ke client web yang baru tersambung
+      JsonDocument welcomeDoc;
+      welcomeDoc["type"]   = "status";
+      welcomeDoc["msg"]    = "CareTech ESA Wireless Siap!";
+      welcomeDoc["mode"]   = wifiConnected ? "STA" : "AP";
+      welcomeDoc["ip"]     = wifiConnected ? WiFi.localIP().toString() : WiFi.softAPIP().toString();
+      welcomeDoc["mdns"]   = "esa-robot.local";
+      String out;
+      serializeJson(welcomeDoc, out);
+      webSocket.sendTXT(num, out);
+
+      // Mainkan nada sapaan gembira lewat speaker MAX98357A
+      playRobotChime(1);
+      break;
+    }
+
+    case WStype_TEXT: {
+      // Perintah teks JSON yang diterima dari chat.html via WebSocket
+      handleLine(String((char*)payload));
+      break;
+    }
+
+    case WStype_BIN:
+      break;
+
+    default:
+      break;
+  }
+}
+
+void initWiFiAndWebSocket() {
+  Serial.println("\n[WiFi] Memulai inisialisasi jaringan nirkabel...");
+
+  // Nonaktifkan WiFi power save / modem sleep agar streaming audio I2S tidak putus-putus
+  WiFi.setSleep(false);
+
+  // Periksa apakah SSID sudah diisi oleh pengguna (bukan default placeholder)
+  bool hasCustomSsid = (strlen(WIFI_SSID) > 0 && strcmp(WIFI_SSID, "NAMA_WIFI_ANDA") != 0);
+
+  if (hasCustomSsid) {
+    Serial.printf("[WiFi] Menghubungkan ke: %s ...\n", WIFI_SSID);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 16) { // Tunggu hingga ~8 detik
+      delay(500);
+      Serial.print(".");
+      digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // Animasi kedip saat mencari sinyal
+      attempts++;
+    }
+    Serial.println();
+
+    if (WiFi.status() == WL_CONNECTED) {
+      wifiConnected = true;
+      Serial.println("[WiFi] Berhasil Terhubung ke Jaringan!");
+      Serial.print("[WiFi] Alamat IP ESP32: ");
+      Serial.println(WiFi.localIP());
+    } else {
+      Serial.println("[WiFi] Tidak dapat tersambung ke WiFi. Beralih ke Hotspot Mandiri (AP Mode)...");
+    }
+  }
+
+  // Jika belum terkoneksi, aktifkan Access Point Mandiri bawaan Robot
+  if (!wifiConnected) {
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(AP_SSID, AP_PASS);
+    Serial.printf("[WiFi] AP Mode Aktif! Hubungkan laptop ke WiFi: '%s' (Sandi: '%s')\n", AP_SSID, AP_PASS);
+    Serial.print("[WiFi] Alamat IP Robot: ");
+    Serial.println(WiFi.softAPIP()); // Default: 192.168.4.1
+  }
+
+  // Aktifkan mDNS agar browser bisa membuka ws://esa-robot.local:81
+  if (MDNS.begin("esa-robot")) {
+    MDNS.addService("ws", "tcp", WS_PORT);
+    Serial.println("[mDNS] Layanan aktif di: ws://esa-robot.local:81");
+  }
+
+  // Jalankan WebSocket Server
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+  Serial.printf("[WS] WebSocket Server berjalan pada port: %d\n", WS_PORT);
+}
+
+// ==========================================
 // SETUP
 // ==========================================
 void setup() {
@@ -864,15 +1156,25 @@ void setup() {
   digitalWrite(LED_PIN, LOW);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(EXT_BUTTON_PIN, INPUT_PULLUP);
+
+  // Inisialisasi ADC1 Legacy (12-bit, rentang 0 - 4095) untuk sensor tekanan FSR402
+  // Menggunakan driver ADC legacy agar serasi 100% dengan driver I2S audio tanpa crash driver_ng
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(FSR1_ADC_CHAN, ADC_ATTEN_DB_12);
+  adc1_config_channel_atten(FSR2_ADC_CHAN, ADC_ATTEN_DB_12);
 
   randomSeed(esp_random());
   delay(200);
 
-  // Inisialisasi Audio Hardware I2S (Tanpa radio WiFi - bebas RF noise!)
+  // Inisialisasi Audio Hardware I2S
   initI2SSpeaker(); // MAX98357A pada I2S_NUM_1 (GPIO 26, 25, 22)
   initI2SMic();     // INMP441 pada I2S_NUM_0 (GPIO 14, 33, 32)
 
-  sendStatus("status", "CareTech ESA Siap! (MAX98357A Speaker + INMP441 Mic)");
+  // Inisialisasi Nirkabel: WiFi & WebSocket
+  initWiFiAndWebSocket();
+
+  sendStatus("status", "CareTech ESA Siap! (Dual Mode Audio + 2x Sensor FSR402)");
 
   // Mainkan sapaan ceria awal lewat speaker MAX98357A
   playRobotChime(1);
@@ -882,7 +1184,10 @@ void setup() {
 // MAIN LOOP
 // ==========================================
 void loop() {
-  // 1. Baca Perintah Masuk dari Browser chat.html
+  // 1. Proses Event WebSocket Nirkabel
+  webSocket.loop();
+
+  // 2. Baca Perintah Masuk dari Browser chat.html via USB Serial
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n') {
@@ -893,12 +1198,15 @@ void loop() {
     }
   }
 
-  // 2. Cek Mikrofon INMP441 (Aktivitas Suara / VAD)
+  // 3. Cek Mikrofon INMP441 (Aktivitas Suara / VAD)
   checkMicActivity();
 
-  // 3. Cek Tombol BOOT (GPIO 0)
+  // 4. Cek Sensor Tekanan FSR402 & Update LED Indikator
+  checkPressureSensors();
+
+  // 5. Cek Tombol BOOT (GPIO 0)
   checkCurhatButton();
 
-  // 4. Animasi LED Onboard
+  // 6. Animasi LED Onboard
   updateLedAnimation();
 }

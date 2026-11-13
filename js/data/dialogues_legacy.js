@@ -20,8 +20,8 @@ const DIALOGUES = {
     speaker : { en: 'ECA', id: 'ECA' },
     portrait: 'player_surprised',
     text    : { 
-      en: 'Wait... someone looks like they are holding back tears over there.',
-      id: 'Eh, tunggu... sepertinya ada yang lagi menahan tangis di sana.' 
+      en: 'Wait... someone is holding back tears over there.',
+      id: 'Eh, tunggu... ada yang lagi menahan tangis di sana.' 
     },
     next    : 'lvl1_004_choice'
   },

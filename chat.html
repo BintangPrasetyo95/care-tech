@@ -607,9 +607,8 @@
                         <div class="msg-bubble ai">
                             <div class="ai-avatar-mini">🤖</div>
                             <div>
-                                <strong>Halo Kawan! Aku ESA! 📦✨</strong><br>
-                                Robot kawan curhatmu yang terbuat dari karton dan penuh empati! Apapun yang sedang kamu rasakan hari ini—senang, sedih, lelah, atau cemas—kamu aman bercerita di sini.<br><br>
-                                <em>Apa yang sedang ada di pikiranmu saat ini?</em>
+                                <strong>Halo Kawan! Aku ESA. 📦✨</strong><br>
+                                Robot kawan curhatmu yang siap mendengarkan. Apa yang sedang kamu rasakan hari ini?
                             </div>
                         </div>
                     </div>
@@ -904,7 +903,7 @@
                         • GAIN &amp; SD &rarr; Biarkan terbuka (Floating)<br>
                         • Terminal &rarr; Speaker 4Ω/8Ω 3W
                     </div>
-                    <div style="background: #fefce8; padding: 0.6rem; border-radius: 6px;">
+                    <div style="background: #fefce8; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem;">
                         <strong style="color: #854d0e;">2. INMP441 Mikrofon MEMS (Papan Bundar):</strong><br>
                         • VDD &rarr; <span style="color: #dc2626; font-weight: bold;">ESP32 3V3 (3.3V WAJIB! JANGAN 5V)</span><br>
                         • GND &rarr; ESP32 GND<br>
@@ -912,6 +911,17 @@
                         • WS &rarr; ESP32 GPIO 33<br>
                         • SCK &rarr; ESP32 GPIO 14<br>
                         • L/R &rarr; ESP32 GND
+                    </div>
+                    <div style="background: #eff6ff; padding: 0.6rem; border-radius: 6px; margin-bottom: 0.6rem;">
+                        <strong style="color: #1d4ed8;">3. Tombol Fisik 12mm PBS (Push-To-Talk Boneka):</strong><br>
+                        • Kaki 1 Tombol &rarr; <strong>ESP32 GPIO 4</strong><br>
+                        • Kaki 2 Tombol &rarr; <strong>ESP32 GND</strong><br>
+                        <span style="color: #475569; font-size: 0.74rem;">(Bebas resistor luar, internal pull-up aktif. Tahan saat bicara &amp; lepas untuk kirim, atau klik sekali untuk bicara bebas).</span>
+                    </div>
+                    <div style="background: #fdf2f8; padding: 0.6rem; border-radius: 6px;">
+                        <strong style="color: #be185d;">4. Sensor Tekanan FSR402 (Elusan &amp; Pelukan):</strong><br>
+                        • FSR 1 (Kepala) &rarr; Pin 1 ke 3V3, Pin 2 ke <strong>GPIO 34</strong> + 10kΩ ke GND<br>
+                        • FSR 2 (Pipi) &rarr; Pin 1 ke 3V3, Pin 2 ke <strong>GPIO 35</strong> + 10kΩ ke GND
                     </div>
                 </div>
             </details>
@@ -1165,7 +1175,8 @@
                     stream: false,
                     options: {
                         temperature: 0.7,
-                        top_p: 0.9
+                        top_p: 0.9,
+                        num_predict: 50
                     }
                 })
             });
@@ -1352,7 +1363,7 @@
                     updateApiStatusIndicator();
                     setTimeout(() => {
                         toggleApiKeyModal();
-                        addMessageToUI("Akses Google Gemini AI berhasil diaktifkan dengan kata kunci! Sekarang aku siap mendampingimu dengan kecerdasan penuh kawan! 🚀✨", "ai");
+                        addMessageToUI("Gemini AI aktif! Aku siap mendampingimu kawan. ✨", "ai");
                     }, 800);
                     return;
                 }
@@ -1370,7 +1381,7 @@
             localStorage.setItem('caretech_gemini_key', geminiKey);
             updateApiStatusIndicator();
             toggleApiKeyModal();
-            addMessageToUI("Kunci Gemini API manual berhasil disimpan! Aku siap diajak curhat kawan!", "ai");
+            addMessageToUI("Gemini API tersimpan! Aku siap diajak curhat kawan.", "ai");
         }
 
         function resetApiKey() {
@@ -1383,7 +1394,7 @@
                 feedbackEl.style.color = '#475569';
                 feedbackEl.textContent = 'Kunci API telah dihapus. ESA beralih ke Mode Otak Bawaan.';
             }
-            addMessageToUI("Kunci API telah dilepas. ESA sekarang menggunakan Otak Empati Bawaan.", "ai");
+            addMessageToUI("Kunci API dilepas. Mode empati bawaan aktif kawan.", "ai");
         }
 
         // ==========================================
@@ -1490,6 +1501,15 @@
             const feedback = document.getElementById('eleven-feedback');
             const testBtn = document.getElementById('btn-test-eleven');
 
+            if (!elevenKey || !elevenKey.startsWith('sk_')) {
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#dc2626';
+                    feedback.textContent = '⚠️ Masukkan API Key ElevenLabs terlebih dahulu (dimulai dengan sk_).';
+                }
+                return;
+            }
+
             if (testBtn) {
                 testBtn.disabled = true;
                 testBtn.textContent = 'Memuat... ⏳';
@@ -1502,21 +1522,62 @@
             }
 
             try {
-                await speakText("Halo kawan! Aku robot ESA dari CareTech. Suara ElevenLabs Flash dua koma lima sudah siap mendampingimu!");
+                const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
+                const testPhrase = "Halo kawan! Aku robot ESA dari CareTech. Suara ElevenLabs siap mendampingimu!";
+                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'xi-api-key': elevenKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'audio/mpeg'
+                    },
+                    body: JSON.stringify({
+                        text: testPhrase,
+                        model_id: elevenModelId || "eleven_flash_v2_5"
+                    })
+                });
+
+                if (!response.ok) {
+                    const errJson = await response.json().catch(() => ({}));
+                    const detail = errJson.detail?.message || errJson.detail || `HTTP ${response.status}`;
+                    throw new Error(detail);
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const testAudio = new Audio(audioUrl);
+                await testAudio.play();
+
                 if (feedback) {
                     feedback.style.color = '#16a34a';
-                    feedback.textContent = '🎉 Suara berhasil diputar!';
+                    feedback.textContent = '🎉 Suara ElevenLabs berhasil diputar!';
                 }
             } catch (err) {
                 if (feedback) {
                     feedback.style.color = '#dc2626';
-                    feedback.textContent = '⚠️ Gagal memutar suara: ' + err.message;
+                    if (err.message && (err.message.includes('quota') || err.message.includes('credit'))) {
+                        feedback.innerHTML = `⚠️ <strong>Kuota Karakter Bulanan Habis!</strong> (${err.message}).<br>Silakan ganti dengan API Key akun ElevenLabs baru (gratis 10.000 karakter).`;
+                    } else {
+                        feedback.textContent = '⚠️ Gagal memutar suara ElevenLabs: ' + err.message;
+                    }
                 }
             } finally {
                 if (testBtn) {
                     testBtn.disabled = false;
                     testBtn.textContent = 'Tes Suara 🔊';
                 }
+            }
+        }
+
+        function notifyTtsFailure(errMsg) {
+            const isQuota = errMsg && (errMsg.includes('quota') || errMsg.includes('credit') || errMsg.includes('401'));
+            const banner = document.getElementById('api-status-banner');
+            const text = document.getElementById('api-status-text');
+            if (banner && text && isQuota) {
+                banner.style.display = 'flex';
+                banner.style.background = '#fef2f2';
+                banner.style.borderColor = '#ef4444';
+                text.innerHTML = `⚠️ <strong>Kuota Suara ElevenLabs Habis:</strong> Robot otomatis memakai nada bawaan. Buka <a href="javascript:void(0)" onclick="toggleApiKeyModal()" style="color:#b91c1c; font-weight:bold; text-decoration:underline;">Pengaturan ⚙️</a> untuk memasukkan API Key baru (gratis).`;
             }
         }
 
@@ -1527,7 +1588,7 @@
                     <div class="ai-avatar-mini">🤖</div>
                     <div>
                         <strong>Lembar Baru Terbuka! 📄</strong><br>
-                        Obrolan sebelumnya sudah dibersihkan. Ceritakan apa saja yang sedang kamu rasakan saat ini ya!
+                        Obrolan dibersihkan. Ceritakan apa yang sedang kamu rasakan kawan.
                     </div>
                 </div>
             `;
@@ -1570,22 +1631,24 @@
         // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
         // ----------------------------------------------------
         function getEsaSystemPrompt(sensorContext = "") {
-            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, bahasa Indonesia sederhana.
-Jawaban dibacakan lewat speaker fisik: MAKSIMAL 3 KALIMAT PENDEK saja (maksimal 25-30 kata), TANPA EMOJI, TANPA FORMAT DAFTAR/BULLET POINTS.
+            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, dan bahasa Indonesia sederhana.
 
-ATURAN UTAMA:
-1. INGAT DAN GUNAKAN apa yang sudah user ceritakan dari percakapan sebelumnya. Jangan pernah meminta mengulang cerita yang sudah disebut.
-2. URUTAN RESPONS CURHAT: (a) akui perasaannya secara spesifik, (b) beri SATU langkah kecil yang konkret, (c) satu pertanyaan lanjutan yang ringan.
-3. JIKA USER MINTA DIHIBUR: hibur dulu (cerita lucu, tebak-tebakan, ajak tarik napas) sebelum menggali masalah.
-4. UNTUK BULLYING: tegaskan itu bukan salah user, sebut itu bullying, sarankan bicara ke orang dewasa tepercaya (orang tua, wali kelas, guru BK), tawarkan bantu menyusun kalimat untuk memulai bicara. Jangan menyuruh "abaikan saja".
-5. JANGAN MENILAI BENTUK TUBUH user (jangan bilang "kamu tidak gendut" atau sebaliknya). Fokus pada perlakuan yang menyakitkan dan nilai dirinya.
-6. JIKA ADA TANDA INGIN MENYAKITI DIRI, KEKERASAN FISIK, ATAU BAHAYA: tetap tenang, tanggapi dengan peduli, minta user segera memberi tahu orang dewasa terdekat, dan sebutkan layanan bantuan resmi: Layanan Sahabat Anak KemenPPPA (129 / WhatsApp 08111-129-129) dan SEJIWA Kemenkes (119 ekstensi 8). Jangan lanjut ke topik lain.
-7. KAMU BUKAN PSIKOLOG: Jangan mendiagnosis. Ingatkan sesekali bahwa teman dan keluarga nyata juga penting.
-8. PERTANYAAN POLITIK, BERITA, ATAU OPINI TOKOH: jawab singkat dan netral tanpa memuji atau mengkritik, atau bilang "itu sebaiknya kamu tanya ke orang tua atau guru ya", lalu kembali tanya kabar user.
-9. JANGAN MENGARANG FAKTA: Kalau tidak yakin, katakan tidak yakin.
+ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
+1. Balasanmu WAJIB SANGAT PENDEK & RINGKAS: MAKSIMAL 1 SAMPAI 2 KALIMAT PENDEK SAJA (total maksimal 15-20 kata). Jangan bertele-tele atau membuat kalimat majemuk panjang.
+2. FORMAT: TANPA EMOJI, TANPA FORMAT DAFTAR/BULLET POINTS.
+3. INGAT DAN GUNAKAN cerita user sebelumnya tanpa meminta mengulang cerita yang sudah disebut.
+4. RESPONS CURHAT: Cukup 1 kalimat mengakui perasaannya secara hangat, lalu 1 kalimat berupa saran kecil atau pertanyaan lanjutan ringan.
+5. JIKA MINTA DIHIBUR: Beri 1 lelucon atau tebakan lucu yang sangat pendek.
+6. UNTUK BULLYING: Tegaskan itu bukan salah user dan sarankan lapor ke orang tua atau guru BK. Jangan menilai bentuk fisik tubuh.
+7. BAHAYA / SELF-HARM: Respon singkat peduli dan arahkan segera ke orang dewasa terdekat atau hubungi 129 / 119 ekstensi 8.
+8. KAMU BUKAN PSIKOLOG: Jangan mendiagnosis.
+9. POLITIK / BERITA: Alihkan singkat ke orang tua/guru, lalu tanya kabar user.
+10. JANGAN MENGARANG FAKTA: Jika tidak tahu, katakan tidak tahu.
 
-Contoh respons ideal untuk bullying:
-"Dikatain gendut sampai kamu tertekan, itu menyakitkan, dan itu bukan salahmu. Yang mereka lakukan namanya bullying. Langkah yang paling membantu: ceritakan ke orang dewasa yang kamu percaya, seperti mama, papa, atau guru BK. Mau aku bantu pikirin cara ngomongnya?"` + sensorContext;
+Contoh respons ideal (1-2 kalimat pendek):
+- Bullying: "Itu bukan salahmu kawan, yang terjadi adalah bullying. Yuk cerita ke guru BK atau orang tua ya."
+- Sedih: "Wajar merasa sedih kawan, kamu tidak sendirian. Mau cerita apa yang terjadi?"
+- Cemas: "Tarik napas perlahan kawan, kamu aman di sini. Hal apa yang paling kamu cemaskan?"` + sensorContext;
         }
 
         // Pemeriksa Risiko Bahaya Diri & Kekerasan Fisik
@@ -1621,58 +1684,75 @@ Contoh respons ideal untuk bullying:
             addMessageToUI(safetyHtml, 'ai');
         }
 
-        // Built-in Empathetic AI Brain (Respons Offline Terkalibrasi Sesuai Aturan Utama)
+        // Pembatas Panjang Kalimat AI (Menjaga respons maksimal 1-2 kalimat)
+        function limitAiResponseLength(text, maxSentences = 2) {
+            if (!text) return text;
+            const clean = text.trim();
+            if (checkRiskContent(clean)) return clean;
+            
+            const words = clean.split(/\s+/);
+            if (words.length <= 22) return clean;
+
+            const sentenceRegex = /[^.!?]+[.!?]+(\s|$)/g;
+            const matches = clean.match(sentenceRegex);
+            if (matches && matches.length > maxSentences) {
+                return matches.slice(0, maxSentences).join('').trim();
+            }
+            return clean;
+        }
+
+        // Built-in Empathetic AI Brain (Respons Offline Terkalibrasi Singkat 1-2 Kalimat)
         function generateEmpatheticResponse(userText) {
             const lower = userText.toLowerCase();
 
             // 1. Protokol Risiko / Bahaya / Self-Harm
             if (checkRiskContent(userText)) {
-                return "Aku sangat peduli dengan keselamatanmu kawan. Tolong segera beri tahu orang dewasa yang kamu percaya, atau hubungi Sahabat Anak KemenPPPA di 129 dan SEJIWA Kemenkes 119 ekstensi 8. Kamu tidak sendirian.";
+                return "Kamu sangat berharga kawan. Segera bicara ke orang dewasa terpercaya atau hubungi 129 dan 119 ekstensi 8 ya.";
             }
 
             // 2. Minta Dihibur / Humor Sebelum Menggali Masalah
             if (lower.includes('hibur') || lower.includes('lucu') || lower.includes('tebak') || lower.includes('lawak') || lower.includes('bosan')) {
                 const jokes = [
-                    "Ayam apa yang paling sopan? Ayam k-permisi! Hehe, tarik napas rileks dulu ya kawan. Gimana perasaanmu sekarang?",
-                    "Kucing apa yang paling kuno? Kucing-goro! Semoga bisa bikin kamu sedikit tersenyum ya. Apa yang sedang membebani pikiranmu?",
-                    "Kenapa pohon mangga di depan rumah harus ditebang? Karena kalau dicabut berat! Rileks sejenak ya kawan, ada hal yang ingin kamu ceritakan?"
+                    "Ayam apa yang paling sopan? Ayam k-permisi! Hehe, gimana perasaanmu sekarang kawan?",
+                    "Kucing apa yang paling kuno? Kucing-goro! Semoga bisa bikin kamu tersenyum kawan.",
+                    "Pohon apa yang paling berat dicabut? Pohon mangga! Rileks sejenak kawan, ada yang mau diceritakan?"
                 ];
                 return jokes[Math.floor(Math.random() * jokes.length)];
             }
 
             // 3. Bullying & Topik Bentuk Tubuh (Fokus perlakuan & bukan salah user, jangan nilai fisik)
             if (lower.includes('ejek') || lower.includes('bully') || lower.includes('jahil') || lower.includes('dijauhi') || lower.includes('olok') || lower.includes('gendut') || lower.includes('kurus') || lower.includes('jelek')) {
-                return "Dikatain seperti itu sampai kamu tertekan, itu menyakitkan dan itu bukan salahmu kawan, yang mereka lakukan namanya bullying. Langkah paling membantu: ceritakan ke orang dewasa yang kamu percaya seperti orang tua atau guru BK. Mau aku bantu pikirkan cara ngomongnya?";
+                return "Itu bukan salahmu kawan dan itu bullying. Yuk ceritakan ke orang tua atau guru BK, mau kubantu caranya?";
             }
 
             // 4. Pertanyaan Politik, Berita, atau Opini Tokoh (Netral & arahkan ke orang dewasa)
             if (lower.includes('politik') || lower.includes('presiden') || lower.includes('pemilu') || lower.includes('menteri') || lower.includes('dpr') || lower.includes('partai')) {
-                return "Untuk topik berita atau politik, sebaiknya kamu tanyakan ke orang tua atau gurumu ya kawan. Ngomong-ngomong, bagaimana kabarmu hari ini?";
+                return "Topik itu sebaiknya ditanyakan ke orang tua atau gurumu ya. Bagaimana kabarmu hari ini kawan?";
             }
 
             // 5. Sedih / Menangis / Kecewa
             if (lower.includes('sedih') || lower.includes('nangis') || lower.includes('kecewa') || lower.includes('patah') || lower.includes('down')) {
-                return "Wajar banget merasa sedih saat ada hal yang berat kawan. Ambil segelas air hangat dan tarik napas perlahan ya. Mau cerita apa hal yang paling bikin kamu sedih?";
+                return "Wajar banget merasa sedih kawan, kamu tidak sendiri. Mau cerita apa yang terjadi?";
             }
 
             // 6. Marah / Kesal / Jengkel
             if (lower.includes('marah') || lower.includes('kesal') || lower.includes('jengkel') || lower.includes('benci') || lower.includes('emosi')) {
-                return "Aku paham kamu merasa kesal karena situasi ini terasa tidak adil. Tarik napas dalam empat hitungan untuk meredakannya ya kawan. Apa yang memicu rasa marahmu?";
+                return "Wajar merasa kesal kawan. Tarik napas perlahan ya, apa yang bikin kamu marah?";
             }
 
             // 7. Takut / Cemas / Panik / Overthinking
             if (lower.includes('takut') || lower.includes('cemas') || lower.includes('panik') || lower.includes('gugup') || lower.includes('overthinking')) {
-                return "Kamu aman di sini bersamaku kawan. Letakkan kedua tangan di dada dan rasakan napasmu yang tenang. Hal apa yang paling kamu cemaskan?";
+                return "Kamu aman di sini kawan. Tarik napas perlahan ya, apa yang paling kamu cemaskan?";
             }
 
             // 8. Tugas / Sekolah / Lelah / Capek
             if (lower.includes('tugas') || lower.includes('sekolah') || lower.includes('capek') || lower.includes('lelah') || lower.includes('pusing')) {
-                return "Hari ini pasti menguras energimu ya kawan. Pejamkan matamu sejenak dan regangkan pundakmu. Bagian mana yang paling bikin kamu lelah?";
+                return "Pasti melelahkan ya kawan. Istirahat sejenak, bagian mana yang terasa paling berat?";
             }
 
             // 9. Senang / Bahagia / Seru / Gembira
             if (lower.includes('senang') || lower.includes('seru') || lower.includes('bahagia') || lower.includes('gembira') || lower.includes('asik') || lower.includes('berhasil')) {
-                return "YAY! Aku ikut senang banget mendengarnya kawan! Simpan rasa gembira ini baik-baik ya. Apa momen paling seru yang terjadi tadi?";
+                return "Hore, aku ikut senang mendengarnya kawan! Apa momen paling seru tadi?";
             }
 
             // 10. Sensor Suhu Fisik Ruangan
@@ -1680,12 +1760,12 @@ Contoh respons ideal untuk bullying:
                 if (latestEspSensor && latestEspSensor.temp !== undefined) {
                     const temp = latestEspSensor.temp;
                     let comment = temp > 29 ? "Ruangan agak hangat, sediakan minum ya!" : "Suhu ruangan cukup sejuk dan nyaman.";
-                    return `Sensor tubuh robotku mendeteksi suhu sekitarmu ${temp}°C. ${comment}`;
+                    return `Suhu di sekitarmu ${temp}°C, ${comment}`;
                 }
             }
 
             // Default warm companion reply
-            return "Aku di sini mendengarkanmu dengan hangat kawan. Ceritakan saja perlahan apa yang sedang kamu rasakan ya.";
+            return "Aku di sini mendengarkanmu kawan. Apa yang sedang kamu rasakan?";
         }
 
         // ==========================================
@@ -2180,6 +2260,7 @@ Contoh respons ideal untuk bullying:
                     return;
                 } catch (err) {
                     console.warn("ElevenLabs gagal / dibatasi, beralih ke suara bawaan:", err);
+                    notifyTtsFailure(err.message);
                 }
             }
 
@@ -2897,7 +2978,7 @@ Contoh respons ideal untuk bullying:
 TUGAS TAMBAHAN KHUSUS REKAMAN SUARA INI:
 Kembalikan format JSON valid dengan 2 field:
 1. "transcription": transkripsikan kata demi kata apa yang diucapkan siswa secara persis dalam bahasa Indonesia. Jika audio hening atau tidak jelas, tulis "(Suara hening / tidak terdengar)".
-2. "reply": balasanmu untuk siswa sesuai seluruh ATURAN UTAMA di atas (maksimal 3 kalimat pendek, tanpa emoji, tanpa format daftar/poin).`;
+2. "reply": balasanmu untuk siswa sesuai seluruh ATURAN UTAMA di atas (SANGAT PENDEK: MAKSIMAL 1-2 KALIMAT SAJA, maksimal 15-20 kata, tanpa emoji, tanpa format daftar/poin).`;
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
@@ -2908,14 +2989,15 @@ Kembalikan format JSON valid dengan 2 field:
                         body: JSON.stringify({
                             system_instruction: { parts: [{ text: systemInstruction }] },
                             generationConfig: {
-                                response_mime_type: "application/json"
+                                response_mime_type: "application/json",
+                                maxOutputTokens: 120
                             },
                             contents: [
                                 ...chatHistory.slice(-20),
                                 {
                                     role: "user",
                                     parts: [
-                                        { text: "Dengarkan rekaman suara siswa berikut. Kembalikan JSON valid berisi 'transcription' (teks ucapan siswa) dan 'reply' (balasan hangat maksimal 3 kalimat sesuai aturan):" },
+                                        { text: "Dengarkan rekaman suara siswa berikut. Kembalikan JSON valid berisi 'transcription' (teks ucapan siswa) dan 'reply' (balasan hangat sangat pendek maksimal 1-2 kalimat sesuai aturan):" },
                                         {
                                             inline_data: {
                                                 mime_type: "audio/wav",
@@ -2942,6 +3024,9 @@ Kembalikan format JSON valid dengan 2 field:
                             aiText = rawContent;
                         }
 
+                        if (!aiText) aiText = "Aku mendengarkan suaramu kawan. Apa yang sedang kamu rasakan?";
+                        aiText = limitAiResponseLength(aiText);
+
                         // Periksa potensi risiko darurat pada transkripsi atau balasan
                         if (checkRiskContent(transcription) || checkRiskContent(aiText)) {
                             showSafetyCard();
@@ -2960,8 +3045,6 @@ Kembalikan format JSON valid dengan 2 field:
                             }
                         }
 
-                        if (!aiText) aiText = "Aku menyimak suaramu kawan. Tarik napas perlahan ya. Mau cerita lebih banyak apa yang sedang kamu rasakan?";
-
                         addMessageToUI(aiText, 'ai');
                         chatHistory.push({
                             "role": "user",
@@ -2979,7 +3062,7 @@ Kembalikan format JSON valid dengan 2 field:
                 }
             }
 
-            // Fallback Empatik Bawaan jika offline (Maksimal 3 Kalimat Pendek, tanpa emoji)
+            // Fallback Empatik Bawaan jika offline (Maksimal 1-2 Kalimat Pendek, tanpa emoji)
             setTimeout(() => {
                 const textEl = document.getElementById(`${msgId}-text`);
                 if (textEl && peak === 0) {
@@ -2989,9 +3072,9 @@ Kembalikan format JSON valid dengan 2 field:
                 }
 
                 const voiceResponses = [
-                    "Aku menyimak suaramu kawan. Tarik napas perlahan dan rileks ya. Ada hal yang ingin kamu ceritakan?",
-                    "Senang mendengar suaramu langsung kawan. Pejamkan mata sejenak dan istirahatlah. Apa hal yang paling membebani pikiranmu saat ini?",
-                    "Aku mendengarkan suaramu dengan hangat kawan. Minum air putih hangat dulu ya. Mau cerita lebih banyak apa yang kamu rasakan?"
+                    "Aku mendengarkan suaramu kawan. Ada yang ingin kamu ceritakan?",
+                    "Senang mendengar suaramu kawan. Apa yang sedang kamu rasakan saat ini?",
+                    "Aku menyimakmu kawan. Tarik napas rileks ya, mau cerita apa?"
                 ];
                 const reply = voiceResponses[Math.floor(Math.random() * voiceResponses.length)];
                 addMessageToUI(reply, 'ai');
@@ -3071,7 +3154,7 @@ Kembalikan format JSON valid dengan 2 field:
                     console.warn("Ollama AI call failed or offline:", err);
                     if (aiProvider === 'ollama') {
                         // Jika user sengaja mengunci ke Ollama tapi belum jalan
-                        addMessageToUI("⚠️ Tidak dapat terhubung ke Ollama di localhost:11434. Pastikan aplikasi Ollama sudah dinyalakan di terminal (jalankan 'ollama serve' atau buka Ollama) kawan!", 'ai');
+                        addMessageToUI("⚠️ Belum terhubung ke Ollama. Pastikan perintah 'ollama serve' aktif di terminal kawan!", 'ai');
                         finishChatTurn("");
                         return;
                     }
@@ -3090,7 +3173,11 @@ Kembalikan format JSON valid dengan 2 field:
                             },
                             body: JSON.stringify({
                                 system_instruction: { parts: [{ text: systemInstruction }] },
-                                contents: chatHistory.slice(-20)
+                                contents: chatHistory.slice(-20),
+                                generationConfig: {
+                                    maxOutputTokens: 80,
+                                    temperature: 0.7
+                                }
                             })
                         });
 
@@ -3107,6 +3194,7 @@ Kembalikan format JSON valid dengan 2 field:
 
             // 3. Jika berhasil diproses oleh Ollama atau Gemini
             if (generatedSuccess && aiText) {
+                aiText = limitAiResponseLength(aiText);
                 if (checkRiskContent(aiText)) {
                     showSafetyCard();
                 }

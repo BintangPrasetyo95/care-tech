@@ -88,8 +88,8 @@ Object.assign(DIALOGUES, {
     speaker : { en: 'ECA', id: 'ECA' },
     portrait: 'eca_panic',
     text    : { 
-      en: 'Nakula! Did you see that?! Nabula was so overwhelmed she ran out into the schoolyard toward the library. Let\'s go after her through the library\'s main entrance across the yard!', 
-      id: 'Nakula! Kamu lihat itu kan?! Nabula sampai lari keluar ke lapangan menuju perpustakaan. Ayo cepat kita susul dia lewat pintu utama perpustakaan di seberang lapangan!' 
+      en: 'Nakula, look! Nabula ran to the library. Let\'s hurry and catch up through the main entrance!', 
+      id: 'Nakula, lihat! Nabula lari ke perpustakaan. Ayo cepat susul dia lewat pintu seberang lapangan!' 
     },
     next    : null,
     onCloseAction: 'lvl2_quest_find_nabula'
