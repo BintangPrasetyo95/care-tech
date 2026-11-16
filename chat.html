@@ -517,6 +517,9 @@
             }
         }
     </style>
+    <!-- Hardcoded Scenarios Registry & Scenario Engine (Phase 2) -->
+    <script src="js/data/scenarios-data.js"></script>
+    <script src="js/scenario-engine.js"></script>
 </head>
 <body>
     <!-- Floating Space & Paper Junk Background Decorations -->
@@ -2649,6 +2652,9 @@ Contoh respons ideal (1-2 kalimat pendek):
             if (currentAudio) {
                 try { currentAudio.pause(); currentAudio = null; } catch(e){}
             }
+            if (window.scenarioEngine) {
+                try { window.scenarioEngine.stopAudio(); } catch(e){}
+            }
             if ('speechSynthesis' in window) {
                 try { window.speechSynthesis.cancel(); } catch(e){}
             }
@@ -3986,6 +3992,10 @@ Kembalikan format JSON valid dengan 2 field:
 
         function isSadnessMessage(text) {
             if (!text) return false;
+            if (typeof window.findMatchingScenario === 'function') {
+                const sc = window.findMatchingScenario(text);
+                if (sc && sc.id === 'sedih_hug') return true;
+            }
             const lower = text.toLowerCase();
             const sadWords = [
                 'sedih', 'nangis', 'menangis', 'terpuruk', 'kecewa', 'down', 'hancur',
@@ -4011,9 +4021,21 @@ Kembalikan format JSON valid dengan 2 field:
             const robotIcon = document.getElementById('robot-icon');
             if (robotIcon) robotIcon.textContent = "🥺";
 
-            const offerMsg = "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
+            const sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            const offerMsg = sc?.stage1?.text || "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh tolong peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
+            
             addMessageToUI(offerMsg, 'ai');
-            speakText(offerMsg);
+            chatHistory.push({
+                "role": "model",
+                "parts": [{ "text": offerMsg }]
+            });
+
+            // Putar audio Tahap 1 dari ElevenLabs (instan lokal) atau fallback ke speakText
+            if (window.scenarioEngine && sc?.stage1?.audioUrl) {
+                window.scenarioEngine.playAudio(sc.stage1.audioUrl);
+            } else {
+                speakText(offerMsg);
+            }
             sendEspAction("happy");
 
             // Tampilkan kartu interaktif countdown 30 detik di antarmuka chat
@@ -4080,20 +4102,37 @@ Kembalikan format JSON valid dengan 2 field:
                         <span>Pelukan Hangat 2 Detik Diterima! (${duration.toFixed(1)}s)</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #166534; margin-top: 0.25rem;">
-                        Terima kasih kawan, pelukanmu sangat menenangkan. ESA sedang menyusun kata untukmu... 💖
+                        Terima kasih kawan, pelukanmu sangat menenangkan. ESA hadir bersamamu... 💖
                     </div>
                 `;
                 el.style.background = "#f0fdf4";
                 el.style.borderColor = "#22c55e";
             });
 
-            // Langsung proses jawaban AI dengan konteks pelukan!
-            const sadText = pendingSadnessText;
+            // Respon Tahap 2: Langsung putar suara ElevenLabs seketika tanpa jeda pemikiran LLM
+            const sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            const followUpMsg = sc?.stage2_success?.text || "Terima kasih atas pelukan hangatnya kawan... Rasanya nyaman sekali. Sekarang, aku siap mendengarkan ceritamu jika kamu ingin cerita. Pelan-pelan saja ya.";
             pendingSadnessText = null;
 
             setTimeout(() => {
-                executeAiChatPipeline(sadText, " (Konteks Emosional: Siswa baru saja memeluk bonekamu karena sedang merasa sedih. Sambutlah dengan rasa terima kasih yang hangat dan tulus, akui perasaannya tanpa menilai, buat dia merasa didengar dan tidak sendirian, tunda saran/solusi sampai dia siap, maksimal 1-2 kalimat pendek).");
-            }, 500);
+                addMessageToUI(followUpMsg, 'ai');
+                chatHistory.push({
+                    "role": "model",
+                    "parts": [{ "text": followUpMsg }]
+                });
+
+                if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
+                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
+                        sendEspAction("idle");
+                        if (robotIcon) robotIcon.style.animation = 'none';
+                    });
+                } else {
+                    speakText(followUpMsg, () => {
+                        sendEspAction("idle");
+                        if (robotIcon) robotIcon.style.animation = 'none';
+                    });
+                }
+            }, 300);
         }
 
         function onHugTimeoutExpired(cardId) {
@@ -4117,12 +4156,25 @@ Kembalikan format JSON valid dengan 2 field:
                 card.style.borderColor = "#cbd5e1";
             }
 
-            // Tanyakan lagi kenapa jika tidak dilakukan selama 15 detik
-            const askWhyMsg = "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja ceritanya kalau kamu mau, aku siap mendengarkan kok.";
+            // Jawaban Tahap 2 Timeout: lembut dan tidak memaksa
+            const sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            const askWhyMsg = sc?.stage2_timeout?.text || "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja kalau mau cerita, aku siap mendengarkan kok.";
+            
             addMessageToUI(askWhyMsg, 'ai');
-            speakText(askWhyMsg, () => {
-                sendEspAction("idle");
+            chatHistory.push({
+                "role": "model",
+                "parts": [{ "text": askWhyMsg }]
             });
+
+            if (window.scenarioEngine && sc?.stage2_timeout?.audioUrl) {
+                window.scenarioEngine.playAudio(sc.stage2_timeout.audioUrl, () => {
+                    sendEspAction("idle");
+                });
+            } else {
+                speakText(askWhyMsg, () => {
+                    sendEspAction("idle");
+                });
+            }
 
             pendingSadnessText = null;
         }
