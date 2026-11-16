@@ -390,6 +390,17 @@ class WorldScene extends Phaser.Scene {
         if (ui && ui.startDialogue) ui.startDialogue('lvl1_059a_1_narrator');
       }
     };
+    window.testGardenCutscene = () => {
+      console.log('%c[DEBUG] Memutar Video Cutscene Taman & Dialog ECA...', 'color: #ec4899; font-weight: bold;');
+      const nabula = this.npcs.find(n => n.key === 'nabula');
+      this._playNabulaGardenCutscene(() => {
+        if (nabula) {
+          this.panCameraToActor(nabula, 800, false, 1, () => {
+            this._triggerEcaDialogueAfterCutscene(nabula);
+          });
+        }
+      });
+    };
     window.test003 = () => {
       console.log('%c[DEBUG] Menguji Node 003 di Taman (Kamera ke Nabula)...', 'color: #3b82f6; font-weight: bold;');
       const ui = this.scene.get('UI');
@@ -2267,6 +2278,137 @@ class WorldScene extends Phaser.Scene {
     }
   }
 
+
+  /* ── Level 1: Garden Cutscene Video & ECA Arrival ── */
+  _playNabulaGardenCutscene(onComplete) {
+    if (this._nabulaCutsceneRunning) return;
+    this._nabulaCutsceneRunning = true;
+    this.registry.set('level1_003_triggered', true);
+    this.registry.set('level1_player_locked', true);
+    this.registry.set('dialogueActive', true);
+
+    if (this.player) {
+      this.player.isLocked = true;
+      if (this.player.sprite && this.player.sprite.body) {
+        this.player.sprite.setVelocity(0, 0);
+        this.player.sprite.anims.play('player_idle_' + (this.player.facing || 'down'), true);
+      }
+    }
+
+    const uiPre = this.scene.get('UI');
+    if (uiPre && uiPre.hideQuestBanner) {
+      uiPre.hideQuestBanner();
+    }
+
+    // Stop ambient sound loops for crisp cutscene audio
+    if (window.audioManager) {
+      window.audioManager.stopAllLoops(0.3);
+    }
+
+    // Create full-screen cutscene overlay
+    let overlay = document.getElementById('garden-cutscene-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'garden-cutscene-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.4s ease;';
+
+      overlay.innerHTML = `
+        <video id="garden-cutscene-video" src="assets/video/nabula_cutscene.mp4" playsinline style="width:100%;height:100%;object-fit:contain;background:#000;"></video>
+        <button id="garden-cutscene-skip" style="position:absolute;top:1.5rem;right:1.5rem;z-index:1000000;background:#ff5470;color:#fff;border:3px solid #000;box-shadow:4px 4px 0 #000;border-radius:999px;padding:0.6rem 1.4rem;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:transform 0.15s ease,background 0.15s ease;">Lewati ⏩</button>
+      `;
+      document.body.appendChild(overlay);
+
+      const skipBtn = overlay.querySelector('#garden-cutscene-skip');
+      if (skipBtn) {
+        skipBtn.onmouseenter = () => { skipBtn.style.transform = 'scale(1.05)'; skipBtn.style.background = '#00ebc7'; skipBtn.style.color = '#000'; };
+        skipBtn.onmouseleave = () => { skipBtn.style.transform = 'scale(1)'; skipBtn.style.background = '#ff5470'; skipBtn.style.color = '#fff'; };
+      }
+    }
+
+    const video = overlay.querySelector('#garden-cutscene-video');
+    const skipBtn = overlay.querySelector('#garden-cutscene-skip');
+
+    let finished = false;
+    const cleanupAndFinish = () => {
+      if (finished) return;
+      finished = true;
+      if (video) {
+        video.pause();
+        video.onended = null;
+        video.onerror = null;
+      }
+      if (skipBtn) skipBtn.onclick = null;
+      window.removeEventListener('keydown', handleKeySkip);
+
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+        this._nabulaCutsceneRunning = false;
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      }, 400);
+    };
+
+    const handleKeySkip = (e) => {
+      if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+        cleanupAndFinish();
+      }
+    };
+    window.addEventListener('keydown', handleKeySkip);
+
+    if (video) {
+      video.onended = cleanupAndFinish;
+      video.onerror = (err) => {
+        console.warn('[GardenCutscene] Video error or missing, fallback to gameplay:', err);
+        cleanupAndFinish();
+      };
+    }
+    if (skipBtn) {
+      skipBtn.onclick = cleanupAndFinish;
+    }
+
+    // Play video
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {
+          // Autoplay fallback: mute and play
+          video.muted = true;
+          video.play().catch(() => cleanupAndFinish());
+        });
+      }
+    });
+  }
+
+  _triggerEcaDialogueAfterCutscene(actor) {
+    // Play soft chime sound when ECA speaks
+    if (window.audioManager && window.audioManager.playProceduralChime) {
+      window.audioManager.playProceduralChime(0.5);
+    }
+    if (navigator.vibrate) navigator.vibrate(60);
+
+    const ui = this.scene.get('UI');
+    if (ui) {
+      // Gentle pulse on ECA pet in the bottom-right corner
+      if (ui.petSprite && ui.tweens) {
+        ui.tweens.add({
+          targets: ui.petSprite,
+          scaleY: 1.15,
+          scaleX: 0.9,
+          duration: 180,
+          yoyo: true,
+          ease: 'Quad.easeInOut'
+        });
+      }
+      ui._lvl1_003_camera_done = true;
+      ui.startDialogue('lvl1_003_eca');
+    }
+  }
+
   _startLibraryCutscene() {
     const isGardenPhaseDone = this.registry.get('level1_nabula_left_garden') === true ||
       this.registry.get('level1_quest_active') === 'ikuti_nabula' ||
@@ -2587,12 +2729,11 @@ class WorldScene extends Phaser.Scene {
             uiPre.hideQuestBanner();
           }
 
-          // Kamera otomatis mengarah ke Nabula (003)
-          this.panCameraToActor(nabula, 800, false, 1, () => {
-            if (navigator.vibrate) navigator.vibrate(60);
-            const ui = this.scene.get('UI');
-            if (ui) ui._lvl1_003_camera_done = true;
-            this.scene.get('UI').startDialogue('lvl1_003_eca');
+          // Play video cutscene, then pan camera & ECA speaks from corner!
+          this._playNabulaGardenCutscene(() => {
+            this.panCameraToActor(nabula, 800, false, 1, () => {
+              this._triggerEcaDialogueAfterCutscene(nabula);
+            });
           });
         }
       }
@@ -3929,6 +4070,14 @@ class WorldScene extends Phaser.Scene {
         this.tweens.killTweensOf(this.cameras.main);
         this.panCameraTo(4.5 * TILE + TILE / 2, 4 * TILE + TILE / 2, 800, 'Sine.easeInOut', () => {
           this.scene.get('UI').startDialogue('lvl1_039_narrator');
+        });
+        return;
+      }
+      if (nearest.key === 'nabula' && this.registry.get('currentMap') === 'garden' && !this.registry.get('level1_003_triggered')) {
+        this._playNabulaGardenCutscene(() => {
+          this.panCameraToActor(nearest, 800, false, 1, () => {
+            this._triggerEcaDialogueAfterCutscene(nearest);
+          });
         });
         return;
       }

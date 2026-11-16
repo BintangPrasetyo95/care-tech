@@ -1178,6 +1178,14 @@
         reg.set('level1_043_done', false);
         reg.set('level1_045_done', false);
         reg.set('level1_complete', false);
+        const world = window.game && window.game.scene && window.game.scene.getScene('World');
+        if (world) {
+          world._nabulaCutsceneRunning = false;
+          const existingOverlay = document.getElementById('garden-cutscene-overlay');
+          if (existingOverlay && existingOverlay.parentNode) {
+            existingOverlay.parentNode.removeChild(existingOverlay);
+          }
+        }
       };
 
       if (lvl1Btn) {
