@@ -7,19 +7,98 @@
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
     <style>
+        /* ===================================================
+           LOCK CHAT TO 1 SINGLE SCREEN (NO PAGE SCROLL)
+           =================================================== */
+        html, body {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            height: 100% !important;
+            height: 100dvh !important;
+            overflow-y: auto !important;
+        }
+
+        .main-content {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        /* Compact Top Header to preserve vertical space for chat */
+        .main-content .top-header {
+            flex-shrink: 0 !important;
+            padding: 0.65rem 1.8rem !important;
+            border-bottom: 3.5px solid var(--ink) !important;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .main-content .greeting h1 {
+            font: 400 clamp(1.35rem, 2.3vw, 1.8rem)/1.1 var(--imp) !important;
+            margin-bottom: 0.1rem !important;
+        }
+
+        .main-content .greeting p {
+            font-size: 0.85rem !important;
+            margin: 0 !important;
+            line-height: 1.3 !important;
+        }
+
+        .main-content .greeting .tape {
+            font-size: 0.75rem !important;
+            padding: 0.15rem 0.55rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+
+        /* Chat Page Wrapper fills remaining vertical space strictly */
+        .chat-page-wrapper {
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            height: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0.75rem 1.4rem 1rem 1.4rem !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
         /* Cardboard Walkie-Talkie Terminal */
         .chat-terminal {
             background: var(--paper-warm) !important;
             border: 5px solid var(--ink) !important;
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px !important;
-            box-shadow: 10px 10px 0 var(--ink) !important;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 140px);
-            min-height: 580px;
+            box-shadow: 8px 8px 0 var(--ink) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
             position: relative;
-            overflow: hidden;
-            transform: rotate(-0.5deg);
+            overflow: hidden !important;
+            transform: rotate(-0.3deg);
+            box-sizing: border-box !important;
+            margin-bottom: 4px;
         }
 
         .chat-terminal::before {
@@ -37,28 +116,29 @@
         }
 
         .chat-header-scrapbook {
-            padding: 1.1rem 1.8rem;
+            padding: 0.65rem 1.4rem !important;
             background: #ffffff;
-            border-bottom: 4px dashed var(--ink);
+            border-bottom: 3.5px dashed var(--ink);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
             z-index: 10;
+            flex-shrink: 0 !important;
         }
 
         .esa-bot-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             background: var(--sun);
-            border: 3px solid var(--ink);
-            box-shadow: 3px 3px 0 var(--ink);
+            border: 2.5px solid var(--ink);
+            box-shadow: 2.5px 2.5px 0 var(--ink);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
+            font-size: 1.7rem;
             transform: rotate(-3deg);
             animation: robotWobble 4s ease-in-out infinite;
         }
@@ -69,12 +149,13 @@
         }
 
         .chat-messages-stream {
-            flex-grow: 1;
-            padding: 1.6rem;
-            overflow-y: auto;
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            padding: 1.1rem 1.4rem !important;
+            overflow-y: auto !important;
             display: flex;
             flex-direction: column;
-            gap: 1.3rem;
+            gap: 1.1rem;
             background: 
                 radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px) 0 0/20px 20px,
                 #fffdf5;
@@ -134,28 +215,29 @@
         }
 
         .curhat-chips-bar {
-            padding: 0.9rem 1.6rem;
+            padding: 0.55rem 1.3rem !important;
             background: var(--paper-warm);
-            border-top: 3px dashed var(--ink);
+            border-top: 2.5px dashed var(--ink);
             display: flex;
-            gap: 0.85rem;
+            gap: 0.75rem;
             overflow-x: auto;
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
+            flex-shrink: 0 !important;
         }
 
         .chip-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.55rem;
-            padding: 0.65rem 1.2rem;
-            min-height: 44px;
+            gap: 0.5rem;
+            padding: 0.45rem 0.95rem !important;
+            min-height: 38px !important;
             background: #ffffff;
             border: 2.5px solid var(--ink);
-            border-radius: 22px;
-            box-shadow: 3.5px 3.5px 0 var(--ink);
+            border-radius: 20px;
+            box-shadow: 2.5px 2.5px 0 var(--ink);
             font-family: var(--mono);
-            font-size: 0.98rem;
+            font-size: 0.92rem !important;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
@@ -166,7 +248,7 @@
         .chip-tag:hover {
             background: var(--sun);
             transform: translateY(-2px) rotate(-1deg);
-            box-shadow: 4px 4px 0 var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
         }
 
         .chip-tag:active {
@@ -175,28 +257,29 @@
         }
 
         .chat-input-bar {
-            padding: 1rem 1.6rem;
+            padding: 0.65rem 1.3rem !important;
             background: #ffffff;
-            border-top: 4px solid var(--ink);
+            border-top: 3.5px solid var(--ink);
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
+            flex-shrink: 0 !important;
         }
 
         .chat-scrapbook-input {
             flex-grow: 1;
-            padding: 0.8rem 1.2rem;
-            border: 3px solid var(--ink);
-            border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+            padding: 0.65rem 1.1rem !important;
+            border: 2.5px solid var(--ink);
+            border-radius: 12px 180px 12px 180px/180px 12px 180px 12px;
             font-family: var(--mk);
-            font-size: 1.1rem;
+            font-size: 1.05rem !important;
             color: var(--ink);
             outline: none;
             resize: none;
-            box-shadow: 4px 4px 0 var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
             background: #fffdf5;
             background-image: repeating-linear-gradient(transparent, transparent 29px, rgba(0, 229, 255, 0.25) 29px, rgba(0, 229, 255, 0.25) 31px);
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .chat-scrapbook-input:focus {
@@ -262,17 +345,22 @@
 
         /* Responsive Breakpoints for Chat */
         @media (max-width: 768px) {
+            .main-content .top-header {
+                padding: 0.5rem 0.85rem !important;
+            }
+
             .chat-page-wrapper {
-                padding: 0.75rem 0.5rem !important;
+                padding: 0.4rem 0.5rem 0.65rem 0.5rem !important;
             }
 
             .chat-terminal {
-                height: calc(100dvh - 120px) !important;
-                min-height: 480px !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                min-height: 0 !important;
                 transform: none !important;
-                border-width: 4px !important;
-                box-shadow: 6px 6px 0 var(--ink) !important;
-                border-radius: 18px !important;
+                border-width: 3.5px !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+                border-radius: 16px !important;
             }
 
             .chat-terminal::before {
@@ -280,131 +368,136 @@
             }
 
             .chat-header-scrapbook {
-                padding: 0.8rem 0.85rem;
-                gap: 0.6rem;
+                padding: 0.5rem 0.7rem !important;
+                gap: 0.5rem;
             }
 
             .chat-header-scrapbook h3 {
-                font-size: 1.2rem !important;
+                font-size: 1.1rem !important;
             }
 
             .esa-bot-avatar {
-                width: 42px;
-                height: 42px;
-                font-size: 1.6rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1.45rem;
             }
 
             .chat-messages-stream {
-                padding: 1rem 0.75rem;
-                gap: 0.9rem;
+                padding: 0.85rem 0.7rem !important;
+                gap: 0.8rem;
             }
 
             .msg-bubble {
-                max-width: 88%;
-                padding: 0.85rem 1rem;
-                font-size: 1rem;
-                border-width: 2.5px;
-                box-shadow: 3px 3px 0 var(--ink);
+                max-width: 90%;
+                padding: 0.75rem 0.9rem;
+                font-size: 0.96rem;
+                border-width: 2px;
+                box-shadow: 2.5px 2.5px 0 var(--ink);
                 transform: none !important;
             }
 
             .curhat-chips-bar {
-                padding: 0.75rem 1rem;
-                gap: 0.65rem;
-            }
-
-            .chip-tag {
-                padding: 0.55rem 1.05rem;
-                font-size: 0.92rem;
-                min-height: 42px;
-                border-width: 2px;
-                box-shadow: 2.5px 2.5px 0 var(--ink);
-            }
-
-            .chat-input-bar {
-                padding: 0.75rem 0.8rem;
-                gap: 0.5rem;
-            }
-
-            .chat-scrapbook-input {
-                padding: 0.65rem 0.85rem;
-                font-size: 0.95rem;
-                border-width: 2.5px;
-            }
-
-            #btn-send {
-                padding: 0.65rem 1rem !important;
-                font-size: 0.95rem !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chat-page-wrapper {
-                padding: 0.5rem 0.35rem !important;
-            }
-
-            .chat-terminal {
-                border-width: 3px !important;
-                box-shadow: 4px 4px 0 var(--ink) !important;
-                border-radius: 14px !important;
-                min-height: 420px !important;
-            }
-
-            .chat-header-scrapbook {
-                padding: 0.65rem 0.6rem;
-            }
-
-            .chat-header-scrapbook h3 {
-                font-size: 1.05rem !important;
-            }
-
-            .esa-bot-avatar {
-                width: 36px;
-                height: 36px;
-                font-size: 1.35rem;
-                border-width: 2px;
-            }
-
-            .chat-header-scrapbook .btn-small {
-                padding: 0.3rem 0.6rem !important;
-                font-size: 0.78rem !important;
-            }
-
-            .msg-bubble {
-                max-width: 92%;
-                padding: 0.75rem 0.8rem;
-                font-size: 0.92rem;
-            }
-
-            .ai-avatar-mini {
-                width: 30px;
-                height: 30px;
-                font-size: 1.1rem;
-            }
-
-            .curhat-chips-bar {
-                padding: 0.65rem 0.75rem;
+                padding: 0.45rem 0.7rem !important;
                 gap: 0.55rem;
             }
 
             .chip-tag {
-                padding: 0.5rem 0.95rem;
-                font-size: 0.88rem;
-                min-height: 40px;
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.85rem !important;
+                min-height: 34px !important;
+                border-width: 2px;
+                box-shadow: 2px 2px 0 var(--ink);
             }
 
             .chat-input-bar {
-                padding: 0.5rem 0.5rem;
+                padding: 0.55rem 0.7rem !important;
+                gap: 0.5rem;
             }
 
             .chat-scrapbook-input {
-                padding: 0.55rem 0.7rem;
-                font-size: 0.9rem;
+                padding: 0.55rem 0.8rem !important;
+                font-size: 0.92rem !important;
+                border-width: 2px;
             }
 
             #btn-send {
-                padding: 0.55rem 0.8rem !important;
+                padding: 0.55rem 0.9rem !important;
+                font-size: 0.92rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content .top-header {
+                padding: 0.45rem 0.65rem !important;
+            }
+
+            .chat-page-wrapper {
+                padding: 0.35rem 0.35rem 0.5rem 0.35rem !important;
+            }
+
+            .chat-terminal {
+                border-width: 3px !important;
+                box-shadow: 3px 3px 0 var(--ink) !important;
+                border-radius: 12px !important;
+                min-height: 0 !important;
+                height: 100% !important;
+            }
+
+            .chat-header-scrapbook {
+                padding: 0.45rem 0.55rem !important;
+            }
+
+            .chat-header-scrapbook h3 {
+                font-size: 0.98rem !important;
+            }
+
+            .esa-bot-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 1.25rem;
+                border-width: 2px;
+            }
+
+            .chat-header-scrapbook .btn-small {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.74rem !important;
+            }
+
+            .msg-bubble {
+                max-width: 94%;
+                padding: 0.65rem 0.75rem;
+                font-size: 0.88rem;
+            }
+
+            .ai-avatar-mini {
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+
+            .curhat-chips-bar {
+                padding: 0.4rem 0.55rem !important;
+                gap: 0.45rem;
+            }
+
+            .chip-tag {
+                padding: 0.35rem 0.7rem !important;
+                font-size: 0.8rem !important;
+                min-height: 30px !important;
+            }
+
+            .chat-input-bar {
+                padding: 0.45rem 0.45rem !important;
+            }
+
+            .chat-scrapbook-input {
+                padding: 0.5rem 0.65rem !important;
                 font-size: 0.88rem !important;
+            }
+
+            #btn-send {
+                padding: 0.5rem 0.7rem !important;
+                font-size: 0.85rem !important;
             }
         }
 
@@ -545,7 +638,7 @@
                 </div>
             </header>
 
-            <div class="chat-page-wrapper" style="padding: 1.5rem; height: 100%;">
+            <div class="chat-page-wrapper">
                 
                 <!-- The Cardboard Walkie-Talkie Terminal -->
                 <div class="chat-terminal mk">
@@ -1660,13 +1753,17 @@
         // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
         // ----------------------------------------------------
         function getEsaSystemPrompt(sensorContext = "") {
-            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, dan bahasa Indonesia sederhana.
+            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, tulus, dan bahasa Indonesia sederhana.
 
 ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 1. Balasanmu WAJIB SANGAT PENDEK & RINGKAS: MAKSIMAL 1 SAMPAI 2 KALIMAT PENDEK SAJA (total maksimal 15-20 kata). Jangan bertele-tele atau membuat kalimat majemuk panjang.
 2. FORMAT: TANPA EMOJI, TANPA FORMAT DAFTAR/BULLET POINTS.
 3. INGAT DAN GUNAKAN cerita user sebelumnya tanpa meminta mengulang cerita yang sudah disebut.
-4. RESPONS CURHAT: Cukup 1 kalimat mengakui perasaannya secara hangat, lalu 1 kalimat berupa saran kecil atau pertanyaan lanjutan ringan.
+4. KETIKA USER SEDIH ATAU CURHAT:
+   - JANGAN TERBURU-BURU MEMBERIKAN SOLUSI/SARAN! Orang yang sedih jarang butuh solusi dulu, dia butuh merasa didengar dan tidak sendirian.
+   - AKUI PERASAANNYA TANPA MENILAI: Katakan perasaannya wajar dan dimaklumi (misal: "Wajar kok kalau kamu sedih", "Makasih sudah mau cerita, pasti berat banget rasanya").
+   - BERI RUANG AMAN: Tawarkan kehadiran lewat pertanyaan terbuka ringan tanpa memaksa bercerita (misal: "Aku di sini ya. Mau cerita apa yang bikin sedih?", "Sini aku temenin, nggak perlu cerita kalau belum siap").
+   - HINDARI KATA-KATA TOXIC POSITIVITY: JANGAN PERNAH bilang "jangan sedih", "jangan dipikirin", "semua pasti ada hikmahnya", atau "banyak yang lebih susah".
 5. JIKA MINTA DIHIBUR: Beri 1 lelucon atau tebakan lucu yang sangat pendek.
 6. UNTUK BULLYING: Tegaskan itu bukan salah user dan sarankan lapor ke orang tua atau guru BK. Jangan menilai bentuk fisik tubuh.
 7. BAHAYA / SELF-HARM: Respon singkat peduli dan arahkan segera ke orang dewasa terdekat atau hubungi 129 / 119 ekstensi 8.
@@ -1675,8 +1772,10 @@ ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 10. JANGAN MENGARANG FAKTA: Jika tidak tahu, katakan tidak tahu.
 
 Contoh respons ideal (1-2 kalimat pendek):
+- Sedih: "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?"
+- Sedih & berat: "Makasih sudah mau bilang ke aku kawan, pasti berat banget rasanya. Aku dengerin kok, pelan-pelan aja ceritanya."
+- Sedih butuh teman: "Sini, aku temenin kawan. Nggak perlu cerita kalau belum siap, aku ada di sini ya."
 - Bullying: "Itu bukan salahmu kawan, yang terjadi adalah bullying. Yuk cerita ke guru BK atau orang tua ya."
-- Sedih: "Wajar merasa sedih kawan, kamu tidak sendirian. Mau cerita apa yang terjadi?"
 - Cemas: "Tarik napas perlahan kawan, kamu aman di sini. Hal apa yang paling kamu cemaskan?"` + sensorContext;
         }
 
@@ -1761,7 +1860,13 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             // 5. Sedih / Menangis / Kecewa
             if (lower.includes('sedih') || lower.includes('nangis') || lower.includes('kecewa') || lower.includes('patah') || lower.includes('down')) {
-                return "Wajar banget merasa sedih kawan, kamu tidak sendiri. Mau cerita apa yang terjadi?";
+                const warmSadness = [
+                    "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?",
+                    "Makasih sudah mau bilang ke aku kawan. Pasti berat banget rasanya, kamu tidak sendirian ya.",
+                    "Aku dengerin kok kawan, pelan-pelan aja ceritanya ya.",
+                    "Sini, aku temenin kawan. Nggak perlu buru-buru cerita kalau belum siap, aku ada di sini."
+                ];
+                return warmSadness[Math.floor(Math.random() * warmSadness.length)];
             }
 
             // 6. Marah / Kesal / Jengkel
@@ -3210,7 +3315,7 @@ Kembalikan format JSON valid dengan 2 field:
             const robotIcon = document.getElementById('robot-icon');
             if (robotIcon) robotIcon.textContent = "🥺";
 
-            const offerMsg = "Aku melihat kamu sedang merasa sedih kawan... 🥺 Boleh tolong peluk boneka aku atau genggam tanganku setidaknya selama 2 detik? Aku ingin hadir dan menemanimu.";
+            const offerMsg = "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
             addMessageToUI(offerMsg, 'ai');
             speakText(offerMsg);
             sendEspAction("happy");
@@ -3291,7 +3396,7 @@ Kembalikan format JSON valid dengan 2 field:
             pendingSadnessText = null;
 
             setTimeout(() => {
-                executeAiChatPipeline(sadText, " (Konteks Emosional: Siswa baru saja memeluk robotmu selama lebih dari 2 detik karena sedang merasa sedih. Sambutlah dengan rasa terima kasih yang hangat dan tulus atas pelukannya, serta berikan dukungan empati mendalam maksimal 1-2 kalimat).");
+                executeAiChatPipeline(sadText, " (Konteks Emosional: Siswa baru saja memeluk bonekamu karena sedang merasa sedih. Sambutlah dengan rasa terima kasih yang hangat dan tulus, akui perasaannya tanpa menilai, buat dia merasa didengar dan tidak sendirian, tunda saran/solusi sampai dia siap, maksimal 1-2 kalimat pendek).");
             }, 500);
         }
 
@@ -3317,7 +3422,7 @@ Kembalikan format JSON valid dengan 2 field:
             }
 
             // Tanyakan lagi kenapa jika tidak dilakukan selama 15 detik
-            const askWhyMsg = "Kamu tidak memelukku... Tidak apa-apa kok kalau kamu belum siap kawan. Boleh ceritakan ke aku, kenapa kamu merasa sedih hari ini? Aku siap mendengarkanmu.";
+            const askWhyMsg = "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja ceritanya kalau kamu mau, aku siap mendengarkan kok.";
             addMessageToUI(askWhyMsg, 'ai');
             speakText(askWhyMsg, () => {
                 sendEspAction("idle");
