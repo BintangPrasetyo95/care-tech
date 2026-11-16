@@ -4054,9 +4054,8 @@ Kembalikan format JSON valid dengan 2 field:
             setEspSensorsActive(true);
 
             const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) robotIcon.textContent = scenario.stage1?.robotIcon || "🥺";
 
-            const offerMsg = scenario.stage1?.text || "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh tolong peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
+            const offerMsg = scenario.stage1?.text || "Pasti berat banget ya rasanya... Sini peluk boneka dulu kawan, biar kamu merasa lebih tenang.";
             
             addMessageToUI(offerMsg, 'ai');
             chatHistory.push({
@@ -4074,27 +4073,27 @@ Kembalikan format JSON valid dengan 2 field:
 
             // Tampilkan kartu interaktif countdown 30 detik di antarmuka chat
             const cardId = "scenario-card-" + Date.now();
-            const actionDesc = scenario.action?.description || "Peluk boneka (sensor sentuh) atau genggam tangannya (sensor tekanan) selama minimal 2 detik";
+            const actionDesc = scenario.action?.description || "Lakukan interaksi fisik dengan boneka";
             const timeoutSec = Math.round((scenario.action?.timeoutMs || 30000) / 1000);
 
             const cardHtml = `
                 <div id="${cardId}" class="scenario-action-card" style="margin-top: 0.5rem; padding: 0.95rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
                     <div style="font-weight: 800; color: #be123c; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
-                        <span>🫂 ${scenario.title || "Menunggu Aksi Pelukan"} (Tahan 2 Detik)</span>
+                        <span>${scenario.title || "Menunggu Respon Fisik"}</span>
                         <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; background: #ffe4e6; padding: 0.2rem 0.55rem; border-radius: 6px; color: #9f1239; border: 1.5px solid #f43f5e;">${timeoutSec}s</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #475569; margin-bottom: 0.6rem; line-height: 1.4;">
-                        ${actionDesc} agar kehangatanmu sampai ke hati ESA.
+                        ${actionDesc}.
                     </div>
                     <div style="width: 100%; height: 9px; background: #fecdd3; border-radius: 6px; overflow: hidden; margin-bottom: 0.7rem; border: 1px solid #fda4af;">
                         <div id="hug-progress-bar" style="width: 100%; height: 100%; background: #f43f5e; transition: width 1s linear;"></div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button type="button" id="btn-screen-hug" class="btn btn-small" style="flex: 1; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
-                            👆 Atau Tekan &amp; Tahan di Sini (2 Detik)
+                            Tekan dan Tahan di Sini
                         </button>
                         <button type="button" class="btn btn-small" style="background: #ffffff; border: 2px solid var(--ink); color: #64748b; padding: 0.55rem 0.8rem; font-size: 0.82rem; font-weight: bold;" onclick="cancelScenarioFlow('${cardId}')" title="Lewati interaksi ini">
-                            Lewati ✕
+                            Lewati
                         </button>
                     </div>
                 </div>
@@ -4169,11 +4168,10 @@ Kembalikan format JSON valid dengan 2 field:
             scenarioCards.forEach(el => {
                 el.innerHTML = `
                     <div style="font-weight: 800; color: #15803d; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                        <span>✨</span>
-                        <span>Pelukan Hangat 2 Detik Diterima! (${duration.toFixed(1)}s)</span>
+                        <span>Aksi Berhasil (${duration.toFixed(1)}s)</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #166534; margin-top: 0.25rem;">
-                        Terima kasih kawan, pelukanmu sangat menenangkan. ESA hadir bersamamu... 💖
+                        Terima kasih kawan, ESA hadir menemanimu.
                     </div>
                 `;
                 el.style.background = "#f0fdf4";
@@ -4254,20 +4252,21 @@ Kembalikan format JSON valid dengan 2 field:
             if (!isWaitingForHug) return;
             screenHugStartTime = Date.now();
             const btn = document.getElementById('btn-screen-hug');
+            const targetDur = activeScenario?.action?.requiredDurationMs ? (activeScenario.action.requiredDurationMs / 1000) : 2.0;
             if (btn) {
                 btn.style.background = "#e11d48";
-                btn.textContent = "⏳ Menahan pelukan... 0.0s / 2.0s";
+                btn.textContent = `Menahan sentuhan... 0.0s / ${targetDur.toFixed(1)}s`;
             }
             if (screenHugInterval) clearInterval(screenHugInterval);
             screenHugInterval = setInterval(() => {
                 const elapsed = (Date.now() - screenHugStartTime) / 1000;
                 if (btn) {
-                    btn.textContent = `⏳ Menahan pelukan... ${Math.min(2.0, elapsed).toFixed(1)}s / 2.0s`;
+                    btn.textContent = `Menahan sentuhan... ${Math.min(targetDur, elapsed).toFixed(1)}s / ${targetDur.toFixed(1)}s`;
                 }
-                if (elapsed >= 2.0) {
+                if (elapsed >= targetDur) {
                     clearInterval(screenHugInterval);
                     screenHugInterval = null;
-                    onHugReceived(2.0);
+                    onHugReceived(targetDur);
                 }
             }, 100);
         }
@@ -4280,7 +4279,7 @@ Kembalikan format JSON valid dengan 2 field:
             const btn = document.getElementById('btn-screen-hug');
             if (btn && isWaitingForHug) {
                 btn.style.background = "#fb7185";
-                btn.textContent = "👆 Atau Tekan &amp; Tahan di Sini (2 Detik)";
+                btn.textContent = "Tekan dan Tahan di Sini";
             }
         }
 
