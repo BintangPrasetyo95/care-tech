@@ -937,6 +937,66 @@
                 <div id="eleven-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--sans); font-size: 0.82rem; font-weight: 600;"></div>
             </div>
 
+            <!-- STT Transcription Engine Section (Client-Side Whisper vs Gemini Cloud) -->
+            <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label style="font-family: var(--imp); font-size: 1.05rem; color: #1e293b; margin: 0;">
+                        🎙️ Transkripsi Suara Siswa (Speech-to-Text):
+                    </label>
+                    <span id="stt-status-tag" class="tape tape-lime" style="font-size: 0.72rem; padding: 0.15rem 0.6rem; margin: 0;">CERDAS OTOMATIS</span>
+                </div>
+                <p style="font-family: var(--mk); font-size: 0.95rem; color: #555; margin-bottom: 0.8rem; line-height: 1.35;">
+                    Pilih bagaimana rekaman suara curhat siswa (dari robot INMP441 maupun mikrofon laptop) diubah menjadi teks:
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem;">
+                    <!-- Auto STT -->
+                    <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-auto-label">
+                        <input type="radio" name="stt_mode" value="auto" id="opt-stt-auto" onchange="changeSttMode(this.value)">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">⚡ Cerdas Otomatis (Rekomendasi)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Gunakan Whisper Lokal jika mode Ollama/Offline/tanpa internet, atau Gemini jika online</div>
+                        </div>
+                    </label>
+                    <!-- Client-Side Whisper -->
+                    <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-client-label">
+                        <input type="radio" name="stt_mode" value="client" id="opt-stt-client" onchange="changeSttMode(this.value)">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">💻 100% Client-Side (Whisper AI di Browser)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Diproses lokal via WebGPU/WASM. Suara aman &amp; bisa full offline tanpa kuota</div>
+                        </div>
+                    </label>
+                    <!-- Cloud Gemini -->
+                    <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-cloud-label">
+                        <input type="radio" name="stt_mode" value="cloud" id="opt-stt-cloud" onchange="changeSttMode(this.value)">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">☁️ Cloud Multimodal (Google Gemini Audio)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">File audio dikirim langsung ke Google Cloud (wajib koneksi internet)</div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Whisper Cache & Diagnostic Subbox -->
+                <div style="background: #f0fdf4; border: 1.5px dashed #16a34a; border-radius: 10px; padding: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <span style="font-family: var(--mono); font-size: 0.82rem; font-weight: bold; color: #166534;">Status Whisper Lokal:</span>
+                        <span id="whisper-live-indicator" style="font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 4px; font-weight: bold; background: #dcfce7; color: #15803d;">Siap Dipanggil</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #374151; line-height: 1.35; margin-bottom: 0.6rem;">
+                        Model: <code>onnx-community/whisper-tiny</code> (~39 MB, tersimpan otomatis di cache browser setelah pertama kali diunduh).
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-small" id="btn-preload-whisper" style="background: var(--lime); padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: bold;" onclick="preloadWhisperModel()">
+                            Unduh / Siapkan Offline Sekarang 📥
+                        </button>
+                        <button type="button" class="btn btn-small" id="btn-test-whisper" style="background: var(--cy); padding: 0.45rem 0.85rem; font-size: 0.78rem; font-weight: bold;" onclick="testWhisperLocalTranscription()">
+                            Tes Mic Laptop (3 Detik) 🎙️
+                        </button>
+                    </div>
+                    <div id="whisper-feedback" style="display: none; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.78rem; padding: 0.55rem; background: #ffffff; border-radius: 6px; border: 1px solid #86efac; color: #14532d; word-break: break-word; line-height: 1.4;"></div>
+                </div>
+            </div>
+
 
             <!-- ESP32 Speaker MAX98357A Hardware Diagnostics Section -->
             <div style="background: #ffffff; border: 2.5px solid var(--ink); border-radius: 14px; padding: 1.1rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.2rem;">
@@ -1134,6 +1194,7 @@
         // Key & AI Provider management state
         let geminiKey = localStorage.getItem('caretech_gemini_key') || decodeObfuscated(OBFUSCATED_API_KEY);
         let aiProvider = localStorage.getItem('caretech_ai_provider') || 'auto'; // 'auto', 'ollama', 'gemini', 'offline'
+        let sttMode = localStorage.getItem('caretech_stt_mode') || 'auto'; // 'auto', 'client', 'cloud'
         let ollamaHost = localStorage.getItem('caretech_ollama_host') || 'http://localhost:11434';
         let ollamaModel = localStorage.getItem('caretech_ollama_model') || 'llama3.2:3b';
         let isOllamaOnline = false;
@@ -1185,6 +1246,48 @@
             localStorage.setItem('caretech_ai_provider', aiProvider);
             updateProviderUi();
             updateApiStatusIndicator();
+        }
+
+        function updateSttUi() {
+            const radio = document.querySelector(`input[name="stt_mode"][value="${sttMode}"]`);
+            if (radio) radio.checked = true;
+
+            const autoLabel = document.getElementById('opt-stt-auto-label');
+            const clientLabel = document.getElementById('opt-stt-client-label');
+            const cloudLabel = document.getElementById('opt-stt-cloud-label');
+
+            [autoLabel, clientLabel, cloudLabel].forEach(el => {
+                if (el) {
+                    el.style.borderColor = 'var(--ink)';
+                    el.style.background = '#f8fafc';
+                }
+            });
+
+            const activeLabel = document.getElementById(`opt-stt-${sttMode}-label`);
+            if (activeLabel) {
+                activeLabel.style.borderColor = '#16a34a';
+                activeLabel.style.background = '#f0fdf4';
+            }
+
+            const tag = document.getElementById('stt-status-tag');
+            if (tag) {
+                if (sttMode === 'client') {
+                    tag.textContent = '100% LOKAL (WHISPER)';
+                    tag.className = 'tape tape-lime';
+                } else if (sttMode === 'cloud') {
+                    tag.textContent = 'CLOUD GEMINI';
+                    tag.className = 'tape tape-pink';
+                } else {
+                    tag.textContent = 'CERDAS OTOMATIS';
+                    tag.className = 'tape tape-lime';
+                }
+            }
+        }
+
+        function changeSttMode(val) {
+            sttMode = val;
+            localStorage.setItem('caretech_stt_mode', sttMode);
+            updateSttUi();
         }
 
         function saveOllamaSettings() {
@@ -1447,6 +1550,7 @@
                 updateProviderUi();
                 updateApiStatusIndicator();
                 updateElevenLabsUi();
+                updateSttUi();
                 checkOllamaStatus(true);
                 modal.style.display = 'flex';
                 setTimeout(() => {
@@ -1963,24 +2067,257 @@ Contoh respons ideal (1-2 kalimat pendek):
         }
 
         // ==========================================
-        // SPEECH RECOGNITION VIA LAPTOP MICROPHONE
-        // (Bicara langsung ke laptop tanpa ngetik)
+        // CLIENT-SIDE SPEECH-TO-TEXT (WHISPER AI VIA TRANSFORMERS.JS)
+        // 100% Offline di Browser via WebGPU / WebAssembly
         // ==========================================
-        let laptopRecognition = null;
-        let isLaptopRecognizing = false;
+        async function decodeAudioToFloat32(audioInput) {
+            let arrayBuffer;
+            if (audioInput instanceof Blob) {
+                arrayBuffer = await audioInput.arrayBuffer();
+            } else if (audioInput instanceof ArrayBuffer) {
+                arrayBuffer = audioInput;
+            } else if (typeof audioInput === 'string') {
+                const resp = await fetch(audioInput);
+                arrayBuffer = await resp.arrayBuffer();
+            } else if (audioInput instanceof Float32Array) {
+                return audioInput;
+            } else {
+                throw new Error("Format audio tidak didukung.");
+            }
 
-        function toggleLaptopSpeechRecognition() {
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRec) {
-                alert("Browser ini belum mendukung fitur Speech Recognition langsung. Silakan gunakan Google Chrome atau Microsoft Edge.");
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioContextClass({ sampleRate: 16000 });
+            if (ctx.state === 'suspended') {
+                await ctx.resume();
+            }
+            const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+            const channel0 = audioBuffer.getChannelData(0);
+            const pcmData = new Float32Array(channel0.length);
+            pcmData.set(channel0);
+            try { await ctx.close(); } catch(e){}
+            return pcmData;
+        }
+
+        const CareTechWhisper = {
+            pipelineInstance: null,
+            isLoading: false,
+            isReady: false,
+            backendUsed: 'wasm',
+            loadProgress: 0,
+
+            async init(onProgress = null) {
+                if (this.isReady && this.pipelineInstance) return this.pipelineInstance;
+                if (this.isLoading) {
+                    while (this.isLoading) {
+                        await new Promise(r => setTimeout(r, 120));
+                    }
+                    if (this.isReady) return this.pipelineInstance;
+                }
+
+                this.isLoading = true;
+                const liveIndicator = document.getElementById('whisper-live-indicator');
+                if (liveIndicator) {
+                    liveIndicator.textContent = "Mengunduh...";
+                    liveIndicator.style.background = "#fef3c7";
+                    liveIndicator.style.color = "#b45309";
+                }
+
+                try {
+                    // Dynamically import Transformers.js v3 from CDN
+                    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3');
+
+                    env.allowLocalModels = false;
+
+                    // Detect WebGPU availability
+                    let device = 'wasm';
+                    if (navigator.gpu) {
+                        try {
+                            const adapter = await navigator.gpu.requestAdapter();
+                            if (adapter) device = 'webgpu';
+                        } catch (e) {
+                            device = 'wasm';
+                        }
+                    }
+                    this.backendUsed = device;
+
+                    this.pipelineInstance = await pipeline('automatic-speech-recognition', 'onnx-community/whisper-tiny', {
+                        device: device,
+                        progress_callback: (p) => {
+                            if (p.status === 'progress' && p.total > 0) {
+                                const pct = Math.round((p.loaded / p.total) * 100);
+                                this.loadProgress = pct;
+                                const fileName = p.file ? p.file.split('/').pop() : 'model';
+                                const text = `Mengunduh ${fileName} (${pct}%)`;
+                                if (onProgress) onProgress(pct, text);
+                                if (liveIndicator) liveIndicator.textContent = `${pct}%`;
+                            } else if (p.status === 'ready') {
+                                if (liveIndicator) liveIndicator.textContent = `Siap (${device.toUpperCase()})`;
+                            }
+                        }
+                    });
+
+                    this.isReady = true;
+                    this.isLoading = false;
+                    if (liveIndicator) {
+                        liveIndicator.textContent = `🟢 Siap (${device.toUpperCase()})`;
+                        liveIndicator.style.background = "#dcfce7";
+                        liveIndicator.style.color = "#15803d";
+                    }
+                    return this.pipelineInstance;
+                } catch (err) {
+                    this.isLoading = false;
+                    this.isReady = false;
+                    console.error("Whisper loading error:", err);
+                    if (liveIndicator) {
+                        liveIndicator.textContent = "⚠️ Gagal";
+                        liveIndicator.style.background = "#fee2e2";
+                        liveIndicator.style.color = "#b91c1c";
+                    }
+                    throw err;
+                }
+            },
+
+            async transcribe(audioInput, onStatus = null) {
+                if (onStatus) onStatus("Memeriksa model Whisper lokal...");
+                const transcriber = await this.init((pct, msg) => {
+                    if (onStatus) onStatus(`Mengunduh model ke browser (${pct}%)...`);
+                });
+
+                if (onStatus) onStatus("Mendecode sinyal audio...");
+                const pcm16k = await decodeAudioToFloat32(audioInput);
+
+                if (onStatus) onStatus(`Mentranskripsi suara (${this.backendUsed.toUpperCase()})...`);
+                const output = await transcriber(pcm16k, {
+                    language: 'indonesian',
+                    task: 'transcribe',
+                });
+
+                let text = "";
+                if (typeof output === 'string') text = output;
+                else if (output && output.text) text = output.text;
+
+                return (text || "").trim();
+            }
+        };
+
+        async function preloadWhisperModel() {
+            const feedback = document.getElementById('whisper-feedback');
+            const btn = document.getElementById('btn-preload-whisper');
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.innerHTML = '⏳ Menyiapkan model Whisper lokal di browser...';
+            }
+            if (btn) btn.disabled = true;
+
+            try {
+                await CareTechWhisper.init((pct, msg) => {
+                    if (feedback) feedback.innerHTML = `⏳ ${msg}`;
+                });
+                if (feedback) {
+                    feedback.innerHTML = `✓ <strong>Model Whisper-Tiny siap offline!</strong><br>Tersimpan di cache browser. Transkripsi suara dapat berjalan tanpa internet dengan akselerasi <strong>${CareTechWhisper.backendUsed.toUpperCase()}</strong>.`;
+                    feedback.style.color = "#15803d";
+                }
+            } catch (err) {
+                if (feedback) {
+                    feedback.innerHTML = `❌ <strong>Gagal memuat model:</strong> ${err.message || err}. Pastikan Anda memiliki koneksi internet untuk unduhan pertama kali.`;
+                    feedback.style.color = "#b91c1c";
+                }
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function testWhisperLocalTranscription() {
+            const feedback = document.getElementById('whisper-feedback');
+            const btn = document.getElementById('btn-test-whisper');
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Browser tidak mendukung akses mikrofon.");
                 return;
             }
 
-            stopAllAudioAndSpeech(); // Hentikan suara robot/laptop seketika saat mulai bicara!
+            if (feedback) {
+                feedback.style.display = 'block';
+                feedback.innerHTML = '🎙️ <strong>Merekam suara 3 detik dari mikrofon laptop...</strong> Silakan bicara sekarang!';
+                feedback.style.color = "#1e40af";
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "Merekam (3s)...";
+            }
 
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                const recordingPromise = new Promise((resolve) => {
+                    mediaRecorder.onstop = () => {
+                        stream.getTracks().forEach(t => t.stop());
+                        const blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                        resolve(blob);
+                    };
+                });
+
+                mediaRecorder.start();
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+                }, 3000);
+
+                const recordedBlob = await recordingPromise;
+
+                if (feedback) {
+                    feedback.innerHTML = '⏳ Mentranskripsi suara dengan Whisper lokal di browser...';
+                }
+                if (btn) btn.textContent = "Mentranskripsi...";
+
+                const resultText = await CareTechWhisper.transcribe(recordedBlob, (status) => {
+                    if (feedback) feedback.innerHTML = `⏳ ${status}`;
+                });
+
+                if (feedback) {
+                    feedback.innerHTML = `🎉 <strong>Hasil Transkripsi Lokal (${CareTechWhisper.backendUsed.toUpperCase()}):</strong><br>"<em>${resultText || '(Suara tidak terdeteksi / hening)'}</em>"`;
+                    feedback.style.color = "#15803d";
+                }
+            } catch (err) {
+                if (feedback) {
+                    feedback.innerHTML = `❌ <strong>Uji coba gagal:</strong> ${err.message || err}`;
+                    feedback.style.color = "#b91c1c";
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "Tes Mic Laptop (3 Detik) 🎙️";
+                }
+            }
+        }
+
+        // ==========================================
+        // SPEECH RECOGNITION VIA LAPTOP MICROPHONE
+        // (Dual Mode: Web Speech API & Client-Side Whisper)
+        // ==========================================
+        let laptopRecognition = null;
+        let isLaptopRecognizing = false;
+        let laptopMediaRecorder = null;
+        let laptopAudioChunks = [];
+        let isLaptopLocalRecording = false;
+
+        async function toggleLaptopSpeechRecognition() {
             const btn = document.getElementById('btn-laptop-mic');
             const inputEl = document.getElementById('chat-input');
 
+            // 1. Jika sedang dalam proses perekaman lokal client-side: Hentikan dan transkripsi!
+            if (isLaptopLocalRecording && laptopMediaRecorder) {
+                try {
+                    laptopMediaRecorder.stop();
+                } catch(e) {}
+                return;
+            }
+
+            // 2. Jika sedang dalam proses SpeechRecognition browser biasa: Hentikan!
             if (isLaptopRecognizing && laptopRecognition) {
                 try { laptopRecognition.stop(); } catch(e){}
                 isLaptopRecognizing = false;
@@ -1992,6 +2329,80 @@ Contoh respons ideal (1-2 kalimat pendek):
                 return;
             }
 
+            stopAllAudioAndSpeech(); // Hentikan suara robot/laptop saat mulai bicara
+
+            // Tentukan apakah menggunakan Client-Side Whisper atau Web Speech API bawaan
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const preferClientSide = (sttMode === 'client') || (!SpeechRec) || (!navigator.onLine);
+
+            if (preferClientSide) {
+                // Mode Client-Side Recording via MediaRecorder + Whisper
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert("Browser ini belum mendukung akses mikrofon.");
+                    return;
+                }
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    laptopAudioChunks = [];
+                    laptopMediaRecorder = new MediaRecorder(stream);
+                    isLaptopLocalRecording = true;
+
+                    laptopMediaRecorder.ondataavailable = (e) => {
+                        if (e.data && e.data.size > 0) laptopAudioChunks.push(e.data);
+                    };
+
+                    laptopMediaRecorder.onstart = () => {
+                        if (btn) {
+                            btn.innerHTML = "🔴 Merekam Lokal... Klik Selesai";
+                            btn.style.background = "#ef4444";
+                            btn.style.color = "#ffffff";
+                        }
+                        playLaptopRobotChime('start_rec');
+                    };
+
+                    laptopMediaRecorder.onstop = async () => {
+                        stream.getTracks().forEach(t => t.stop());
+                        isLaptopLocalRecording = false;
+                        if (btn) {
+                            btn.innerHTML = "⏳ Mentranskripsi...";
+                            btn.style.background = "var(--sun)";
+                            btn.style.color = "var(--ink)";
+                        }
+
+                        try {
+                            const blob = new Blob(laptopAudioChunks, { type: laptopMediaRecorder.mimeType || 'audio/webm' });
+                            const transcript = await CareTechWhisper.transcribe(blob);
+                            if (inputEl && transcript) {
+                                inputEl.value = (inputEl.value ? inputEl.value + " " : "") + transcript;
+                                inputEl.focus();
+                            }
+                        } catch (err) {
+                            console.warn("Client-side laptop transcription error:", err);
+                        } finally {
+                            if (btn) {
+                                btn.innerHTML = "🎙️ Bicara";
+                                btn.style.background = "var(--lime)";
+                                btn.style.color = "var(--ink)";
+                            }
+                            playLaptopRobotChime('end_rec');
+                        }
+                    };
+
+                    laptopMediaRecorder.start();
+                } catch (err) {
+                    console.error("Gagal membuka mic laptop:", err);
+                    isLaptopLocalRecording = false;
+                    if (btn) {
+                        btn.innerHTML = "🎙️ Bicara";
+                        btn.style.background = "var(--lime)";
+                        btn.style.color = "var(--ink)";
+                    }
+                }
+                return;
+            }
+
+            // Jika online dan mode auto/cloud, gunakan Web Speech API bawaan browser
             try {
                 laptopRecognition = new SpeechRec();
                 laptopRecognition.lang = 'id-ID';
@@ -2028,6 +2439,11 @@ Contoh respons ideal (1-2 kalimat pendek):
                         btn.innerHTML = "🎙️ Bicara";
                         btn.style.background = "var(--lime)";
                         btn.style.color = "var(--ink)";
+                    }
+                    // Jika error network (offline), tawarkan otomatis switch ke Whisper lokal
+                    if (event.error === 'network') {
+                        console.log("Web Speech API offline, beralih ke perekaman lokal...");
+                        toggleLaptopSpeechRecognition();
                     }
                 };
 
@@ -3136,6 +3552,76 @@ Contoh respons ideal (1-2 kalimat pendek):
                 sensorContext = ` (Data sensor fisik lingkungan: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Cahaya ${latestEspSensor.light}.)`;
             }
 
+            // Tentukan apakah memproses transkripsi secara Client-Side (Whisper AI)
+            const useClientWhisper = (sttMode === 'client') || 
+                                     (sttMode === 'auto' && (aiProvider === 'ollama' || aiProvider === 'offline' || !navigator.onLine || !geminiKey || geminiKey.length <= 15));
+
+            if (useClientWhisper) {
+                try {
+                    const textEl = document.getElementById(`${msgId}-text`);
+                    let transcription = await CareTechWhisper.transcribe(audioUrl, (statusMsg) => {
+                        if (textEl && !signal.aborted) textEl.innerHTML = `⏳ <em>${statusMsg}</em>`;
+                    });
+
+                    if (signal.aborted) return;
+
+                    if (textEl) {
+                        if (transcription && transcription.trim().length > 0) {
+                            textEl.innerHTML = `💬 <strong>Transkripsi (${CareTechWhisper.backendUsed.toUpperCase()}):</strong> "${transcription}"`;
+                            textEl.style.fontStyle = "normal";
+                        } else if (peak === 0) {
+                            textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada gelombang suara yang tertangkap. Periksa sambungan kabel INMP441.`;
+                        } else {
+                            textEl.innerHTML = `💬 <strong>Transkripsi:</strong> <em>(Suara tidak terdengar jelas / hening)</em>`;
+                        }
+                    }
+
+                    if (checkRiskContent(transcription)) {
+                        showSafetyCard();
+                    }
+
+                    if (isSadnessMessage(transcription)) {
+                        currentActiveVoiceMsgId = null;
+                        initiateSadnessHugFlow(transcription);
+                        return;
+                    }
+
+                    // Tambahkan ke riwayat chat dan teruskan ke pipeline AI CareTech (Ollama / Gemini Teks / Offline)
+                    chatHistory.push({
+                        "role": "user",
+                        "parts": [{ "text": transcription ? `Siswa: "${transcription}"` : "(Siswa mengirim suara via mikrofon robot)" }]
+                    });
+
+                    await executeAiChatPipeline(transcription || "(Siswa berbicara melalui mikrofon robot)", " (Konteks: Siswa baru saja curhat melalui rekaman suara)");
+                    return;
+                } catch (whisperErr) {
+                    console.warn("Client-side Whisper gagal atau belum siap:", whisperErr);
+                    // Jika client-side gagal dan ada koneksi internet serta kunci Gemini, fallback ke Gemini cloud
+                    if (geminiKey && geminiKey.length > 15 && navigator.onLine && sttMode !== 'client') {
+                        console.log("Mencoba fallback ke Gemini Cloud multimodal...");
+                    } else {
+                        // Jika offline murni
+                        if (signal.aborted) return;
+                        fallbackResponseTimer = setTimeout(() => {
+                            if (signal.aborted) return;
+                            const textEl = document.getElementById(`${msgId}-text`);
+                            if (textEl) textEl.innerHTML = `🎙️ <em>Suara terekam (${duration}s, Peak ${peak}). Mode offline aktif.</em>`;
+                            const voiceResponses = [
+                                "Aku mendengarkan suaramu kawan. Ada yang ingin kamu ceritakan?",
+                                "Senang mendengar suaramu kawan. Apa yang sedang kamu rasakan saat ini?",
+                                "Aku menyimakmu kawan. Tarik napas rileks ya, mau cerita apa?"
+                            ];
+                            const reply = voiceResponses[Math.floor(Math.random() * voiceResponses.length)];
+                            addMessageToUI(reply, 'ai');
+                            chatHistory.push({ "role": "user", "parts": [{ "text": "(Siswa berbicara melalui mikrofon INMP441 robot)" }] });
+                            chatHistory.push({ "role": "model", "parts": [{ "text": reply }] });
+                            finishChatTurn(reply);
+                        }, 600);
+                        return;
+                    }
+                }
+            }
+
             // Panggil Gemini Multimodal Audio dengan instruksi TRANSKRIPSI & BALASAN
             if (geminiKey && geminiKey.length > 15) {
                 try {
@@ -3203,7 +3689,7 @@ Kembalikan format JSON valid dengan 2 field:
                         const textEl = document.getElementById(`${msgId}-text`);
                         if (textEl) {
                             if (transcription && !transcription.includes("hening") && !transcription.includes("tidak terdengar")) {
-                                textEl.innerHTML = `💬 <strong>Transkripsi:</strong> "${transcription}"`;
+                                textEl.innerHTML = `💬 <strong>Transkripsi (Cloud):</strong> "${transcription}"`;
                                 textEl.style.fontStyle = "normal";
                             } else if (peak === 0) {
                                 textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada gelombang suara yang tertangkap. Periksa sambungan kabel INMP441 (terutama pin L/R ke GND).`;
@@ -3234,6 +3720,33 @@ Kembalikan format JSON valid dengan 2 field:
                 } catch (err) {
                     if (err.name === 'AbortError' || signal.aborted) return;
                     console.warn("Gemini voice API call failed:", err);
+
+                    // Fallback cerdas: coba Client-Side Whisper jika Gemini gagal!
+                    try {
+                        const textEl = document.getElementById(`${msgId}-text`);
+                        if (textEl) textEl.innerHTML = `⏳ <em>Cloud gagal, mencoba Whisper lokal...</em>`;
+                        const whisperFallback = await CareTechWhisper.transcribe(audioUrl);
+                        if (whisperFallback && whisperFallback.trim().length > 0) {
+                            if (textEl) {
+                                textEl.innerHTML = `💬 <strong>Transkripsi (${CareTechWhisper.backendUsed.toUpperCase()}):</strong> "${whisperFallback}"`;
+                                textEl.style.fontStyle = "normal";
+                            }
+                            if (checkRiskContent(whisperFallback)) showSafetyCard();
+                            if (isSadnessMessage(whisperFallback)) {
+                                currentActiveVoiceMsgId = null;
+                                initiateSadnessHugFlow(whisperFallback);
+                                return;
+                            }
+                            chatHistory.push({
+                                "role": "user",
+                                "parts": [{ "text": `Siswa: "${whisperFallback}"` }]
+                            });
+                            await executeAiChatPipeline(whisperFallback, " (Konteks: Siswa baru saja curhat melalui rekaman suara)");
+                            return;
+                        }
+                    } catch (e2) {
+                        console.warn("Whisper secondary fallback failed:", e2);
+                    }
                 }
             }
 
@@ -3751,11 +4264,13 @@ Kembalikan format JSON valid dengan 2 field:
         updateProviderUi();
         updateApiStatusIndicator();
         updateElevenLabsUi();
+        updateSttUi();
         checkOllamaStatus(true);
         document.addEventListener('DOMContentLoaded', () => {
             updateProviderUi();
             updateApiStatusIndicator();
             updateElevenLabsUi();
+            updateSttUi();
             checkOllamaStatus(true);
             const inputEl = document.getElementById('chat-input');
             if (inputEl) {
