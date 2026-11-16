@@ -222,14 +222,38 @@
                 cacheEntry = await this.preloadAudio(audioUrl);
             }
 
+            // Dekode on-demand jika PCM 8kHz belum terkomputasi (misal WebAudio baru diaktifkan oleh gesture)
+            if (cacheEntry && !cacheEntry.pcm8 && cacheEntry.blob) {
+                try {
+                    const audioCtx = this.initAudioContext();
+                    if (audioCtx && audioCtx.state === 'suspended') {
+                        await audioCtx.resume();
+                    }
+                    if (audioCtx) {
+                        const arrayBuf = await cacheEntry.blob.arrayBuffer();
+                        cacheEntry.audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+                        cacheEntry.pcm8 = this.convertAudioBufferToPcm8(cacheEntry.audioBuffer);
+                    }
+                } catch (decErr) {
+                    console.warn("[ScenarioEngine] On-demand WebAudio decode:", decErr);
+                }
+            }
+
             const speakerMode = (typeof window !== 'undefined' && window.speakerOutputMode) ? window.speakerOutputMode : 'laptop';
             const espConnected = (typeof window !== 'undefined' && typeof window.isEspConnected === 'function') ? window.isEspConnected() : false;
+
+            if (typeof window !== 'undefined') {
+                window.isAiSpeaking = true;
+            }
 
             let laptopDone = !(speakerMode === 'laptop' || speakerMode === 'both');
             let espDone = !(espConnected && cacheEntry?.pcm8 && (speakerMode === 'robot' || speakerMode === 'both'));
 
             const checkFinished = () => {
                 if (laptopDone && espDone) {
+                    if (typeof window !== 'undefined') {
+                        window.isAiSpeaking = false;
+                    }
                     if (onComplete) onComplete();
                 }
             };
@@ -289,6 +313,9 @@
                     this.currentAudioEl.currentTime = 0;
                 } catch (e) {}
                 this.currentAudioEl = null;
+            }
+            if (typeof window !== 'undefined') {
+                window.isAiSpeaking = false;
             }
         }
 

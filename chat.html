@@ -2753,6 +2753,7 @@ Contoh respons ideal (1-2 kalimat pendek):
         }
 
         function updateSpeakerUi() {
+            window.speakerOutputMode = speakerOutputMode;
             const btn = document.getElementById('btn-tts-toggle');
             if (!btn) return;
             const isEleven = elevenKey && elevenKey.startsWith('sk_');
@@ -3260,6 +3261,13 @@ Contoh respons ideal (1-2 kalimat pendek):
         function sendEspAction(state, extra = {}) {
             sendEsp({ type: "action", state: state, ...extra });
         }
+
+        // Expose ESP32 hardware bridge functions to global window for ScenarioEngine
+        window.isEspConnected = isEspConnected;
+        window.sendEsp = sendEsp;
+        window.sendEspAction = sendEspAction;
+        window.streamPcmToEsp = streamPcmToEsp;
+        window.speakerOutputMode = speakerOutputMode;
 
         function handleEspMessage(line) {
             if (!line) return;

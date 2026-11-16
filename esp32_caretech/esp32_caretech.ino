@@ -138,6 +138,8 @@ bool wifiConnected        = false;
 
 // ---------- PIN ASSIGNMENT ----------
 const int LED_PIN        = 2;    // Built-in LED onboard
+const int LED1_PIN       = 18;   // LED Indikator Tangan Kiri (GPIO 18 - Respon FSR 1)
+const int LED2_PIN       = 19;   // LED Indikator Tangan Kanan (GPIO 19 - Respon FSR 2)
 const int BUTTON_PIN     = 0;    // BOOT Button onboard (Pemicu cadangan di board)
 const int EXT_BUTTON_PIN = 4;    // Tombol Fisik 12mm PBS di Tangan Boneka (Push-To-Talk)
 
@@ -358,6 +360,12 @@ void playRobotChime(int type) {
     playToneI2S(783.99, 100, 0.38); // G5
     playToneI2S(880.00, 110, 0.38); // A5
     playToneI2S(1046.50, 220, 0.40); // C6
+  } else if (type == 8) {
+    // Melodi Pelukan Hangat / Comfort Warmth Chime (F4 - A4 - C5 - E5)
+    playToneI2S(349.23, 100, 0.22); // F4
+    playToneI2S(440.00, 100, 0.25); // A4
+    playToneI2S(523.25, 120, 0.28); // C5
+    playToneI2S(659.25, 200, 0.30); // E5
   }
 }
 
@@ -904,6 +912,22 @@ void handleAction(const String& state) {
     currentState = STATE_SPEAKING;
   } else if (state == "happy") {
     playRobotChime(1);
+  } else if (state == "comforted" || state == "hug_received") {
+    // Mode Hangat: Sambut pelukan dengan nada lembut & nyalakan LED indikator tangan
+    currentState = STATE_IDLE;
+    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(LED1_PIN, HIGH);
+    digitalWrite(LED2_PIN, HIGH);
+    playRobotChime(8); // Melodi pelukan hangat menenangkan
+    delay(250);
+    digitalWrite(LED1_PIN, LOW);
+    digitalWrite(LED2_PIN, LOW);
+  } else if (state == "empathy") {
+    currentState = STATE_IDLE;
+    playRobotChime(4); // Nada lembut empati
+    digitalWrite(LED_PIN, HIGH);
+    delay(100);
+    digitalWrite(LED_PIN, LOW);
   } else {
     currentState = STATE_IDLE;
     digitalWrite(LED_PIN, LOW);
@@ -1171,9 +1195,14 @@ void updateHugHoldTracker(bool isTouched) {
       Serial.println(">>> Mengirim konfirmasi ke browser chat.html...");
       Serial.println("*******************************************************\n");
 
-      // Mainkan melodi hangat di speaker MAX98357A
-      playRobotChime(1);
+      // Mainkan melodi pelukan hangat di speaker MAX98357A & nyalakan indikator LED
       digitalWrite(LED_PIN, HIGH);
+      digitalWrite(LED1_PIN, HIGH);
+      digitalWrite(LED2_PIN, HIGH);
+      playRobotChime(8); // Melodi pelukan hangat menenangkan
+      delay(200);
+      digitalWrite(LED1_PIN, LOW);
+      digitalWrite(LED2_PIN, LOW);
     }
   } else {
     hugTouchStartMs = 0;
@@ -1356,6 +1385,11 @@ void setup() {
 
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
+
+  pinMode(LED1_PIN, OUTPUT);
+  pinMode(LED2_PIN, OUTPUT);
+  digitalWrite(LED1_PIN, LOW);
+  digitalWrite(LED2_PIN, LOW);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(EXT_BUTTON_PIN, INPUT_PULLUP);
