@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "description": "Registry skenario percakapan dengan audio ter-hardcode (ElevenLabs) untuk CareTech Robot ESA",
+  "scenarios": [
+    {
+      "id": "sedih_hug",
+      "title": "Comfort Hug (Pelukan Penenang Saat Sedih)",
+      "keywords": [
+        "sedih",
+        "lagi sedih",
+        "saya lagi sedih",
+        "aku lagi sedih",
+        "nangis",
+        "menangis",
+        "terpuruk",
+        "kecewa",
+        "down",
+        "hancur",
+        "patah hati",
+        "galau",
+        "berduka",
+        "sakit hati",
+        "bad day",
+        "capek bgt",
+        "lelah bgt",
+        "capek banget",
+        "lelah banget",
+        "murung",
+        "putus asa",
+        "ngerasa sendiri",
+        "merasa sendiri",
+        "pengen nangis",
+        "mau nangis",
+        "tak berdaya",
+        "hampa",
+        "sesak"
+      ],
+      "stage1": {
+        "text": "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh tolong peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.",
+        "audio_file": "sedih_stage1_offer.mp3",
+        "robot_mood": "happy",
+        "robot_icon": "🥺"
+      },
+      "action": {
+        "type": "hug_or_hold",
+        "target_duration_ms": 2000,
+        "timeout_ms": 30000,
+        "description": "Peluk boneka (sensor sentuh) atau genggam tangannya (sensor FSR) selama minimal 2 detik"
+      },
+      "stage2_success": {
+        "text": "Terima kasih atas pelukan hangatnya kawan... Rasanya nyaman sekali. Sekarang, aku siap mendengarkan ceritamu jika kamu ingin cerita. Pelan-pelan saja ya.",
+        "audio_file": "sedih_stage2_hugged.mp3",
+        "robot_mood": "comforted",
+        "robot_icon": "🤗"
+      },
+      "stage2_timeout": {
+        "text": "Nggak apa-apa kalau kamu belum siap memeluk kawan, aku tetap temani di sini ya. Pelan-pelan aja kalau mau cerita, aku siap mendengarkan.",
+        "audio_file": "sedih_stage2_timeout.mp3",
+        "robot_mood": "idle",
+        "robot_icon": "🤖"
+      }
+    }
+  ]
+}
