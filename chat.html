@@ -950,20 +950,28 @@
                 </p>
 
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem;">
+                    <!-- Turbo STT Server (Recommended) -->
+                    <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-turbo-label">
+                        <input type="radio" name="stt_mode" value="turbo" id="opt-stt-turbo" onchange="changeSttMode(this.value)">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">🚀 Whisper Large-V3-Turbo (Server Lokal Port 8001 - Paling Akurat ⭐)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Akurasi maksimal 1.55 Miliar parameter di laptop Anda, 100% offline &amp; tanpa kuota</div>
+                        </div>
+                    </label>
                     <!-- Auto STT -->
                     <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-auto-label">
                         <input type="radio" name="stt_mode" value="auto" id="opt-stt-auto" onchange="changeSttMode(this.value)">
                         <div style="flex: 1;">
-                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">⚡ Cerdas Otomatis (Rekomendasi)</div>
-                            <div style="font-size: 0.78rem; color: #64748b;">Gunakan Whisper Lokal jika mode Ollama/Offline/tanpa internet, atau Gemini jika online</div>
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">⚡ Cerdas Otomatis (Turbo &rarr; Gemini &rarr; Browser)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Prioritas Turbo Server jika aktif, Gemini jika online, atau Whisper Browser</div>
                         </div>
                     </label>
                     <!-- Client-Side Whisper -->
                     <label style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border: 2px solid var(--ink); border-radius: 8px; cursor: pointer; background: #f8fafc;" id="opt-stt-client-label">
                         <input type="radio" name="stt_mode" value="client" id="opt-stt-client" onchange="changeSttMode(this.value)">
                         <div style="flex: 1;">
-                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">💻 100% Client-Side (Whisper AI di Browser)</div>
-                            <div style="font-size: 0.78rem; color: #64748b;">Diproses lokal via WebGPU/WASM. Suara aman &amp; bisa full offline tanpa kuota</div>
+                            <div style="font-weight: bold; font-size: 0.92rem; color: #0f172a;">💻 Whisper Tiny Browser (WebGPU/WASM)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">Diproses langsung di tab browser (tanpa perlu menyalakan start_stt.bat)</div>
                         </div>
                     </label>
                     <!-- Cloud Gemini -->
@@ -974,6 +982,24 @@
                             <div style="font-size: 0.78rem; color: #64748b;">File audio dikirim langsung ke Google Cloud (wajib koneksi internet)</div>
                         </div>
                     </label>
+                </div>
+
+                <!-- Whisper Turbo Server Status Box -->
+                <div style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 10px; padding: 0.85rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span style="font-family: var(--mono); font-size: 0.82rem; font-weight: bold; color: #1e40af;">Server Whisper Turbo (Port 8001):</span>
+                        <span id="turbo-server-status-tag" style="font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #475569;">Cek koneksi...</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #334155; line-height: 1.35; margin-bottom: 0.5rem;">
+                        Model: <code>large-v3-turbo.pt</code> (~1.51 GB) di <code>http://127.0.0.1:8001</code>.
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                        <button type="button" class="btn btn-small" id="btn-test-turbo-server" style="background: var(--sun); padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: bold;" onclick="testTurboServerConnection()">
+                            Tes Koneksi Server ⚡
+                        </button>
+                        <span style="font-size: 0.74rem; color: #64748b;">(Jalankan <code>start_stt.bat</code> jika belum aktif)</span>
+                    </div>
+                    <div id="turbo-feedback" style="display: none; margin-top: 0.5rem; font-family: var(--mono); font-size: 0.76rem; padding: 0.45rem; background: #ffffff; border-radius: 6px; border: 1px solid #bfdbfe; color: #1e3a8a; word-break: break-word;"></div>
                 </div>
 
                 <!-- Whisper Cache & Diagnostic Subbox -->
@@ -1248,15 +1274,19 @@
             updateApiStatusIndicator();
         }
 
+        let isTurboServerOnline = false;
+        let turboServerUrl = 'http://127.0.0.1:8001';
+
         function updateSttUi() {
             const radio = document.querySelector(`input[name="stt_mode"][value="${sttMode}"]`);
             if (radio) radio.checked = true;
 
+            const turboLabel = document.getElementById('opt-stt-turbo-label');
             const autoLabel = document.getElementById('opt-stt-auto-label');
             const clientLabel = document.getElementById('opt-stt-client-label');
             const cloudLabel = document.getElementById('opt-stt-cloud-label');
 
-            [autoLabel, clientLabel, cloudLabel].forEach(el => {
+            [turboLabel, autoLabel, clientLabel, cloudLabel].forEach(el => {
                 if (el) {
                     el.style.borderColor = 'var(--ink)';
                     el.style.background = '#f8fafc';
@@ -1271,14 +1301,17 @@
 
             const tag = document.getElementById('stt-status-tag');
             if (tag) {
-                if (sttMode === 'client') {
-                    tag.textContent = '100% LOKAL (WHISPER)';
+                if (sttMode === 'turbo') {
+                    tag.textContent = 'WHISPER TURBO (LOKAL)';
+                    tag.className = 'tape tape-lime';
+                } else if (sttMode === 'client') {
+                    tag.textContent = '100% LOKAL (WHISPER BROWSER)';
                     tag.className = 'tape tape-lime';
                 } else if (sttMode === 'cloud') {
                     tag.textContent = 'CLOUD GEMINI';
                     tag.className = 'tape tape-pink';
                 } else {
-                    tag.textContent = 'CERDAS OTOMATIS';
+                    tag.textContent = isTurboServerOnline ? 'CERDAS (TURBO AKTIF)' : 'CERDAS OTOMATIS';
                     tag.className = 'tape tape-lime';
                 }
             }
@@ -1288,6 +1321,96 @@
             sttMode = val;
             localStorage.setItem('caretech_stt_mode', sttMode);
             updateSttUi();
+        }
+
+        async function checkTurboServerStatus(quiet = true) {
+            const tag = document.getElementById('turbo-server-status-tag');
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1600);
+                const res = await fetch(`${turboServerUrl}/health`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) {
+                    const data = await res.json();
+                    isTurboServerOnline = true;
+                    if (tag) {
+                        tag.textContent = `🟢 Aktif (${(data.device || 'CPU').toUpperCase()})`;
+                        tag.style.background = "#dcfce7";
+                        tag.style.color = "#15803d";
+                    }
+                    updateSttUi();
+                    return { online: true, data };
+                }
+            } catch (err) {
+                // Server offline
+            }
+            isTurboServerOnline = false;
+            if (tag) {
+                tag.textContent = "⚪ Belum Jalan";
+                tag.style.background = "#fee2e2";
+                tag.style.color = "#b91c1c";
+            }
+            updateSttUi();
+            return { online: false };
+        }
+
+        async function testTurboServerConnection() {
+            const fb = document.getElementById('turbo-feedback');
+            const btn = document.getElementById('btn-test-turbo-server');
+            if (fb) {
+                fb.style.display = 'block';
+                fb.innerHTML = '⏳ Memeriksa koneksi ke <code>http://127.0.0.1:8001/health</code>...';
+                fb.style.color = '#1e3a8a';
+            }
+            if (btn) btn.disabled = true;
+
+            const res = await checkTurboServerStatus(false);
+            if (btn) btn.disabled = false;
+
+            if (res.online) {
+                if (fb) {
+                    fb.innerHTML = `✓ <strong>Server Whisper Turbo Terhubung!</strong><br>Model: <code>${res.data.model}</code> | Perangkat: <code>${(res.data.device || 'CPU').toUpperCase()}</code> | CUDA: <code>${res.data.cuda}</code>.<br>Transkripsi suara akan diproses secara lokal dengan akurasi maksimal.`;
+                    fb.style.color = '#15803d';
+                }
+            } else {
+                if (fb) {
+                    fb.innerHTML = `⚠️ <strong>Server belum aktif di port 8001.</strong><br>Pastikan Anda sudah menjalankan <code>start_stt.bat</code> atau perintah <code>python stt_server.py</code> di terminal.`;
+                    fb.style.color = '#b91c1c';
+                }
+            }
+        }
+
+        async function transcribeViaTurboServer(audioBlobOrUrl) {
+            let blob;
+            if (audioBlobOrUrl instanceof Blob) {
+                blob = audioBlobOrUrl;
+            } else if (typeof audioBlobOrUrl === 'string') {
+                const resp = await fetch(audioBlobOrUrl);
+                blob = await resp.blob();
+            } else {
+                throw new Error("Format audio tidak didukung.");
+            }
+
+            const formData = new FormData();
+            formData.append('file', blob, 'audio.wav');
+            formData.append('language', 'id');
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+
+            const resp = await fetch(`${turboServerUrl}/transcribe`, {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!resp.ok) {
+                throw new Error(`Server Turbo error: HTTP ${resp.status}`);
+            }
+
+            const data = await resp.json();
+            return (data.text || '').trim();
         }
 
         function saveOllamaSettings() {
@@ -1552,6 +1675,7 @@
                 updateElevenLabsUi();
                 updateSttUi();
                 checkOllamaStatus(true);
+                checkTurboServerStatus(true);
                 modal.style.display = 'flex';
                 setTimeout(() => {
                     if (passcodeInput) passcodeInput.focus();
@@ -2331,12 +2455,12 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             stopAllAudioAndSpeech(); // Hentikan suara robot/laptop saat mulai bicara
 
-            // Tentukan apakah menggunakan Client-Side Whisper atau Web Speech API bawaan
+            // Tentukan apakah menggunakan Local Recording (Turbo / Client-Side) atau Web Speech API bawaan
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const preferClientSide = (sttMode === 'client') || (!SpeechRec) || (!navigator.onLine);
+            const preferLocalRecording = (sttMode === 'turbo') || (sttMode === 'client') || (isTurboServerOnline) || (!SpeechRec) || (!navigator.onLine);
 
-            if (preferClientSide) {
-                // Mode Client-Side Recording via MediaRecorder + Whisper
+            if (preferLocalRecording) {
+                // Mode Local Recording via MediaRecorder + Whisper Turbo / Client
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     alert("Browser ini belum mendukung akses mikrofon.");
                     return;
@@ -2354,7 +2478,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                     laptopMediaRecorder.onstart = () => {
                         if (btn) {
-                            btn.innerHTML = "🔴 Merekam Lokal... Klik Selesai";
+                            btn.innerHTML = isTurboServerOnline ? "🔴 Merekam (Whisper Turbo)... Klik Selesai" : "🔴 Merekam Lokal... Klik Selesai";
                             btn.style.background = "#ef4444";
                             btn.style.color = "#ffffff";
                         }
@@ -2372,13 +2496,24 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                         try {
                             const blob = new Blob(laptopAudioChunks, { type: laptopMediaRecorder.mimeType || 'audio/webm' });
-                            const transcript = await CareTechWhisper.transcribe(blob);
+                            let transcript = "";
+                            if (isTurboServerOnline) {
+                                try {
+                                    transcript = await transcribeViaTurboServer(blob);
+                                } catch (e) {
+                                    console.warn("Turbo server failed, fallback to client-side:", e);
+                                    transcript = await CareTechWhisper.transcribe(blob);
+                                }
+                            } else {
+                                transcript = await CareTechWhisper.transcribe(blob);
+                            }
+
                             if (inputEl && transcript) {
                                 inputEl.value = (inputEl.value ? inputEl.value + " " : "") + transcript;
                                 inputEl.focus();
                             }
                         } catch (err) {
-                            console.warn("Client-side laptop transcription error:", err);
+                            console.warn("Laptop transcription error:", err);
                         } finally {
                             if (btn) {
                                 btn.innerHTML = "🎙️ Bicara";
@@ -3552,7 +3687,55 @@ Contoh respons ideal (1-2 kalimat pendek):
                 sensorContext = ` (Data sensor fisik lingkungan: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Cahaya ${latestEspSensor.light}.)`;
             }
 
-            // Tentukan apakah memproses transkripsi secara Client-Side (Whisper AI)
+            // 1. Prioritas Utama: Whisper Large-V3-Turbo Server Lokal (Port 8001)
+            const shouldUseTurbo = (sttMode === 'turbo') || 
+                                   (sttMode === 'auto' && isTurboServerOnline) ||
+                                   (isTurboServerOnline && (aiProvider === 'ollama' || aiProvider === 'offline'));
+
+            if (shouldUseTurbo) {
+                try {
+                    const textEl = document.getElementById(`${msgId}-text`);
+                    if (textEl && !signal.aborted) {
+                        textEl.innerHTML = `⏳ <em>Mentranskripsi via Whisper Large-V3-Turbo (Lokal)...</em>`;
+                    }
+
+                    const transcription = await transcribeViaTurboServer(audioUrl);
+                    if (signal.aborted) return;
+
+                    if (textEl) {
+                        if (transcription && transcription.trim().length > 0) {
+                            textEl.innerHTML = `💬 <strong>Transkripsi (Whisper Turbo):</strong> "${transcription}"`;
+                            textEl.style.fontStyle = "normal";
+                        } else if (peak === 0) {
+                            textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada gelombang suara yang tertangkap. Periksa sambungan kabel INMP441.`;
+                        } else {
+                            textEl.innerHTML = `💬 <strong>Transkripsi:</strong> <em>(Suara tidak terdengar jelas / hening)</em>`;
+                        }
+                    }
+
+                    if (checkRiskContent(transcription)) {
+                        showSafetyCard();
+                    }
+
+                    if (isSadnessMessage(transcription)) {
+                        currentActiveVoiceMsgId = null;
+                        initiateSadnessHugFlow(transcription);
+                        return;
+                    }
+
+                    chatHistory.push({
+                        "role": "user",
+                        "parts": [{ "text": transcription ? `Siswa: "${transcription}"` : "(Siswa mengirim suara via mikrofon robot)" }]
+                    });
+
+                    await executeAiChatPipeline(transcription || "(Siswa berbicara melalui mikrofon robot)", " (Konteks: Siswa baru saja curhat melalui rekaman suara)");
+                    return;
+                } catch (turboErr) {
+                    console.warn("Turbo server failed or unreachable, fallback ke opsi berikutnya:", turboErr);
+                }
+            }
+
+            // 2. Opsi Client-Side Whisper (Browser WebGPU/WASM)
             const useClientWhisper = (sttMode === 'client') || 
                                      (sttMode === 'auto' && (aiProvider === 'ollama' || aiProvider === 'offline' || !navigator.onLine || !geminiKey || geminiKey.length <= 15));
 
@@ -4266,12 +4449,14 @@ Kembalikan format JSON valid dengan 2 field:
         updateElevenLabsUi();
         updateSttUi();
         checkOllamaStatus(true);
+        checkTurboServerStatus(true);
         document.addEventListener('DOMContentLoaded', () => {
             updateProviderUi();
             updateApiStatusIndicator();
             updateElevenLabsUi();
             updateSttUi();
             checkOllamaStatus(true);
+            checkTurboServerStatus(true);
             const inputEl = document.getElementById('chat-input');
             if (inputEl) {
                 inputEl.addEventListener('input', () => {
