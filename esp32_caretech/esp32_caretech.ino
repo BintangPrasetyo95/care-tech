@@ -2,61 +2,100 @@
   =============================================================================
   CARETECH - ESA INTERACTIVE PHYSICAL ROBOT COMPANION (DUAL MODE)
   =============================================================================
-  Board: ESP32 Dev Module (NodeMCU-32S / ESP32-WROOM-32 30-pin & 38-pin)
+  DAFTAR KOMPONEN TERVERIFIKASI (OFFICIAL BILL OF MATERIALS):
+    1. Microcontroller : ESP32 Dev Module (NodeMCU-32S / ESP32-WROOM-32)
+    2. Audio Output    : MAX98357A I2S Mono DAC Amplifier + Speaker (4Ω/8Ω 3W)
+    3. Audio Input     : INMP441 I2S MEMS Omnidirectional Microphone
+    4. Sensor Tekanan  : 2x FSR402 Force-Sensing Resistors (Elusan & Pelukan)
+    5. Tombol PTT      : Push Button Tactile 12mm PBS (Push-To-Talk di Tangan Boneka)
+    6. Sumber Daya     : Baterai Gurfa Rechargeable Cell 18650 6800 mAh 7.4V (2S)
+    7. Regulasi Daya   : Step Down Buck Converter LM2596 (Menurunkan 7.4V -> 5.0V DC)
+    8. Sensor Sentuh   : 2x Modul Sentuh Digital TTP223 (Output ke Serial Monitor)
+
   Komunikasi: 
     1. NIRKABEL (Opsi A): WiFi + WebSocket Server (Port 81) & mDNS (esa-robot.local)
     2. KABEL USB (Fallback): USB Web Serial (115200 baud)
   Pemrosesan Audio: Murni I2S Hardware Audio (INMP441 Mic + MAX98357A Speaker DAC)
-  Sumber Daya: Baterai 3.7V (18650 / LiPo) + Modul Boost 5V (MH-CD42) atau USB Type-C
+
+  =============================================================================
+  SKEMA MANAJEMEN DAYA (POWER DISTRIBUTION & WIRING LM2596):
+  =============================================================================
+  ⚠️ PERINGATAN KRUSIAL:
+     Sebelum menyambungkan kabel LM2596 OUT ke ESP32 & MAX98357A, WAJIB putar
+     baut trimpot biru pada modul LM2596 dengan obeng sambil diukur multimeter
+     hingga voltase output terkalibrasi stabil di 5.0 Volt!
+     JANGAN memasukkan tegangan 7.4V langsung ke ESP32/Modul!
+
+  1. Jalur Baterai -> Step Down LM2596:
+     - Baterai Gurfa 7.4V (+)  ───► LM2596 [IN+] (Melalui saklar On/Off jika ada)
+     - Baterai Gurfa (-)       ───► LM2596 [IN-]
+
+  2. Jalur Distribusi Output LM2596 (5.0V Terkalibrasi):
+     - LM2596 [OUT+] (5.0V)    ───► ESP32 Pin [VIN / 5V]
+     - LM2596 [OUT+] (5.0V)    ───► MAX98357A Pin [VIN] (Wajib 5V untuk daya 3W maksimal)
+     - LM2596 [OUT-] (GND)     ───► ESP32 Pin [GND] (Ground Bersama / Common GND)
+
+  =============================================================================
+  PETA PINOUT RESMI ESP32 (HARDWARE PINOUT MAP):
+  =============================================================================
+
+  1. SPEAKER AMPLIFIER (MAX98357A I2S Mono DAC - Papan Ungu):
+     -------------------------------------------------------------------------
+     Pin MAX98357A | Pin ESP32         | Keterangan
+     ------------- | ----------------- | -------------------------------------
+     VIN           | LM2596 OUT+ (5V)  | Suplai 5V teregulasi agar suara lantang & jernih.
+     GND           | GND Bersama       | Ground sistem.
+     BCLK          | GPIO 26           | Bit Clock I2S (Port I2S_NUM_1 Audio Out).
+     LRC           | GPIO 25           | Word Select / Left-Right Clock (I2S_NUM_1).
+     DIN           | GPIO 22           | Serial Data In ke Amplifier (I2S_NUM_1).
+     GAIN          | LEPAS / GND       | Gain default 9dB (lepas) atau 12dB (ke GND).
+     SD_MODE       | LEPAS (Floating)  | Otomatis mencampur channel stereo (L+R)/2.
+     Terminal +/-  | Speaker 4Ω/8Ω 3W  | Terminal kabel speaker.
+
+  2. MIKROFON (INMP441 I2S MEMS Omnidirectional - Papan Bundar):
+     -------------------------------------------------------------------------
+     Pin INMP441   | Pin ESP32         | Keterangan
+     ------------- | ----------------- | -------------------------------------
+     VDD           | 3V3 ESP32         | ⚠️ WAJIB 3.3V! DILARANG ke 5V (rusak!).
+     GND           | GND               | Ground bersama ESP32.
+     SD            | GPIO 32           | Serial Data Out dari mic ke ESP32 (I2S_NUM_0).
+     WS            | GPIO 33           | Word Select Clock (I2S_NUM_0 Audio In).
+     SCK           | GPIO 14           | Serial Clock / Bit Clock (I2S_NUM_0).
+     L/R           | GND               | Hubungkan ke GND untuk channel kiri mono.
+
+  3. SENSOR TEKANAN FISIK (2x FSR402):
+     Rangkaian pembagi tegangan (Voltage Divider) dengan resistor 10kΩ ke GND:
+     -------------------------------------------------------------------------
+     Sensor FSR    | Pin 1 FSR  | Pin 2 FSR (Signal)       | R Resistor 10kΩ
+     ------------- | ---------- | ------------------------ | -----------------
+     FSR 1 Kepala  | 3V3 ESP32  | GPIO 34 (ADC1_CHANNEL_6) | Kaki 2 FSR -> GND
+     FSR 2 Pipi    | 3V3 ESP32  | GPIO 35 (ADC1_CHANNEL_7) | Kaki 2 FSR -> GND
+     *Catatan: Menggunakan ADC1 agar 100% aman digunakan bersamaan dengan WiFi.
+
+  4. TOMBOL PUSH-TO-TALK 12mm PBS & KONTROL:
+     -------------------------------------------------------------------------
+     Pin Komponen  | Pin ESP32  | Mode & Keterangan
+     ------------- | ---------- | --------------------------------------------
+     Tombol PBS 12m| GPIO 4     | INPUT_PULLUP (Kaki 1 ke GPIO 4, Kaki 2 ke GND).
+                   |            | PTT di tangan boneka untuk merekam curhat.
+     Tombol BOOT   | GPIO 0     | INPUT_PULLUP (Tombol onboard pemicu cadangan).
+     LED Onboard   | GPIO 2     | Respon sentuh, rekaman, berpikir, dan bicara.
+
+  5. MODUL SENSOR SENTUH DIGITAL TAMBAHAN (2x TTP223 - Skenario B):
+     -------------------------------------------------------------------------
+     Pin TTP223    | Pin ESP32  | Keterangan
+     ------------- | ---------- | --------------------------------------------
+     VCC           | 3V3 ESP32  | Tegangan kerja modul (3.3V).
+     GND           | GND        | Ground bersama ESP32.
+     I/O Sensor 1  | GPIO 27    | Sinyal digital sensor 1 (Active-HIGH saat disentuh).
+     I/O Sensor 2  | GPIO 13    | Sinyal digital sensor 2 (Active-HIGH saat disentuh).
+     *Keluaran akan langsung dicetak ke Serial Monitor saat sensor disentuh.
 
   =============================================================================
   LIBRARY ARDUINO YANG DIBUTUHKAN:
   =============================================================================
   1. ArduinoJson (oleh Benoit Blanchon - versi 6 atau 7)
   2. WebSockets (oleh Markus Sattler - install via Library Manager)
-  =============================================================================
-
-  PETA HARDWARE & PINOUT RESMI (OFFICIAL PINOUT):
-  =============================================================================
-
-  1. SPEAKER AMPLIFIER (MAX98357A I2S Mono DAC - Papan Ungu):
-     -------------------------------------------------------------------------
-     Pin MAX98357A | Pin ESP32 | Keterangan
-     ------------- | --------- | ---------------------------------------------
-     VIN           | VIN (5V)  | Wajib 5V (dari modul boost baterai / USB) agar daya 3W maksimal.
-     GND           | GND       | Ground bersama ESP32.
-     BCLK          | GPIO 26   | Bit Clock I2S (Port I2S_NUM_1 Audio Out).
-     LRC           | GPIO 25   | Word Select / Left-Right Clock (I2S_NUM_1).
-     DIN           | GPIO 22   | Serial Data In ke Amplifier (I2S_NUM_1).
-     GAIN          | LEPAS/GND | Gain 9dB (lepas) atau 12dB (hubungkan ke GND).
-     SD_MODE       | LEPAS     | Otomatis mencampur channel stereo (L+R)/2.
-     Terminal +/-  | Speaker   | Sambungkan speaker 4 Ohm / 8 Ohm 3 Watt.
-
-  2. MIKROFON (INMP441 I2S MEMS Omnidirectional - Papan Bundar Hitam/Kuning):
-     -------------------------------------------------------------------------
-     Pin INMP441   | Pin ESP32 | Keterangan
-     ------------- | --------- | ---------------------------------------------
-     VDD           | 3V3       | ⚠️ WAJIB 3.3V! JANGAN sambungkan ke 5V (merusak modul!).
-     GND           | GND       | Ground bersama ESP32.
-     SD            | GPIO 32   | Serial Data Out dari mic ke ESP32 (I2S_NUM_0).
-     WS            | GPIO 33   | Word Select Clock (I2S_NUM_0 Audio In).
-     SCK           | GPIO 14   | Serial Clock / Bit Clock (I2S_NUM_0).
-     L/R           | GND       | Hubungkan ke GND untuk memilih Channel Kiri.
-
-  3. SENSOR TEKANAN FISIK (FSR402):
-     -------------------------------------------------------------------------
-     Pin ESP32     | Komponen & Keterangan
-     ------------- | ---------------------------------------------------------
-     GPIO 34       | FSR 1 (Sensor Tekanan Kepala/Elusan) - Divider 10k ke GND.
-     GPIO 35       | FSR 2 (Sensor Tekanan Pipi/Pelukan)  - Divider 10k ke GND.
-
-  4. KONTROL INTERAKSI & STATUS ONBOARD:
-     -------------------------------------------------------------------------
-     Pin ESP32     | Fungsi & Keterangan
-     ------------- | ---------------------------------------------------------
-     GPIO 4        | Tombol Fisik 12mm PBS (Push-To-Talk di Tangan Boneka) - Kaki 1 ke GPIO 4, Kaki 2 ke GND.
-     GPIO 0        | Onboard BOOT Button (Pemicu cadangan di board ESP32).
-     GPIO 2        | Onboard Blue LED (Ekspresi Standby, Berpikir, Bicara, Rekam, Sentuhan).
   =============================================================================
 */
 
@@ -70,8 +109,8 @@
 
 // ---------- KONFIGURASI WIFI & WEBSOCKET ----------
 // Ganti dengan SSID dan Password WiFi / Hotspot Anda:
-const char* WIFI_SSID     = "NAMA_WIFI_ANDA";     
-const char* WIFI_PASS     = "PASSWORD_WIFI_ANDA"; 
+const char* WIFI_SSID     = "Carelix";     
+const char* WIFI_PASS     = "emotionalcompanionagent"; 
 
 // Hotspot Cadangan Mandiri (AP Mode) jika WiFi di atas tidak ditemukan:
 const char* AP_SSID       = "CareTech-ESA-Robot";
@@ -119,11 +158,15 @@ inline bool isAnyButtonPressed() {
 #define I2S_MIC_WS   33
 #define I2S_MIC_SD   32
 
-// FSR402 Force-Sensing Resistors (Port ADC1 - Aman Digunakan Bersama WiFi & I2S)
-const int FSR1_PIN   = 34;   // FSR 1: Sensor Tekanan Kepala / Elusan (GPIO 34)
-const int FSR2_PIN   = 35;   // FSR 2: Sensor Tekanan Pipi / Pelukan (GPIO 35)
+// FSR402 Force-Sensing Resistors (Sensor Memegang Tangan Boneka - Port ADC1)
+const int FSR1_PIN   = 34;   // FSR 1: Sensor Tekanan Tangan Kiri Boneka (GPIO 34)
+const int FSR2_PIN   = 35;   // FSR 2: Sensor Tekanan Tangan Kanan Boneka (GPIO 35)
 const adc1_channel_t FSR1_ADC_CHAN = ADC1_CHANNEL_6; // Kanal ADC1 GPIO 34
 const adc1_channel_t FSR2_ADC_CHAN = ADC1_CHANNEL_7; // Kanal ADC1 GPIO 35
+
+// Modul Sensor Sentuh Digital (2x TTP223 - Sensor Memeluk Boneka)
+const int TOUCH1_PIN = 27;   // Modul Sentuh Pelukan 1 (GPIO 27)
+const int TOUCH2_PIN = 13;   // Modul Sentuh Pelukan 2 (GPIO 13)
 
 
 // Status Robot ESA
@@ -155,16 +198,38 @@ int soundLevel = 0;
 unsigned long lastVoiceNoticeMs = 0;
 
 // Sensor Tekanan FSR402 State, Filtering & Timing
-const int FSR_NOISE_FLOOR  = 350; // Ambang batas noise ADC: nilai di bawah 350 dianggap 0 (mati total, bebas kedip)
-const int FSR_TOUCH_THRESH = 800; // Ambang batas sentuhan nyata untuk memicu event touch ke browser
+// Sensor Aktif saat Menunggu Input (Standby / Idle) & Saat Diminta Chat
+bool sensorsEnabled        = true;  // Default: AKTIF saat menunggu input (Idle/Standby)
+const int FSR_NOISE_FLOOR  = 2800;  // Ambang batas lepas/idle: di bawah 2800 dianggap lepas / tidak tertekan
+const int FSR_TOUCH_THRESH = 3500;  // Ambang batas tertekan: di atas 3500 dianggap tertekan nyata
 unsigned long lastFsrCheckMs = 0;
 unsigned long lastFsrReportMs = 0;
+unsigned long lastFsrDebugMs  = 0;  // Debounce print pantauan real-time ke Serial Monitor
 bool fsr1Pressed = false;
 bool fsr2Pressed = false;
 int fsr1Level = 0;
 int fsr2Level = 0;
 int fsr1Smoothed = 0;
 int fsr2Smoothed = 0;
+
+// Sensor Sentuh Digital Tambahan State (TTP223 - Skenario B)
+bool digitalTouch1Active = false;
+bool digitalTouch2Active = false;
+unsigned long lastDigitalTouchReportMs = 0;
+
+// Pelacakan Pelukan / Sentuhan Tahan 2 Detik (Comfort Hug)
+unsigned long hugTouchStartMs = 0;
+bool hugHold2sFired = false;
+
+// Pembacaan ADC1 Legacy (12-bit) dengan oversampling 8x
+// Menggunakan driver ADC legacy agar serasi 100% dengan driver I2S audio tanpa crash driver_ng
+int readAdc1Smoothed(adc1_channel_t chan) {
+  int sum = 0;
+  for (int i = 0; i < 8; i++) {
+    sum += adc1_get_raw(chan);
+  }
+  return sum / 8;
+}
 
 // ---------- FUNGSI BROADCAST DUAL MODE (SERIAL + WEBSOCKET) ----------
 void broadcastWsFrame(WSopcode_t opcode, const uint8_t* payload, size_t length, bool fin) {
@@ -849,6 +914,33 @@ void handleLine(String line) {
   line.trim();
   if (line.length() == 0) return;
 
+  // Fitur Diagnostik Cepat Langsung dari Serial Monitor (Ketik 'fsr', 'test', 'on', 'off')
+  if (line.equalsIgnoreCase("fsr") || line.equalsIgnoreCase("test") || line.equalsIgnoreCase("status")) {
+    int r1 = readAdc1Smoothed(FSR1_ADC_CHAN);
+    int r2 = readAdc1Smoothed(FSR2_ADC_CHAN);
+    bool t1 = (digitalRead(TOUCH1_PIN) == HIGH);
+    bool t2 = (digitalRead(TOUCH2_PIN) == HIGH);
+    Serial.println("\n=======================================================");
+    Serial.println(">>> [DIAGNOSTIK SENSOR REAL-TIME CARETECH ESA]");
+    Serial.printf(">>> FSR 1 Tangan Kiri  (GPIO %d) : ADC = %d %s\n", FSR1_PIN, r1, r1 > FSR_TOUCH_THRESH ? "[DIGENGGAM!]" : (r1 > FSR_NOISE_FLOOR ? "[RINGAN]" : "[KOSONG]"));
+    Serial.printf(">>> FSR 2 Tangan Kanan (GPIO %d) : ADC = %d %s\n", FSR2_PIN, r2, r2 > FSR_TOUCH_THRESH ? "[DIGENGGAM!]" : (r2 > FSR_NOISE_FLOOR ? "[RINGAN]" : "[KOSONG]"));
+    Serial.printf(">>> Touch 1 Pelukan    (GPIO %d) : %s\n", TOUCH1_PIN, t1 ? "HIGH (SEDANG DIPELUK)" : "LOW");
+    Serial.printf(">>> Touch 2 Pelukan    (GPIO %d) : %s\n", TOUCH2_PIN, t2 ? "HIGH (SEDANG DIPELUK)" : "LOW");
+    Serial.printf(">>> Status Sensor Sistem         : %s (Ambang Tekanan Tangan: %d)\n", sensorsEnabled ? "AKTIF" : "NONAKTIF (Ketik 'on')", FSR_TOUCH_THRESH);
+    Serial.println("=======================================================\n");
+    return;
+  }
+  if (line.equalsIgnoreCase("on")) {
+    sensorsEnabled = true;
+    Serial.println(">>> [SENSOR CTL] Sensor Fisik Diaktifkan!");
+    return;
+  }
+  if (line.equalsIgnoreCase("off")) {
+    sensorsEnabled = false;
+    Serial.println(">>> [SENSOR CTL] Sensor Fisik Dinonaktifkan!");
+    return;
+  }
+
   JsonDocument doc;
   DeserializationError err = deserializeJson(doc, line);
   if (err) return;
@@ -905,26 +997,32 @@ void handleLine(String line) {
     sendDoc(fsrDoc);
   } else if (type == "ping") {
     sendStatus("status", "pong");
+  } else if (type == "set_sensors") {
+    sensorsEnabled = doc["enabled"] | false;
+    Serial.printf("[SENSOR CTL] Status Sensor Fisik: %s\n", sensorsEnabled ? "AKTIF (MENUNGGU INPUT)" : "NONAKTIF (DORMAN)");
+    if (!sensorsEnabled) {
+      fsr1Pressed = false;
+      fsr2Pressed = false;
+      digitalTouch1Active = false;
+      digitalTouch2Active = false;
+      hugTouchStartMs = 0;
+      hugHold2sFired = false;
+      digitalWrite(LED_PIN, LOW);
+    } else {
+      playRobotChime(2); // Nada sambutan siap menerima sentuhan
+    }
   }
 }
 
 // ==========================================
 // SENSOR TEKANAN FSR402 & INDIKATOR LED (DIMMER)
 // ==========================================
-// Fungsi pembacaan ADC1 dengan oversampling 8x untuk meredam jitter/noise tegangan ESP32
-int readAdc1Smoothed(adc1_channel_t chan) {
-  int sum = 0;
-  for (int i = 0; i < 8; i++) {
-    sum += adc1_get_raw(chan);
-  }
-  return sum / 8;
-}
-
 void checkPressureSensors() {
+  if (!sensorsEnabled) return; // Hanya aktif saat standby / diaktifkan sistem
   if (millis() - lastFsrCheckMs < 30) return; // Update berkala ~33 Hz
   lastFsrCheckMs = millis();
 
-  // 1. Baca nilai ADC dengan peredam jitter oversampling 8x
+  // 1. Baca nilai ADC dengan peredam jitter oversampling 8x (Driver ADC Legacy)
   int raw1 = readAdc1Smoothed(FSR1_ADC_CHAN);
   int raw2 = readAdc1Smoothed(FSR2_ADC_CHAN);
 
@@ -934,48 +1032,152 @@ void checkPressureSensors() {
   fsr1Level = fsr1Smoothed;
   fsr2Level = fsr2Smoothed;
 
-  // 3. Deteksi Event Sentuhan Stabil (Ambang sentuhan nyata > 800)
+  // 2b. Pantauan Real-Time di Serial Monitor: Cetak saat ada tekanan/sentuhan fisik
+  if ((raw1 > FSR_NOISE_FLOOR || raw2 > FSR_NOISE_FLOOR) && (millis() - lastFsrDebugMs > 350)) {
+    lastFsrDebugMs = millis();
+    Serial.printf("[FSR LIVE] FSR1 (GPIO %d): %d | FSR2 (GPIO %d): %d | Ambang: %d\n", FSR1_PIN, fsr1Smoothed, FSR2_PIN, fsr2Smoothed, FSR_TOUCH_THRESH);
+  }
+
+  // 3. Deteksi Event Sentuhan Stabil (Ambang sentuhan responsif)
   bool touched1 = (fsr1Smoothed > FSR_TOUCH_THRESH);
   bool touched2 = (fsr2Smoothed > FSR_TOUCH_THRESH);
 
-  // Sentuhan FSR 1: Kepala / Elusan
-  if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 1200)) {
+  // Sentuhan FSR 1: Genggam Tangan Kiri Boneka
+  if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 800)) {
     lastFsrReportMs = millis();
     fsr1Pressed = true;
+
+    // Cetak log jelas langsung ke Serial Monitor
+    Serial.printf(">>> [FSR 1 TEKANAN] Genggaman Tangan Kiri Boneka Terdeteksi! Level ADC: %d (GPIO %d)\n", fsr1Smoothed, FSR1_PIN);
 
     JsonDocument doc;
     doc["type"]   = "touch";
     doc["sensor"] = "fsr1";
-    doc["target"] = "head";
+    doc["target"] = "hand";
+    doc["part"]   = "left_hand";
     doc["level"]  = fsr1Smoothed;
-    doc["action"] = "pat";
+    doc["action"] = "hold_hand";
     sendDoc(doc);
 
     if (currentState == STATE_IDLE) {
       playRobotChime(1); // Sapaan / nada ceria
     }
-  } else if (!touched1 && (fsr1Smoothed < FSR_NOISE_FLOOR)) {
+  } else if (!touched1 && fsr1Pressed && (fsr1Smoothed < FSR_NOISE_FLOOR)) {
     fsr1Pressed = false;
+    Serial.println(">>> [FSR 1 LEPAS] Genggaman Tangan Kiri Boneka Dilepas.");
   }
 
-  // Sentuhan FSR 2: Pipi / Pelukan
-  if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 1200)) {
+  // Sentuhan FSR 2: Genggam Tangan Kanan Boneka
+  if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 800)) {
     lastFsrReportMs = millis();
     fsr2Pressed = true;
+
+    // Cetak log jelas langsung ke Serial Monitor
+    Serial.printf(">>> [FSR 2 TEKANAN] Genggaman Tangan Kanan Boneka Terdeteksi! Level ADC: %d (GPIO %d)\n", fsr2Smoothed, FSR2_PIN);
 
     JsonDocument doc;
     doc["type"]   = "touch";
     doc["sensor"] = "fsr2";
-    doc["target"] = "hug";
+    doc["target"] = "hand";
+    doc["part"]   = "right_hand";
     doc["level"]  = fsr2Smoothed;
-    doc["action"] = "hug";
+    doc["action"] = "hold_hand";
     sendDoc(doc);
 
     if (currentState == STATE_IDLE) {
       playRobotChime(2); // Nada ramah hangat
     }
-  } else if (!touched2 && (fsr2Smoothed < FSR_NOISE_FLOOR)) {
+  } else if (!touched2 && fsr2Pressed && (fsr2Smoothed < FSR_NOISE_FLOOR)) {
     fsr2Pressed = false;
+    Serial.println(">>> [FSR 2 LEPAS] Genggaman Tangan Kanan Boneka Dilepas.");
+  }
+}
+
+// ==========================================
+// SENSOR SENTUH DIGITAL TAMBAHAN (2x TTP223 - SENSOR MEMELUK BONEKA)
+// ==========================================
+void checkDigitalTouchSensors() {
+  if (!sensorsEnabled) return; // Hanya aktif saat diminta oleh chat (On-Demand)
+  bool t1 = (digitalRead(TOUCH1_PIN) == HIGH);
+  bool t2 = (digitalRead(TOUCH2_PIN) == HIGH);
+  bool anyTouched = (t1 || t2);
+
+  if (anyTouched) {
+    if ((!digitalTouch1Active && t1) || (!digitalTouch2Active && t2)) {
+      if (millis() - lastDigitalTouchReportMs > 400) {
+        lastDigitalTouchReportMs = millis();
+
+        // Output khusus langsung ke Serial Monitor
+        Serial.print(">>> [PELUKAN TOUCH] ");
+        if (t1 && t2) {
+          Serial.println("Pelukan Penuh Kedua Sisi Terdeteksi! (GPIO 27 & GPIO 13)");
+        } else if (t1) {
+          Serial.println("Pelukan Sisi Kiri Boneka Terdeteksi! (GPIO 27)");
+        } else {
+          Serial.println("Pelukan Sisi Kanan Boneka Terdeteksi! (GPIO 13)");
+        }
+
+        // Kirim event JSON ke chat.html (via WebSocket & USB Serial)
+        JsonDocument doc;
+        doc["type"]   = "touch";
+        doc["sensor"] = (t1 && t2) ? "touch12" : (t1 ? "touch1" : "touch2");
+        doc["target"] = "hug";
+        doc["action"] = "hug";
+        sendDoc(doc);
+
+        // Respon melodi & LED robot
+        if (currentState == STATE_IDLE) {
+          playRobotChime(1); // Melodi ceria
+        }
+        digitalWrite(LED_PIN, HIGH);
+      }
+    }
+  } else {
+    if (digitalTouch1Active || digitalTouch2Active) {
+      if (millis() - lastDigitalTouchReportMs > 300) {
+        Serial.println(">>> [PELUKAN SELESAI] Pelukan Boneka Dilepas.");
+        if (currentState == STATE_IDLE) {
+          digitalWrite(LED_PIN, LOW);
+        }
+      }
+    }
+  }
+
+  digitalTouch1Active = t1;
+  digitalTouch2Active = t2;
+}
+
+// ==========================================
+// PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
+// ==========================================
+void updateHugHoldTracker(bool isTouched) {
+  if (isTouched) {
+    if (hugTouchStartMs == 0) {
+      hugTouchStartMs = millis();
+      hugHold2sFired = false;
+    } else if (!hugHold2sFired && (millis() - hugTouchStartMs >= 2000)) {
+      hugHold2sFired = true;
+
+      // Kirim event pelukan 2 detik resmi ke chat.html
+      JsonDocument doc;
+      doc["type"]     = "touch";
+      doc["action"]   = "hug_hold_2s";
+      doc["target"]   = "hug";
+      doc["duration"] = (float)(millis() - hugTouchStartMs) / 1000.0f;
+      sendDoc(doc);
+
+      Serial.println("\n*******************************************************");
+      Serial.println(">>> [HUG 2 DETIK SUKSES!] Pelukan 2 Detik Diterima!");
+      Serial.println(">>> Mengirim konfirmasi ke browser chat.html...");
+      Serial.println("*******************************************************\n");
+
+      // Mainkan melodi hangat di speaker MAX98357A
+      playRobotChime(1);
+      digitalWrite(LED_PIN, HIGH);
+    }
+  } else {
+    hugTouchStartMs = 0;
+    hugHold2sFired = false;
   }
 }
 
@@ -985,8 +1187,8 @@ void checkPressureSensors() {
 void updateLedAnimation() {
   unsigned long now = millis();
 
-  // Jika salah satu sensor FSR sedang disentuh nyata, nyalakan LED onboard (GPIO 2) sebagai respon fisik
-  if (fsr1Pressed || fsr2Pressed || fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH) {
+  // Jika salah satu sensor FSR atau Sensor Sentuh Digital sedang disentuh nyata, nyalakan LED onboard (GPIO 2)
+  if (fsr1Pressed || fsr2Pressed || fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalTouch1Active || digitalTouch2Active) {
     digitalWrite(LED_PIN, HIGH);
     return;
   }
@@ -1158,6 +1360,10 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(EXT_BUTTON_PIN, INPUT_PULLUP);
 
+  // Inisialisasi 2x Modul Sensor Sentuh Digital (TTP223 di GPIO 27 & GPIO 13)
+  pinMode(TOUCH1_PIN, INPUT);
+  pinMode(TOUCH2_PIN, INPUT);
+
   // Inisialisasi ADC1 Legacy (12-bit, rentang 0 - 4095) untuk sensor tekanan FSR402
   // Menggunakan driver ADC legacy agar serasi 100% dengan driver I2S audio tanpa crash driver_ng
   adc1_config_width(ADC_WIDTH_BIT_12);
@@ -1175,6 +1381,13 @@ void setup() {
   initWiFiAndWebSocket();
 
   sendStatus("status", "CareTech ESA Siap! (Dual Mode Audio + 2x Sensor FSR402)");
+
+  Serial.println("\n-------------------------------------------------------");
+  Serial.println("CareTech ESA Siap! (Dual Mode Audio + 2x FSR Tangan + 2x Touch Pelukan)");
+  Serial.printf("FSR Tangan : GPIO %d & %d | Touch Pelukan: GPIO %d & %d\n", FSR1_PIN, FSR2_PIN, TOUCH1_PIN, TOUCH2_PIN);
+  Serial.printf("Status Sensor Fisik: %s (Ambang Tekanan Tangan: %d)\n", sensorsEnabled ? "AKTIF" : "NONAKTIF", FSR_TOUCH_THRESH);
+  Serial.println("Tips: Ketik 'fsr' atau 'test' di Serial Monitor untuk cek diagnostik sensor!");
+  Serial.println("-------------------------------------------------------\n");
 
   // Mainkan sapaan ceria awal lewat speaker MAX98357A
   playRobotChime(1);
@@ -1203,6 +1416,15 @@ void loop() {
 
   // 4. Cek Sensor Tekanan FSR402 & Update LED Indikator
   checkPressureSensors();
+
+  // 4b. Cek Sensor Sentuh Digital Tambahan (TTP223 - Output ke Serial Monitor)
+  checkDigitalTouchSensors();
+
+  // 4c. Pelacakan Pelukan / Sentuhan Tahan 2 Detik (FSR1, FSR2, atau Touch Digital)
+  if (sensorsEnabled) {
+    bool anyPhysTouched = (fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalRead(TOUCH1_PIN) == HIGH || digitalRead(TOUCH2_PIN) == HIGH);
+    updateHugHoldTracker(anyPhysTouched);
+  }
 
   // 5. Cek Tombol BOOT (GPIO 0)
   checkCurhatButton();

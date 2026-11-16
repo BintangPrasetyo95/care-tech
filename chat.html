@@ -7,19 +7,98 @@
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
     <style>
+        /* ===================================================
+           LOCK CHAT TO 1 SINGLE SCREEN (NO PAGE SCROLL)
+           =================================================== */
+        html, body {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            overflow: hidden !important;
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            height: 100% !important;
+            height: 100dvh !important;
+            overflow-y: auto !important;
+        }
+
+        .main-content {
+            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        /* Compact Top Header to preserve vertical space for chat */
+        .main-content .top-header {
+            flex-shrink: 0 !important;
+            padding: 0.65rem 1.8rem !important;
+            border-bottom: 3.5px solid var(--ink) !important;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .main-content .greeting h1 {
+            font: 400 clamp(1.35rem, 2.3vw, 1.8rem)/1.1 var(--imp) !important;
+            margin-bottom: 0.1rem !important;
+        }
+
+        .main-content .greeting p {
+            font-size: 0.85rem !important;
+            margin: 0 !important;
+            line-height: 1.3 !important;
+        }
+
+        .main-content .greeting .tape {
+            font-size: 0.75rem !important;
+            padding: 0.15rem 0.55rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+
+        /* Chat Page Wrapper fills remaining vertical space strictly */
+        .chat-page-wrapper {
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            height: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0.75rem 1.4rem 1rem 1.4rem !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+
         /* Cardboard Walkie-Talkie Terminal */
         .chat-terminal {
             background: var(--paper-warm) !important;
             border: 5px solid var(--ink) !important;
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px !important;
-            box-shadow: 10px 10px 0 var(--ink) !important;
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 140px);
-            min-height: 580px;
+            box-shadow: 8px 8px 0 var(--ink) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
             position: relative;
-            overflow: hidden;
-            transform: rotate(-0.5deg);
+            overflow: hidden !important;
+            transform: rotate(-0.3deg);
+            box-sizing: border-box !important;
+            margin-bottom: 4px;
         }
 
         .chat-terminal::before {
@@ -37,28 +116,29 @@
         }
 
         .chat-header-scrapbook {
-            padding: 1.1rem 1.8rem;
+            padding: 0.65rem 1.4rem !important;
             background: #ffffff;
-            border-bottom: 4px dashed var(--ink);
+            border-bottom: 3.5px dashed var(--ink);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
             z-index: 10;
+            flex-shrink: 0 !important;
         }
 
         .esa-bot-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             background: var(--sun);
-            border: 3px solid var(--ink);
-            box-shadow: 3px 3px 0 var(--ink);
+            border: 2.5px solid var(--ink);
+            box-shadow: 2.5px 2.5px 0 var(--ink);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
+            font-size: 1.7rem;
             transform: rotate(-3deg);
             animation: robotWobble 4s ease-in-out infinite;
         }
@@ -69,12 +149,13 @@
         }
 
         .chat-messages-stream {
-            flex-grow: 1;
-            padding: 1.6rem;
-            overflow-y: auto;
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            padding: 1.1rem 1.4rem !important;
+            overflow-y: auto !important;
             display: flex;
             flex-direction: column;
-            gap: 1.3rem;
+            gap: 1.1rem;
             background: 
                 radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px) 0 0/20px 20px,
                 #fffdf5;
@@ -134,28 +215,29 @@
         }
 
         .curhat-chips-bar {
-            padding: 0.9rem 1.6rem;
+            padding: 0.55rem 1.3rem !important;
             background: var(--paper-warm);
-            border-top: 3px dashed var(--ink);
+            border-top: 2.5px dashed var(--ink);
             display: flex;
-            gap: 0.85rem;
+            gap: 0.75rem;
             overflow-x: auto;
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
+            flex-shrink: 0 !important;
         }
 
         .chip-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.55rem;
-            padding: 0.65rem 1.2rem;
-            min-height: 44px;
+            gap: 0.5rem;
+            padding: 0.45rem 0.95rem !important;
+            min-height: 38px !important;
             background: #ffffff;
             border: 2.5px solid var(--ink);
-            border-radius: 22px;
-            box-shadow: 3.5px 3.5px 0 var(--ink);
+            border-radius: 20px;
+            box-shadow: 2.5px 2.5px 0 var(--ink);
             font-family: var(--mono);
-            font-size: 0.98rem;
+            font-size: 0.92rem !important;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
@@ -166,7 +248,7 @@
         .chip-tag:hover {
             background: var(--sun);
             transform: translateY(-2px) rotate(-1deg);
-            box-shadow: 4px 4px 0 var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
         }
 
         .chip-tag:active {
@@ -175,28 +257,29 @@
         }
 
         .chat-input-bar {
-            padding: 1rem 1.6rem;
+            padding: 0.65rem 1.3rem !important;
             background: #ffffff;
-            border-top: 4px solid var(--ink);
+            border-top: 3.5px solid var(--ink);
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
+            flex-shrink: 0 !important;
         }
 
         .chat-scrapbook-input {
             flex-grow: 1;
-            padding: 0.8rem 1.2rem;
-            border: 3px solid var(--ink);
-            border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+            padding: 0.65rem 1.1rem !important;
+            border: 2.5px solid var(--ink);
+            border-radius: 12px 180px 12px 180px/180px 12px 180px 12px;
             font-family: var(--mk);
-            font-size: 1.1rem;
+            font-size: 1.05rem !important;
             color: var(--ink);
             outline: none;
             resize: none;
-            box-shadow: 4px 4px 0 var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
             background: #fffdf5;
             background-image: repeating-linear-gradient(transparent, transparent 29px, rgba(0, 229, 255, 0.25) 29px, rgba(0, 229, 255, 0.25) 31px);
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .chat-scrapbook-input:focus {
@@ -262,17 +345,22 @@
 
         /* Responsive Breakpoints for Chat */
         @media (max-width: 768px) {
+            .main-content .top-header {
+                padding: 0.5rem 0.85rem !important;
+            }
+
             .chat-page-wrapper {
-                padding: 0.75rem 0.5rem !important;
+                padding: 0.4rem 0.5rem 0.65rem 0.5rem !important;
             }
 
             .chat-terminal {
-                height: calc(100dvh - 120px) !important;
-                min-height: 480px !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                min-height: 0 !important;
                 transform: none !important;
-                border-width: 4px !important;
-                box-shadow: 6px 6px 0 var(--ink) !important;
-                border-radius: 18px !important;
+                border-width: 3.5px !important;
+                box-shadow: 5px 5px 0 var(--ink) !important;
+                border-radius: 16px !important;
             }
 
             .chat-terminal::before {
@@ -280,131 +368,136 @@
             }
 
             .chat-header-scrapbook {
-                padding: 0.8rem 0.85rem;
-                gap: 0.6rem;
+                padding: 0.5rem 0.7rem !important;
+                gap: 0.5rem;
             }
 
             .chat-header-scrapbook h3 {
-                font-size: 1.2rem !important;
+                font-size: 1.1rem !important;
             }
 
             .esa-bot-avatar {
-                width: 42px;
-                height: 42px;
-                font-size: 1.6rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1.45rem;
             }
 
             .chat-messages-stream {
-                padding: 1rem 0.75rem;
-                gap: 0.9rem;
+                padding: 0.85rem 0.7rem !important;
+                gap: 0.8rem;
             }
 
             .msg-bubble {
-                max-width: 88%;
-                padding: 0.85rem 1rem;
-                font-size: 1rem;
-                border-width: 2.5px;
-                box-shadow: 3px 3px 0 var(--ink);
+                max-width: 90%;
+                padding: 0.75rem 0.9rem;
+                font-size: 0.96rem;
+                border-width: 2px;
+                box-shadow: 2.5px 2.5px 0 var(--ink);
                 transform: none !important;
             }
 
             .curhat-chips-bar {
-                padding: 0.75rem 1rem;
-                gap: 0.65rem;
-            }
-
-            .chip-tag {
-                padding: 0.55rem 1.05rem;
-                font-size: 0.92rem;
-                min-height: 42px;
-                border-width: 2px;
-                box-shadow: 2.5px 2.5px 0 var(--ink);
-            }
-
-            .chat-input-bar {
-                padding: 0.75rem 0.8rem;
-                gap: 0.5rem;
-            }
-
-            .chat-scrapbook-input {
-                padding: 0.65rem 0.85rem;
-                font-size: 0.95rem;
-                border-width: 2.5px;
-            }
-
-            #btn-send {
-                padding: 0.65rem 1rem !important;
-                font-size: 0.95rem !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chat-page-wrapper {
-                padding: 0.5rem 0.35rem !important;
-            }
-
-            .chat-terminal {
-                border-width: 3px !important;
-                box-shadow: 4px 4px 0 var(--ink) !important;
-                border-radius: 14px !important;
-                min-height: 420px !important;
-            }
-
-            .chat-header-scrapbook {
-                padding: 0.65rem 0.6rem;
-            }
-
-            .chat-header-scrapbook h3 {
-                font-size: 1.05rem !important;
-            }
-
-            .esa-bot-avatar {
-                width: 36px;
-                height: 36px;
-                font-size: 1.35rem;
-                border-width: 2px;
-            }
-
-            .chat-header-scrapbook .btn-small {
-                padding: 0.3rem 0.6rem !important;
-                font-size: 0.78rem !important;
-            }
-
-            .msg-bubble {
-                max-width: 92%;
-                padding: 0.75rem 0.8rem;
-                font-size: 0.92rem;
-            }
-
-            .ai-avatar-mini {
-                width: 30px;
-                height: 30px;
-                font-size: 1.1rem;
-            }
-
-            .curhat-chips-bar {
-                padding: 0.65rem 0.75rem;
+                padding: 0.45rem 0.7rem !important;
                 gap: 0.55rem;
             }
 
             .chip-tag {
-                padding: 0.5rem 0.95rem;
-                font-size: 0.88rem;
-                min-height: 40px;
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.85rem !important;
+                min-height: 34px !important;
+                border-width: 2px;
+                box-shadow: 2px 2px 0 var(--ink);
             }
 
             .chat-input-bar {
-                padding: 0.5rem 0.5rem;
+                padding: 0.55rem 0.7rem !important;
+                gap: 0.5rem;
             }
 
             .chat-scrapbook-input {
-                padding: 0.55rem 0.7rem;
-                font-size: 0.9rem;
+                padding: 0.55rem 0.8rem !important;
+                font-size: 0.92rem !important;
+                border-width: 2px;
             }
 
             #btn-send {
-                padding: 0.55rem 0.8rem !important;
+                padding: 0.55rem 0.9rem !important;
+                font-size: 0.92rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content .top-header {
+                padding: 0.45rem 0.65rem !important;
+            }
+
+            .chat-page-wrapper {
+                padding: 0.35rem 0.35rem 0.5rem 0.35rem !important;
+            }
+
+            .chat-terminal {
+                border-width: 3px !important;
+                box-shadow: 3px 3px 0 var(--ink) !important;
+                border-radius: 12px !important;
+                min-height: 0 !important;
+                height: 100% !important;
+            }
+
+            .chat-header-scrapbook {
+                padding: 0.45rem 0.55rem !important;
+            }
+
+            .chat-header-scrapbook h3 {
+                font-size: 0.98rem !important;
+            }
+
+            .esa-bot-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 1.25rem;
+                border-width: 2px;
+            }
+
+            .chat-header-scrapbook .btn-small {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.74rem !important;
+            }
+
+            .msg-bubble {
+                max-width: 94%;
+                padding: 0.65rem 0.75rem;
+                font-size: 0.88rem;
+            }
+
+            .ai-avatar-mini {
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+
+            .curhat-chips-bar {
+                padding: 0.4rem 0.55rem !important;
+                gap: 0.45rem;
+            }
+
+            .chip-tag {
+                padding: 0.35rem 0.7rem !important;
+                font-size: 0.8rem !important;
+                min-height: 30px !important;
+            }
+
+            .chat-input-bar {
+                padding: 0.45rem 0.45rem !important;
+            }
+
+            .chat-scrapbook-input {
+                padding: 0.5rem 0.65rem !important;
                 font-size: 0.88rem !important;
+            }
+
+            #btn-send {
+                padding: 0.5rem 0.7rem !important;
+                font-size: 0.85rem !important;
             }
         }
 
@@ -545,7 +638,7 @@
                 </div>
             </header>
 
-            <div class="chat-page-wrapper" style="padding: 1.5rem; height: 100%;">
+            <div class="chat-page-wrapper">
                 
                 <!-- The Cardboard Walkie-Talkie Terminal -->
                 <div class="chat-terminal mk">
@@ -596,6 +689,7 @@
                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                             <button type="button" class="btn btn-small" id="btn-spk-test" style="background: var(--lime); padding: 0.2rem 0.65rem; font-size: 0.76rem;" onclick="triggerSpeakerTest()" title="Uji Coba Suara Melodi CareTech di Speaker MAX98357A">Tes Speaker 🔊</button>
                             <button type="button" class="btn btn-small" id="btn-mic-test" style="background: var(--pink); color: #fff; padding: 0.2rem 0.65rem; font-size: 0.76rem;" onclick="triggerMicTest()" title="Uji Rekam Suara Mic 2 Detik dan Putar Ulang">Tes Mic 🎙️</button>
+                            <button type="button" class="btn btn-small" id="btn-sensor-test" style="background: #e0e7ff; color: #3730a3; border: 1.5px solid #6366f1; padding: 0.2rem 0.65rem; font-size: 0.76rem;" onclick="testSensorsOnDemand(30)" title="Bangunkan Sensor Tekanan & Sentuh Selama 30 Detik untuk Uji Coba">Bangunkan Sensor ✋</button>
                             <button type="button" class="btn btn-small" style="background: var(--sun); padding: 0.2rem 0.6rem; font-size: 0.76rem;" onclick="toggleApiKeyModal()" title="Buka Pinout Hardware & Akses AI">Hardware ⚙️</button>
                             <button type="button" class="btn btn-small" style="background: #ffffff; color: #d32f2f; border: 1.5px solid #d32f2f; padding: 0.15rem 0.5rem; font-size: 0.75rem;" onclick="disconnectEsp32()" title="Putus Sambungan Serial">Lepas ✕</button>
                         </div>
@@ -615,11 +709,14 @@
 
                     <!-- Typing Indicator (Hidden by default) -->
                     <div id="typing-indicator" style="display: none; padding: 0 1.6rem 0.8rem 1.6rem;">
-                        <div class="typing-bubble">
+                        <div class="typing-bubble" style="display: inline-flex; align-items: center; gap: 8px;">
                             <span>ESA sedang menyusun kata...</span>
                             <div class="dot-bounce"></div>
                             <div class="dot-bounce"></div>
                             <div class="dot-bounce"></div>
+                            <button type="button" class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.78rem; background: #fee2e2; color: #b91c1c; border: 2px solid var(--ink); border-radius: 8px; box-shadow: 2px 2px 0 var(--ink); cursor: pointer; font-weight: 800; margin-left: 8px;" onclick="cancelChatLoading(true)" title="Batalkan balasan AI (Esc)">
+                                ⏹️ Batal
+                            </button>
                         </div>
                     </div>
 
@@ -1035,12 +1132,18 @@
         }
 
         // Key & AI Provider management state
-        let geminiKey = localStorage.getItem('caretech_gemini_key') || "";
+        let geminiKey = localStorage.getItem('caretech_gemini_key') || decodeObfuscated(OBFUSCATED_API_KEY);
         let aiProvider = localStorage.getItem('caretech_ai_provider') || 'auto'; // 'auto', 'ollama', 'gemini', 'offline'
         let ollamaHost = localStorage.getItem('caretech_ollama_host') || 'http://localhost:11434';
         let ollamaModel = localStorage.getItem('caretech_ollama_model') || 'llama3.2:3b';
         let isOllamaOnline = false;
         let chatHistory = [];
+
+        // Chat loading & cancellation state
+        let isChatLoading = false;
+        let currentChatAbortController = null;
+        let fallbackResponseTimer = null;
+        let currentActiveVoiceMsgId = null;
 
         function updateProviderUi() {
             const radio = document.querySelector(`input[name="ai_provider"][value="${aiProvider}"]`);
@@ -1141,7 +1244,7 @@
             }
         }
 
-        async function callOllamaChat(systemPrompt, userText, history) {
+        async function callOllamaChat(systemPrompt, userText, history, externalSignal = null) {
             const formattedMessages = [
                 { role: "system", content: systemPrompt }
             ];
@@ -1162,33 +1265,47 @@
             
             formattedMessages.push({ role: "user", content: userText });
 
+            const timeoutMs = (aiProvider === 'ollama') ? 25000 : 6000; // Jika mode auto, batasi 6 detik agar tidak macet lama dan langsung fallback ke Gemini
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-            
-            const response = await fetch(`${ollamaHost}/api/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                signal: controller.signal,
-                body: JSON.stringify({
-                    model: ollamaModel,
-                    messages: formattedMessages,
-                    stream: false,
-                    options: {
-                        temperature: 0.7,
-                        top_p: 0.9,
-                        num_predict: 50
-                    }
-                })
-            });
-            clearTimeout(timeoutId);
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Ollama HTTP ${response.status}: ${errText}`);
+            if (externalSignal) {
+                if (externalSignal.aborted) {
+                    controller.abort();
+                } else {
+                    externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
             }
+            
+            try {
+                const response = await fetch(`${ollamaHost}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: ollamaModel,
+                        messages: formattedMessages,
+                        stream: false,
+                        options: {
+                            temperature: 0.7,
+                            top_p: 0.9,
+                            num_predict: 50
+                        }
+                    })
+                });
+                clearTimeout(timeoutId);
 
-            const data = await response.json();
-            return data.message?.content || "";
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Ollama HTTP ${response.status}: ${errText}`);
+                }
+
+                const data = await response.json();
+                return data.message?.content || "";
+            } catch (err) {
+                clearTimeout(timeoutId);
+                throw err;
+            }
         }
 
         function updateApiStatusIndicator() {
@@ -1597,7 +1714,12 @@
         function handleKeyDown(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                if (!isChatLoading) {
+                    sendMessage();
+                }
+            } else if (e.key === 'Escape' && isChatLoading) {
+                e.preventDefault();
+                cancelChatLoading(true);
             }
         }
 
@@ -1631,13 +1753,17 @@
         // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
         // ----------------------------------------------------
         function getEsaSystemPrompt(sensorContext = "") {
-            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, dan bahasa Indonesia sederhana.
+            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, tulus, dan bahasa Indonesia sederhana.
 
 ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 1. Balasanmu WAJIB SANGAT PENDEK & RINGKAS: MAKSIMAL 1 SAMPAI 2 KALIMAT PENDEK SAJA (total maksimal 15-20 kata). Jangan bertele-tele atau membuat kalimat majemuk panjang.
 2. FORMAT: TANPA EMOJI, TANPA FORMAT DAFTAR/BULLET POINTS.
 3. INGAT DAN GUNAKAN cerita user sebelumnya tanpa meminta mengulang cerita yang sudah disebut.
-4. RESPONS CURHAT: Cukup 1 kalimat mengakui perasaannya secara hangat, lalu 1 kalimat berupa saran kecil atau pertanyaan lanjutan ringan.
+4. KETIKA USER SEDIH ATAU CURHAT:
+   - JANGAN TERBURU-BURU MEMBERIKAN SOLUSI/SARAN! Orang yang sedih jarang butuh solusi dulu, dia butuh merasa didengar dan tidak sendirian.
+   - AKUI PERASAANNYA TANPA MENILAI: Katakan perasaannya wajar dan dimaklumi (misal: "Wajar kok kalau kamu sedih", "Makasih sudah mau cerita, pasti berat banget rasanya").
+   - BERI RUANG AMAN: Tawarkan kehadiran lewat pertanyaan terbuka ringan tanpa memaksa bercerita (misal: "Aku di sini ya. Mau cerita apa yang bikin sedih?", "Sini aku temenin, nggak perlu cerita kalau belum siap").
+   - HINDARI KATA-KATA TOXIC POSITIVITY: JANGAN PERNAH bilang "jangan sedih", "jangan dipikirin", "semua pasti ada hikmahnya", atau "banyak yang lebih susah".
 5. JIKA MINTA DIHIBUR: Beri 1 lelucon atau tebakan lucu yang sangat pendek.
 6. UNTUK BULLYING: Tegaskan itu bukan salah user dan sarankan lapor ke orang tua atau guru BK. Jangan menilai bentuk fisik tubuh.
 7. BAHAYA / SELF-HARM: Respon singkat peduli dan arahkan segera ke orang dewasa terdekat atau hubungi 129 / 119 ekstensi 8.
@@ -1646,8 +1772,10 @@ ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 10. JANGAN MENGARANG FAKTA: Jika tidak tahu, katakan tidak tahu.
 
 Contoh respons ideal (1-2 kalimat pendek):
+- Sedih: "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?"
+- Sedih & berat: "Makasih sudah mau bilang ke aku kawan, pasti berat banget rasanya. Aku dengerin kok, pelan-pelan aja ceritanya."
+- Sedih butuh teman: "Sini, aku temenin kawan. Nggak perlu cerita kalau belum siap, aku ada di sini ya."
 - Bullying: "Itu bukan salahmu kawan, yang terjadi adalah bullying. Yuk cerita ke guru BK atau orang tua ya."
-- Sedih: "Wajar merasa sedih kawan, kamu tidak sendirian. Mau cerita apa yang terjadi?"
 - Cemas: "Tarik napas perlahan kawan, kamu aman di sini. Hal apa yang paling kamu cemaskan?"` + sensorContext;
         }
 
@@ -1732,7 +1860,13 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             // 5. Sedih / Menangis / Kecewa
             if (lower.includes('sedih') || lower.includes('nangis') || lower.includes('kecewa') || lower.includes('patah') || lower.includes('down')) {
-                return "Wajar banget merasa sedih kawan, kamu tidak sendiri. Mau cerita apa yang terjadi?";
+                const warmSadness = [
+                    "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?",
+                    "Makasih sudah mau bilang ke aku kawan. Pasti berat banget rasanya, kamu tidak sendirian ya.",
+                    "Aku dengerin kok kawan, pelan-pelan aja ceritanya ya.",
+                    "Sini, aku temenin kawan. Nggak perlu buru-buru cerita kalau belum siap, aku ada di sini."
+                ];
+                return warmSadness[Math.floor(Math.random() * warmSadness.length)];
             }
 
             // 6. Marah / Kesal / Jengkel
@@ -2387,6 +2521,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                     closeEspConnectModal();
                     addMessageToUI(`📶 **Robot Fisik ESP32 Terhubung secara Nirkabel!** (${wsUrl})<br>Mikrofon INMP441 & Speaker MAX98357A siap bekerja bebas kabel.`, "ai");
                     sendEspAction("happy");
+                    setEspSensorsActive(true);
                     playLaptopRobotChime('happy');
                 };
 
@@ -2469,6 +2604,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             closeEspConnectModal();
             addMessageToUI("🔌 **Robot Fisik ESP32 Terhubung via USB Serial!** Mikrofon INMP441 & Speaker MAX98357A siap bekerja.", "ai");
             sendEspAction("happy");
+            setEspSensorsActive(true);
             playLaptopRobotChime('happy');
             readEspLoop();
         }
@@ -2595,22 +2731,38 @@ Contoh respons ideal (1-2 kalimat pendek):
                     }
                 }
             } else if (msg.type === "touch") {
-                // Sensor Tekanan Fisik FSR402 disentuh / dielus / dipeluk!
+                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh
+                if (isWaitingForHug) {
+                    onHugReceived(msg.duration || 2.0);
+                    return;
+                }
+
                 const robotIcon = document.getElementById('robot-icon');
-                if (msg.target === "head") {
+                if (msg.target === "hand" || msg.action === "hold_hand") {
                     if (robotIcon) {
-                        robotIcon.textContent = "🥰";
+                        robotIcon.textContent = "🤝";
                         setTimeout(() => {
-                            if (robotIcon.textContent === "🥰") robotIcon.textContent = "🤖";
+                            if (robotIcon.textContent === "🤝") robotIcon.textContent = "🤖";
                         }, 2500);
                     }
-                } else if (msg.target === "hug") {
+                    const handPart = msg.part === "left_hand" ? "tangan kiri" : (msg.part === "right_hand" ? "tangan kanan" : "tangan");
+                    addMessageToUI(`🤝 <em>[Genggaman Tangan] Kamu sedang memegang ${handPart} boneka ESA... Kehangatan genggaman tanganmu sangat menenangkan! 💖</em>`, "system");
+                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
                     if (robotIcon) {
                         robotIcon.textContent = "🤗";
                         setTimeout(() => {
                             if (robotIcon.textContent === "🤗") robotIcon.textContent = "🤖";
                         }, 2500);
                     }
+                    addMessageToUI("🤗 <em>[Pelukan Boneka] Kamu sedang memeluk erat boneka ESA... Pelukan hangatmu membuat ESA merasa sangat dekat denganmu! 🫂</em>", "system");
+                } else {
+                    if (robotIcon) {
+                        robotIcon.textContent = "🥰";
+                        setTimeout(() => {
+                            if (robotIcon.textContent === "🥰") robotIcon.textContent = "🤖";
+                        }, 2500);
+                    }
+                    addMessageToUI("🥰 <em>[Sentuhan Fisik] Sentuhan penuh kasih sayang diterima boneka ESA...</em>", "system");
                 }
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
@@ -2858,6 +3010,30 @@ Contoh respons ideal (1-2 kalimat pendek):
             });
         }
 
+        function testSensorsOnDemand(seconds = 30) {
+            if (!isEspConnected()) {
+                alert("Harap sambungkan robot ESP32 terlebih dahulu!");
+                return;
+            }
+            const btn = document.getElementById('btn-sensor-test');
+            if (btn) {
+                btn.style.background = "#4f46e5";
+                btn.style.color = "#ffffff";
+                btn.textContent = `Sensor Aktif (${seconds}s) ✋`;
+            }
+            setEspSensorsActive(true);
+            addMessageToUI(`✋ <em>[Mode Uji Coba] Sensor tekanan & sentuh ESP32 dibangunkan selama ${seconds} detik! Silakan elus kepala atau peluk badan robot...</em>`, 'system');
+            
+            setTimeout(() => {
+                if (btn) {
+                    btn.style.background = "#e0e7ff";
+                    btn.style.color = "#3730a3";
+                    btn.textContent = "Bangunkan Sensor ✋";
+                }
+                addMessageToUI(`✨ <em>[Mode Siaga] Masa uji coba selesai. Sensor tetap aktif menerima sentuhan fisikmu saat standby!</em>`, 'system');
+            }, seconds * 1000);
+        }
+
         let lastEspMicClickTime = 0;
 
         function toggleEspMicCurhat() {
@@ -2930,11 +3106,10 @@ Contoh respons ideal (1-2 kalimat pendek):
         }
 
         async function handleVoiceChatMessage(base64Wav, audioUrl, peak = 0, duration = 3) {
-            const btn = document.getElementById('btn-send');
-            const typingIndicator = document.getElementById('typing-indicator');
-            const robotIcon = document.getElementById('robot-icon');
+            cancelChatLoading(false);
 
             const msgId = 'voice-msg-' + Date.now();
+            currentActiveVoiceMsgId = msgId;
 
             // Tambahkan bubble pesan suara user ke chat lengkap dengan wadah transkripsi teks
             const voiceHtml = `
@@ -2950,18 +3125,9 @@ Contoh respons ideal (1-2 kalimat pendek):
             `;
             addMessageToUI(voiceHtml, 'user');
 
-            btn.disabled = true;
-            typingIndicator.style.display = 'block';
-            robotIcon.style.animation = 'robotWobble 0.6s infinite';
-
-            const espMicBtn = document.getElementById('btn-esp-mic');
-            if (espMicBtn) {
-                espMicBtn.innerHTML = "🤖 ESA berpikir...";
-                espMicBtn.style.background = "var(--cy)";
-                espMicBtn.style.color = "var(--ink)";
-                espMicBtn.disabled = true;
-                espMicBtn.title = "ESA sedang memproses curhatmu...";
-            }
+            currentChatAbortController = new AbortController();
+            const signal = currentChatAbortController.signal;
+            setLoadingUiState(true);
 
             sendEspAction("thinking");
 
@@ -2982,6 +3148,7 @@ Kembalikan format JSON valid dengan 2 field:
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
+                        signal: signal,
                         headers: {
                             'Content-Type': 'application/json',
                             'x-goog-api-key': geminiKey
@@ -3045,6 +3212,13 @@ Kembalikan format JSON valid dengan 2 field:
                             }
                         }
 
+                        // Jika hasil transkripsi suara mengandung rasa sedih: tawarkan pelukan 2 detik!
+                        if (isSadnessMessage(transcription)) {
+                            currentActiveVoiceMsgId = null;
+                            initiateSadnessHugFlow(transcription);
+                            return;
+                        }
+
                         addMessageToUI(aiText, 'ai');
                         chatHistory.push({
                             "role": "user",
@@ -3058,12 +3232,16 @@ Kembalikan format JSON valid dengan 2 field:
                         return;
                     }
                 } catch (err) {
+                    if (err.name === 'AbortError' || signal.aborted) return;
                     console.warn("Gemini voice API call failed:", err);
                 }
             }
 
+            if (signal.aborted) return;
+
             // Fallback Empatik Bawaan jika offline (Maksimal 1-2 Kalimat Pendek, tanpa emoji)
-            setTimeout(() => {
+            fallbackResponseTimer = setTimeout(() => {
+                if (signal.aborted) return;
                 const textEl = document.getElementById(`${msgId}-text`);
                 if (textEl && peak === 0) {
                     textEl.innerHTML = `⚠️ <strong style="color: #b91c1c;">Mikrofon hening (Peak: 0):</strong> Tidak ada sinyal audio yang terdeteksi dari modul INMP441.`;
@@ -3100,9 +3278,303 @@ Kembalikan format JSON valid dengan 2 field:
         }
 
         // ==========================================
+        // FITUR INTERAKTIF: COMFORT HUG (PELUKAN 2 DETIK SAAT SEDIH)
+        // ==========================================
+        let pendingSadnessText = null;
+        let isWaitingForHug = false;
+        let hugWaitingTimer = null;
+        let hugCountdownInterval = null;
+        let touchHoldStart = 0;
+        let screenHugInterval = null;
+        let screenHugStartTime = 0;
+
+        function isSadnessMessage(text) {
+            if (!text) return false;
+            const lower = text.toLowerCase();
+            const sadWords = [
+                'sedih', 'nangis', 'menangis', 'terpuruk', 'kecewa', 'down', 'hancur',
+                'patah hati', 'galau', 'berduka', 'sakit hati', 'bad day', 'capek bgt',
+                'lelah bgt', 'capek banget', 'lelah banget', 'murung', 'putus asa',
+                'ngerasa sendiri', 'merasa sendiri', 'pengen nangis', 'mau nangis',
+                'tak berdaya', 'hampa', 'sesak'
+            ];
+            return sadWords.some(w => lower.includes(w));
+        }
+
+        function setEspSensorsActive(active) {
+            sendEsp({ type: "set_sensors", enabled: !!active });
+        }
+
+        function initiateSadnessHugFlow(text) {
+            pendingSadnessText = text;
+            isWaitingForHug = true;
+
+            // Aktifkan sensor fisik pada ESP32 (Hanya hidup saat diminta pelukan/input)
+            setEspSensorsActive(true);
+
+            const robotIcon = document.getElementById('robot-icon');
+            if (robotIcon) robotIcon.textContent = "🥺";
+
+            const offerMsg = "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
+            addMessageToUI(offerMsg, 'ai');
+            speakText(offerMsg);
+            sendEspAction("happy");
+
+            // Tampilkan kartu interaktif countdown 30 detik di antarmuka chat
+            const cardId = "hug-card-" + Date.now();
+            const hugCardHtml = `
+                <div id="${cardId}" style="margin-top: 0.5rem; padding: 0.9rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
+                    <div style="font-weight: 800; color: #be123c; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>🫂 Menunggu Pelukan / Genggaman Tangan (Tahan 2 Detik)</span>
+                        <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; background: #ffe4e6; padding: 0.2rem 0.55rem; border-radius: 6px; color: #9f1239; border: 1.5px solid #f43f5e;">30s</span>
+                    </div>
+                    <div style="font-size: 0.84rem; color: #475569; margin-bottom: 0.6rem; line-height: 1.4;">
+                        <strong>Peluk boneka</strong> (sensor sentuh) atau <strong>genggam tangannya</strong> (sensor tekanan) selama <strong>minimal 2 detik</strong> agar kehangatanmu sampai ke hati ESA.
+                    </div>
+                    <div style="width: 100%; height: 9px; background: #fecdd3; border-radius: 6px; overflow: hidden; margin-bottom: 0.7rem; border: 1px solid #fda4af;">
+                        <div id="hug-progress-bar" style="width: 100%; height: 100%; background: #f43f5e; transition: width 1s linear;"></div>
+                    </div>
+                    <button type="button" id="btn-screen-hug" class="btn btn-small" style="width: 100%; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
+                        👆 Atau Tekan &amp; Tahan di Sini (2 Detik)
+                    </button>
+                </div>
+            `;
+            addMessageToUI(hugCardHtml, 'system');
+
+            let remainingSec = 30;
+            const badgeEl = document.getElementById('hug-countdown-badge');
+            const progressEl = document.getElementById('hug-progress-bar');
+
+            if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+            hugCountdownInterval = setInterval(() => {
+                remainingSec--;
+                if (badgeEl) badgeEl.textContent = `${remainingSec}s`;
+                if (progressEl) progressEl.style.width = `${(remainingSec / 30) * 100}%`;
+
+                if (remainingSec <= 0) {
+                    clearInterval(hugCountdownInterval);
+                }
+            }, 1000);
+
+            if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+            hugWaitingTimer = setTimeout(() => {
+                onHugTimeoutExpired(cardId);
+            }, 30000);
+        }
+
+        function onHugReceived(duration = 2.0) {
+            if (!isWaitingForHug) return;
+            isWaitingForHug = false;
+
+            if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+            if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+
+            const robotIcon = document.getElementById('robot-icon');
+            if (robotIcon) {
+                robotIcon.textContent = "🤗";
+                robotIcon.style.animation = 'robotWobble 0.6s infinite';
+            }
+
+            // Ganti kartu countdown dengan konfirmasi hangat
+            const hugCards = document.querySelectorAll('[id^="hug-card-"]');
+            hugCards.forEach(el => {
+                el.innerHTML = `
+                    <div style="font-weight: 800; color: #15803d; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                        <span>✨</span>
+                        <span>Pelukan Hangat 2 Detik Diterima! (${duration.toFixed(1)}s)</span>
+                    </div>
+                    <div style="font-size: 0.84rem; color: #166534; margin-top: 0.25rem;">
+                        Terima kasih kawan, pelukanmu sangat menenangkan. ESA sedang menyusun kata untukmu... 💖
+                    </div>
+                `;
+                el.style.background = "#f0fdf4";
+                el.style.borderColor = "#22c55e";
+            });
+
+            // Langsung proses jawaban AI dengan konteks pelukan!
+            const sadText = pendingSadnessText;
+            pendingSadnessText = null;
+
+            setTimeout(() => {
+                executeAiChatPipeline(sadText, " (Konteks Emosional: Siswa baru saja memeluk bonekamu karena sedang merasa sedih. Sambutlah dengan rasa terima kasih yang hangat dan tulus, akui perasaannya tanpa menilai, buat dia merasa didengar dan tidak sendirian, tunda saran/solusi sampai dia siap, maksimal 1-2 kalimat pendek).");
+            }, 500);
+        }
+
+        function onHugTimeoutExpired(cardId) {
+            if (!isWaitingForHug) return;
+            isWaitingForHug = false;
+
+            if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+            if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+
+            const robotIcon = document.getElementById('robot-icon');
+            if (robotIcon) robotIcon.textContent = "🤖";
+
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.innerHTML = `
+                    <div style="font-size: 0.82rem; color: #64748b; font-style: italic;">
+                        Waktu pelukan 30 detik berakhir. Tidak apa-apa, kamu aman di sini.
+                    </div>
+                `;
+                card.style.background = "#f8fafc";
+                card.style.borderColor = "#cbd5e1";
+            }
+
+            // Tanyakan lagi kenapa jika tidak dilakukan selama 15 detik
+            const askWhyMsg = "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja ceritanya kalau kamu mau, aku siap mendengarkan kok.";
+            addMessageToUI(askWhyMsg, 'ai');
+            speakText(askWhyMsg, () => {
+                sendEspAction("idle");
+            });
+
+            pendingSadnessText = null;
+        }
+
+        function startScreenHug() {
+            if (!isWaitingForHug) return;
+            screenHugStartTime = Date.now();
+            const btn = document.getElementById('btn-screen-hug');
+            if (btn) {
+                btn.style.background = "#e11d48";
+                btn.textContent = "⏳ Menahan pelukan... Tahan 2 detik ya!";
+            }
+            if (screenHugInterval) clearInterval(screenHugInterval);
+            screenHugInterval = setInterval(() => {
+                if (Date.now() - screenHugStartTime >= 2000) {
+                    clearInterval(screenHugInterval);
+                    onHugReceived(2.0);
+                }
+            }, 100);
+        }
+
+        function stopScreenHug() {
+            if (screenHugInterval) clearInterval(screenHugInterval);
+            const btn = document.getElementById('btn-screen-hug');
+            if (btn && isWaitingForHug) {
+                btn.style.background = "#fb7185";
+                btn.textContent = "👆 Atau Tekan &amp; Tahan di Sini (2 Detik)";
+            }
+        }
+
+        // ==========================================
+        // CHAT LOADING & CANCELLATION CONTROLS
+        // ==========================================
+        function setLoadingUiState(isLoading) {
+            isChatLoading = isLoading;
+            const btn = document.getElementById('btn-send');
+            const espMicBtn = document.getElementById('btn-esp-mic');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const robotIcon = document.getElementById('robot-icon');
+
+            if (isLoading) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = "Batal ⏹️";
+                    btn.style.background = "#ef4444";
+                    btn.style.color = "#ffffff";
+                    btn.title = "Klik untuk membatalkan balasan ESA (atau tekan Esc)";
+                }
+                if (typingIndicator) typingIndicator.style.display = 'block';
+                if (robotIcon) robotIcon.style.animation = 'robotWobble 0.6s infinite';
+
+                if (espMicBtn && isEspConnected()) {
+                    espMicBtn.innerHTML = "🤖 ESA berpikir...";
+                    espMicBtn.style.background = "var(--cy)";
+                    espMicBtn.style.color = "var(--ink)";
+                    espMicBtn.disabled = true;
+                    espMicBtn.title = "ESA sedang memproses curhatmu...";
+                }
+            } else {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = "Kirim 🚀";
+                    btn.style.background = "var(--sun)";
+                    btn.style.color = "var(--ink)";
+                    btn.title = "";
+                }
+                if (typingIndicator) typingIndicator.style.display = 'none';
+                if (robotIcon) robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
+
+                if (espMicBtn && isEspConnected()) {
+                    espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
+                    espMicBtn.style.background = "var(--pink)";
+                    espMicBtn.style.color = "#ffffff";
+                    espMicBtn.disabled = false;
+                    espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
+                }
+            }
+        }
+
+        function cancelChatLoading(isUserInitiated = true) {
+            if (!isChatLoading && !isWaitingForHug) return;
+
+            // 1. Batalkan koneksi fetch aktif jika ada
+            if (currentChatAbortController) {
+                try {
+                    currentChatAbortController.abort();
+                } catch (e) {
+                    console.warn("AbortController error:", e);
+                }
+                currentChatAbortController = null;
+            }
+
+            // 2. Bersihkan timer fallback offline jika sedang antre
+            if (fallbackResponseTimer) {
+                clearTimeout(fallbackResponseTimer);
+                fallbackResponseTimer = null;
+            }
+
+            // 3. Batalkan alur tunggu pelukan jika sedang aktif
+            if (isWaitingForHug) {
+                if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+                if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+                isWaitingForHug = false;
+                pendingSadnessText = null;
+                const badge = document.getElementById('hug-countdown-badge');
+                if (badge) badge.textContent = "Dibatalkan";
+            }
+
+            // 4. Hentikan suara & kembalikan robot ke mode idle
+            stopAllAudioAndSpeech();
+            if (isEspConnected()) {
+                sendEspAction("idle");
+                sendEsp({ type: "stop_audio" });
+            }
+
+            // 5. Update wadah transkripsi jika pembatalan terjadi saat curhat suara
+            if (currentActiveVoiceMsgId) {
+                const textEl = document.getElementById(`${currentActiveVoiceMsgId}-text`);
+                if (textEl && textEl.innerHTML.includes('⏳')) {
+                    textEl.innerHTML = `⚠️ <em style="color: #b91c1c;">Transkripsi dibatalkan oleh pengguna.</em>`;
+                }
+                currentActiveVoiceMsgId = null;
+            }
+
+            // 6. Jaga konsistensi giliran multiturn Gemini (User -> Model)
+            // Jika pesan terakhir di chatHistory adalah user yang belum terbalas, hapus agar request berikutnya tidak error 400
+            if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === "user") {
+                chatHistory.pop();
+            }
+
+            // 7. Pulihkan status antarmuka
+            setLoadingUiState(false);
+
+            if (isUserInitiated) {
+                addMessageToUI("<em>⏹️ Proses balasan dibatalkan.</em>", "ai");
+            }
+        }
+
+        // ==========================================
         // CHAT TURN & AI PIPELINE
         // ==========================================
         async function sendMessage() {
+            if (isChatLoading) {
+                // Jika tombol Batal diklik saat loading aktif
+                cancelChatLoading(true);
+                return;
+            }
+
             stopAllAudioAndSpeech(); // Hentikan suara seketika saat pengguna mengirim pesan!
 
             const inputEl = document.getElementById('chat-input');
@@ -3122,13 +3594,30 @@ Kembalikan format JSON valid dengan 2 field:
                 "parts": [{ "text": text }]
             });
 
-            const btn = document.getElementById('btn-send');
-            const typingIndicator = document.getElementById('typing-indicator');
-            const robotIcon = document.getElementById('robot-icon');
+            // Reset state pelukan sebelumnya jika ada
+            if (isWaitingForHug) {
+                if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+                if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+                isWaitingForHug = false;
+                pendingSadnessText = null;
+            }
 
-            btn.disabled = true;
-            typingIndicator.style.display = 'block';
-            robotIcon.style.animation = 'robotWobble 0.6s infinite';
+            // JIKA MERASA SEDIH: Tawarkan pelukan / sentuhan 2 detik terlebih dahulu!
+            if (isSadnessMessage(text)) {
+                initiateSadnessHugFlow(text);
+                return;
+            }
+
+            // Pesan biasa: langsung proses AI
+            executeAiChatPipeline(text);
+        }
+
+        async function executeAiChatPipeline(text, extraPromptContext = "") {
+            cancelChatLoading(false);
+
+            currentChatAbortController = new AbortController();
+            const signal = currentChatAbortController.signal;
+            setLoadingUiState(true);
 
             // Signal physical ESP32 that ESA is thinking
             sendEspAction("thinking");
@@ -3138,19 +3627,20 @@ Kembalikan format JSON valid dengan 2 field:
             if (latestEspSensor && latestEspSensor.temp !== undefined) {
                 sensorContext = ` (Data sensor lingkungan fisik siswa saat ini: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Tingkat Cahaya ${latestEspSensor.light}.)`;
             }
-            const systemInstruction = getEsaSystemPrompt(sensorContext);
+            const systemInstruction = getEsaSystemPrompt(sensorContext) + extraPromptContext;
 
             let aiText = "";
             let generatedSuccess = false;
 
-            // 1. Coba Ollama Local AI (NVIDIA RTX 4050) jika mode 'ollama' atau 'auto'
-            if (aiProvider === 'ollama' || aiProvider === 'auto') {
+            // 1. Coba Ollama Local AI (NVIDIA RTX 4050) jika mode 'ollama' atau 'auto' (dan Ollama sudah terdeteksi aktif)
+            if (aiProvider === 'ollama' || (aiProvider === 'auto' && isOllamaOnline)) {
                 try {
-                    aiText = await callOllamaChat(systemInstruction, text, chatHistory);
+                    aiText = await callOllamaChat(systemInstruction, text, chatHistory, signal);
                     if (aiText && aiText.trim().length > 0) {
                         generatedSuccess = true;
                     }
                 } catch (err) {
+                    if (err.name === 'AbortError' || signal.aborted) return;
                     console.warn("Ollama AI call failed or offline:", err);
                     if (aiProvider === 'ollama') {
                         // Jika user sengaja mengunci ke Ollama tapi belum jalan
@@ -3161,12 +3651,15 @@ Kembalikan format JSON valid dengan 2 field:
                 }
             }
 
+            if (signal.aborted) return;
+
             // 2. Coba Gemini Cloud jika mode 'gemini' atau 'auto' (jika Ollama tidak membalas)
             if (!generatedSuccess && (aiProvider === 'gemini' || aiProvider === 'auto')) {
                 if (geminiKey && geminiKey.length > 15) {
                     try {
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                             method: 'POST',
+                            signal: signal,
                             headers: {
                                 'Content-Type': 'application/json',
                                 'x-goog-api-key': geminiKey
@@ -3187,10 +3680,13 @@ Kembalikan format JSON valid dengan 2 field:
                             generatedSuccess = true;
                         }
                     } catch (err) {
+                        if (err.name === 'AbortError' || signal.aborted) return;
                         console.warn("Gemini API call failed, falling back:", err);
                     }
                 }
             }
+
+            if (signal.aborted) return;
 
             // 3. Jika berhasil diproses oleh Ollama atau Gemini
             if (generatedSuccess && aiText) {
@@ -3207,8 +3703,11 @@ Kembalikan format JSON valid dengan 2 field:
                 return;
             }
 
+            if (signal.aborted) return;
+
             // 4. Cadangan Darurat: Template Empati Bawaan (Offline Rule-Based)
-            setTimeout(() => {
+            fallbackResponseTimer = setTimeout(() => {
+                if (signal.aborted) return;
                 const responseText = generateEmpatheticResponse(text);
                 if (checkRiskContent(responseText)) {
                     showSafetyCard();
@@ -3223,22 +3722,14 @@ Kembalikan format JSON valid dengan 2 field:
         }
 
         function finishChatTurn(replyText) {
-            const btn = document.getElementById('btn-send');
-            const espMicBtn = document.getElementById('btn-esp-mic');
-            const typingIndicator = document.getElementById('typing-indicator');
-            const robotIcon = document.getElementById('robot-icon');
-
-            btn.disabled = false;
-            typingIndicator.style.display = 'none';
-            robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
-
-            if (espMicBtn && isEspConnected()) {
-                espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
-                espMicBtn.style.background = "var(--pink)";
-                espMicBtn.style.color = "#ffffff";
-                espMicBtn.disabled = false;
-                espMicBtn.title = "Toggle: Klik untuk menghidupkan mic robot, klik lagi untuk mematikan dan mengirim";
+            currentChatAbortController = null;
+            if (fallbackResponseTimer) {
+                clearTimeout(fallbackResponseTimer);
+                fallbackResponseTimer = null;
             }
+            currentActiveVoiceMsgId = null;
+
+            setLoadingUiState(false);
 
             if (replyText) {
                 speakText(replyText, () => {
@@ -3272,6 +3763,12 @@ Kembalikan format JSON valid dengan 2 field:
                     if (isAiSpeaking) stopAllAudioAndSpeech();
                 });
             }
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isChatLoading) {
+                    e.preventDefault();
+                    cancelChatLoading(true);
+                }
+            });
         });
     </script>
     <script src="dropdown.js"></script>
