@@ -223,6 +223,17 @@ unsigned long lastDigitalTouchReportMs = 0;
 unsigned long hugTouchStartMs = 0;
 bool hugHold2sFired = false;
 
+// ==========================================
+// ANTI-SPAM PROTEKSI SENSOR SENTUH (TOUCH LOCKOUT)
+// ==========================================
+bool touchSpamLocked              = false; // True jika sensor dinonaktifkan sementara akibat spam
+unsigned long lastTouchActivityMs = 0;     // Timestamp aktivitas fisik terakhir (FSR/Touch aktif)
+unsigned long lastTouchPulseMs    = 0;     // Waktu pemicuan sentuhan baru terakhir
+int touchSpamCount                = 0;     // Counter lonjakan sentuhan cepat
+const unsigned long SPAM_DETECT_WINDOW_MS = 1500; // Jendela deteksi spam (1.5 detik)
+const int SPAM_TRIGGER_LIMIT              = 3;    // Batas trigger pemicuan (>= 3 kali dalam 1.5 detik = SPAM)
+const unsigned long QUIET_RECOVERY_MS     = 2000; // 2 detik PENUH tanpa sentuhan/spam untuk pulih (reset)
+
 // Pembacaan ADC1 Legacy (12-bit) dengan oversampling 8x
 // Menggunakan driver ADC legacy agar serasi 100% dengan driver I2S audio tanpa crash driver_ng
 int readAdc1Smoothed(adc1_channel_t chan) {
@@ -913,12 +924,11 @@ void handleAction(const String& state) {
   } else if (state == "happy") {
     playRobotChime(1);
   } else if (state == "comforted" || state == "hug_received") {
-    // Mode Hangat: Sambut pelukan dengan nada lembut & nyalakan LED indikator tangan
+    // Mode Hangat: Sambut pelukan dengan visual LED indikator tangan (tanpa suara speaker agar tidak mengganggu ElevenLabs)
     currentState = STATE_IDLE;
     digitalWrite(LED_PIN, HIGH);
     digitalWrite(LED1_PIN, HIGH);
     digitalWrite(LED2_PIN, HIGH);
-    playRobotChime(8); // Melodi pelukan hangat menenangkan
     delay(250);
     digitalWrite(LED1_PIN, LOW);
     digitalWrite(LED2_PIN, LOW);
@@ -1031,11 +1041,96 @@ void handleLine(String line) {
       digitalTouch2Active = false;
       hugTouchStartMs = 0;
       hugHold2sFired = false;
+      touchSpamLocked = false;
+      touchSpamCount = 0;
       digitalWrite(LED_PIN, LOW);
-    } else {
-      playRobotChime(2); // Nada sambutan siap menerima sentuhan
     }
   }
+}
+
+// ==========================================
+// ANTI-SPAM LOGIC SENSOR SENTUH
+// ==========================================
+void updateTouchSpamState() {
+  unsigned long now = millis();
+
+  // Periksa apakah ada aktivitas fisik seketika pada FSR atau TTP223
+  bool physicallyTouched = (fsr1Smoothed > FSR_TOUCH_THRESH || 
+                            fsr2Smoothed > FSR_TOUCH_THRESH || 
+                            digitalRead(TOUCH1_PIN) == HIGH || 
+                            digitalRead(TOUCH2_PIN) == HIGH);
+
+  if (physicallyTouched) {
+    // Selama masih ada sentuhan atau spam noise, perbarui waktu aktivitas terakhir
+    // Ini memastikan timer 2 detik hening terus ter-reset!
+    lastTouchActivityMs = now;
+  } else {
+    // Jika TIDAK ADA sentuhan sama sekali (senyap / quiet):
+    // Cek apakah sudah berlalu 2 detik tanpa sentuhan apapun
+    if (now - lastTouchActivityMs >= QUIET_RECOVERY_MS) {
+      if (touchSpamLocked) {
+        touchSpamLocked = false;
+        touchSpamCount = 0;
+        Serial.println("\n-------------------------------------------------------");
+        Serial.println(">>> [TOUCH ANTI-SPAM] Sensor pulih! 2 detik tenang tanpa sentuhan.");
+        Serial.println(">>> Sensor sentuh kembali aktif dan siap digunakan.");
+        Serial.println("-------------------------------------------------------\n");
+
+        JsonDocument doc;
+        doc["type"]   = "touch_spam_status";
+        doc["locked"] = false;
+        doc["msg"]    = "Sensor sentuh kembali aktif setelah 2 detik tenang.";
+        sendDoc(doc);
+      } else {
+        touchSpamCount = 0;
+      }
+    }
+  }
+}
+
+bool registerTouchAndCheckSpam() {
+  unsigned long now = millis();
+  lastTouchActivityMs = now;
+
+  if (touchSpamLocked) {
+    return false; // Sedang terkunci / nonaktif
+  }
+
+  // Cek apakah pemicuan ini terjadi dalam jendela cepat (< 1500 ms) dari pemicuan sebelumnya
+  if (now - lastTouchPulseMs <= SPAM_DETECT_WINDOW_MS) {
+    touchSpamCount++;
+  } else {
+    touchSpamCount = 1;
+  }
+  lastTouchPulseMs = now;
+
+  if (touchSpamCount >= SPAM_TRIGGER_LIMIT) {
+    touchSpamLocked = true;
+    Serial.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    Serial.printf(">>> [TOUCH ANTI-SPAM LOCKOUT] Terdeteksi %d pemicuan cepat dalam %lu ms!\n", touchSpamCount, SPAM_DETECT_WINDOW_MS);
+    Serial.println(">>> Sensor dinonaktifkan sementara untuk mencegah spam/jitter.");
+    Serial.println(">>> Harap diamkan selama 2 detik tanpa sentuhan untuk mengaktifkan kembali.");
+    Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    // Reset status sentuhan aktif
+    hugTouchStartMs = 0;
+    hugHold2sFired = false;
+    fsr1Pressed = false;
+    fsr2Pressed = false;
+    digitalTouch1Active = false;
+    digitalTouch2Active = false;
+    digitalWrite(LED_PIN, LOW);
+
+    JsonDocument doc;
+    doc["type"]   = "touch_spam_status";
+    doc["locked"] = true;
+    doc["msg"]    = "Sensor sentuh dinonaktifkan sementara karena spam. Harap lepaskan 2 detik.";
+    sendDoc(doc);
+
+    return false;
+  }
+
+  return true; // Sentuhan valid dan tidak spam
 }
 
 // ==========================================
@@ -1043,6 +1138,11 @@ void handleLine(String line) {
 // ==========================================
 void checkPressureSensors() {
   if (!sensorsEnabled) return; // Hanya aktif saat standby / diaktifkan sistem
+  if (touchSpamLocked) {
+    fsr1Pressed = false;
+    fsr2Pressed = false;
+    return;
+  }
   if (millis() - lastFsrCheckMs < 30) return; // Update berkala ~33 Hz
   lastFsrCheckMs = millis();
 
@@ -1057,7 +1157,7 @@ void checkPressureSensors() {
   fsr2Level = fsr2Smoothed;
 
   // 2b. Pantauan Real-Time di Serial Monitor: Cetak saat ada tekanan/sentuhan fisik
-  if ((raw1 > FSR_NOISE_FLOOR || raw2 > FSR_NOISE_FLOOR) && (millis() - lastFsrDebugMs > 350)) {
+  if ((raw1 > FSR_NOISE_FLOOR || raw2 > FSR_NOISE_FLOOR) && (millis() - lastFsrDebugMs > 400)) {
     lastFsrDebugMs = millis();
     Serial.printf("[FSR LIVE] FSR1 (GPIO %d): %d | FSR2 (GPIO %d): %d | Ambang: %d\n", FSR1_PIN, fsr1Smoothed, FSR2_PIN, fsr2Smoothed, FSR_TOUCH_THRESH);
   }
@@ -1067,7 +1167,10 @@ void checkPressureSensors() {
   bool touched2 = (fsr2Smoothed > FSR_TOUCH_THRESH);
 
   // Sentuhan FSR 1: Genggam Tangan Kiri Boneka
-  if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 800)) {
+  if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 600)) {
+    if (!registerTouchAndCheckSpam()) {
+      return;
+    }
     lastFsrReportMs = millis();
     fsr1Pressed = true;
 
@@ -1083,16 +1186,17 @@ void checkPressureSensors() {
     doc["action"] = "hold_hand";
     sendDoc(doc);
 
-    if (currentState == STATE_IDLE) {
-      playRobotChime(1); // Sapaan / nada ceria
-    }
+    // TIDAK ADA playRobotChime (sentuhan hening tanpa bunyi speaker)
   } else if (!touched1 && fsr1Pressed && (fsr1Smoothed < FSR_NOISE_FLOOR)) {
     fsr1Pressed = false;
     Serial.println(">>> [FSR 1 LEPAS] Genggaman Tangan Kiri Boneka Dilepas.");
   }
 
   // Sentuhan FSR 2: Genggam Tangan Kanan Boneka
-  if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 800)) {
+  if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 600)) {
+    if (!registerTouchAndCheckSpam()) {
+      return;
+    }
     lastFsrReportMs = millis();
     fsr2Pressed = true;
 
@@ -1108,9 +1212,7 @@ void checkPressureSensors() {
     doc["action"] = "hold_hand";
     sendDoc(doc);
 
-    if (currentState == STATE_IDLE) {
-      playRobotChime(2); // Nada ramah hangat
-    }
+    // TIDAK ADA playRobotChime (sentuhan hening tanpa bunyi speaker)
   } else if (!touched2 && fsr2Pressed && (fsr2Smoothed < FSR_NOISE_FLOOR)) {
     fsr2Pressed = false;
     Serial.println(">>> [FSR 2 LEPAS] Genggaman Tangan Kanan Boneka Dilepas.");
@@ -1122,13 +1224,35 @@ void checkPressureSensors() {
 // ==========================================
 void checkDigitalTouchSensors() {
   if (!sensorsEnabled) return; // Hanya aktif saat diminta oleh chat (On-Demand)
-  bool t1 = (digitalRead(TOUCH1_PIN) == HIGH);
-  bool t2 = (digitalRead(TOUCH2_PIN) == HIGH);
+  if (touchSpamLocked) {
+    digitalTouch1Active = false;
+    digitalTouch2Active = false;
+    return;
+  }
+
+  // Verifikasi debounce mikrodetik untuk menepis lonjakan RF nirkabel
+  bool t1Raw = (digitalRead(TOUCH1_PIN) == HIGH);
+  bool t2Raw = (digitalRead(TOUCH2_PIN) == HIGH);
+  bool t1 = false;
+  bool t2 = false;
+
+  if (t1Raw) {
+    delayMicroseconds(350);
+    if (digitalRead(TOUCH1_PIN) == HIGH) t1 = true;
+  }
+  if (t2Raw) {
+    delayMicroseconds(350);
+    if (digitalRead(TOUCH2_PIN) == HIGH) t2 = true;
+  }
+
   bool anyTouched = (t1 || t2);
 
   if (anyTouched) {
     if ((!digitalTouch1Active && t1) || (!digitalTouch2Active && t2)) {
       if (millis() - lastDigitalTouchReportMs > 400) {
+        if (!registerTouchAndCheckSpam()) {
+          return;
+        }
         lastDigitalTouchReportMs = millis();
 
         // Output khusus langsung ke Serial Monitor
@@ -1149,10 +1273,7 @@ void checkDigitalTouchSensors() {
         doc["action"] = "hug";
         sendDoc(doc);
 
-        // Respon melodi & LED robot
-        if (currentState == STATE_IDLE) {
-          playRobotChime(1); // Melodi ceria
-        }
+        // Respon visual LED saja (TIDAK ADA playRobotChime!)
         digitalWrite(LED_PIN, HIGH);
       }
     }
@@ -1175,6 +1296,12 @@ void checkDigitalTouchSensors() {
 // PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
 // ==========================================
 void updateHugHoldTracker(bool isTouched) {
+  if (touchSpamLocked) {
+    hugTouchStartMs = 0;
+    hugHold2sFired = false;
+    return;
+  }
+
   if (isTouched) {
     if (hugTouchStartMs == 0) {
       hugTouchStartMs = millis();
@@ -1195,11 +1322,10 @@ void updateHugHoldTracker(bool isTouched) {
       Serial.println(">>> Mengirim konfirmasi ke browser chat.html...");
       Serial.println("*******************************************************\n");
 
-      // Mainkan melodi pelukan hangat di speaker MAX98357A & nyalakan indikator LED
+      // Respon visual LED tanpa suara robot chime (agar suara ElevenLabs browser berbicara jernih)
       digitalWrite(LED_PIN, HIGH);
       digitalWrite(LED1_PIN, HIGH);
       digitalWrite(LED2_PIN, HIGH);
-      playRobotChime(8); // Melodi pelukan hangat menenangkan
       delay(200);
       digitalWrite(LED1_PIN, LOW);
       digitalWrite(LED2_PIN, LOW);
@@ -1216,10 +1342,12 @@ void updateHugHoldTracker(bool isTouched) {
 void updateLedAnimation() {
   unsigned long now = millis();
 
-  // Jika salah satu sensor FSR atau Sensor Sentuh Digital sedang disentuh nyata, nyalakan LED onboard (GPIO 2)
-  if (fsr1Pressed || fsr2Pressed || fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalTouch1Active || digitalTouch2Active) {
-    digitalWrite(LED_PIN, HIGH);
-    return;
+  // Jika salah satu sensor FSR atau Sensor Sentuh Digital sedang disentuh nyata dan tidak sedang spam lock
+  if (!touchSpamLocked) {
+    if (fsr1Pressed || fsr2Pressed || fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalTouch1Active || digitalTouch2Active) {
+      digitalWrite(LED_PIN, HIGH);
+      return;
+    }
   }
 
   if (currentState == STATE_RECORDING) {
@@ -1448,16 +1576,21 @@ void loop() {
   // 3. Cek Mikrofon INMP441 (Aktivitas Suara / VAD)
   checkMicActivity();
 
-  // 4. Cek Sensor Tekanan FSR402 & Update LED Indikator
+  // 4. Proteksi Anti-Spam Sensor Sentuh (Lockout otomatis & pulih setelah 2s tenang)
+  updateTouchSpamState();
+
+  // 4b. Cek Sensor Tekanan FSR402 & Update LED Indikator
   checkPressureSensors();
 
-  // 4b. Cek Sensor Sentuh Digital Tambahan (TTP223 - Output ke Serial Monitor)
+  // 4c. Cek Sensor Sentuh Digital Tambahan (TTP223 - Output ke Serial Monitor)
   checkDigitalTouchSensors();
 
-  // 4c. Pelacakan Pelukan / Sentuhan Tahan 2 Detik (FSR1, FSR2, atau Touch Digital)
-  if (sensorsEnabled) {
+  // 4d. Pelacakan Pelukan / Sentuhan Tahan 2 Detik (FSR1, FSR2, atau Touch Digital)
+  if (sensorsEnabled && !touchSpamLocked) {
     bool anyPhysTouched = (fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalRead(TOUCH1_PIN) == HIGH || digitalRead(TOUCH2_PIN) == HIGH);
     updateHugHoldTracker(anyPhysTouched);
+  } else {
+    updateHugHoldTracker(false);
   }
 
   // 5. Cek Tombol BOOT (GPIO 0)

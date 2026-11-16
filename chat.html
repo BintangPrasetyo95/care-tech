@@ -3269,6 +3269,13 @@ Contoh respons ideal (1-2 kalimat pendek):
         window.streamPcmToEsp = streamPcmToEsp;
         window.speakerOutputMode = speakerOutputMode;
 
+        // Status & Proteksi Anti-Spam Sensor Sentuh Sisi Web
+        let clientTouchLocked = false;
+        let lastTouchMsgTime = 0;
+        let clientTouchSpamCount = 0;
+        let clientTouchResetTimer = null;
+        let lastTouchAvatarWink = 0;
+
         function handleEspMessage(line) {
             if (!line) return;
             let msg;
@@ -3295,39 +3302,61 @@ Contoh respons ideal (1-2 kalimat pendek):
                         else barFill.style.background = '#22c55e';
                     }
                 }
+            } else if (msg.type === "touch_spam_status") {
+                // Notifikasi status anti-spam lockout dari ESP32
+                clientTouchLocked = !!msg.locked;
+                if (clientTouchLocked) {
+                    console.warn("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor dinonaktifkan sementara karena spam/jitter.");
+                } else {
+                    console.log("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor sentuh aktif kembali setelah 2 detik tenang.");
+                }
             } else if (msg.type === "touch") {
-                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh
+                const now = Date.now();
+
+                // Deteksi spam sisi web: Jika > 3 trigger dalam 1.5 detik, kunci sensor
+                if (now - lastTouchMsgTime <= 1500) {
+                    clientTouchSpamCount++;
+                } else {
+                    clientTouchSpamCount = 1;
+                }
+                lastTouchMsgTime = now;
+
+                if (clientTouchSpamCount >= 3) {
+                    clientTouchLocked = true;
+                    console.warn("[TOUCH ANTI-SPAM] Terdeteksi spam sentuhan! Sensor dinonaktifkan sementara.");
+                }
+
+                // Reset timer hening: Jika 2 detik tanpa sentuhan/spam, buka kuncian sensor
+                if (clientTouchResetTimer) clearTimeout(clientTouchResetTimer);
+                clientTouchResetTimer = setTimeout(() => {
+                    clientTouchLocked = false;
+                    clientTouchSpamCount = 0;
+                    console.log("[TOUCH ANTI-SPAM] 2 detik tenang tercapai. Sensor sentuh kembali aktif.");
+                }, 2000);
+
+                // Jika sensor sedang terkunci akibat spam, abaikan sepenuhnya
+                if (clientTouchLocked) {
+                    return;
+                }
+
+                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
                 if (isWaitingForHug) {
                     onHugReceived(msg.duration || 2.0);
                     return;
                 }
 
-                const robotIcon = document.getElementById('robot-icon');
-                if (msg.target === "hand" || msg.action === "hold_hand") {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤝";
+                // Di luar skenario aktif: TIDAK mentrigger suara dan TIDAK membanjiri chat UI!
+                // Cukup feedback visual halus pada ikon robot (dibatasi maksimal 1x per 3 detik)
+                if (now - lastTouchAvatarWink > 3000) {
+                    lastTouchAvatarWink = now;
+                    const robotIcon = document.getElementById('robot-icon');
+                    if (robotIcon && (robotIcon.textContent === "🤖" || robotIcon.textContent === "")) {
+                        const iconChoice = (msg.target === "hand" || msg.action === "hold_hand") ? "🤝" : "🤗";
+                        robotIcon.textContent = iconChoice;
                         setTimeout(() => {
-                            if (robotIcon.textContent === "🤝") robotIcon.textContent = "🤖";
-                        }, 2500);
+                            if (robotIcon.textContent === iconChoice) robotIcon.textContent = "🤖";
+                        }, 1200);
                     }
-                    const handPart = msg.part === "left_hand" ? "tangan kiri" : (msg.part === "right_hand" ? "tangan kanan" : "tangan");
-                    addMessageToUI(`🤝 <em>[Genggaman Tangan] Kamu sedang memegang ${handPart} boneka ESA... Kehangatan genggaman tanganmu sangat menenangkan! 💖</em>`, "system");
-                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤗";
-                        setTimeout(() => {
-                            if (robotIcon.textContent === "🤗") robotIcon.textContent = "🤖";
-                        }, 2500);
-                    }
-                    addMessageToUI("🤗 <em>[Pelukan Boneka] Kamu sedang memeluk erat boneka ESA... Pelukan hangatmu membuat ESA merasa sangat dekat denganmu! 🫂</em>", "system");
-                } else {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🥰";
-                        setTimeout(() => {
-                            if (robotIcon.textContent === "🥰") robotIcon.textContent = "🤖";
-                        }, 2500);
-                    }
-                    addMessageToUI("🥰 <em>[Sentuhan Fisik] Sentuhan penuh kasih sayang diterima boneka ESA...</em>", "system");
                 }
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
