@@ -1946,7 +1946,11 @@
         // ==========================================
         // ELEVENLABS STATE & CONTROLS
         // ==========================================
-        let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_bb0012a69d96e67a46c636ae06d5c19e4664b4a713742df7";
+        let elevenKey = localStorage.getItem('caretech_eleven_key');
+        if (!elevenKey || elevenKey.includes('sk_bb0012') || elevenKey.includes('sk_83c577') || !elevenKey.startsWith('sk_')) {
+            elevenKey = "sk_d47bb8d496b6d1b40f92c15a12bd098130e7bc5010dad804";
+            localStorage.setItem('caretech_eleven_key', elevenKey);
+        }
         let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
         let elevenModelId = localStorage.getItem('caretech_eleven_model') || "eleven_multilingual_v2";
         let currentAudio = null;
