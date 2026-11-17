@@ -21,7 +21,7 @@ import requests
 DEFAULT_CONFIG_PATH = os.path.join("assets", "audio", "hardcoded", "scenarios.json")
 DEFAULT_OUTPUT_DIR = os.path.join("assets", "audio", "hardcoded")
 DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah (Lembut, hangat, ramah)
-DEFAULT_MODEL_ID = "eleven_flash_v2_5"
+DEFAULT_MODEL_ID = "eleven_multilingual_v2" # Model terbaik & alami untuk Bahasa Indonesia
 
 
 def clean_tts_text(text: str) -> str:

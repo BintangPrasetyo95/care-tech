@@ -150,7 +150,8 @@
             }
 
             try {
-                const resp = await fetch(audioUrl);
+                const bustUrl = audioUrl.includes('?') ? audioUrl : `${audioUrl}?v=1.2.0`;
+                const resp = await fetch(bustUrl);
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const arrayBuf = await resp.arrayBuffer();
 
