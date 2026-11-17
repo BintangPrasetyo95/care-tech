@@ -2087,7 +2087,14 @@
                     },
                     body: JSON.stringify({
                         text: testPhrase,
-                        model_id: elevenModelId || "eleven_flash_v2_5"
+                        model_id: elevenModelId || "eleven_multilingual_v2",
+                        language_code: "id",
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.8,
+                            style: 0.0,
+                            use_speaker_boost: true
+                        }
                     })
                 });
 
@@ -2829,7 +2836,21 @@ Contoh respons ideal (1-2 kalimat pendek):
         function initVoices() {
             if (!('speechSynthesis' in window)) return;
             const voices = window.speechSynthesis.getVoices();
-            idVoice = voices.find(v => v.lang.startsWith('id') || v.lang.includes('ID') || v.lang.toLowerCase().includes('indonesia')) || null;
+            // 1. Cari suara resmi Bahasa Indonesia (id-ID, Indonesian, Gadis, Andika)
+            idVoice = voices.find(v => {
+                const l = (v.lang || '').toLowerCase();
+                const n = (v.name || '').toLowerCase();
+                return l.startsWith('id') || l.includes('indonesia') || n.includes('indonesia') || n.includes('gadis') || n.includes('andika');
+            }) || null;
+
+            // 2. Jika browser tidak punya suara id-ID, cari suara serumpun Bahasa Melayu (ms-MY) yang fonetiknya sangat mirip
+            if (!idVoice) {
+                idVoice = voices.find(v => {
+                    const l = (v.lang || '').toLowerCase();
+                    const n = (v.name || '').toLowerCase();
+                    return l.startsWith('ms') || l.includes('malay') || n.includes('malay');
+                }) || null;
+            }
         }
 
         if ('speechSynthesis' in window) {
@@ -2984,6 +3005,48 @@ Contoh respons ideal (1-2 kalimat pendek):
             }
         }
 
+        function playIndonesianFallbackSpeech(text, onComplete) {
+            // 1. Prioritas Utama Cadangan: Google Indonesian TTS (aksen 100% Bahasa Indonesia alami, bebas aksen bule)
+            if (navigator.onLine && text.length <= 180) {
+                try {
+                    const gttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
+                    EsaLogger.subStep("Memutar suara cadangan Bahasa Indonesia alami (Google Indonesian TTS)...");
+                    currentAudio = new Audio(gttsUrl);
+                    isAiSpeaking = true;
+                    sendEspAction("speaking", { mood: "happy" });
+
+                    let finished = false;
+                    const cleanup = () => {
+                        if (!finished) {
+                            finished = true;
+                            currentAudio = null;
+                            isAiSpeaking = false;
+                            sendEspAction("idle");
+                            EsaLogger.success("Fase 6: Sintesis Suara", "Suara cadangan Bahasa Indonesia selesai diputar");
+                            if (onComplete) onComplete();
+                        }
+                    };
+
+                    currentAudio.onended = cleanup;
+                    currentAudio.onerror = (e) => {
+                        console.warn("Google TTS audio error, fallback ke Web Speech API:", e);
+                        speakWithBrowserSpeech(text, onComplete);
+                    };
+
+                    currentAudio.play().catch(playErr => {
+                        console.warn("Google TTS audio play blocked, fallback ke Web Speech API:", playErr);
+                        speakWithBrowserSpeech(text, onComplete);
+                    });
+                    return;
+                } catch (e) {
+                    console.warn("Inisiasi Google TTS fallback gagal:", e);
+                }
+            }
+
+            // 2. Fallback offline: Web Speech API browser
+            speakWithBrowserSpeech(text, onComplete);
+        }
+
         function speakWithBrowserSpeech(text, onComplete) {
             if (!('speechSynthesis' in window)) {
                 if (onComplete) onComplete();
@@ -3083,7 +3146,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                 try {
                     const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
                     const modelId = elevenModelId || "eleven_multilingual_v2";
-                    EsaLogger.subStep(`Memanggil ElevenLabs TTS API (Voice: ${voiceId}, Model: ${modelId})...`);
+                    EsaLogger.subStep(`Memanggil ElevenLabs TTS API (Voice: ${voiceId}, Model: ${modelId}, Lang: id)...`);
 
                     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                         method: 'POST',
@@ -3094,7 +3157,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                         },
                         body: JSON.stringify({
                             text: cleanText,
-                            model_id: modelId
+                            model_id: modelId,
+                            language_code: "id",
+                            voice_settings: {
+                                stability: 0.5,
+                                similarity_boost: 0.8,
+                                style: 0.0,
+                                use_speaker_boost: true
+                            }
                         })
                     });
 
@@ -3187,8 +3257,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             }
 
             if (speakerOutputMode === 'laptop' || speakerOutputMode === 'both') {
-                speakWithBrowserSpeech(cleanText, () => {
-                    EsaLogger.success("Fase 6: Sintesis Suara", "Web Speech Synthesis selesai berbicara");
+                playIndonesianFallbackSpeech(cleanText, () => {
                     if (onComplete) onComplete();
                 });
             } else {
