@@ -245,6 +245,9 @@
 
             if (typeof window !== 'undefined') {
                 window.isAiSpeaking = true;
+                if (window.EsaLogger && window.EsaLogger.currentPhase) {
+                    window.EsaLogger.subStep(`[ScenarioEngine] Memutar audio: ${audioUrl.split('/').pop()} (Speaker Mode: ${speakerMode})`);
+                }
             }
 
             let laptopDone = !(speakerMode === 'laptop' || speakerMode === 'both');
@@ -254,6 +257,9 @@
                 if (laptopDone && espDone) {
                     if (typeof window !== 'undefined') {
                         window.isAiSpeaking = false;
+                        if (window.EsaLogger && window.EsaLogger.currentPhase) {
+                            window.EsaLogger.success("Fase 6: Sintesis Suara", `Selesai memutar audio skenario: ${audioUrl.split('/').pop()}`);
+                        }
                     }
                     if (onComplete) onComplete();
                 }
