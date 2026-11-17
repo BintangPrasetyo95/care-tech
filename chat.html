@@ -906,6 +906,17 @@
                     <input type="password" id="eleven-key-input" placeholder="sk_..." style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.85rem; outline: none; box-sizing: border-box;">
                 </div>
 
+                <!-- Model Selection -->
+                <div style="margin-bottom: 0.7rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Model AI:</label>
+                    <select id="eleven-model-select" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mk); font-size: 0.92rem; outline: none; background: #fff; box-sizing: border-box;">
+                        <option value="eleven_multilingual_v2">Eleven Multilingual v2 (Sangat Alami & Fasih Bahasa Indonesia) ⭐</option>
+                        <option value="eleven_turbo_v2_5">Eleven Turbo v2.5 (Cepat & Berkualitas Tinggi)</option>
+                        <option value="eleven_flash_v2_5">Eleven Flash v2.5 (Latensi Terendah)</option>
+                        <option value="eleven_flash_v2">Eleven Flash v2</option>
+                    </select>
+                </div>
+
                 <!-- Voice Selection -->
                 <div style="margin-bottom: 0.8rem;">
                     <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Karakter Suara:</label>
@@ -1750,7 +1761,7 @@
         // ==========================================
         let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_b97b2f7b5917432e5d98fab365037429a3c99258eef691ab";
         let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
-        let elevenModelId = "eleven_flash_v2_5";
+        let elevenModelId = localStorage.getItem('caretech_eleven_model') || "eleven_multilingual_v2";
         let currentAudio = null;
 
         function handleVoiceSelectChange(val) {
@@ -1760,6 +1771,7 @@
 
         function updateElevenLabsUi() {
             const keyInput = document.getElementById('eleven-key-input');
+            const modelSelect = document.getElementById('eleven-model-select');
             const voiceSelect = document.getElementById('eleven-voice-select');
             const customRow = document.getElementById('eleven-custom-row');
             const customInput = document.getElementById('eleven-custom-voice');
@@ -1767,6 +1779,7 @@
             const ttsBtn = document.getElementById('btn-tts-toggle');
 
             if (keyInput) keyInput.value = elevenKey;
+            if (modelSelect) modelSelect.value = elevenModelId;
 
             if (voiceSelect) {
                 const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'WQ4h6sgS9p2XXvLsESBT'];
@@ -1783,7 +1796,8 @@
             if (statusTag) {
                 if (elevenKey && elevenKey.startsWith('sk_')) {
                     statusTag.className = 'tape tape-lime';
-                    statusTag.textContent = 'FLASH V2.5 (AKTIF)';
+                    const modelShort = elevenModelId.includes('multilingual') ? 'MULTILINGUAL V2' : (elevenModelId.includes('turbo') ? 'TURBO V2.5' : 'FLASH V2.5');
+                    statusTag.textContent = `${modelShort} (AKTIF)`;
                 } else {
                     statusTag.className = 'tape tape-sun';
                     statusTag.textContent = 'SUARA BAWAAN';
@@ -1803,11 +1817,13 @@
 
         function saveElevenLabsSettings() {
             const keyInput = document.getElementById('eleven-key-input');
+            const modelSelect = document.getElementById('eleven-model-select');
             const voiceSelect = document.getElementById('eleven-voice-select');
             const customInput = document.getElementById('eleven-custom-voice');
             const feedback = document.getElementById('eleven-feedback');
 
             const key = (keyInput ? keyInput.value : '').trim();
+            const model = modelSelect ? modelSelect.value : 'eleven_multilingual_v2';
             let voice = voiceSelect ? voiceSelect.value : 'EXAVITQu4vr4xnSDxMaL';
             if (voice === 'custom' && customInput) {
                 voice = customInput.value.trim() || 'EXAVITQu4vr4xnSDxMaL';
@@ -1815,8 +1831,10 @@
 
             elevenKey = key;
             elevenVoiceId = voice;
+            elevenModelId = model;
             localStorage.setItem('caretech_eleven_key', elevenKey);
             localStorage.setItem('caretech_eleven_voice', elevenVoiceId);
+            localStorage.setItem('caretech_eleven_model', elevenModelId);
 
             updateElevenLabsUi();
 
@@ -1831,8 +1849,10 @@
         function resetElevenLabsKey() {
             elevenKey = "";
             elevenVoiceId = "EXAVITQu4vr4xnSDxMaL";
+            elevenModelId = "eleven_multilingual_v2";
             localStorage.removeItem('caretech_eleven_key');
             localStorage.removeItem('caretech_eleven_voice');
+            localStorage.removeItem('caretech_eleven_model');
 
             updateElevenLabsUi();
 
