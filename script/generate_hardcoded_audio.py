@@ -20,7 +20,7 @@ import requests
 
 DEFAULT_CONFIG_PATH = os.path.join("assets", "audio", "hardcoded", "scenarios.json")
 DEFAULT_OUTPUT_DIR = os.path.join("assets", "audio", "hardcoded")
-DEFAULT_VOICE_ID = "TrU3igk19A4aIUi2GAA2"  # Velora (Indonesian Conversational Voice: ramah, hangat, natural)
+DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah (Free Tier: ramah, lembut, tenang, gratis di API)
 DEFAULT_MODEL_ID = "eleven_multilingual_v2" # Model terbaik & alami untuk Bahasa Indonesia
 
 

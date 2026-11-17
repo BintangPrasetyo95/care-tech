@@ -921,10 +921,11 @@
                 <div style="margin-bottom: 0.8rem;">
                     <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Karakter Suara:</label>
                     <select id="eleven-voice-select" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mk); font-size: 0.92rem; outline: none; background: #fff; box-sizing: border-box;" onchange="handleVoiceSelectChange(this.value)">
-                        <option value="TrU3igk19A4aIUi2GAA2">Velora (Library - Bahasa Indonesia Asli, Hangat & Natural) 🇮🇩 ⭐</option>
-                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Free Tier - Ramah, Lembut & Menenangkan)</option>
-                        <option value="pNInz6obpgDQGcFmaJgB">Adam (Free Tier - Hangat, Sahabat & Tenang)</option>
-                        <option value="JBFqnCBsd6RMkjVDRZzb">George (Free Tier - Naratif Lembut & Mengayomi)</option>
+                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Gratis / Free Tier - Ramah, Lembut & Menenangkan) 🇮🇩 ⭐</option>
+                        <option value="pNInz6obpgDQGcFmaJgB">Adam (Gratis / Free Tier - Hangat, Sahabat & Tenang) 🇮🇩</option>
+                        <option value="JBFqnCBsd6RMkjVDRZzb">George (Gratis / Free Tier - Naratif Lembut & Mengayomi)</option>
+                        <option value="TrU3igk19A4aIUi2GAA2">Velora (Library - Memerlukan Akun Berbayar)</option>
+                        <option value="WAotVoK2Yv2ufjocfYYs">Siti (Library - Memerlukan Akun Berbayar)</option>
                         <option value="custom">-- Masukkan Custom Voice ID Lainnya --</option>
                     </select>
                     <div id="eleven-custom-row" style="display: none; margin-top: 0.5rem;">
@@ -1946,7 +1947,7 @@
         // ELEVENLABS STATE & CONTROLS
         // ==========================================
         let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_bb0012a69d96e67a46c636ae06d5c19e4664b4a713742df7";
-        let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "TrU3igk19A4aIUi2GAA2";
+        let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
         let elevenModelId = localStorage.getItem('caretech_eleven_model') || "eleven_multilingual_v2";
         let currentAudio = null;
 
@@ -1968,7 +1969,7 @@
             if (modelSelect) modelSelect.value = elevenModelId;
 
             if (voiceSelect) {
-                const known = ['TrU3igk19A4aIUi2GAA2', 'EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb'];
+                const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'TrU3igk19A4aIUi2GAA2', 'WAotVoK2Yv2ufjocfYYs'];
                 if (known.includes(elevenVoiceId)) {
                     voiceSelect.value = elevenVoiceId;
                     if (customRow) customRow.style.display = 'none';
@@ -2010,9 +2011,9 @@
 
             const key = (keyInput ? keyInput.value : '').trim();
             const model = modelSelect ? modelSelect.value : 'eleven_multilingual_v2';
-            let voice = voiceSelect ? voiceSelect.value : 'TrU3igk19A4aIUi2GAA2';
+            let voice = voiceSelect ? voiceSelect.value : 'EXAVITQu4vr4xnSDxMaL';
             if (voice === 'custom' && customInput) {
-                voice = customInput.value.trim() || 'TrU3igk19A4aIUi2GAA2';
+                voice = customInput.value.trim() || 'EXAVITQu4vr4xnSDxMaL';
             }
 
             elevenKey = key;
@@ -2034,7 +2035,7 @@
 
         function resetElevenLabsKey() {
             elevenKey = "";
-            elevenVoiceId = "TrU3igk19A4aIUi2GAA2";
+            elevenVoiceId = "EXAVITQu4vr4xnSDxMaL";
             elevenModelId = "eleven_multilingual_v2";
             localStorage.removeItem('caretech_eleven_key');
             localStorage.removeItem('caretech_eleven_voice');
@@ -2076,7 +2077,7 @@
             }
 
             try {
-                const voiceId = elevenVoiceId || "TrU3igk19A4aIUi2GAA2";
+                const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
                 const testPhrase = "Halo kawan! Aku robot ESA dari CareTech. Suara ElevenLabs siap mendampingimu!";
                 const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                     method: 'POST',
@@ -3155,7 +3156,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             // 2. Putar Suara ElevenLabs jika API Key tersedia
             if (elevenKey && elevenKey.startsWith('sk_')) {
                 try {
-                    const voiceId = elevenVoiceId || "TrU3igk19A4aIUi2GAA2";
+                    const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
                     const modelId = elevenModelId || "eleven_multilingual_v2";
                     EsaLogger.subStep(`Memanggil ElevenLabs TTS API (Voice: ${voiceId}, Model: ${modelId}, Lang: id)...`);
 
