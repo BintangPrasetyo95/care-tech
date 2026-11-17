@@ -1594,7 +1594,7 @@
             }
         }
 
-        async function callOllamaChat(systemPrompt, userText, history, externalSignal = null) {
+        async function callOllamaChat(systemPrompt, userText, history, externalSignal = null, customTimeoutMs = 6000) {
             const formattedMessages = [
                 { role: "system", content: systemPrompt }
             ];
@@ -1615,9 +1615,13 @@
             
             formattedMessages.push({ role: "user", content: userText });
 
-            const timeoutMs = (aiProvider === 'ollama') ? 25000 : 6000; // Jika mode auto, batasi 6 detik agar tidak macet lama dan langsung fallback ke Gemini
+            const timeoutMs = customTimeoutMs || 6000;
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            let isTimeout = false;
+            const timeoutId = setTimeout(() => {
+                isTimeout = true;
+                controller.abort();
+            }, timeoutMs);
 
             if (externalSignal) {
                 if (externalSignal.aborted) {
@@ -1654,6 +1658,78 @@
                 return data.message?.content || "";
             } catch (err) {
                 clearTimeout(timeoutId);
+                if (isTimeout) {
+                    const timeoutErr = new Error(`Ollama timeout (${timeoutMs / 1000}s)`);
+                    timeoutErr.isTimeout = true;
+                    throw timeoutErr;
+                }
+                if (externalSignal && externalSignal.aborted) {
+                    const abortErr = new Error("User aborted");
+                    abortErr.isUserAbort = true;
+                    throw abortErr;
+                }
+                throw err;
+            }
+        }
+
+        async function callGeminiChat(systemInstruction, history, externalSignal = null, customTimeoutMs = 6000) {
+            if (!geminiKey || geminiKey.length <= 15) {
+                throw new Error("Gemini API Key tidak disetel atau tidak valid");
+            }
+
+            const timeoutMs = customTimeoutMs || 6000;
+            const controller = new AbortController();
+            let isTimeout = false;
+            const timeoutId = setTimeout(() => {
+                isTimeout = true;
+                controller.abort();
+            }, timeoutMs);
+
+            if (externalSignal) {
+                if (externalSignal.aborted) {
+                    controller.abort();
+                } else {
+                    externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': geminiKey
+                    },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemInstruction }] },
+                        contents: history.slice(-20),
+                        generationConfig: {
+                            maxOutputTokens: 80,
+                            temperature: 0.7
+                        }
+                    })
+                });
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+                if (response.ok && data.candidates && data.candidates[0].content) {
+                    return data.candidates[0].content.parts[0].text || "";
+                } else {
+                    throw new Error(data.error?.message || `HTTP ${response.status}`);
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (isTimeout) {
+                    const timeoutErr = new Error(`Gemini timeout (${timeoutMs / 1000}s)`);
+                    timeoutErr.isTimeout = true;
+                    throw timeoutErr;
+                }
+                if (externalSignal && externalSignal.aborted) {
+                    const abortErr = new Error("User aborted");
+                    abortErr.isUserAbort = true;
+                    throw abortErr;
+                }
                 throw err;
             }
         }
@@ -4021,7 +4097,15 @@ Contoh respons ideal (1-2 kalimat pendek):
             // Panggil Gemini Multimodal Audio dengan instruksi TRANSKRIPSI & BALASAN
             if (geminiKey && geminiKey.length > 15) {
                 try {
-                    EsaLogger.subStep("Mengirim file suara WAV ke Gemini 3.1 Flash-Lite (Multimodal Audio)...");
+                    EsaLogger.subStep("Mengirim file suara WAV ke Gemini 3.1 Flash-Lite (Multimodal Audio, Batas: 6s)...");
+                    const audioController = new AbortController();
+                    let isAudioTimeout = false;
+                    const audioTimeoutId = setTimeout(() => { isAudioTimeout = true; audioController.abort(); }, 6000);
+                    if (signal) {
+                        if (signal.aborted) audioController.abort();
+                        else signal.addEventListener('abort', () => audioController.abort(), { once: true });
+                    }
+
                     const systemInstruction = `${getEsaSystemPrompt(sensorContext)}
 
 TUGAS TAMBAHAN KHUSUS REKAMAN SUARA INI:
@@ -4031,7 +4115,7 @@ Kembalikan format JSON valid dengan 2 field:
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
-                        signal: signal,
+                        signal: audioController.signal,
                         headers: {
                             'Content-Type': 'application/json',
                             'x-goog-api-key': geminiKey
@@ -4060,6 +4144,7 @@ Kembalikan format JSON valid dengan 2 field:
                         })
                     });
 
+                    clearTimeout(audioTimeoutId);
                     const data = await response.json();
                     if (response.ok && data.candidates && data.candidates[0].content) {
                         const rawContent = data.candidates[0].content.parts[0].text;
@@ -4119,9 +4204,13 @@ Kembalikan format JSON valid dengan 2 field:
                         return;
                     }
                 } catch (err) {
-                    if (err.name === 'AbortError' || signal.aborted) return;
-                    console.warn("Gemini voice API call failed:", err);
-                    EsaLogger.warn("Fase 2: Multimodal Cloud", `Gemini voice API call gagal: ${err.message}`);
+                    if (signal.aborted) return;
+                    if (isAudioTimeout) {
+                        EsaLogger.warn("Fase 2: Multimodal Cloud", "Gemini Cloud Multimodal timeout (>6s), beralih ke secondary fallback Whisper...");
+                    } else {
+                        console.warn("Gemini voice API call failed:", err);
+                        EsaLogger.warn("Fase 2: Multimodal Cloud", `Gemini voice API call gagal: ${err.message}`);
+                    }
 
                     // Fallback cerdas: coba Client-Side Whisper jika Gemini gagal!
                     try {
@@ -4713,68 +4802,79 @@ Kembalikan format JSON valid dengan 2 field:
             let aiText = "";
             let generatedSuccess = false;
 
-            // 1. Coba Ollama Local AI (NVIDIA RTX 4050) jika mode 'ollama' atau 'auto' (dan Ollama sudah terdeteksi aktif)
-            if (aiProvider === 'ollama' || (aiProvider === 'auto' && isOllamaOnline)) {
-                try {
-                    EsaLogger.subStep(`[LLM 1] Mengirim prompt ke Ollama Lokal (${ollamaModel}) di ${ollamaHost}...`);
-                    aiText = await callOllamaChat(systemInstruction, text, chatHistory, signal);
-                    if (aiText && aiText.trim().length > 0) {
-                        generatedSuccess = true;
-                        EsaLogger.success("Fase 4: Penyusunan Respon AI", `Ollama Lokal (${ollamaModel}) berhasil menyusun balasan`, { reply: aiText });
-                    }
-                } catch (err) {
-                    if (err.name === 'AbortError' || signal.aborted) return;
-                    console.warn("Ollama AI call failed or offline:", err);
-                    EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Ollama lokal gagal atau offline: ${err.message}`);
-                    if (aiProvider === 'ollama') {
-                        // Jika user sengaja mengunci ke Ollama tapi belum jalan
-                        addMessageToUI("⚠️ Belum terhubung ke Ollama. Pastikan perintah 'ollama serve' aktif di terminal kawan!", 'ai');
-                        EsaLogger.error("Fase 4: Penyusunan Respon AI", "Ollama terkunci namun tidak merespons", err);
-                        finishChatTurn("");
-                        return;
-                    }
-                }
-            }
+            // Eksekusi LLM Berjenjang Pintar (Batas Waktu 6 Detik):
+            // 1. Coba penyedia utama selama maks 6 detik.
+            // 2. Jika > 6 detik / gagal -> otomatis switch ke penyedia cadangan (maks 6 detik).
+            // 3. Jika > 6 detik / gagal lagi -> coba kembali penyedia utama (maks 6 detik).
+            // 4. Jika masih gagal/habis waktu -> beralih ke Template Empati Offline.
+            const primaryIsGemini = (aiProvider === 'gemini');
+            const providerPlan = primaryIsGemini 
+                ? ['gemini', 'ollama', 'gemini'] 
+                : ['ollama', 'gemini', 'ollama'];
 
-            if (signal.aborted) return;
+            for (let i = 0; i < providerPlan.length; i++) {
+                if (signal.aborted) return;
+                const currentProvider = providerPlan[i];
+                const attemptNum = i + 1;
+                const nextProviderName = (i < providerPlan.length - 1) 
+                    ? (providerPlan[i + 1] === 'gemini' ? 'Gemini Cloud' : 'Ollama Lokal')
+                    : 'Template Empati Offline';
 
-            // 2. Coba Gemini Cloud jika mode 'gemini' atau 'auto' (jika Ollama tidak membalas)
-            if (!generatedSuccess && (aiProvider === 'gemini' || aiProvider === 'auto')) {
-                if (geminiKey && geminiKey.length > 15) {
+                if (currentProvider === 'ollama') {
+                    // Jika Ollama offline dan bukan permintaan khusus awal
+                    if (!isOllamaOnline && aiProvider !== 'ollama' && attemptNum > 1) {
+                        EsaLogger.subStep(`[LLM Percobaan ${attemptNum}] Ollama offline, melompati ke penyedia berikutnya.`);
+                        continue;
+                    }
+
                     try {
-                        EsaLogger.subStep("[LLM 2] Mengirim prompt ke Gemini Cloud API (gemini-3.1-flash-lite)...");
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
-                            method: 'POST',
-                            signal: signal,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': geminiKey
-                            },
-                            body: JSON.stringify({
-                                system_instruction: { parts: [{ text: systemInstruction }] },
-                                contents: chatHistory.slice(-20),
-                                generationConfig: {
-                                    maxOutputTokens: 80,
-                                    temperature: 0.7
-                                }
-                            })
-                        });
+                        const switchLabel = (attemptNum > 1) ? " (Switch ke Ollama Lokal)" : "";
+                        EsaLogger.step(4, `Penyusunan Respon AI${switchLabel}`, `[Percobaan ${attemptNum}] Mengirim prompt ke Ollama (${ollamaModel}) | Batas Waktu: 6s`);
+                        EsaLogger.subStep(`Menghubungi Ollama di ${ollamaHost}...`);
 
-                        const data = await response.json();
-                        if (response.ok && data.candidates && data.candidates[0].content) {
-                            aiText = data.candidates[0].content.parts[0].text;
+                        aiText = await callOllamaChat(systemInstruction, text, chatHistory, signal, 6000);
+                        if (aiText && aiText.trim().length > 0) {
                             generatedSuccess = true;
-                            EsaLogger.success("Fase 4: Penyusunan Respon AI", "Gemini Cloud berhasil menyusun balasan", { reply: aiText });
-                        } else {
-                            throw new Error(data.error?.message || `HTTP ${response.status}`);
+                            EsaLogger.success("Fase 4: Penyusunan Respon AI", `Ollama Lokal (${ollamaModel}) berhasil menyusun balasan`, { reply: aiText });
+                            break;
                         }
                     } catch (err) {
-                        if (err.name === 'AbortError' || signal.aborted) return;
-                        console.warn("Gemini API call failed, falling back:", err);
-                        EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Gemini Cloud API gagal: ${err.message}`);
+                        if (signal.aborted || err.isUserAbort) return;
+                        if (err.isTimeout) {
+                            console.warn(`Ollama melebihi batas waktu 6 detik (Attempt ${attemptNum}), switch ke ${nextProviderName}:`, err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Ollama memakan waktu > 6 detik! Otomatis switch ke ${nextProviderName}...`);
+                        } else {
+                            console.warn("Ollama AI gagal atau offline:", err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Ollama gagal (${err.message}). Beralih ke ${nextProviderName}...`);
+                        }
                     }
-                } else {
-                    EsaLogger.subStep("Gemini API Key tidak disetel atau tidak valid, melewati Cloud LLM.");
+                } else if (currentProvider === 'gemini') {
+                    if (!geminiKey || geminiKey.length <= 15) {
+                        EsaLogger.subStep(`[LLM Percobaan ${attemptNum}] Gemini Key tidak disetel/valid, melompati ke penyedia berikutnya.`);
+                        continue;
+                    }
+
+                    try {
+                        const switchLabel = (attemptNum > 1) ? " (Switch ke Gemini Cloud)" : "";
+                        EsaLogger.step(4, `Penyusunan Respon AI${switchLabel}`, `[Percobaan ${attemptNum}] Mengirim prompt ke Gemini Cloud API (gemini-3.1-flash-lite) | Batas Waktu: 6s`);
+                        EsaLogger.subStep("Menghubungi Gemini Cloud API...");
+
+                        aiText = await callGeminiChat(systemInstruction, chatHistory, signal, 6000);
+                        if (aiText && aiText.trim().length > 0) {
+                            generatedSuccess = true;
+                            EsaLogger.success("Fase 4: Penyusunan Respon AI", "Gemini Cloud berhasil menyusun balasan", { reply: aiText });
+                            break;
+                        }
+                    } catch (err) {
+                        if (signal.aborted || err.isUserAbort) return;
+                        if (err.isTimeout) {
+                            console.warn(`Gemini Cloud melebihi batas waktu 6 detik (Attempt ${attemptNum}), switch ke ${nextProviderName}:`, err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Gemini Cloud memakan waktu > 6 detik! Otomatis switch ke ${nextProviderName}...`);
+                        } else {
+                            console.warn("Gemini API call gagal:", err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Gemini Cloud gagal (${err.message}). Beralih ke ${nextProviderName}...`);
+                        }
+                    }
                 }
             }
 
