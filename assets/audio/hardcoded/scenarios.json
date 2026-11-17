@@ -1,0 +1,297 @@
+{
+  "version": "1.1.0",
+  "description": "Registry skenario percakapan dengan audio ter-hardcode (ElevenLabs) untuk CareTech Robot ESA (Tanpa Emoji)",
+  "scenarios": [
+    {
+      "id": "sedih_hug",
+      "title": "Dukungan Saat Sedih",
+      "keywords": [
+        "sedih",
+        "lagi sedih",
+        "saya lagi sedih",
+        "aku lagi sedih",
+        "nangis",
+        "menangis",
+        "terpuruk",
+        "kecewa",
+        "down",
+        "hancur",
+        "patah hati",
+        "galau",
+        "berduka",
+        "sakit hati",
+        "bad day",
+        "murung",
+        "putus asa",
+        "ngerasa sendiri",
+        "merasa sendiri",
+        "pengen nangis",
+        "mau nangis",
+        "tak berdaya",
+        "hampa",
+        "sesak",
+        "sedih bgt",
+        "sedih banget"
+      ],
+      "stage1": {
+        "text": "Pasti berat banget ya rasanya... Sini peluk boneka dulu kawan, biar kamu merasa lebih tenang.",
+        "audio_file": "sedih_stage1_offer.mp3",
+        "robot_mood": "empathy"
+      },
+      "action": {
+        "type": "hug_or_hold",
+        "target_duration_ms": 2000,
+        "timeout_ms": 30000,
+        "description": "Peluk boneka atau genggam tangannya selama minimal 2 detik"
+      },
+      "stage2_success": {
+        "text": "Terima kasih pelukannya... Rasanya hangat sekali. Kalau kamu mau cerita, aku siap mendengarkan ya.",
+        "audio_file": "sedih_stage2_hugged.mp3",
+        "robot_mood": "comforted"
+      },
+      "stage2_timeout": {
+        "text": "Nggak apa-apa kok kalau belum mau peluk. Kamu aman di sini, pelan-pelan saja ya.",
+        "audio_file": "sedih_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    },
+    {
+      "id": "marah_breathe",
+      "title": "Menenangkan Amarah",
+      "keywords": [
+        "marah",
+        "lagi marah",
+        "saya lagi marah",
+        "aku lagi marah",
+        "murka",
+        "emosi",
+        "jengkel",
+        "kesal",
+        "kesel",
+        "benci",
+        "benci banget",
+        "benci bgt",
+        "kesel banget",
+        "kesel bgt",
+        "jengkel bgt",
+        "naik darah",
+        "mau meledak",
+        "muak",
+        "gak adil",
+        "dendam",
+        "pengen ngamuk",
+        "pengen teriak"
+      ],
+      "stage1": {
+        "text": "Aku tahu kamu lagi kesal banget... Yuk tarik napas bareng aku dulu, genggam tanganku 4 detik ya.",
+        "audio_file": "marah_stage1_offer.mp3",
+        "robot_mood": "thinking"
+      },
+      "action": {
+        "type": "breathe_hold",
+        "target_duration_ms": 4000,
+        "timeout_ms": 30000,
+        "description": "Tahan tangan boneka selama 4 detik sambil menarik napas dalam"
+      },
+      "stage2_success": {
+        "text": "Hembuskan pelan-pelan... Bagus. Kalau sudah lebih lega, ceritakan apa yang bikin kamu marah ya.",
+        "audio_file": "marah_stage2_breathed.mp3",
+        "robot_mood": "comforted"
+      },
+      "stage2_timeout": {
+        "text": "Nggak apa-apa kawan. Tenangkan dirimu dulu ya, aku tetap temani di sini.",
+        "audio_file": "marah_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    },
+    {
+      "id": "takut_hold_hand",
+      "title": "Menenangkan Rasa Takut",
+      "keywords": [
+        "takut",
+        "lagi takut",
+        "cemas",
+        "gelisah",
+        "khawatir",
+        "was-was",
+        "panik",
+        "deg-degan",
+        "degdegan",
+        "gemetaran",
+        "gemetar",
+        "overthinking",
+        "grogi",
+        "parno",
+        "takut banget",
+        "takut bgt",
+        "ngeri",
+        "gak tenang",
+        "takut gagal"
+      ],
+      "stage1": {
+        "text": "Tenang kawan, kamu aman di sini... Coba genggam tanganku sebentar ya, biar rasa takutmu berkurang.",
+        "audio_file": "takut_stage1_offer.mp3",
+        "robot_mood": "thinking"
+      },
+      "action": {
+        "type": "hold_hand",
+        "target_duration_ms": 3000,
+        "timeout_ms": 30000,
+        "description": "Genggam erat tangan boneka selama minimal 3 detik"
+      },
+      "stage2_success": {
+        "text": "Genggamanmu hangat kawan... Apapun yang bikin kamu cemas, kita hadapi bareng-bareng ya.",
+        "audio_file": "takut_stage2_held.mp3",
+        "robot_mood": "comforted"
+      },
+      "stage2_timeout": {
+        "text": "Tidak apa-apa kawan. Ingat ya, kamu aman dan tidak sendirian di sini.",
+        "audio_file": "takut_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    },
+    {
+      "id": "lelah_pat",
+      "title": "Istirahat Saat Lelah",
+      "keywords": [
+        "lelah",
+        "capek",
+        "penat",
+        "letih",
+        "lemas",
+        "lemes",
+        "pusing",
+        "burnout",
+        "overwhelmed",
+        "terkuras",
+        "drop",
+        "capek hati",
+        "capek mental",
+        "capek bgt",
+        "capek banget",
+        "lelah bgt",
+        "lelah banget",
+        "gak sanggup lagi",
+        "gak kuat lagi",
+        "berat banget",
+        "berat bgt",
+        "pengen rebahan",
+        "pengen istirahat"
+      ],
+      "stage1": {
+        "text": "Hari ini pasti melelahkan ya... Boleh elus kepalaku sebentar kawan, anggap hadiah buat dirimu sendiri.",
+        "audio_file": "lelah_stage1_offer.mp3",
+        "robot_mood": "empathy"
+      },
+      "action": {
+        "type": "pat_head",
+        "target_duration_ms": 2000,
+        "timeout_ms": 30000,
+        "description": "Elus lembut kepala atau tangan boneka selama minimal 2 detik"
+      },
+      "stage2_success": {
+        "text": "Terima kasih kawan... Kamu sudah berjuang hebat hari ini. Istirahat sejenak yuk.",
+        "audio_file": "lelah_stage2_patted.mp3",
+        "robot_mood": "idle"
+      },
+      "stage2_timeout": {
+        "text": "Tarik napas dan rileks ya kawan. Istirahatlah, kamu berhak rehat hari ini.",
+        "audio_file": "lelah_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    },
+    {
+      "id": "bahagia_highfive",
+      "title": "Merayakan Keberhasilan",
+      "keywords": [
+        "senang",
+        "bahagia",
+        "gembira",
+        "berhasil",
+        "sukses",
+        "bangga",
+        "lega",
+        "bersyukur",
+        "hore",
+        "yey",
+        "yes",
+        "alhamdulillah",
+        "menang",
+        "juara",
+        "seru banget",
+        "seru bgt",
+        "seneng bgt",
+        "senang banget",
+        "asyik",
+        "mantap",
+        "keren",
+        "dapet nilai bagus"
+      ],
+      "stage1": {
+        "text": "Wah, senangnya dengar kabar itu! Keren banget kawan, yuk tos bareng aku!",
+        "audio_file": "bahagia_stage1_offer.mp3",
+        "robot_mood": "happy"
+      },
+      "action": {
+        "type": "high_five",
+        "target_duration_ms": 1000,
+        "timeout_ms": 30000,
+        "description": "Tepuk atau tekan tangan boneka sekali untuk tos"
+      },
+      "stage2_success": {
+        "text": "Tos mantap! Aku ikut bangga sama kamu kawan. Ceritakan dong momen serunya!",
+        "audio_file": "bahagia_stage2_fived.mp3",
+        "robot_mood": "happy"
+      },
+      "stage2_timeout": {
+        "text": "Selamat ya kawan! Semoga rasa bahagia ini menemani harimu terus!",
+        "audio_file": "bahagia_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    },
+    {
+      "id": "sapaan_checkin",
+      "title": "Sapaan Hangat",
+      "keywords": [
+        "halo",
+        "hai",
+        "hello",
+        "hei",
+        "assalamualaikum",
+        "salam",
+        "selamat pagi",
+        "selamat siang",
+        "selamat sore",
+        "selamat malam",
+        "halo esa",
+        "hai esa",
+        "robot esa",
+        "caretech",
+        "care-tech",
+        "apa kabar",
+        "kamu siapa"
+      ],
+      "stage1": {
+        "text": "Halo kawan! Senang bisa ketemu kamu lagi. Jabat tanganku sebentar yuk buat salam.",
+        "audio_file": "sapaan_stage1_offer.mp3",
+        "robot_mood": "happy"
+      },
+      "action": {
+        "type": "handshake",
+        "target_duration_ms": 1000,
+        "timeout_ms": 30000,
+        "description": "Sentuh tangan boneka selama 1 detik untuk salam"
+      },
+      "stage2_success": {
+        "text": "Salam hangat kawan! Bagaimana kabarmu hari ini? Ada yang mau kamu ceritakan?",
+        "audio_file": "sapaan_stage2_greeted.mp3",
+        "robot_mood": "idle"
+      },
+      "stage2_timeout": {
+        "text": "Aku selalu ada di sini ya kawan. Panggil aku kapan pun kamu butuh teman.",
+        "audio_file": "sapaan_stage2_timeout.mp3",
+        "robot_mood": "idle"
+      }
+    }
+  ]
+}

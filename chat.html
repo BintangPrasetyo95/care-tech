@@ -517,6 +517,9 @@
             }
         }
     </style>
+    <!-- Hardcoded Scenarios Registry & Scenario Engine (Phase 2) dengan Cache Busting -->
+    <script src="js/data/scenarios-data.js?v=1.2.0"></script>
+    <script src="js/scenario-engine.js?v=1.2.0"></script>
 </head>
 <body>
     <!-- Floating Space & Paper Junk Background Decorations -->
@@ -901,6 +904,17 @@
                 <div style="margin-bottom: 0.7rem;">
                     <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">ElevenLabs API Key:</label>
                     <input type="password" id="eleven-key-input" placeholder="sk_..." style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mono); font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                </div>
+
+                <!-- Model Selection -->
+                <div style="margin-bottom: 0.7rem;">
+                    <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Model AI:</label>
+                    <select id="eleven-model-select" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mk); font-size: 0.92rem; outline: none; background: #fff; box-sizing: border-box;">
+                        <option value="eleven_multilingual_v2">Eleven Multilingual v2 (Sangat Alami & Fasih Bahasa Indonesia) ⭐</option>
+                        <option value="eleven_turbo_v2_5">Eleven Turbo v2.5 (Cepat & Berkualitas Tinggi)</option>
+                        <option value="eleven_flash_v2_5">Eleven Flash v2.5 (Latensi Terendah)</option>
+                        <option value="eleven_flash_v2">Eleven Flash v2</option>
+                    </select>
                 </div>
 
                 <!-- Voice Selection -->
@@ -1745,9 +1759,9 @@
         // ==========================================
         // ELEVENLABS STATE & CONTROLS
         // ==========================================
-        let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_b97b2f7b5917432e5d98fab365037429a3c99258eef691ab";
+        let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_bb0012a69d96e67a46c636ae06d5c19e4664b4a713742df7";
         let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
-        let elevenModelId = "eleven_flash_v2_5";
+        let elevenModelId = localStorage.getItem('caretech_eleven_model') || "eleven_multilingual_v2";
         let currentAudio = null;
 
         function handleVoiceSelectChange(val) {
@@ -1757,6 +1771,7 @@
 
         function updateElevenLabsUi() {
             const keyInput = document.getElementById('eleven-key-input');
+            const modelSelect = document.getElementById('eleven-model-select');
             const voiceSelect = document.getElementById('eleven-voice-select');
             const customRow = document.getElementById('eleven-custom-row');
             const customInput = document.getElementById('eleven-custom-voice');
@@ -1764,6 +1779,7 @@
             const ttsBtn = document.getElementById('btn-tts-toggle');
 
             if (keyInput) keyInput.value = elevenKey;
+            if (modelSelect) modelSelect.value = elevenModelId;
 
             if (voiceSelect) {
                 const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'WQ4h6sgS9p2XXvLsESBT'];
@@ -1780,7 +1796,8 @@
             if (statusTag) {
                 if (elevenKey && elevenKey.startsWith('sk_')) {
                     statusTag.className = 'tape tape-lime';
-                    statusTag.textContent = 'FLASH V2.5 (AKTIF)';
+                    const modelShort = elevenModelId.includes('multilingual') ? 'MULTILINGUAL V2' : (elevenModelId.includes('turbo') ? 'TURBO V2.5' : 'FLASH V2.5');
+                    statusTag.textContent = `${modelShort} (AKTIF)`;
                 } else {
                     statusTag.className = 'tape tape-sun';
                     statusTag.textContent = 'SUARA BAWAAN';
@@ -1800,11 +1817,13 @@
 
         function saveElevenLabsSettings() {
             const keyInput = document.getElementById('eleven-key-input');
+            const modelSelect = document.getElementById('eleven-model-select');
             const voiceSelect = document.getElementById('eleven-voice-select');
             const customInput = document.getElementById('eleven-custom-voice');
             const feedback = document.getElementById('eleven-feedback');
 
             const key = (keyInput ? keyInput.value : '').trim();
+            const model = modelSelect ? modelSelect.value : 'eleven_multilingual_v2';
             let voice = voiceSelect ? voiceSelect.value : 'EXAVITQu4vr4xnSDxMaL';
             if (voice === 'custom' && customInput) {
                 voice = customInput.value.trim() || 'EXAVITQu4vr4xnSDxMaL';
@@ -1812,8 +1831,10 @@
 
             elevenKey = key;
             elevenVoiceId = voice;
+            elevenModelId = model;
             localStorage.setItem('caretech_eleven_key', elevenKey);
             localStorage.setItem('caretech_eleven_voice', elevenVoiceId);
+            localStorage.setItem('caretech_eleven_model', elevenModelId);
 
             updateElevenLabsUi();
 
@@ -1828,8 +1849,10 @@
         function resetElevenLabsKey() {
             elevenKey = "";
             elevenVoiceId = "EXAVITQu4vr4xnSDxMaL";
+            elevenModelId = "eleven_multilingual_v2";
             localStorage.removeItem('caretech_eleven_key');
             localStorage.removeItem('caretech_eleven_voice');
+            localStorage.removeItem('caretech_eleven_model');
 
             updateElevenLabsUi();
 
@@ -2649,6 +2672,9 @@ Contoh respons ideal (1-2 kalimat pendek):
             if (currentAudio) {
                 try { currentAudio.pause(); currentAudio = null; } catch(e){}
             }
+            if (window.scenarioEngine) {
+                try { window.scenarioEngine.stopAudio(); } catch(e){}
+            }
             if ('speechSynthesis' in window) {
                 try { window.speechSynthesis.cancel(); } catch(e){}
             }
@@ -2747,6 +2773,7 @@ Contoh respons ideal (1-2 kalimat pendek):
         }
 
         function updateSpeakerUi() {
+            window.speakerOutputMode = speakerOutputMode;
             const btn = document.getElementById('btn-tts-toggle');
             if (!btn) return;
             const isEleven = elevenKey && elevenKey.startsWith('sk_');
@@ -3255,6 +3282,20 @@ Contoh respons ideal (1-2 kalimat pendek):
             sendEsp({ type: "action", state: state, ...extra });
         }
 
+        // Expose ESP32 hardware bridge functions to global window for ScenarioEngine
+        window.isEspConnected = isEspConnected;
+        window.sendEsp = sendEsp;
+        window.sendEspAction = sendEspAction;
+        window.streamPcmToEsp = streamPcmToEsp;
+        window.speakerOutputMode = speakerOutputMode;
+
+        // Status & Proteksi Anti-Spam Sensor Sentuh Sisi Web
+        let clientTouchLocked = false;
+        let lastTouchMsgTime = 0;
+        let clientTouchSpamCount = 0;
+        let clientTouchResetTimer = null;
+        let lastTouchAvatarWink = 0;
+
         function handleEspMessage(line) {
             if (!line) return;
             let msg;
@@ -3281,39 +3322,61 @@ Contoh respons ideal (1-2 kalimat pendek):
                         else barFill.style.background = '#22c55e';
                     }
                 }
+            } else if (msg.type === "touch_spam_status") {
+                // Notifikasi status anti-spam lockout dari ESP32
+                clientTouchLocked = !!msg.locked;
+                if (clientTouchLocked) {
+                    console.warn("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor dinonaktifkan sementara karena spam/jitter.");
+                } else {
+                    console.log("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor sentuh aktif kembali setelah 2 detik tenang.");
+                }
             } else if (msg.type === "touch") {
-                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh
+                const now = Date.now();
+
+                // Deteksi spam sisi web: Jika > 3 trigger dalam 1.5 detik, kunci sensor
+                if (now - lastTouchMsgTime <= 1500) {
+                    clientTouchSpamCount++;
+                } else {
+                    clientTouchSpamCount = 1;
+                }
+                lastTouchMsgTime = now;
+
+                if (clientTouchSpamCount >= 3) {
+                    clientTouchLocked = true;
+                    console.warn("[TOUCH ANTI-SPAM] Terdeteksi spam sentuhan! Sensor dinonaktifkan sementara.");
+                }
+
+                // Reset timer hening: Jika 2 detik tanpa sentuhan/spam, buka kuncian sensor
+                if (clientTouchResetTimer) clearTimeout(clientTouchResetTimer);
+                clientTouchResetTimer = setTimeout(() => {
+                    clientTouchLocked = false;
+                    clientTouchSpamCount = 0;
+                    console.log("[TOUCH ANTI-SPAM] 2 detik tenang tercapai. Sensor sentuh kembali aktif.");
+                }, 2000);
+
+                // Jika sensor sedang terkunci akibat spam, abaikan sepenuhnya
+                if (clientTouchLocked) {
+                    return;
+                }
+
+                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
                 if (isWaitingForHug) {
                     onHugReceived(msg.duration || 2.0);
                     return;
                 }
 
-                const robotIcon = document.getElementById('robot-icon');
-                if (msg.target === "hand" || msg.action === "hold_hand") {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤝";
+                // Di luar skenario aktif: TIDAK mentrigger suara dan TIDAK membanjiri chat UI!
+                // Cukup feedback visual halus pada ikon robot (dibatasi maksimal 1x per 3 detik)
+                if (now - lastTouchAvatarWink > 3000) {
+                    lastTouchAvatarWink = now;
+                    const robotIcon = document.getElementById('robot-icon');
+                    if (robotIcon && (robotIcon.textContent === "🤖" || robotIcon.textContent === "")) {
+                        const iconChoice = (msg.target === "hand" || msg.action === "hold_hand") ? "🤝" : "🤗";
+                        robotIcon.textContent = iconChoice;
                         setTimeout(() => {
-                            if (robotIcon.textContent === "🤝") robotIcon.textContent = "🤖";
-                        }, 2500);
+                            if (robotIcon.textContent === iconChoice) robotIcon.textContent = "🤖";
+                        }, 1200);
                     }
-                    const handPart = msg.part === "left_hand" ? "tangan kiri" : (msg.part === "right_hand" ? "tangan kanan" : "tangan");
-                    addMessageToUI(`🤝 <em>[Genggaman Tangan] Kamu sedang memegang ${handPart} boneka ESA... Kehangatan genggaman tanganmu sangat menenangkan! 💖</em>`, "system");
-                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤗";
-                        setTimeout(() => {
-                            if (robotIcon.textContent === "🤗") robotIcon.textContent = "🤖";
-                        }, 2500);
-                    }
-                    addMessageToUI("🤗 <em>[Pelukan Boneka] Kamu sedang memeluk erat boneka ESA... Pelukan hangatmu membuat ESA merasa sangat dekat denganmu! 🫂</em>", "system");
-                } else {
-                    if (robotIcon) {
-                        robotIcon.textContent = "🥰";
-                        setTimeout(() => {
-                            if (robotIcon.textContent === "🥰") robotIcon.textContent = "🤖";
-                        }, 2500);
-                    }
-                    addMessageToUI("🥰 <em>[Sentuhan Fisik] Sentuhan penuh kasih sayang diterima boneka ESA...</em>", "system");
                 }
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
@@ -3717,9 +3780,8 @@ Contoh respons ideal (1-2 kalimat pendek):
                         showSafetyCard();
                     }
 
-                    if (isSadnessMessage(transcription)) {
+                    if (checkAndTriggerScenario(transcription)) {
                         currentActiveVoiceMsgId = null;
-                        initiateSadnessHugFlow(transcription);
                         return;
                     }
 
@@ -3763,9 +3825,8 @@ Contoh respons ideal (1-2 kalimat pendek):
                         showSafetyCard();
                     }
 
-                    if (isSadnessMessage(transcription)) {
+                    if (checkAndTriggerScenario(transcription)) {
                         currentActiveVoiceMsgId = null;
-                        initiateSadnessHugFlow(transcription);
                         return;
                     }
 
@@ -3881,10 +3942,9 @@ Kembalikan format JSON valid dengan 2 field:
                             }
                         }
 
-                        // Jika hasil transkripsi suara mengandung rasa sedih: tawarkan pelukan 2 detik!
-                        if (isSadnessMessage(transcription)) {
+                        // Jika hasil transkripsi suara memicu skenario (misal: sedih): tawarkan pelukan 2 detik!
+                        if (checkAndTriggerScenario(transcription)) {
                             currentActiveVoiceMsgId = null;
-                            initiateSadnessHugFlow(transcription);
                             return;
                         }
 
@@ -3915,9 +3975,8 @@ Kembalikan format JSON valid dengan 2 field:
                                 textEl.style.fontStyle = "normal";
                             }
                             if (checkRiskContent(whisperFallback)) showSafetyCard();
-                            if (isSadnessMessage(whisperFallback)) {
+                            if (checkAndTriggerScenario(whisperFallback)) {
                                 currentActiveVoiceMsgId = null;
-                                initiateSadnessHugFlow(whisperFallback);
                                 return;
                             }
                             chatHistory.push({
@@ -3974,8 +4033,9 @@ Kembalikan format JSON valid dengan 2 field:
         }
 
         // ==========================================
-        // FITUR INTERAKTIF: COMFORT HUG (PELUKAN 2 DETIK SAAT SEDIH)
+        // FITUR INTERAKTIF: HARDCODED SCENARIOS & COMFORT HUG
         // ==========================================
+        let activeScenario = null;
         let pendingSadnessText = null;
         let isWaitingForHug = false;
         let hugWaitingTimer = null;
@@ -3986,6 +4046,10 @@ Kembalikan format JSON valid dengan 2 field:
 
         function isSadnessMessage(text) {
             if (!text) return false;
+            if (typeof window.findMatchingScenario === 'function') {
+                const sc = window.findMatchingScenario(text);
+                if (sc && sc.id === 'sedih_hug') return true;
+            }
             const lower = text.toLowerCase();
             const sadWords = [
                 'sedih', 'nangis', 'menangis', 'terpuruk', 'kecewa', 'down', 'hancur',
@@ -3997,11 +4061,41 @@ Kembalikan format JSON valid dengan 2 field:
             return sadWords.some(w => lower.includes(w));
         }
 
+        function checkAndTriggerScenario(text) {
+            if (!text || typeof text !== 'string') return false;
+            let sc = null;
+            if (typeof window.findMatchingScenario === 'function') {
+                sc = window.findMatchingScenario(text);
+            }
+            if (!sc && isSadnessMessage(text)) {
+                sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            }
+            if (sc) {
+                initiateScenarioFlow(sc, text);
+                return true;
+            }
+            return false;
+        }
+
         function setEspSensorsActive(active) {
             sendEsp({ type: "set_sensors", enabled: !!active });
         }
 
         function initiateSadnessHugFlow(text) {
+            const sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            initiateScenarioFlow(sc, text);
+        }
+
+        function initiateScenarioFlow(scenario, text) {
+            if (!scenario) {
+                scenario = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
+            }
+            if (!scenario) {
+                executeAiChatPipeline(text);
+                return;
+            }
+
+            activeScenario = scenario;
             pendingSadnessText = text;
             isWaitingForHug = true;
 
@@ -4009,35 +4103,53 @@ Kembalikan format JSON valid dengan 2 field:
             setEspSensorsActive(true);
 
             const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) robotIcon.textContent = "🥺";
 
-            const offerMsg = "Aku di sini ya kawan... Makasih sudah mau bilang ke aku, pasti berat banget rasanya. Kalau kamu mau, boleh peluk boneka atau genggam tanganku 2 detik ya? Aku ingin temani kamu.";
+            const offerMsg = scenario.stage1?.text || "Pasti berat banget ya rasanya... Sini peluk boneka dulu kawan, biar kamu merasa lebih tenang.";
+            
             addMessageToUI(offerMsg, 'ai');
-            speakText(offerMsg);
-            sendEspAction("happy");
+            chatHistory.push({
+                "role": "model",
+                "parts": [{ "text": offerMsg }]
+            });
+
+            // Putar audio Tahap 1 dari ElevenLabs (instan lokal) atau fallback ke speakText
+            if (window.scenarioEngine && scenario.stage1?.audioUrl) {
+                window.scenarioEngine.playAudio(scenario.stage1.audioUrl);
+            } else {
+                speakText(offerMsg);
+            }
+            sendEspAction(scenario.stage1?.robotMood || "happy");
 
             // Tampilkan kartu interaktif countdown 30 detik di antarmuka chat
-            const cardId = "hug-card-" + Date.now();
-            const hugCardHtml = `
-                <div id="${cardId}" style="margin-top: 0.5rem; padding: 0.9rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
+            const cardId = "scenario-card-" + Date.now();
+            const actionDesc = scenario.action?.description || "Lakukan interaksi fisik dengan boneka";
+            const timeoutSec = Math.round((scenario.action?.timeoutMs || 30000) / 1000);
+
+            const cardHtml = `
+                <div id="${cardId}" class="scenario-action-card" style="margin-top: 0.5rem; padding: 0.95rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
                     <div style="font-weight: 800; color: #be123c; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
-                        <span>🫂 Menunggu Pelukan / Genggaman Tangan (Tahan 2 Detik)</span>
-                        <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; background: #ffe4e6; padding: 0.2rem 0.55rem; border-radius: 6px; color: #9f1239; border: 1.5px solid #f43f5e;">30s</span>
+                        <span>${scenario.title || "Menunggu Respon Fisik"}</span>
+                        <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; background: #ffe4e6; padding: 0.2rem 0.55rem; border-radius: 6px; color: #9f1239; border: 1.5px solid #f43f5e;">${timeoutSec}s</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #475569; margin-bottom: 0.6rem; line-height: 1.4;">
-                        <strong>Peluk boneka</strong> (sensor sentuh) atau <strong>genggam tangannya</strong> (sensor tekanan) selama <strong>minimal 2 detik</strong> agar kehangatanmu sampai ke hati ESA.
+                        ${actionDesc}.
                     </div>
                     <div style="width: 100%; height: 9px; background: #fecdd3; border-radius: 6px; overflow: hidden; margin-bottom: 0.7rem; border: 1px solid #fda4af;">
                         <div id="hug-progress-bar" style="width: 100%; height: 100%; background: #f43f5e; transition: width 1s linear;"></div>
                     </div>
-                    <button type="button" id="btn-screen-hug" class="btn btn-small" style="width: 100%; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
-                        👆 Atau Tekan &amp; Tahan di Sini (2 Detik)
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" id="btn-screen-hug" class="btn btn-small" style="flex: 1; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
+                            Tekan dan Tahan di Sini
+                        </button>
+                        <button type="button" class="btn btn-small" style="background: #ffffff; border: 2px solid var(--ink); color: #64748b; padding: 0.55rem 0.8rem; font-size: 0.82rem; font-weight: bold;" onclick="cancelScenarioFlow('${cardId}')" title="Lewati interaksi ini">
+                            Lewati
+                        </button>
+                    </div>
                 </div>
             `;
-            addMessageToUI(hugCardHtml, 'system');
+            addMessageToUI(cardHtml, 'system');
 
-            let remainingSec = 30;
+            let remainingSec = timeoutSec;
             const badgeEl = document.getElementById('hug-countdown-badge');
             const progressEl = document.getElementById('hug-progress-bar');
 
@@ -4045,17 +4157,45 @@ Kembalikan format JSON valid dengan 2 field:
             hugCountdownInterval = setInterval(() => {
                 remainingSec--;
                 if (badgeEl) badgeEl.textContent = `${remainingSec}s`;
-                if (progressEl) progressEl.style.width = `${(remainingSec / 30) * 100}%`;
+                if (progressEl) progressEl.style.width = `${(remainingSec / timeoutSec) * 100}%`;
 
                 if (remainingSec <= 0) {
                     clearInterval(hugCountdownInterval);
+                    hugCountdownInterval = null;
                 }
             }, 1000);
 
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             hugWaitingTimer = setTimeout(() => {
                 onHugTimeoutExpired(cardId);
-            }, 30000);
+            }, timeoutSec * 1000);
+        }
+
+        function cancelScenarioFlow(cardId) {
+            if (!isWaitingForHug) return;
+            isWaitingForHug = false;
+
+            if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+            if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+
+            const card = document.getElementById(cardId) || document.querySelector('[id^="scenario-card-"], [id^="hug-card-"]');
+            if (card) {
+                card.innerHTML = `
+                    <div style="font-size: 0.82rem; color: #64748b; font-style: italic;">
+                        Interaksi pelukan dilewati. ESA tetap setia menemanimu.
+                    </div>
+                `;
+                card.style.background = "#f8fafc";
+                card.style.borderColor = "#cbd5e1";
+            }
+
+            const robotIcon = document.getElementById('robot-icon');
+            if (robotIcon) robotIcon.textContent = "🤖";
+
+            if (window.scenarioEngine) window.scenarioEngine.stopAudio();
+            sendEspAction("idle");
+            pendingSadnessText = null;
+            activeScenario = null;
         }
 
         function onHugReceived(duration = 2.0) {
@@ -4065,35 +4205,52 @@ Kembalikan format JSON valid dengan 2 field:
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
 
+            const sc = activeScenario || (typeof window.CARETECH_SCENARIOS !== 'undefined' ? window.CARETECH_SCENARIOS['sedih_hug'] : null);
             const robotIcon = document.getElementById('robot-icon');
             if (robotIcon) {
-                robotIcon.textContent = "🤗";
+                robotIcon.textContent = sc?.stage2_success?.robotIcon || "🤗";
                 robotIcon.style.animation = 'robotWobble 0.6s infinite';
             }
 
             // Ganti kartu countdown dengan konfirmasi hangat
-            const hugCards = document.querySelectorAll('[id^="hug-card-"]');
-            hugCards.forEach(el => {
+            const scenarioCards = document.querySelectorAll('[id^="scenario-card-"], [id^="hug-card-"]');
+            scenarioCards.forEach(el => {
                 el.innerHTML = `
                     <div style="font-weight: 800; color: #15803d; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                        <span>✨</span>
-                        <span>Pelukan Hangat 2 Detik Diterima! (${duration.toFixed(1)}s)</span>
+                        <span>Aksi Berhasil (${duration.toFixed(1)}s)</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #166534; margin-top: 0.25rem;">
-                        Terima kasih kawan, pelukanmu sangat menenangkan. ESA sedang menyusun kata untukmu... 💖
+                        Terima kasih kawan, ESA hadir menemanimu.
                     </div>
                 `;
                 el.style.background = "#f0fdf4";
                 el.style.borderColor = "#22c55e";
             });
 
-            // Langsung proses jawaban AI dengan konteks pelukan!
-            const sadText = pendingSadnessText;
+            // Respon Tahap 2: Langsung putar suara ElevenLabs seketika tanpa jeda pemikiran LLM
+            const followUpMsg = sc?.stage2_success?.text || "Terima kasih atas pelukan hangatnya kawan... Rasanya nyaman sekali. Sekarang, aku siap mendengarkan ceritamu jika kamu ingin cerita. Pelan-pelan saja ya.";
             pendingSadnessText = null;
+            activeScenario = null;
 
             setTimeout(() => {
-                executeAiChatPipeline(sadText, " (Konteks Emosional: Siswa baru saja memeluk bonekamu karena sedang merasa sedih. Sambutlah dengan rasa terima kasih yang hangat dan tulus, akui perasaannya tanpa menilai, buat dia merasa didengar dan tidak sendirian, tunda saran/solusi sampai dia siap, maksimal 1-2 kalimat pendek).");
-            }, 500);
+                addMessageToUI(followUpMsg, 'ai');
+                chatHistory.push({
+                    "role": "model",
+                    "parts": [{ "text": followUpMsg }]
+                });
+
+                if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
+                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
+                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
+                        if (robotIcon) robotIcon.style.animation = 'none';
+                    });
+                } else {
+                    speakText(followUpMsg, () => {
+                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
+                        if (robotIcon) robotIcon.style.animation = 'none';
+                    });
+                }
+            }, 300);
         }
 
         function onHugTimeoutExpired(cardId) {
@@ -4110,46 +4267,68 @@ Kembalikan format JSON valid dengan 2 field:
             if (card) {
                 card.innerHTML = `
                     <div style="font-size: 0.82rem; color: #64748b; font-style: italic;">
-                        Waktu pelukan 30 detik berakhir. Tidak apa-apa, kamu aman di sini.
+                        Waktu pelukan berakhir. Tidak apa-apa, kamu aman di sini.
                     </div>
                 `;
                 card.style.background = "#f8fafc";
                 card.style.borderColor = "#cbd5e1";
             }
 
-            // Tanyakan lagi kenapa jika tidak dilakukan selama 15 detik
-            const askWhyMsg = "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja ceritanya kalau kamu mau, aku siap mendengarkan kok.";
+            // Jawaban Tahap 2 Timeout: lembut dan tidak memaksa
+            const sc = activeScenario || (typeof window.CARETECH_SCENARIOS !== 'undefined' ? window.CARETECH_SCENARIOS['sedih_hug'] : null);
+            const askWhyMsg = sc?.stage2_timeout?.text || "Nggak apa-apa kalau belum siap peluk kawan, aku tetap temani di sini ya. Pelan-pelan aja kalau mau cerita, aku siap mendengarkan kok.";
+            pendingSadnessText = null;
+            activeScenario = null;
+
             addMessageToUI(askWhyMsg, 'ai');
-            speakText(askWhyMsg, () => {
-                sendEspAction("idle");
+            chatHistory.push({
+                "role": "model",
+                "parts": [{ "text": askWhyMsg }]
             });
 
-            pendingSadnessText = null;
+            if (window.scenarioEngine && sc?.stage2_timeout?.audioUrl) {
+                window.scenarioEngine.playAudio(sc.stage2_timeout.audioUrl, () => {
+                    sendEspAction(sc?.stage2_timeout?.robotMood || "idle");
+                });
+            } else {
+                speakText(askWhyMsg, () => {
+                    sendEspAction(sc?.stage2_timeout?.robotMood || "idle");
+                });
+            }
         }
 
         function startScreenHug() {
             if (!isWaitingForHug) return;
             screenHugStartTime = Date.now();
             const btn = document.getElementById('btn-screen-hug');
+            const targetDur = activeScenario?.action?.requiredDurationMs ? (activeScenario.action.requiredDurationMs / 1000) : 2.0;
             if (btn) {
                 btn.style.background = "#e11d48";
-                btn.textContent = "⏳ Menahan pelukan... Tahan 2 detik ya!";
+                btn.textContent = `Menahan sentuhan... 0.0s / ${targetDur.toFixed(1)}s`;
             }
             if (screenHugInterval) clearInterval(screenHugInterval);
             screenHugInterval = setInterval(() => {
-                if (Date.now() - screenHugStartTime >= 2000) {
+                const elapsed = (Date.now() - screenHugStartTime) / 1000;
+                if (btn) {
+                    btn.textContent = `Menahan sentuhan... ${Math.min(targetDur, elapsed).toFixed(1)}s / ${targetDur.toFixed(1)}s`;
+                }
+                if (elapsed >= targetDur) {
                     clearInterval(screenHugInterval);
-                    onHugReceived(2.0);
+                    screenHugInterval = null;
+                    onHugReceived(targetDur);
                 }
             }, 100);
         }
 
         function stopScreenHug() {
-            if (screenHugInterval) clearInterval(screenHugInterval);
+            if (screenHugInterval) {
+                clearInterval(screenHugInterval);
+                screenHugInterval = null;
+            }
             const btn = document.getElementById('btn-screen-hug');
             if (btn && isWaitingForHug) {
                 btn.style.background = "#fb7185";
-                btn.textContent = "👆 Atau Tekan &amp; Tahan di Sini (2 Detik)";
+                btn.textContent = "Tekan dan Tahan di Sini";
             }
         }
 
@@ -4227,6 +4406,7 @@ Kembalikan format JSON valid dengan 2 field:
                 if (hugCountdownInterval) clearInterval(hugCountdownInterval);
                 isWaitingForHug = false;
                 pendingSadnessText = null;
+                activeScenario = null;
                 const badge = document.getElementById('hug-countdown-badge');
                 if (badge) badge.textContent = "Dibatalkan";
             }
@@ -4298,9 +4478,8 @@ Kembalikan format JSON valid dengan 2 field:
                 pendingSadnessText = null;
             }
 
-            // JIKA MERASA SEDIH: Tawarkan pelukan / sentuhan 2 detik terlebih dahulu!
-            if (isSadnessMessage(text)) {
-                initiateSadnessHugFlow(text);
+            // INTERSEPTOR SKENARIO HARDCODE (ElevenLabs): Jika pesan cocok dengan kata kunci skenario
+            if (checkAndTriggerScenario(text)) {
                 return;
             }
 
