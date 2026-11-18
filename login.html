@@ -242,10 +242,60 @@
             transform: translateY(-50%) scale(1.05);
         }
 
-        /* Demo Account Button */
+        /* Role Selector Tabs (Cardboard Cosmos) */
+        .role-switch-container {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .role-tab-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 0.6rem;
+            font-family: var(--imp);
+            font-size: 1.1rem;
+            letter-spacing: 0.04em;
+            color: var(--ink);
+            background: #ffffff;
+            border: 3.5px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 var(--ink);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .role-tab-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 6px 6px 0 var(--ink);
+            background: #fffde6;
+        }
+
+        .role-tab-btn.active {
+            background: var(--lime);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--ink);
+        }
+
+        .role-tab-btn.tab-guardian.active {
+            background: var(--sun);
+        }
+
+        /* Demo Buttons Group */
+        .demo-buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-top: 0.85rem;
+        }
+
         .btn-demo-cosmos {
             width: 100%;
-            margin-top: 0.85rem;
+            margin-top: 0;
             background: #ffffff;
             color: var(--ink);
             font-family: var(--mono);
@@ -274,6 +324,14 @@
         .btn-demo-cosmos:active {
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        .btn-demo-guardian {
+            background: #fff8eb;
+        }
+
+        .btn-demo-guardian:hover {
+            background: #ffd1dc !important;
         }
 
         /* Submit Button */
@@ -492,20 +550,31 @@
         <!-- Scrapbook Card Form -->
         <div class="login-card-body">
             <span class="stamp-badge-login">MASUK! ★</span>
-            <span class="tape tape-lime" style="margin-bottom: 0.4rem; font-size: 0.85rem;">KARTU AKSES // HARMONIA</span>
             
-            <h1 class="login-title">Masuk Kelas</h1>
+            <!-- Role Selector Tabs -->
+            <div class="role-switch-container" role="tablist" aria-label="Pilihan Peran Masuk">
+                <button type="button" class="role-tab-btn active" id="tab-student" onclick="setLoginRole('student')" role="tab" aria-selected="true">
+                    🎒 <span>Siswa</span>
+                </button>
+                <button type="button" class="role-tab-btn tab-guardian" id="tab-guardian" onclick="setLoginRole('guardian')" role="tab" aria-selected="false">
+                    👨‍👩‍👧 <span>Wali Murid</span>
+                </button>
+            </div>
+
+            <span class="tape tape-lime" id="role-tape" style="margin-bottom: 0.4rem; font-size: 0.85rem;">KARTU AKSES // SISWA HARMONIA</span>
+            
+            <h1 class="login-title" id="login-title">Masuk Kelas</h1>
 
             <form action="reflection.html" method="GET" id="login-form">
-                <!-- NISN Input -->
+                <!-- Identifier Input (NISN / Phone / ID Wali) -->
                 <div class="form-group-cosmos">
-                    <label for="nisn" class="label-cosmos">
+                    <label for="login-id" class="label-cosmos" id="id-label">
                         🔢 <span>NISN (Nomor Induk Siswa)</span>
                     </label>
                     <input 
                         type="text" 
-                        id="nisn" 
-                        name="nisn" 
+                        id="login-id" 
+                        name="identifier" 
                         class="input-cosmos" 
                         placeholder="Contoh: 00892026" 
                         required 
@@ -535,17 +604,22 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" class="btn-submit-cosmos">
+                <button type="submit" class="btn-submit-cosmos" id="btn-submit">
                     Masuk ke Refleksi Diri 🚀
                 </button>
 
-                <!-- Demo Account Button -->
-                <button type="button" class="btn-demo-cosmos" onclick="loginDemo()" title="Masuk langsung menggunakan akun demo">
-                    🎮 Coba Akun Demo
-                </button>
+                <!-- Demo Account Buttons Group -->
+                <div class="demo-buttons-group">
+                    <button type="button" class="btn-demo-cosmos" id="btn-demo-main" onclick="triggerCurrentDemo()" title="Masuk langsung menggunakan akun demo yang aktif">
+                        🎮 Coba Demo Siswa (Zuruki)
+                    </button>
+                    <button type="button" class="btn-demo-cosmos btn-demo-guardian" id="btn-demo-alt" onclick="switchTabAndLoginDemo()" title="Masuk langsung sebagai Wali Murid">
+                        👨‍👩‍👧 Coba Demo Wali Murid (Bpk. Hendra)
+                    </button>
+                </div>
 
                 <!-- Footer Info -->
-                <div class="login-footer-info">
+                <div class="login-footer-info" id="footer-info">
                     <span>Mengalami kendala login? Hubungi <strong>Guru Wali Kelas</strong> atau <strong>Guru BK</strong>.</span>
                 </div>
             </form>
@@ -558,6 +632,8 @@
     </footer>
 
     <script>
+        let currentRole = 'student';
+
         // Toggle password show/hide
         function togglePasswordVisibility() {
             const pwdInput = document.getElementById('password');
@@ -571,24 +647,142 @@
             }
         }
 
-        // Login directly as demo account
-        function loginDemo() {
-            const nisnInput = document.getElementById('nisn');
-            const pwdInput = document.getElementById('password');
-            if (nisnInput) nisnInput.value = '00892026';
-            if (pwdInput) pwdInput.value = 'harmonia123';
+        // Switch role UI mode
+        function setLoginRole(role) {
+            currentRole = role;
+            const tabStudent = document.getElementById('tab-student');
+            const tabGuardian = document.getElementById('tab-guardian');
+            const roleTape = document.getElementById('role-tape');
+            const stampBadge = document.querySelector('.stamp-badge-login');
+            const loginTitle = document.getElementById('login-title');
+            const idLabel = document.getElementById('id-label');
+            const idInput = document.getElementById('login-id');
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnDemoMain = document.getElementById('btn-demo-main');
+            const btnDemoAlt = document.getElementById('btn-demo-alt');
+            const footerInfo = document.getElementById('footer-info');
+
+            if (role === 'guardian') {
+                tabStudent.classList.remove('active');
+                tabGuardian.classList.add('active');
+                tabStudent.setAttribute('aria-selected', 'false');
+                tabGuardian.setAttribute('aria-selected', 'true');
+
+                roleTape.className = 'tape tape-pink';
+                roleTape.textContent = 'PORTAL WALI // HARMONIA SCHOOL';
+                stampBadge.textContent = 'WALI! ★';
+                stampBadge.style.background = 'var(--sun)';
+                stampBadge.style.color = 'var(--ink)';
+
+                loginTitle.textContent = 'Masuk Portal Wali';
+                idLabel.innerHTML = '📱 <span>No. Handphone / ID Wali</span>';
+                idInput.placeholder = 'Contoh: 081234567890 atau WALI-00892026';
+                btnSubmit.textContent = 'Masuk ke Portal Wali 🏡';
+                btnSubmit.style.background = 'var(--sun)';
+
+                btnDemoMain.innerHTML = '👨‍👩‍👧 Coba Demo Wali Murid (Bpk. Hendra)';
+                btnDemoMain.className = 'btn-demo-cosmos btn-demo-guardian';
+                btnDemoAlt.innerHTML = '🎒 Coba Demo Siswa (Zuruki)';
+                btnDemoAlt.className = 'btn-demo-cosmos';
+
+                footerInfo.innerHTML = '<span>Akun wali murid terhubung langsung dengan perkembangan belajar <strong>Zuruki (Kelas V-A)</strong>.</span>';
+            } else {
+                tabGuardian.classList.remove('active');
+                tabStudent.classList.add('active');
+                tabStudent.setAttribute('aria-selected', 'true');
+                tabGuardian.setAttribute('aria-selected', 'false');
+
+                roleTape.className = 'tape tape-lime';
+                roleTape.textContent = 'KARTU AKSES // SISWA HARMONIA';
+                stampBadge.textContent = 'MASUK! ★';
+                stampBadge.style.background = 'var(--pink)';
+                stampBadge.style.color = '#ffffff';
+
+                loginTitle.textContent = 'Masuk Kelas';
+                idLabel.innerHTML = '🔢 <span>NISN (Nomor Induk Siswa)</span>';
+                idInput.placeholder = 'Contoh: 00892026';
+                btnSubmit.textContent = 'Masuk ke Refleksi Diri 🚀';
+                btnSubmit.style.background = 'var(--lime)';
+
+                btnDemoMain.innerHTML = '🎮 Coba Demo Siswa (Zuruki)';
+                btnDemoMain.className = 'btn-demo-cosmos';
+                btnDemoAlt.innerHTML = '👨‍👩‍👧 Coba Demo Wali Murid (Bpk. Hendra)';
+                btnDemoAlt.className = 'btn-demo-cosmos btn-demo-guardian';
+
+                footerInfo.innerHTML = '<span>Mengalami kendala login? Hubungi <strong>Guru Wali Kelas</strong> atau <strong>Guru BK</strong>.</span>';
+            }
+        }
+
+        // Trigger demo login for current selected tab
+        function triggerCurrentDemo() {
+            if (currentRole === 'guardian') {
+                loginDemoGuardian();
+            } else {
+                loginDemoStudent();
+            }
+        }
+
+        // Switch to the other tab and immediately log in
+        function switchTabAndLoginDemo() {
+            if (currentRole === 'guardian') {
+                loginDemoStudent();
+            } else {
+                loginDemoGuardian();
+            }
+        }
+
+        // Login directly as demo student
+        function loginDemoStudent() {
+            localStorage.setItem('caretech_user_role', 'student');
+            localStorage.setItem('caretech_user_name', 'Zuruki');
             localStorage.setItem('caretech_student_name', 'Zuruki');
-            document.getElementById('login-form').submit();
+            localStorage.setItem('caretech_student_class', 'Kelas V-A // Harmonia');
+            const idInput = document.getElementById('login-id');
+            const pwdInput = document.getElementById('password');
+            if (idInput) idInput.value = '00892026';
+            if (pwdInput) pwdInput.value = 'harmonia123';
+            window.location.href = 'reflection.html';
+        }
+
+        // Login directly as demo guardian
+        function loginDemoGuardian() {
+            localStorage.setItem('caretech_user_role', 'guardian');
+            localStorage.setItem('caretech_user_name', 'Bpk. Hendra Wijaya');
+            localStorage.setItem('caretech_student_name', 'Zuruki');
+            localStorage.setItem('caretech_student_class', 'Kelas V-A // Harmonia');
+            localStorage.setItem('caretech_guardian_relation', 'Ayah Kandung / Wali Murid');
+            localStorage.setItem('caretech_guardian_phone', '0812-3456-7890');
+            const idInput = document.getElementById('login-id');
+            const pwdInput = document.getElementById('password');
+            if (idInput) idInput.value = 'WALI-00892026';
+            if (pwdInput) pwdInput.value = 'wali123';
+            window.location.href = 'guardian.html';
+        }
+
+        // Legacy compatibility alias
+        function loginDemo() {
+            triggerCurrentDemo();
         }
 
         // Form submit handler
         document.getElementById('login-form').addEventListener('submit', (e) => {
-            const nisn = document.getElementById('nisn').value.trim();
-            if (nisn) {
-                // Ensure profile name exists in session
-                if (!localStorage.getItem('caretech_student_name')) {
-                    localStorage.setItem('caretech_student_name', 'Zuruki');
-                }
+            e.preventDefault();
+            const idVal = document.getElementById('login-id').value.trim();
+
+            if (currentRole === 'guardian') {
+                localStorage.setItem('caretech_user_role', 'guardian');
+                localStorage.setItem('caretech_user_name', 'Bpk. Hendra Wijaya');
+                localStorage.setItem('caretech_student_name', 'Zuruki');
+                localStorage.setItem('caretech_student_class', 'Kelas V-A // Harmonia');
+                localStorage.setItem('caretech_guardian_relation', 'Ayah Kandung / Wali Murid');
+                localStorage.setItem('caretech_guardian_phone', idVal || '0812-3456-7890');
+                window.location.href = 'guardian.html';
+            } else {
+                localStorage.setItem('caretech_user_role', 'student');
+                localStorage.setItem('caretech_user_name', 'Zuruki');
+                localStorage.setItem('caretech_student_name', 'Zuruki');
+                localStorage.setItem('caretech_student_class', 'Kelas V-A // Harmonia');
+                window.location.href = 'reflection.html';
             }
         });
     </script>
