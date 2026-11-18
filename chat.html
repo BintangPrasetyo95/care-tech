@@ -2360,9 +2360,35 @@
         }
 
         // ----------------------------------------------------
-        // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
+        // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA / WALI
         // ----------------------------------------------------
+        function getActiveChatRole() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryRole = urlParams.get('role');
+            if (queryRole === 'guardian') {
+                localStorage.setItem('caretech_user_role', 'guardian');
+                localStorage.setItem('caretech_user_name', 'Bpk. Hendra Wijaya');
+                localStorage.setItem('caretech_student_name', 'Zuruki');
+            }
+            return localStorage.getItem('caretech_user_role') || 'student';
+        }
+
         function getEsaSystemPrompt(sensorContext = "") {
+            const role = getActiveChatRole();
+            if (role === 'guardian') {
+                return `Kamu ESA, asisten kecerdasan buatan ramah keluarga dan pendamping pola asuh dari CareTech. Kamu sedang mendampingi orang tua/wali murid (Bpk. Hendra, wali dari siswa Zuruki kelas 5 SD di Harmonia School). Bicara santun, hangat, empatik, suportif, dan solutif dalam bahasa Indonesia yang bersahabat.
+
+ATURAN UTAMA KONSULTASI WALI:
+1. Berikan respon yang hangat, menenangkan, dan solutif (maksimal 2-4 kalimat atau poin praktis sederhana).
+2. FOKUS TOPIK: Membantu orang tua mendengarkan anak tanpa menghakimi, mengenali tanda-tanda perundungan (bullying) di sekolah, merespons anak yang tertutup atau enggan cerita, dan mengarahkan kerja sama positif dengan Guru Wali Kelas (Ibu Rina) atau Guru BK (Pak Dimas).
+3. JIKA ORANG TUA KHAWATIR ATAU CURHAT TENTANG ANAK:
+   - Apresiasi kepedulian Ayah/Bunda terhadap perkembangan anak.
+   - Sarankan teknik komunikasi terbuka (pertanyaan terbuka, mendengar aktif tanpa langsung menasihati atau menyalahkan).
+   - Jangan menyalahkan pola asuh orang tua; kuatkan rasa percaya diri mereka dalam mendampingi anak.
+4. JIKA ADA INDIKASI BULLYING DI SEKOLAH:
+   - Beri rasa aman, sarankan orang tua mencatat kronologi secara tenang dan segera berkoordinasi dengan sekolah secara konstruktif.` + sensorContext;
+            }
+
             return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, tulus, dan bahasa Indonesia sederhana.
 
 ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
@@ -2442,6 +2468,27 @@ Contoh respons ideal (1-2 kalimat pendek):
         // Built-in Empathetic AI Brain (Respons Offline Terkalibrasi Singkat 1-2 Kalimat)
         function generateEmpatheticResponse(userText) {
             const lower = userText.toLowerCase();
+            const role = getActiveChatRole();
+
+            // Respons Khusus Mode Wali Murid (Konsultasi Pola Asuh & Pencegahan Bullying)
+            if (role === 'guardian') {
+                if (lower.includes('bicara') || lower.includes('tertutup') || lower.includes('curhat') || lower.includes('diam') || lower.includes('cerita')) {
+                    return "Untuk membuka obrolan dengan anak, Ayah/Bunda bisa mulai dari obrolan ringan tanpa menghakimi, misalnya bertanya 'Momen apa yang paling bikin kamu tersenyum hari ini?' lalu dengarkan ceritanya dengan sabar.";
+                }
+                if (lower.includes('tanda') || lower.includes('bully') || lower.includes('ejek') || lower.includes('dijauhi') || lower.includes('perundungan')) {
+                    return "Tanda anak mengalami bullying biasanya terlihat dari perubahan sikap mendadak, enggan ke sekolah, atau barang pribadi sering rusak. Tetap berikan rasa aman dan yakinkan bahwa itu bukan kesalahannya.";
+                }
+                if (lower.includes('lapor') || lower.includes('sekolah') || lower.includes('bk') || lower.includes('guru')) {
+                    return "Ayah/Bunda dapat segera berkoordinasi dengan Ibu Guru Rina (Wali Kelas) atau Pak Guru Dimas (BK). Sampaikan catatan fakta kejadian secara tenang agar pihak sekolah dapat mengambil langkah perlindungan terbaik.";
+                }
+                if (lower.includes('percaya diri') || lower.includes('minder') || lower.includes('takut') || lower.includes('berani')) {
+                    return "Apresiasi setiap usaha dan keberanian kecil Zuruki setiap hari. Kehadiran dan rasa percaya dari orang tua adalah pondasi paling kuat bagi rasa percaya diri anak.";
+                }
+                if (lower.includes('suasana') || lower.includes('rumah') || lower.includes('makan') || lower.includes('nyaman')) {
+                    return "Jadikan momen makan malam atau santai sore sebagai waktu bebas gawai. Luangkan 15 menit mendengarkan cerita anak tentang harinya dengan penuh perhatian.";
+                }
+                return "Saya siap mendampingi Ayah/Bunda. Apakah ada situasi pertemanan atau perubahan perilaku Zuruki yang ingin kita diskusikan bersama?";
+            }
 
             // 1. Protokol Risiko / Bahaya / Self-Harm
             if (checkRiskContent(userText)) {
@@ -5420,6 +5467,70 @@ Kembalikan format JSON valid dengan 2 field:
                     cancelChatLoading(true);
                 }
             });
+
+            // Adapt Chat UI for Guardian Role if active
+            const currentRole = getActiveChatRole();
+            if (currentRole === 'guardian') {
+                const headerBadge = document.querySelector('.chat-header-scrapbook .tape');
+                if (headerBadge) {
+                    headerBadge.className = 'tape tape-pink';
+                    headerBadge.textContent = 'MODE WALI MURID // KONSULTASI POLA ASUH';
+                }
+                const headerTitle = document.querySelector('.chat-header-scrapbook h3');
+                if (headerTitle) {
+                    headerTitle.textContent = 'ESA (CareTech Family Companion)';
+                }
+                const initialBubble = document.querySelector('#chat-messages .msg-bubble.ai div:not(.ai-avatar-mini)');
+                if (initialBubble) {
+                    initialBubble.innerHTML = `<strong>Halo Bpk. Hendra! Saya ESA. 📦✨</strong><br>Asisten AI ramah keluarga dari CareTech. Ada yang ingin Ayah/Bunda diskusikan seputar pendampingan karakter atau situasi perundungan yang dihadapi anak di sekolah?`;
+                }
+                const chipsBar = document.querySelector('.curhat-chips-bar');
+                if (chipsBar) {
+                    chipsBar.innerHTML = `
+                        <span style="font-family: var(--imp); font-size: 1.05rem; font-weight: 800; color: #333; align-self: center; margin-right: 0.3rem; flex-shrink: 0;">⚡ TOPIK WALI:</span>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana tips mengajak anak berbicara saat ia tampak murung dan tertutup?')">
+                            💡 Tips bicara dengan anak
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana cara mengenali tanda-tanda anak mengalami bullying di sekolah?')">
+                            🛡️ Tanda bullying di sekolah
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Kapan waktu yang tepat bagi orang tua melapor ke Guru BK sekolah?')">
+                            🤝 Kapan lapor ke Guru BK?
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana cara menumbuhkan rasa percaya diri anak dalam pergaulan?')">
+                            ❤️ Menguatkan rasa percaya diri
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana menciptakan suasana bercerita yang nyaman di rumah?')">
+                            🥪 Suasana nyaman di rumah
+                        </div>
+                    `;
+                }
+                const inputArea = document.getElementById('chat-input');
+                if (inputArea) {
+                    inputArea.placeholder = 'Tuliskan pertanyaan atau hal yang ingin dikonsultasikan seputar anak... (Tekan Enter)';
+                }
+            }
+
+            // Handle URL Query auto-prompt (e.g. from guardian.html fast chips)
+            const chatUrlParams = new URLSearchParams(window.location.search);
+            const qParam = chatUrlParams.get('q');
+            if (qParam) {
+                let promptText = '';
+                if (qParam === 'tips-bicara') {
+                    promptText = 'Bagaimana tips mengajak anak berbicara saat ia tampak murung dan tertutup?';
+                } else if (qParam === 'kenali-tanda') {
+                    promptText = 'Bagaimana cara mengenali tanda-tanda anak mengalami bullying di sekolah?';
+                } else {
+                    promptText = qParam;
+                }
+                setTimeout(() => {
+                    const chatInput = document.getElementById('chat-input');
+                    if (chatInput) {
+                        chatInput.value = promptText;
+                        sendMessage();
+                    }
+                }, 600);
+            }
         });
     </script>
     <script src="dropdown.js"></script>
