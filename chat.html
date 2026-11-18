@@ -3733,12 +3733,12 @@ Contoh respons ideal (1-2 kalimat pendek):
                     }
                 }
             } else if (msg.type === "touch_spam_status") {
-                // Notifikasi status anti-spam lockout dari ESP32
+                // Notifikasi status anti-spam lockout DARI ESP32 untuk Modul Touch Sensor (TTP223)
                 clientTouchLocked = !!msg.locked;
                 if (clientTouchLocked) {
-                    console.warn("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor dinonaktifkan sementara karena spam/jitter.");
+                    console.warn("[TOUCH ANTI-SPAM] ESP32: Modul Touch Sensor (TTP223) dinonaktifkan sementara karena spam/jitter. (FSR TETAP AKTIF!)");
                 } else {
-                    console.log("[TOUCH ANTI-SPAM] ESP32 melaporkan sensor sentuh aktif kembali setelah 2 detik tenang.");
+                    console.log("[TOUCH ANTI-SPAM] ESP32: Modul Touch Sensor aktif kembali setelah 2 detik tenang.");
                 }
             } else if (msg.type === "touch") {
                 const now = Date.now();
@@ -3749,30 +3749,37 @@ Contoh respons ideal (1-2 kalimat pendek):
                     return;
                 }
 
-                // Deteksi spam sisi web: Jika > 4 trigger dalam 1.5 detik, kunci sensor
-                if (now - lastTouchMsgTime <= 1500) {
-                    clientTouchSpamCount++;
-                } else {
-                    clientTouchSpamCount = 1;
-                }
-                lastTouchMsgTime = now;
+                // Cek apakah sinyal ini berasal dari sensor FSR (Tekanan Analog) atau Touch Sensor (Digital TTP223)
+                const isFsr = (msg.sensor === "fsr1" || msg.sensor === "fsr2" || msg.part === "left_hand" || msg.part === "right_hand");
 
-                if (clientTouchSpamCount >= 4) {
-                    clientTouchLocked = true;
-                    console.warn("[TOUCH ANTI-SPAM] Terdeteksi spam sentuhan! Sensor dinonaktifkan sementara.");
-                }
+                // Anti-spam HANYA diterapkan ke Modul Touch Sensor (TTP223), BUKAN FSR!
+                if (!isFsr) {
+                    // Deteksi spam sisi web khusus Touch Sensor: Jika > 4 trigger dalam 1.5 detik, kunci Touch Sensor
+                    if (now - lastTouchMsgTime <= 1500) {
+                        clientTouchSpamCount++;
+                    } else {
+                        clientTouchSpamCount = 1;
+                    }
+                    lastTouchMsgTime = now;
 
-                // Reset timer hening: Jika 2 detik tanpa sentuhan/spam, buka kuncian sensor
-                if (clientTouchResetTimer) clearTimeout(clientTouchResetTimer);
-                clientTouchResetTimer = setTimeout(() => {
-                    clientTouchLocked = false;
-                    clientTouchSpamCount = 0;
-                    console.log("[TOUCH ANTI-SPAM] 2 detik tenang tercapai. Sensor sentuh kembali aktif.");
-                }, 2000);
+                    if (clientTouchSpamCount >= 4) {
+                        clientTouchLocked = true;
+                        console.warn("[TOUCH ANTI-SPAM] Terdeteksi spam pada modul Touch Sensor! Touch Sensor dinonaktifkan sementara (FSR TETAP AKTIF).");
+                    }
 
-                // Jika sensor sedang terkunci akibat spam, abaikan sepenuhnya
-                if (clientTouchLocked) {
-                    return;
+                    // Reset timer hening khusus Touch Sensor: 2 detik tenang membuka kuncian
+                    if (clientTouchResetTimer) clearTimeout(clientTouchResetTimer);
+                    clientTouchResetTimer = setTimeout(() => {
+                        clientTouchLocked = false;
+                        clientTouchSpamCount = 0;
+                        console.log("[TOUCH ANTI-SPAM] 2 detik tenang tercapai. Touch Sensor kembali aktif.");
+                    }, 2000);
+
+                    // Jika Touch Sensor sedang terkena spam lock, abaikan HANYA sinyal Touch Sensor ini
+                    if (clientTouchLocked) {
+                        console.log("[TOUCH ANTI-SPAM] Sinyal Touch Sensor diabaikan karena spam lock (FSR tetap bekerja normal).");
+                        return;
+                    }
                 }
 
                 // Identifikasi sensor fisik yang terpicu

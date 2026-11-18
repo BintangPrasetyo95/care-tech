@@ -1069,32 +1069,28 @@ void updateTouchSpamState() {
   }
   unsigned long now = millis();
 
-  // Periksa apakah ada aktivitas fisik seketika pada FSR atau TTP223
-  bool physicallyTouched = (fsr1Smoothed > FSR_TOUCH_THRESH || 
-                            fsr2Smoothed > FSR_TOUCH_THRESH || 
-                            digitalRead(TOUCH1_PIN) == HIGH || 
-                            digitalRead(TOUCH2_PIN) == HIGH);
+  // Periksa apakah ada aktivitas/noise HANYA pada modul touch sentuh TTP223 (bukan FSR)
+  bool touchPadActive = (digitalRead(TOUCH1_PIN) == HIGH || digitalRead(TOUCH2_PIN) == HIGH);
 
-  if (physicallyTouched) {
-    // Selama masih ada sentuhan atau spam noise, perbarui waktu aktivitas terakhir
-    // Ini memastikan timer 2 detik hening terus ter-reset!
+  if (touchPadActive) {
+    // Selama masih ada sentuhan atau spam noise pada Touch Sensor, perbarui waktu aktivitas terakhir
     lastTouchActivityMs = now;
   } else {
-    // Jika TIDAK ADA sentuhan sama sekali (senyap / quiet):
-    // Cek apakah sudah berlalu 2 detik tanpa sentuhan apapun
+    // Jika TIDAK ADA noise pada Touch Sensor selama 2 detik:
     if (now - lastTouchActivityMs >= QUIET_RECOVERY_MS) {
       if (touchSpamLocked) {
         touchSpamLocked = false;
         touchSpamCount = 0;
         Serial.println("\n-------------------------------------------------------");
-        Serial.println(">>> [TOUCH ANTI-SPAM] Sensor pulih! 2 detik tenang tanpa sentuhan.");
-        Serial.println(">>> Sensor sentuh kembali aktif dan siap digunakan.");
+        Serial.println(">>> [TOUCH ANTI-SPAM] Touch Sensor TTP223 pulih! 2 detik tenang tanpa spam.");
+        Serial.println(">>> Modul Touch Sensor kembali aktif.");
         Serial.println("-------------------------------------------------------\n");
 
         JsonDocument doc;
         doc["type"]   = "touch_spam_status";
         doc["locked"] = false;
-        doc["msg"]    = "Sensor sentuh kembali aktif setelah 2 detik tenang.";
+        doc["target"] = "touch_sensor_only";
+        doc["msg"]    = "Modul Touch Sensor kembali aktif setelah 2 detik tenang.";
         sendDoc(doc);
       } else {
         touchSpamCount = 0;
@@ -1108,7 +1104,7 @@ bool registerTouchAndCheckSpam() {
   lastTouchActivityMs = now;
 
   if (touchSpamLocked) {
-    return false; // Sedang terkunci / nonaktif
+    return false; // Modul touch sensor sedang terkunci / nonaktif akibat spam
   }
 
   // Cek apakah pemicuan ini terjadi dalam jendela cepat (< 1500 ms) dari pemicuan sebelumnya
@@ -1122,24 +1118,21 @@ bool registerTouchAndCheckSpam() {
   if (touchSpamCount >= SPAM_TRIGGER_LIMIT) {
     touchSpamLocked = true;
     Serial.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    Serial.printf(">>> [TOUCH ANTI-SPAM LOCKOUT] Terdeteksi %d pemicuan cepat dalam %lu ms!\n", touchSpamCount, SPAM_DETECT_WINDOW_MS);
-    Serial.println(">>> Sensor dinonaktifkan sementara untuk mencegah spam/jitter.");
-    Serial.println(">>> Harap diamkan selama 2 detik tanpa sentuhan untuk mengaktifkan kembali.");
+    Serial.printf(">>> [TOUCH ANTI-SPAM LOCKOUT] Terdeteksi %d pemicuan cepat pada Touch Sensor TTP223 dalam %lu ms!\n", touchSpamCount, SPAM_DETECT_WINDOW_MS);
+    Serial.println(">>> Modul Touch Sensor dinonaktifkan sementara untuk mencegah spam/jitter.");
+    Serial.println(">>> SENSOR TEKANAN FSR TETAP AKTIF DAN BISA DIGUNAKAN!");
+    Serial.println(">>> Harap diamkan Touch Sensor selama 2 detik tanpa sentuhan untuk mengaktifkan kembali.");
     Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
-    // Reset status sentuhan aktif
-    hugTouchStartMs = 0;
-    hugHold2sFired = false;
-    fsr1Pressed = false;
-    fsr2Pressed = false;
+    // Reset status modul touch digital saja (FSR TETAP BEKERJA NORMAL)
     digitalTouch1Active = false;
     digitalTouch2Active = false;
-    digitalWrite(LED_PIN, LOW);
 
     JsonDocument doc;
     doc["type"]   = "touch_spam_status";
     doc["locked"] = true;
-    doc["msg"]    = "Sensor sentuh dinonaktifkan sementara karena spam. Harap lepaskan 2 detik.";
+    doc["target"] = "touch_sensor_only";
+    doc["msg"]    = "Modul Touch Sensor dinonaktifkan sementara karena spam. Sensor tekanan FSR tetap aktif!";
     sendDoc(doc);
 
     return false;
@@ -1155,11 +1148,7 @@ void checkPressureSensors() {
   if (!sensorsEnabled) return; // Hanya aktif saat standby / diaktifkan sistem
   if (currentState == STATE_SPEAKING) return; // Kunci total selama robot bersuara
   if (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS) return; // Jeda 0.5s setelah suara berakhir
-  if (touchSpamLocked) {
-    fsr1Pressed = false;
-    fsr2Pressed = false;
-    return;
-  }
+  // FSR TIDAK DIBLOKIR OLEH touchSpamLocked! FSR tetap aktif meskipun Touch Sensor spam-locked.
   if (millis() - lastFsrCheckMs < 30) return; // Update berkala ~33 Hz
   lastFsrCheckMs = millis();
 
@@ -1183,11 +1172,8 @@ void checkPressureSensors() {
   bool touched1 = (fsr1Smoothed > FSR_TOUCH_THRESH);
   bool touched2 = (fsr2Smoothed > FSR_TOUCH_THRESH);
 
-  // Sentuhan FSR 1: Genggam Tangan Kiri Boneka
+  // Sentuhan FSR 1: Genggam Tangan Kiri Boneka (Langsung deteksi tanpa registerTouchAndCheckSpam)
   if (touched1 && !fsr1Pressed && (millis() - lastFsrReportMs > 600)) {
-    if (!registerTouchAndCheckSpam()) {
-      return;
-    }
     lastFsrReportMs = millis();
     fsr1Pressed = true;
 
@@ -1209,11 +1195,8 @@ void checkPressureSensors() {
     Serial.println(">>> [FSR 1 LEPAS] Genggaman Tangan Kiri Boneka Dilepas.");
   }
 
-  // Sentuhan FSR 2: Genggam Tangan Kanan Boneka
+  // Sentuhan FSR 2: Genggam Tangan Kanan Boneka (Langsung deteksi tanpa registerTouchAndCheckSpam)
   if (touched2 && !fsr2Pressed && (millis() - lastFsrReportMs > 600)) {
-    if (!registerTouchAndCheckSpam()) {
-      return;
-    }
     lastFsrReportMs = millis();
     fsr2Pressed = true;
 
@@ -1315,7 +1298,7 @@ void checkDigitalTouchSensors() {
 // PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
 // ==========================================
 void updateHugHoldTracker(bool isTouched) {
-  if (touchSpamLocked || currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
+  if (currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
     hugTouchStartMs = 0;
     hugHold2sFired = false;
     return;
@@ -1615,8 +1598,10 @@ void loop() {
   checkDigitalTouchSensors();
 
   // 4d. Pelacakan Pelukan / Sentuhan Tahan 2 Detik (FSR1, FSR2, atau Touch Digital)
-  if (sensorsEnabled && !touchSpamLocked) {
-    bool anyPhysTouched = (fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH || digitalRead(TOUCH1_PIN) == HIGH || digitalRead(TOUCH2_PIN) == HIGH);
+  if (sensorsEnabled) {
+    bool touchActive = (!touchSpamLocked) && (digitalRead(TOUCH1_PIN) == HIGH || digitalRead(TOUCH2_PIN) == HIGH);
+    bool fsrActive   = (fsr1Smoothed > FSR_TOUCH_THRESH || fsr2Smoothed > FSR_TOUCH_THRESH);
+    bool anyPhysTouched = (fsrActive || touchActive);
     updateHugHoldTracker(anyPhysTouched);
   } else {
     updateHugHoldTracker(false);
