@@ -1,0 +1,70 @@
+{
+  "name": "CareTech - Platform Kesehatan Mental Interaktif",
+  "short_name": "CareTech",
+  "description": "Platform edukasi dan kesehatan mental interaktif siswa Cardboard Cosmos dengan pendamping AI dan RPG retro.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fffdf5",
+  "theme_color": "#1e293b",
+  "lang": "id",
+  "dir": "ltr",
+  "categories": ["education", "health", "games"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard Siswa",
+      "short_name": "Dashboard",
+      "description": "Buka Dashboard Utama CareTech",
+      "url": "./dashboard.html",
+      "icons": [{ "src": "assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Robot ESA (Chat AI)",
+      "short_name": "Robot ESA",
+      "description": "Bicara dengan robot pendamping emosional ESA",
+      "url": "./chat.html",
+      "icons": [{ "src": "assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Game RPG Petualangan",
+      "short_name": "Game RPG",
+      "description": "Mulai petualangan interaktif RPG CareTech",
+      "url": "./play.html",
+      "icons": [{ "src": "assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Jurnal Refleksi",
+      "short_name": "Jurnal",
+      "description": "Catat refleksi dan perasaan harian",
+      "url": "./jurnal.html",
+      "icons": [{ "src": "assets/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CareTech">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <script src="js/pwa-register.js" defer></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareTech - Dashboard (Cardboard Cosmos)</title>
@@ -93,8 +102,15 @@
                 </ul>
             </div>
 
+            <!-- PWA Install Button (Otomatis tampil jika browser mendukung instalasi PWA) -->
+            <div style="padding: 0 1rem; margin-top: auto; padding-top: 1rem; text-align: center;">
+                <button type="button" class="pwa-install-btn btn-small" style="display: none; width: 100%; box-sizing: border-box; justify-content: center; align-items: center; gap: 8px; background: var(--sun); font-size: 0.85rem; padding: 0.6rem; cursor: pointer;" title="Pasang CareTech di layar utama perangkat">
+                    📲 Pasang Aplikasi
+                </button>
+            </div>
+
             <!-- Sidebar Footer Sticker -->
-            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+            <div style="padding-top: 0.6rem; text-align: center;">
                 <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
             </div>
         </nav>
