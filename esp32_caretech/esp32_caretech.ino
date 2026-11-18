@@ -1378,6 +1378,20 @@ void updateLedAnimation() {
 void checkCurhatButton() {
   int reading = isAnyButtonPressed() ? LOW : HIGH;
 
+  // =========================================================================
+  // PROTEKSI SUARA: Push button TIDAK BISA DITEKAN sampai suara selesai!
+  // =========================================================================
+  if (currentState == STATE_SPEAKING) {
+    // Sinkronkan state agar saat suara selesai, tombol tidak auto-trigger jika anak sedang menahan tombol
+    if (reading == LOW) {
+      buttonPressedSent = true;
+    } else {
+      buttonPressedSent = false;
+    }
+    lastButtonReading = reading;
+    return; // Kunci total tombol selama robot berbicara (audio tidak terpotong)
+  }
+
   if (reading != lastButtonReading) {
     lastDebounceTime = millis();
   }
@@ -1385,15 +1399,6 @@ void checkCurhatButton() {
   if ((millis() - lastDebounceTime) > debounceDelay) {
     if (reading == LOW && !buttonPressedSent) {
       buttonPressedSent = true;
-
-      // Jika robot sedang bicara, langsung potong suara speaker seketika!
-      if (currentState == STATE_SPEAKING) {
-        stopSpeakerAudio();
-        JsonDocument intDoc;
-        intDoc["type"]   = "interrupted";
-        intDoc["reason"] = "button_press";
-        sendDoc(intDoc);
-      }
 
       playRobotChime(2);
 

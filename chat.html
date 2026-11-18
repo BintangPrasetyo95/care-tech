@@ -3959,14 +3959,26 @@ Contoh respons ideal (1-2 kalimat pendek):
                     if (currentEcaState === "thinking") setRobotAvatar("idle");
                 }, 2200);
             } else if (msg.type === "interrupted") {
-                // Suara robot dipotong karena siswa mulai berbicara atau menekan tombol!
+                // Jangan potong suara robot jika sedang bicara!
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'interrupted' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 stopAllAudioAndSpeech();
             } else if (msg.type === "first_button_press") {
-                // Tombol push fisik ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                // Tombol push fisik ditekan untuk PERTAMA KALI: TOLAK jika robot masih bersuara
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'first_button_press' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 isFirstCurhatButtonPress = false;
                 handleFirstCurhatButtonPress(msg.text || "Halo eca, aku lagi sedih nih");
             } else if (msg.type === "button") {
-                // Tombol BOOT fisik pada robot ESP32 ditekan
+                // Tombol BOOT fisik pada robot ESP32 ditekan: TOLAK jika robot masih bersuara
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'button' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 stopAllAudioAndSpeech();
                 const promptText = msg.text || "Hai ESA! Aku menekan tombol robot fisikmu karena ingin curhat...";
                 sendQuickPrompt(promptText, "Tombol Fisik BOOT Robot (ESP32)");
@@ -3975,6 +3987,12 @@ Contoh respons ideal (1-2 kalimat pendek):
                     sendQuickPrompt(msg.text, "Pesan Serial ESP32 (Chat Event)");
                 }
             } else if (msg.type === "rec_status") {
+                // STATUS REKAM DARI MIKROFON INMP441 (Dinamis dengan Smart VAD)
+                if (msg.status === "recording" && isAiSpeaking) {
+                    console.warn("[BUTTON LOCKOUT] Perekaman mic ditolak karena suara robot belum selesai.");
+                    sendEsp({ type: "stop_rec" }); // Hentikan mic ESP32 seketika
+                    return;
+                }
                 // STATUS REKAM DARI MIKROFON INMP441 (Dinamis dengan Smart VAD)
                 const espMicBtn = document.getElementById('btn-esp-mic');
                 const micBtn = document.getElementById('btn-mic-test');
