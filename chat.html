@@ -2888,6 +2888,10 @@ Contoh respons ideal (1-2 kalimat pendek):
                 clearInterval(speechKeepAliveInterval);
                 speechKeepAliveInterval = null;
             }
+            if (typeof sensorActivationTimer !== 'undefined' && sensorActivationTimer) {
+                clearTimeout(sensorActivationTimer);
+                sensorActivationTimer = null;
+            }
             activeUtterance = null;
 
             // 1. Matikan suara di amplifier fisik robot (MAX98357A)
@@ -3131,13 +3135,21 @@ Contoh respons ideal (1-2 kalimat pendek):
                 return;
             }
 
-            // Hentikan suara yang sedang aktif sebelumnya
+            // Hentikan suara yang sedang aktif sebelumnya & kunci sensor fisik
             stopAllAudioAndSpeech();
+            if (typeof lockTouchAndFsrSensors === 'function') {
+                lockTouchAndFsrSensors();
+            }
+            isAiSpeaking = true;
 
             // 1. Jika sudah ada data PCM audio siap pakai (misal hasil decode)
             if (optionalPcmData && isEspConnected() && (speakerOutputMode === 'robot' || speakerOutputMode === 'both')) {
                 EsaLogger.step(6, "Sintesis Suara (TTS)", "Streaming PCM audio siap pakai ke ESP32 MAX98357A");
                 await streamPcmToEsp(optionalPcmData);
+                isAiSpeaking = false;
+                if (typeof scheduleSensorActivation === 'function') {
+                    scheduleSensorActivation(500);
+                }
                 if (onComplete) onComplete();
                 return;
             }
@@ -3220,7 +3232,11 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                     const checkAllComplete = () => {
                         if (laptopDone && espDone) {
+                            isAiSpeaking = false;
                             EsaLogger.success("Fase 6: Sintesis Suara", "Pemutaran suara selesai");
+                            if (typeof scheduleSensorActivation === 'function') {
+                                scheduleSensorActivation(500);
+                            }
                             if (onComplete) onComplete();
                         }
                     };
@@ -3278,9 +3294,17 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             if (speakerOutputMode === 'laptop' || speakerOutputMode === 'both') {
                 playIndonesianFallbackSpeech(cleanText, () => {
+                    isAiSpeaking = false;
+                    if (typeof scheduleSensorActivation === 'function') {
+                        scheduleSensorActivation(500);
+                    }
                     if (onComplete) onComplete();
                 });
             } else {
+                isAiSpeaking = false;
+                if (typeof scheduleSensorActivation === 'function') {
+                    scheduleSensorActivation(500);
+                }
                 if (onComplete) onComplete();
             }
         }
@@ -3584,6 +3608,97 @@ Contoh respons ideal (1-2 kalimat pendek):
         window.streamPcmToEsp = streamPcmToEsp;
         window.speakerOutputMode = speakerOutputMode;
 
+        // Kontrol Lockout Touch Sensor & FSR (0.5 Detik setelah ElevenLabs / Audio Berakhir)
+        let isTouchAndFsrEnabled = false;
+        let sensorActivationTimer = null;
+        let lastSpontaneousHugTime = 0;
+
+        function lockTouchAndFsrSensors() {
+            if (sensorActivationTimer) {
+                clearTimeout(sensorActivationTimer);
+                sensorActivationTimer = null;
+            }
+            isTouchAndFsrEnabled = false;
+            setEspSensorsActive(false);
+            console.log("[SENSOR LOCKOUT] Touch Sensor & FSR dikunci (Robot sedang bersuara).");
+        }
+
+        function scheduleSensorActivation(delayMs = 500, onActivated = null) {
+            if (sensorActivationTimer) {
+                clearTimeout(sensorActivationTimer);
+            }
+            sensorActivationTimer = setTimeout(() => {
+                isTouchAndFsrEnabled = true;
+                setEspSensorsActive(true);
+                sensorActivationTimer = null;
+                console.log(`[SENSOR UNLOCKED] ${delayMs}ms setelah suara berakhir: Touch Sensor & FSR KINI AKTIF!`);
+                if (typeof onActivated === 'function') {
+                    onActivated();
+                }
+            }, delayMs);
+        }
+
+        function confirmSpontaneousHug(sensorLabel = "Sensor Boneka", duration = 1.5) {
+            const now = Date.now();
+            if (isWaitingForHug || isAiSpeaking || !isTouchAndFsrEnabled) return;
+            if (now - lastSpontaneousHugTime < 8000) {
+                console.log("[HUG COOLDOWN] Pelukan spontan diabaikan (cooldown 8 detik).");
+                return;
+            }
+            lastSpontaneousHugTime = now;
+
+            console.log(`[HUG CONFIRMED] Pelukan fisik spontan terkonfirmasi via ${sensorLabel}!`);
+
+            const robotIcon = document.getElementById('robot-icon');
+            if (robotIcon) {
+                robotIcon.textContent = "🤗";
+                robotIcon.style.animation = 'robotWobble 0.6s infinite';
+            }
+
+            // Tampilkan badge konfirmasi pelukan fisik di UI chat
+            const hugConfirmHtml = `
+                <div style="margin: 0.5rem auto; text-align: center;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 0.35rem 0.9rem; background: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #15803d; box-shadow: 2px 2px 0 var(--ink);">
+                        🤗 Pelukan Terkonfirmasi! (${sensorLabel})
+                    </span>
+                </div>
+            `;
+            addMessageToUI(hugConfirmHtml, 'system');
+
+            // Gunakan pesan dan audio hardcoded resmi Sarah ElevenLabs: sedih_stage2_hugged.mp3
+            const confirmMsg = "Terima kasih pelukannya... Rasanya hangat sekali. Kalau kamu mau cerita, aku siap mendengarkan ya.";
+            addMessageToUI(confirmMsg, 'ai');
+            chatHistory.push({
+                "role": "model",
+                "parts": [{ "text": confirmMsg }]
+            });
+
+            const hardcodedAudioUrl = "assets/audio/hardcoded/sedih_stage2_hugged.mp3";
+            sendEspAction("comforted");
+
+            if (window.scenarioEngine && typeof window.scenarioEngine.playAudio === 'function') {
+                window.scenarioEngine.playAudio(hardcodedAudioUrl, () => {
+                    sendEspAction("idle");
+                    if (robotIcon) {
+                        robotIcon.textContent = "🤖";
+                        robotIcon.style.animation = 'none';
+                    }
+                });
+            } else {
+                speakText(confirmMsg, () => {
+                    sendEspAction("idle");
+                    if (robotIcon) {
+                        robotIcon.textContent = "🤖";
+                        robotIcon.style.animation = 'none';
+                    }
+                });
+            }
+        }
+
+        window.lockTouchAndFsrSensors = lockTouchAndFsrSensors;
+        window.scheduleSensorActivation = scheduleSensorActivation;
+        window.confirmSpontaneousHug = confirmSpontaneousHug;
+
         // Status & Proteksi Anti-Spam Sensor Sentuh Sisi Web
         let clientTouchLocked = false;
         let lastTouchMsgTime = 0;
@@ -3628,7 +3743,13 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "touch") {
                 const now = Date.now();
 
-                // Deteksi spam sisi web: Jika > 3 trigger dalam 1.5 detik, kunci sensor
+                // 1. Guard Lockout Suara: Sensor sentuh & FSR HANYA boleh aktif 0.5 detik SETELAH suara selesai
+                if (isAiSpeaking || !isTouchAndFsrEnabled) {
+                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (suara masih berputar atau dalam masa jeda 0.5s setelah suara).");
+                    return;
+                }
+
+                // Deteksi spam sisi web: Jika > 4 trigger dalam 1.5 detik, kunci sensor
                 if (now - lastTouchMsgTime <= 1500) {
                     clientTouchSpamCount++;
                 } else {
@@ -3636,7 +3757,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                 }
                 lastTouchMsgTime = now;
 
-                if (clientTouchSpamCount >= 3) {
+                if (clientTouchSpamCount >= 4) {
                     clientTouchLocked = true;
                     console.warn("[TOUCH ANTI-SPAM] Terdeteksi spam sentuhan! Sensor dinonaktifkan sementara.");
                 }
@@ -3654,25 +3775,24 @@ Contoh respons ideal (1-2 kalimat pendek):
                     return;
                 }
 
-                // Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
+                // Identifikasi sensor fisik yang terpicu
+                let sensorLabel = "Sensor Fisik Boneka";
+                if (msg.sensor === "fsr1" || msg.part === "left_hand") {
+                    sensorLabel = "Genggaman Tangan Kiri (FSR 1)";
+                } else if (msg.sensor === "fsr2" || msg.part === "right_hand") {
+                    sensorLabel = "Genggaman Tangan Kanan (FSR 2)";
+                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
+                    sensorLabel = "Sensor Pelukan Tubuh (TTP223)";
+                }
+
+                // 2. Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
                 if (isWaitingForHug) {
                     onHugReceived(msg.duration || 2.0);
                     return;
                 }
 
-                // Di luar skenario aktif: TIDAK mentrigger suara dan TIDAK membanjiri chat UI!
-                // Cukup feedback visual halus pada ikon robot (dibatasi maksimal 1x per 3 detik)
-                if (now - lastTouchAvatarWink > 3000) {
-                    lastTouchAvatarWink = now;
-                    const robotIcon = document.getElementById('robot-icon');
-                    if (robotIcon && (robotIcon.textContent === "🤖" || robotIcon.textContent === "")) {
-                        const iconChoice = (msg.target === "hand" || msg.action === "hold_hand") ? "🤝" : "🤗";
-                        robotIcon.textContent = iconChoice;
-                        setTimeout(() => {
-                            if (robotIcon.textContent === iconChoice) robotIcon.textContent = "🤖";
-                        }, 1200);
-                    }
-                }
+                // 3. Di luar skenario aktif: Konfirmasi pelukan fisik spontan dengan suara ElevenLabs hardcoded!
+                confirmSpontaneousHug(sensorLabel, msg.duration || 1.5);
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
                 const robotIcon = document.getElementById('robot-icon');
@@ -4479,13 +4599,12 @@ Kembalikan format JSON valid dengan 2 field:
 
             activeScenario = scenario;
             pendingSadnessText = text;
-            isWaitingForHug = true;
+            isWaitingForHug = false; // Belum menunggu pelukan sampai suara tuntas + 0.5s jeda!
 
             EsaLogger.step(3, "Eksekusi Skenario: Tahap 1 (Penawaran Aksi / Pelukan)", `ID: ${scenario.id} | Judul: ${scenario.title}`);
 
-            // Aktifkan sensor fisik pada ESP32 (Hanya hidup saat diminta pelukan/input)
-            EsaLogger.subStep("Mengaktifkan sensor sentuh fisik pada robot (set_sensors: true)");
-            setEspSensorsActive(true);
+            // Kunci sensor fisik pada robot selama robot berbicara
+            lockTouchAndFsrSensors();
 
             const robotIcon = document.getElementById('robot-icon');
 
@@ -4498,27 +4617,18 @@ Kembalikan format JSON valid dengan 2 field:
                 "parts": [{ "text": offerMsg }]
             });
 
-            // Putar audio Tahap 1 dari ElevenLabs (instan lokal) atau fallback ke speakText
-            EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${scenario.stage1?.audioUrl || 'TTS Dinamis'}`);
-            if (window.scenarioEngine && scenario.stage1?.audioUrl) {
-                window.scenarioEngine.playAudio(scenario.stage1.audioUrl);
-            } else {
-                speakText(offerMsg);
-            }
-            sendEspAction(scenario.stage1?.robotMood || "happy");
-
             // Tampilkan kartu interaktif countdown 30 detik di antarmuka chat
             const cardId = "scenario-card-" + Date.now();
             const actionDesc = scenario.action?.description || "Lakukan interaksi fisik dengan boneka";
             const timeoutSec = Math.round((scenario.action?.timeoutMs || 30000) / 1000);
 
-            EsaLogger.subStep(`Menampilkan kartu countdown interaktif (${timeoutSec} detik) di antarmuka chat`);
+            EsaLogger.subStep(`Menyiapkan kartu respon interaktif di antarmuka chat`);
 
             const cardHtml = `
                 <div id="${cardId}" class="scenario-action-card" style="margin-top: 0.5rem; padding: 0.95rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
                     <div style="font-weight: 800; color: #be123c; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; justify-content: space-between;">
                         <span>${scenario.title || "Menunggu Respon Fisik"}</span>
-                        <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.85rem; font-weight: bold; background: #ffe4e6; padding: 0.2rem 0.55rem; border-radius: 6px; color: #9f1239; border: 1.5px solid #f43f5e;">${timeoutSec}s</span>
+                        <span id="hug-countdown-badge" style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; background: #fee2e2; padding: 0.2rem 0.55rem; border-radius: 6px; color: #991b1b; border: 1.5px solid #f87171;">🎙️ Mendengarkan ESA...</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #475569; margin-bottom: 0.6rem; line-height: 1.4;">
                         ${actionDesc}.
@@ -4527,7 +4637,7 @@ Kembalikan format JSON valid dengan 2 field:
                         <div id="hug-progress-bar" style="width: 100%; height: 100%; background: #f43f5e; transition: width 1s linear;"></div>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button type="button" id="btn-screen-hug" class="btn btn-small" style="flex: 1; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
+                        <button type="button" id="btn-screen-hug" class="btn btn-small" style="flex: 1; background: #fb7185; color: #ffffff; padding: 0.55rem; font-size: 0.85rem; font-weight: bold; user-select: none; pointer-events: none; opacity: 0.6;" onpointerdown="startScreenHug()" onpointerup="stopScreenHug()" onpointerleave="stopScreenHug()">
                             Tekan dan Tahan di Sini
                         </button>
                         <button type="button" class="btn btn-small" style="background: #ffffff; border: 2px solid var(--ink); color: #64748b; padding: 0.55rem 0.8rem; font-size: 0.82rem; font-weight: bold;" onclick="cancelScenarioFlow('${cardId}')" title="Lewati interaksi ini">
@@ -4538,33 +4648,75 @@ Kembalikan format JSON valid dengan 2 field:
             `;
             addMessageToUI(cardHtml, 'system');
 
-            let remainingSec = timeoutSec;
-            const badgeEl = document.getElementById('hug-countdown-badge');
-            const progressEl = document.getElementById('hug-progress-bar');
+            // Fungsi pembuka jendela penerimaan pelukan tepat 0.5s setelah suara selesai
+            const startHugWaitingWindow = () => {
+                if (!activeScenario) return;
+                isWaitingForHug = true;
+                isTouchAndFsrEnabled = true;
+                setEspSensorsActive(true);
 
-            if (hugCountdownInterval) clearInterval(hugCountdownInterval);
-            hugCountdownInterval = setInterval(() => {
-                remainingSec--;
-                if (badgeEl) badgeEl.textContent = `${remainingSec}s`;
-                if (progressEl) progressEl.style.width = `${(remainingSec / timeoutSec) * 100}%`;
+                EsaLogger.step(3, "Sensor Fisik Siap Menerima Sentuhan", "0.5 detik setelah suara ElevenLabs selesai: FSR & Touch Sensor AKTIF!");
 
-                if (remainingSec <= 0) {
-                    clearInterval(hugCountdownInterval);
-                    hugCountdownInterval = null;
+                const badgeEl = document.getElementById('hug-countdown-badge');
+                const progressEl = document.getElementById('hug-progress-bar');
+                const btnScreen = document.getElementById('btn-screen-hug');
+
+                if (badgeEl) {
+                    badgeEl.textContent = `${timeoutSec}s (Peluk Sekarang!)`;
+                    badgeEl.style.background = '#ffe4e6';
+                    badgeEl.style.color = '#9f1239';
+                    badgeEl.style.borderColor = '#f43f5e';
+                    badgeEl.style.boxShadow = '0 0 10px rgba(244, 63, 94, 0.4)';
                 }
-            }, 1000);
+                if (btnScreen) {
+                    btnScreen.style.pointerEvents = 'auto';
+                    btnScreen.style.opacity = '1';
+                }
 
-            if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
-            hugWaitingTimer = setTimeout(() => {
-                onHugTimeoutExpired(cardId);
-            }, timeoutSec * 1000);
+                let remainingSec = timeoutSec;
+                if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+                hugCountdownInterval = setInterval(() => {
+                    remainingSec--;
+                    if (badgeEl) badgeEl.textContent = `${remainingSec}s`;
+                    if (progressEl) progressEl.style.width = `${(remainingSec / timeoutSec) * 100}%`;
+
+                    if (remainingSec <= 0) {
+                        clearInterval(hugCountdownInterval);
+                        hugCountdownInterval = null;
+                    }
+                }, 1000);
+
+                if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
+                hugWaitingTimer = setTimeout(() => {
+                    onHugTimeoutExpired(cardId);
+                }, timeoutSec * 1000);
+            };
+
+            // Putar audio Tahap 1 dari ElevenLabs (instan lokal) atau fallback ke speakText
+            EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${scenario.stage1?.audioUrl || 'TTS Dinamis'}`);
+            sendEspAction(scenario.stage1?.robotMood || "happy");
+
+            const handleStage1VoiceEnd = () => {
+                // Tepat 0.5 detik (500ms) setelah suara ElevenLabs selesai, aktifkan sensor fisik!
+                scheduleSensorActivation(500, startHugWaitingWindow);
+            };
+
+            if (window.scenarioEngine && scenario.stage1?.audioUrl) {
+                window.scenarioEngine.playAudio(scenario.stage1.audioUrl, handleStage1VoiceEnd);
+            } else {
+                speakText(offerMsg, handleStage1VoiceEnd);
+            }
         }
 
         function cancelScenarioFlow(cardId) {
-            if (!isWaitingForHug) return;
+            if (!isWaitingForHug && !activeScenario) return;
             EsaLogger.cancel("Fase 3: Skenario Interaktif", "Interaksi dilewati / di-skip oleh pengguna via tombol Lewati");
             isWaitingForHug = false;
 
+            if (typeof sensorActivationTimer !== 'undefined' && sensorActivationTimer) {
+                clearTimeout(sensorActivationTimer);
+                sensorActivationTimer = null;
+            }
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
 
@@ -4609,7 +4761,7 @@ Kembalikan format JSON valid dengan 2 field:
             scenarioCards.forEach(el => {
                 el.innerHTML = `
                     <div style="font-weight: 800; color: #15803d; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                        <span>Aksi Berhasil (${duration.toFixed(1)}s)</span>
+                        <span>✓ Pelukan Diterima & Terkonfirmasi (${duration.toFixed(1)}s) 🤗</span>
                     </div>
                     <div style="font-size: 0.84rem; color: #166534; margin-top: 0.25rem;">
                         Terima kasih kawan, ESA hadir menemanimu.

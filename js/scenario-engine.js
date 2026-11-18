@@ -245,6 +245,9 @@
 
             if (typeof window !== 'undefined') {
                 window.isAiSpeaking = true;
+                if (typeof window.lockTouchAndFsrSensors === 'function') {
+                    window.lockTouchAndFsrSensors();
+                }
                 if (window.EsaLogger && window.EsaLogger.currentPhase) {
                     window.EsaLogger.subStep(`[ScenarioEngine] Memutar audio: ${audioUrl.split('/').pop()} (Speaker Mode: ${speakerMode})`);
                 }
@@ -361,9 +364,9 @@
                 action: scenario.action
             });
 
-            // Aktifkan sensor fisik pada ESP32 jika fungsi tersedia
-            if (typeof window !== 'undefined' && typeof window.setEspSensorsActive === 'function') {
-                window.setEspSensorsActive(true);
+            // Kunci sensor fisik selama audio Tahap 1 bersuara
+            if (typeof window !== 'undefined' && typeof window.lockTouchAndFsrSensors === 'function') {
+                window.lockTouchAndFsrSensors();
             }
             if (typeof window !== 'undefined' && typeof window.sendEspAction === 'function') {
                 window.sendEspAction(scenario.stage1?.robotMood || "happy");
@@ -372,33 +375,39 @@
             // Putar audio Tahap 1 ElevenLabs secara instan
             const stage1Audio = scenario.stage1?.audioUrl;
             this.playAudio(stage1Audio, () => {
-                // Audio tahap 1 selesai diputar
-            });
+                // Audio tahap 1 selesai diputar -> beri jeda 0.5s sebelum membuka sensor fisik
+                const activateScenarioAction = () => {
+                    this.setState(ScenarioStates.WAITING_ACTION);
 
-            // Masuk ke status menunggu aksi dari siswa
-            this.setState(ScenarioStates.WAITING_ACTION);
+                    // Setup timer & countdown interval
+                    const timeoutMs = scenario.action?.timeoutMs || 30000;
+                    this.remainingSeconds = Math.round(timeoutMs / 1000);
 
-            // Setup timer & countdown interval
-            const timeoutMs = scenario.action?.timeoutMs || 30000;
-            this.remainingSeconds = Math.round(timeoutMs / 1000);
+                    this.countdownInterval = setInterval(() => {
+                        this.remainingSeconds--;
+                        this.emit('countdownTick', {
+                            remaining: this.remainingSeconds,
+                            total: Math.round(timeoutMs / 1000),
+                            scenario: this.activeScenario
+                        });
 
-            this.countdownInterval = setInterval(() => {
-                this.remainingSeconds--;
-                this.emit('countdownTick', {
-                    remaining: this.remainingSeconds,
-                    total: Math.round(timeoutMs / 1000),
-                    scenario: this.activeScenario
-                });
+                        if (this.remainingSeconds <= 0) {
+                            clearInterval(this.countdownInterval);
+                            this.countdownInterval = null;
+                        }
+                    }, 1000);
 
-                if (this.remainingSeconds <= 0) {
-                    clearInterval(this.countdownInterval);
-                    this.countdownInterval = null;
+                    this.actionTimer = setTimeout(() => {
+                        this.handleTimeout();
+                    }, timeoutMs);
+                };
+
+                if (typeof window !== 'undefined' && typeof window.scheduleSensorActivation === 'function') {
+                    window.scheduleSensorActivation(500, activateScenarioAction);
+                } else {
+                    setTimeout(activateScenarioAction, 500);
                 }
-            }, 1000);
-
-            this.actionTimer = setTimeout(() => {
-                this.handleTimeout();
-            }, timeoutMs);
+            });
         }
 
         /**

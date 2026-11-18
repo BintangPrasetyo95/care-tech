@@ -224,6 +224,10 @@ unsigned long lastDigitalTouchReportMs = 0;
 unsigned long hugTouchStartMs = 0;
 bool hugHold2sFired = false;
 
+// Cooldown Sensor Setelah Robot Bersuara (0.5 Detik Lockout setelah ElevenLabs / Audio Berakhir)
+unsigned long lastSpeechEndMs = 0;
+const unsigned long SENSOR_SPEECH_COOLDOWN_MS = 500; // Jeda 0.5 detik (500 ms)
+
 // ==========================================
 // ANTI-SPAM PROTEKSI SENSOR SENTUH (TOUCH LOCKOUT)
 // ==========================================
@@ -994,9 +998,11 @@ void handleLine(String line) {
     // Selesai streaming chunk: biarkan DMA buffer menghabiskan sisa audio secara alami tanpa zeroing
     currentState = STATE_IDLE;
     digitalWrite(LED_PIN, LOW);
+    lastSpeechEndMs = millis(); // Catat waktu akhir audio untuk jeda 0.5s sensor fisik
   } else if (type == "stop_audio") {
     // Hentikan suara speaker seketika (interupsi paksa / mute)
     stopSpeakerAudio();
+    lastSpeechEndMs = millis();
   } else if (type == "test_speaker") {
     // Perintah uji coba speaker MAX98357A langsung
     playRobotChime(7);
@@ -1057,6 +1063,10 @@ void handleLine(String line) {
 // ANTI-SPAM LOGIC SENSOR SENTUH
 // ==========================================
 void updateTouchSpamState() {
+  // Abaikan pembaruan spam state saat robot sedang bersuara atau dalam jeda 0.5s setelah suara
+  if (currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
+    return;
+  }
   unsigned long now = millis();
 
   // Periksa apakah ada aktivitas fisik seketika pada FSR atau TTP223
@@ -1143,6 +1153,8 @@ bool registerTouchAndCheckSpam() {
 // ==========================================
 void checkPressureSensors() {
   if (!sensorsEnabled) return; // Hanya aktif saat standby / diaktifkan sistem
+  if (currentState == STATE_SPEAKING) return; // Kunci total selama robot bersuara
+  if (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS) return; // Jeda 0.5s setelah suara berakhir
   if (touchSpamLocked) {
     fsr1Pressed = false;
     fsr2Pressed = false;
@@ -1229,6 +1241,8 @@ void checkPressureSensors() {
 // ==========================================
 void checkDigitalTouchSensors() {
   if (!sensorsEnabled) return; // Hanya aktif saat diminta oleh chat (On-Demand)
+  if (currentState == STATE_SPEAKING) return; // Kunci total selama robot bersuara
+  if (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS) return; // Jeda 0.5s setelah suara berakhir
   if (touchSpamLocked) {
     digitalTouch1Active = false;
     digitalTouch2Active = false;
@@ -1301,7 +1315,7 @@ void checkDigitalTouchSensors() {
 // PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
 // ==========================================
 void updateHugHoldTracker(bool isTouched) {
-  if (touchSpamLocked) {
+  if (touchSpamLocked || currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
     hugTouchStartMs = 0;
     hugHold2sFired = false;
     return;
