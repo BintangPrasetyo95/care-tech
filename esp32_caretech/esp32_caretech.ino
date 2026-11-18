@@ -201,8 +201,8 @@ int soundLevel = 0;
 unsigned long lastVoiceNoticeMs = 0;
 
 // Sensor Tekanan FSR402 State, Filtering & Timing
-// Sensor Aktif saat Menunggu Input (Standby / Idle) & Saat Diminta Chat
-bool sensorsEnabled        = true;  // Default: AKTIF saat menunggu input (Idle/Standby)
+// Sensor HANYA Aktif On-Demand Saat Dipanggil Skenario Chat (Default Dorman)
+bool sensorsEnabled        = false; // Default: Dorman / Nonaktif sampai dipanggil oleh skenario chat
 const int FSR_NOISE_FLOOR  = 2800;  // Ambang batas lepas/idle: di bawah 2800 dianggap lepas / tidak tertekan
 const int FSR_TOUCH_THRESH = 3500;  // Ambang batas tertekan: di atas 3500 dianggap tertekan nyata
 unsigned long lastFsrCheckMs = 0;

@@ -3643,7 +3643,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                     closeEspConnectModal();
                     addMessageToUI(`📶 **Robot Fisik ESP32 Terhubung secara Nirkabel!** (${wsUrl})<br>Mikrofon INMP441 & Speaker MAX98357A siap bekerja bebas kabel.`, "ai");
                     sendEspAction("happy");
-                    setEspSensorsActive(true);
+                    setEspSensorsActive(false); // Dorman: hanya aktif saat dipanggil oleh skenario
                     playLaptopRobotChime('happy');
 
                     // Transformasi avatar bubble obrolan ke detailed sprite ECA
@@ -3744,7 +3744,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             closeEspConnectModal();
             addMessageToUI("🔌 **Robot Fisik ESP32 Terhubung via USB Serial!** Mikrofon INMP441 & Speaker MAX98357A siap bekerja.", "ai");
             sendEspAction("happy");
-            setEspSensorsActive(true);
+            setEspSensorsActive(false); // Dorman: hanya aktif saat dipanggil oleh skenario
             playLaptopRobotChime('happy');
 
             // Transformasi avatar bubble obrolan ke detailed sprite ECA
@@ -3904,72 +3904,26 @@ Contoh respons ideal (1-2 kalimat pendek):
         function scheduleSensorActivation(delayMs = 500, onActivated = null) {
             if (sensorActivationTimer) {
                 clearTimeout(sensorActivationTimer);
+                sensorActivationTimer = null;
+            }
+            // Sensor fisik HANYA diaktifkan jika secara spesifik dipanggil oleh skenario (onActivated callback disediakan)!
+            if (typeof onActivated !== 'function') {
+                return;
             }
             sensorActivationTimer = setTimeout(() => {
                 isTouchAndFsrEnabled = true;
                 setEspSensorsActive(true);
                 sensorActivationTimer = null;
-                console.log(`[SENSOR UNLOCKED] ${delayMs}ms setelah suara berakhir: Touch Sensor & FSR KINI AKTIF!`);
-                if (typeof onActivated === 'function') {
-                    onActivated();
-                }
+                console.log(`[SENSOR UNLOCKED] ${delayMs}ms setelah suara berakhir: Touch Sensor & FSR KINI AKTIF (Skenario menunggu respon fisik)!`);
+                onActivated();
             }, delayMs);
         }
 
         let isProcessingHug = false;
 
         function confirmSpontaneousHug(sensorLabel = "Sensor Boneka", duration = 1.5) {
-            const now = Date.now();
-            if (isWaitingForHug || isProcessingHug || isAiSpeaking || !isTouchAndFsrEnabled) return;
-            if (now - lastSpontaneousHugTime < 8000) {
-                console.log("[HUG COOLDOWN] Pelukan spontan diabaikan (cooldown 8 detik).");
-                return;
-            }
-            lastSpontaneousHugTime = now;
-
-            // Kunci proses seketika agar tidak ada pemicuan ganda/speaker tabrakan
-            isProcessingHug = true;
-            isAiSpeaking = true;
-            lockTouchAndFsrSensors();
-
-            console.log(`[HUG CONFIRMED] Pelukan fisik spontan terkonfirmasi via ${sensorLabel}!`);
-
-            setRobotAvatar("excited", "robotWobble 0.6s infinite");
-
-            // Tampilkan badge konfirmasi pelukan fisik di UI chat
-            const hugConfirmHtml = `
-                <div style="margin: 0.5rem auto; text-align: center;">
-                    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 0.35rem 0.9rem; background: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #15803d; box-shadow: 2px 2px 0 var(--ink);">
-                        🤗 Pelukan Terkonfirmasi! (${sensorLabel})
-                    </span>
-                </div>
-            `;
-            addMessageToUI(hugConfirmHtml, 'system');
-
-            // Gunakan pesan dan audio hardcoded resmi Sarah ElevenLabs: sedih_stage2_hugged.mp3
-            const confirmMsg = "Terima kasih pelukannya... Rasanya hangat sekali. Kalau kamu mau cerita, aku siap mendengarkan ya.";
-            addMessageToUI(confirmMsg, 'ai');
-            chatHistory.push({
-                "role": "model",
-                "parts": [{ "text": confirmMsg }]
-            });
-
-            const hardcodedAudioUrl = "assets/audio/hardcoded/sedih_stage2_hugged.mp3";
-            sendEspAction("comforted");
-
-            const onSpontaneousHugComplete = () => {
-                sendEspAction("idle");
-                setRobotAvatar("idle", "none");
-                isAiSpeaking = false;
-                isProcessingHug = false;
-                scheduleSensorActivation(500);
-            };
-
-            if (window.scenarioEngine && typeof window.scenarioEngine.playAudio === 'function') {
-                window.scenarioEngine.playAudio(hardcodedAudioUrl, onSpontaneousHugComplete);
-            } else {
-                speakText(confirmMsg, onSpontaneousHugComplete);
-            }
+            // Sesuai aturan: Pelukan atau tekanan fisik TIDAK AKAN tertrigger dan masuk ke pesan chat HTML kecuali dipanggil!
+            console.log(`[HUG IGNORED] Pelukan fisik (${sensorLabel}) diabaikan karena tidak sedang dipanggil.`);
         }
 
         window.lockTouchAndFsrSensors = lockTouchAndFsrSensors;
@@ -4020,11 +3974,11 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "touch") {
                 const now = Date.now();
 
-                // 1. Guard Lockout Suara & Anti-Reentrancy:
-                // Sensor sentuh & FSR HANYA boleh aktif 0.5 detik SETELAH suara selesai,
-                // dan TIDAK boleh memicu jika sedang memproses pelukan (mencegah pesan ganda & tabrakan speaker)
-                if (isAiSpeaking || isProcessingHug || !isTouchAndFsrEnabled) {
-                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (suara masih berputar, sedang memproses pelukan, atau dalam masa jeda 0.5s).");
+                // 1. Guard On-Demand & Anti-Reentrancy:
+                // Sensor sentuh & FSR HANYA boleh aktif dan diproses jika SEDANG DIPANGGIL (isWaitingForHug === true)!
+                // Di luar skenario aktif / jika tidak dipanggil, pelukan atau tekanan fisik sama sekali TIDAK AKAN tertrigger ke chat.
+                if (!isWaitingForHug || isAiSpeaking || isProcessingHug || !isTouchAndFsrEnabled) {
+                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (tidak sedang dipanggil / tidak menunggu pelukan).");
                     return;
                 }
 
@@ -4061,24 +4015,9 @@ Contoh respons ideal (1-2 kalimat pendek):
                     }
                 }
 
-                // Identifikasi sensor fisik yang terpicu
-                let sensorLabel = "Sensor Fisik Boneka";
-                if (msg.sensor === "fsr1" || msg.part === "left_hand") {
-                    sensorLabel = "Genggaman Tangan Kiri (FSR 1)";
-                } else if (msg.sensor === "fsr2" || msg.part === "right_hand") {
-                    sensorLabel = "Genggaman Tangan Kanan (FSR 2)";
-                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
-                    sensorLabel = "Sensor Pelukan Tubuh (TTP223)";
-                }
-
-                // 2. Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
-                if (isWaitingForHug) {
-                    onHugReceived(msg.duration || 2.0);
-                    return;
-                }
-
-                // 3. Di luar skenario aktif: Konfirmasi pelukan fisik spontan dengan suara ElevenLabs hardcoded!
-                confirmSpontaneousHug(sensorLabel, msg.duration || 1.5);
+                // 2. Eksekusi konfirmasi pelukan resmi skenario (Tahap 2) SAAT DIPANGGIL
+                onHugReceived(msg.duration || 2.0);
+                return;
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
                 setRobotAvatar("thinking");
@@ -4371,7 +4310,8 @@ Contoh respons ideal (1-2 kalimat pendek):
                     btn.style.color = "#3730a3";
                     btn.textContent = "Bangunkan Sensor ✋";
                 }
-                addMessageToUI(`✨ <em>[Mode Siaga] Masa uji coba selesai. Sensor tetap aktif menerima sentuhan fisikmu saat standby!</em>`, 'system');
+                setEspSensorsActive(false);
+                addMessageToUI(`✨ <em>[Mode Siaga] Masa uji coba selesai. Sensor kembali ke mode dorman (hanya aktif saat dipanggil oleh skenario).</em>`, 'system');
             }, seconds * 1000);
         }
 
@@ -5089,7 +5029,7 @@ Kembalikan format JSON valid dengan 2 field:
                     setRobotAvatar("idle", "none");
                     isAiSpeaking = false;
                     isProcessingHug = false;
-                    scheduleSensorActivation(500);
+                    lockTouchAndFsrSensors(); // Pastikan sensor fisik terkunci/dorman setelah pelukan selesai (hanya aktif saat dipanggil)
                     EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
                     EsaLogger.endPipeline();
                 };
