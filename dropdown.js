@@ -142,4 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
             switchItem.title = 'Beralih melihat CareTech sebagai Wali Murid';
         }
     }
+
+    // If logged in as guardian, ensure sidebar "Beranda" points back to guardian.html
+    if (role === 'guardian') {
+        const homeNavLinks = document.querySelectorAll('.sidebar-menu a[href="dashboard.html"]');
+        homeNavLinks.forEach(link => {
+            link.setAttribute('href', 'guardian.html');
+        });
+    }
 });
