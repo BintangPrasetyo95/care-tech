@@ -3672,23 +3672,17 @@ class WorldScene extends Phaser.Scene {
       putPlant(6, 29, 1);
       putPlant(13, 34, 3);
 
-      // Horizontal planters (right side, 3-wide)
-      for (const c of [24, 28, 32, 36]) {
-        putObj(1, c, 'planter_h_0_0'); putObj(1, c + 1, 'planter_h_0_1'); putObj(1, c + 2, 'planter_h_0_2');
-        putObj(2, c, 'planter_h_1_0'); putObj(2, c + 1, 'planter_h_1_1'); putObj(2, c + 2, 'planter_h_1_2');
-      }
-
-      // Horizontal planters (left side, 2-wide modular caps)
+      // Pathway street lamps along horizontal walkway (replacing pots)
       for (const c of [1, 5, 9, 13, 17]) {
-        putObj(1, c, 'planter_h_0_0'); putObj(1, c + 1, 'planter_h_0_2');
-        putObj(2, c, 'planter_h_1_0'); putObj(2, c + 1, 'planter_h_1_2');
+        putLamp(1, c);
+      }
+      for (const c of [25, 29, 33, 37]) {
+        putLamp(1, c);
       }
 
-      // Vertical planters (column 40, 3-tall)
-      for (const r of [4, 8, 16, 19]) {
-        putObj(r, 40, 'planter_v_0');
-        putObj(r + 1, 40, 'planter_v_1');
-        putObj(r + 2, 40, 'planter_v_2');
+      // Vertical pathway lamps along column 40 (replacing pots)
+      for (const r of [4, 9, 14, 19]) {
+        putLamp(r, 40);
       }
 
       // Water fountain (right courtyard)
@@ -3790,9 +3784,7 @@ class WorldScene extends Phaser.Scene {
       putBenchH(4, 4);
       putObj(5, 7, 'trash_can');
       putPlant(4, 8, 1);
-      putObj(1, 10, 'planter_v_0');
-      putObj(2, 10, 'planter_v_1');
-      putObj(3, 10, 'planter_v_2');
+      putLamp(1, 10);
 
       // East garden notice board & shrub
       putObj(1, 18, 'comm_board_0');
