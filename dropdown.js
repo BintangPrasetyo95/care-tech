@@ -149,5 +149,33 @@ document.addEventListener('DOMContentLoaded', function () {
         homeNavLinks.forEach(link => {
             link.setAttribute('href', 'guardian.html');
         });
+
+        // Show a helpful preview & return banner on non-guardian pages
+        const isGuardianPage = window.location.pathname.endsWith('guardian.html');
+        const isLoginPage = window.location.pathname.endsWith('login.html') || window.location.pathname.endsWith('index.html');
+        if (!isGuardianPage && !isLoginPage) {
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent && !document.getElementById('guardian-preview-banner')) {
+                const banner = document.createElement('div');
+                banner.id = 'guardian-preview-banner';
+                banner.style.cssText = 'background: #fffde6; border: 3px solid var(--ink, #18181b); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink, #18181b); padding: 0.7rem 1.2rem; margin: 1rem 1.2rem 0.6rem 1.2rem; font-family: var(--mono, monospace); font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; z-index: 10;';
+                banner.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.2rem;">👨‍👩‍👧</span>
+                        <span><strong>Mode Wali Murid:</strong> Anda sedang meninjau materi/halaman siswa sebagai <strong>${userName}</strong> (Wali dari Zuruki).</span>
+                    </div>
+                    <a href="guardian.html" class="btn btn-small" style="background: var(--pink, #ff2e93); color: #ffffff; text-decoration: none; padding: 0.35rem 0.85rem; font-size: 0.82rem; border-radius: 8px; white-space: nowrap;">
+                        ← Kembali ke Portal Wali
+                    </a>
+                `;
+
+                const topHeader = mainContent.querySelector('.top-header');
+                if (topHeader && topHeader.nextSibling) {
+                    mainContent.insertBefore(banner, topHeader.nextSibling);
+                } else {
+                    mainContent.insertBefore(banner, mainContent.firstChild);
+                }
+            }
+        }
     }
 });
