@@ -921,10 +921,11 @@
                 <div style="margin-bottom: 0.8rem;">
                     <label style="font-family: var(--mono); font-size: 0.8rem; font-weight: bold; color: #475569; display: block; margin-bottom: 0.2rem;">Pilihan Karakter Suara:</label>
                     <select id="eleven-voice-select" style="width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--ink); border-radius: 6px; font-family: var(--mk); font-size: 0.92rem; outline: none; background: #fff; box-sizing: border-box;" onchange="handleVoiceSelectChange(this.value)">
-                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Gratis / Free Tier - Ramah, Lembut & Cocok untuk Curhat) ⭐</option>
-                        <option value="pNInz6obpgDQGcFmaJgB">Adam (Gratis / Free Tier - Hangat, Sahabat & Tenang)</option>
+                        <option value="EXAVITQu4vr4xnSDxMaL">Sarah (Gratis / Free Tier - Ramah, Lembut & Menenangkan) 🇮🇩 ⭐</option>
+                        <option value="pNInz6obpgDQGcFmaJgB">Adam (Gratis / Free Tier - Hangat, Sahabat & Tenang) 🇮🇩</option>
                         <option value="JBFqnCBsd6RMkjVDRZzb">George (Gratis / Free Tier - Naratif Lembut & Mengayomi)</option>
-                        <option value="WQ4h6sgS9p2XXvLsESBT">Suara Library (WQ4h6sg... - Memerlukan Akun Berbayar)</option>
+                        <option value="TrU3igk19A4aIUi2GAA2">Velora (Library - Memerlukan Akun Berbayar)</option>
+                        <option value="WAotVoK2Yv2ufjocfYYs">Siti (Library - Memerlukan Akun Berbayar)</option>
                         <option value="custom">-- Masukkan Custom Voice ID Lainnya --</option>
                     </select>
                     <div id="eleven-custom-row" style="display: none; margin-top: 0.5rem;">
@@ -1212,6 +1213,116 @@
     </div>
 
     <script>
+        // ==========================================
+        // ESA PIPELINE PROGRESS LOGGER
+        // Menampilkan tahapan penyusunan kata secara terstruktur di Console (F12)
+        // ==========================================
+        const EsaLogger = {
+            pipelineStartTime: null,
+            phaseStartTime: null,
+            currentPhase: null,
+            watchdogTimer: null,
+
+            startPipeline(source, detail = "") {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                this.pipelineStartTime = performance.now();
+                this.phaseStartTime = this.pipelineStartTime;
+                this.currentPhase = "Fase 1: Input Masuk";
+
+                console.group(`%c🤖 [ESA PIPELINE] Memulai Alur Respon (${source})`, 'background: #4f46e5; color: #fff; font-weight: bold; padding: 2px 8px; border-radius: 4px;');
+                console.log(`%c[FASE 1: Input Masuk] %c${source} -> "${detail}" | Waktu: ${new Date().toLocaleTimeString()}`, 'color: #6366f1; font-weight: bold;', 'color: #1e293b; font-weight: 600;');
+                this.resetWatchdog("Fase 1: Input Masuk");
+            },
+
+            step(phaseNum, phaseName, detail = "", extra = null) {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                const now = performance.now();
+                const phaseDuration = this.phaseStartTime ? Math.round(now - this.phaseStartTime) : 0;
+                const totalElapsed = this.pipelineStartTime ? Math.round(now - this.pipelineStartTime) : 0;
+                this.phaseStartTime = now;
+                this.currentPhase = `Fase ${phaseNum}: ${phaseName}`;
+
+                console.log(
+                    `%c[FASE ${phaseNum}: ${phaseName}]%c (+${phaseDuration}ms | Total: ${totalElapsed}ms) ${detail ? '-> ' + detail : ''}`,
+                    'background: #0284c7; color: #fff; font-weight: bold; padding: 1px 6px; border-radius: 3px;',
+                    'color: #475569; font-size: 0.85rem;'
+                );
+                if (extra !== null && extra !== undefined) {
+                    console.log('   ↳ Data:', extra);
+                }
+                this.resetWatchdog(this.currentPhase);
+            },
+
+            subStep(message, extra = null) {
+                console.log(`   ⚡ %c${message}`, 'color: #0d9488; font-weight: 500;');
+                if (extra !== null && extra !== undefined) {
+                    console.log('      ↳ Data:', extra);
+                }
+            },
+
+            success(phaseName, message = "", extra = null) {
+                const now = performance.now();
+                const totalElapsed = this.pipelineStartTime ? Math.round(now - this.pipelineStartTime) : 0;
+                console.log(`%c✅ [SUKSES: ${phaseName}] %c${message} %c(+${totalElapsed}ms)`, 'color: #16a34a; font-weight: bold;', 'color: #15803d;', 'color: #94a3b8; font-size: 0.82rem;');
+                if (extra !== null && extra !== undefined) {
+                    console.log('   ↳ Detail:', extra);
+                }
+            },
+
+            warn(phaseName, message = "", extra = null) {
+                console.warn(`%c⚠️ [PERINGATAN: ${phaseName}] ${message}`, 'color: #d97706; font-weight: bold;', extra || '');
+            },
+
+            error(phaseName, message = "", err = null) {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                const now = performance.now();
+                const totalElapsed = this.pipelineStartTime ? Math.round(now - this.pipelineStartTime) : 0;
+                console.error(
+                    `%c❌ [TERHENTI / ERROR di ${phaseName}] %c${message} %c(Waktu berjalan: ${totalElapsed}ms)`,
+                    'background: #dc2626; color: #fff; font-weight: bold; padding: 2px 6px; border-radius: 3px;',
+                    'color: #b91c1c; font-weight: bold;',
+                    'color: #64748b; font-size: 0.82rem;',
+                    err || ''
+                );
+            },
+
+            cancel(phaseName, reason = "") {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                const now = performance.now();
+                const totalElapsed = this.pipelineStartTime ? Math.round(now - this.pipelineStartTime) : 0;
+                console.log(
+                    `%c⏹️ [DIBATALKAN: ${phaseName || this.currentPhase || 'Proses Aktif'}] %c${reason} %c(Waktu berjalan: ${totalElapsed}ms)`,
+                    'background: #64748b; color: #fff; font-weight: bold; padding: 1px 6px; border-radius: 3px;',
+                    'color: #475569; font-weight: 600;',
+                    'color: #94a3b8; font-size: 0.82rem;'
+                );
+                console.groupEnd();
+                this.pipelineStartTime = null;
+                this.phaseStartTime = null;
+                this.currentPhase = null;
+            },
+
+            resetWatchdog(phaseName) {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                // Jika satu fase berlangsung lebih dari 6 detik tanpa ada progres baru, berikan peringatan stuck ke konsol
+                this.watchdogTimer = setTimeout(() => {
+                    console.warn(`%c⏳ [STUCK WATCHDOG] ${phaseName} sedang memakan waktu lebih dari 6 detik! Periksa koneksi internet, server Ollama, atau respon API.`, 'background: #fef08a; color: #854d0e; font-weight: bold; padding: 2px 6px; border-radius: 3px;');
+                }, 6000);
+            },
+
+            endPipeline(summary = "") {
+                if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+                const now = performance.now();
+                const totalElapsed = this.pipelineStartTime ? Math.round(now - this.pipelineStartTime) : 0;
+                console.log(`%c🏁 [ALUR SELESAI] ${summary || 'ESA siap menerima interaksi berikutnya'} %c(Total Siklus: ${totalElapsed}ms)`, 'color: #4f46e5; font-weight: bold;', 'color: #475569; font-weight: bold;');
+                console.groupEnd();
+                this.pipelineStartTime = null;
+                this.phaseStartTime = null;
+                this.currentPhase = null;
+            }
+        };
+        window.EsaLogger = EsaLogger;
+
         // Cipher data for key protection (Base64 + Caesar + ROT13)
         const OBFUSCATED_API_KEY = "KPYoKQC4Oe42MfK2QRPmS1OqLNDiKNDfyYfOIM1bQQ5DOQfOHtDRO2jHwXY4LXbXKdPtLgw=";
         const OBFUSCATED_PASSWORD = "v2DtTRD2SRHjR2HbwgPmuRa=";
@@ -1484,7 +1595,7 @@
             }
         }
 
-        async function callOllamaChat(systemPrompt, userText, history, externalSignal = null) {
+        async function callOllamaChat(systemPrompt, userText, history, externalSignal = null, customTimeoutMs = 6000) {
             const formattedMessages = [
                 { role: "system", content: systemPrompt }
             ];
@@ -1505,9 +1616,13 @@
             
             formattedMessages.push({ role: "user", content: userText });
 
-            const timeoutMs = (aiProvider === 'ollama') ? 25000 : 6000; // Jika mode auto, batasi 6 detik agar tidak macet lama dan langsung fallback ke Gemini
+            const timeoutMs = customTimeoutMs || 6000;
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            let isTimeout = false;
+            const timeoutId = setTimeout(() => {
+                isTimeout = true;
+                controller.abort();
+            }, timeoutMs);
 
             if (externalSignal) {
                 if (externalSignal.aborted) {
@@ -1544,6 +1659,78 @@
                 return data.message?.content || "";
             } catch (err) {
                 clearTimeout(timeoutId);
+                if (isTimeout) {
+                    const timeoutErr = new Error(`Ollama timeout (${timeoutMs / 1000}s)`);
+                    timeoutErr.isTimeout = true;
+                    throw timeoutErr;
+                }
+                if (externalSignal && externalSignal.aborted) {
+                    const abortErr = new Error("User aborted");
+                    abortErr.isUserAbort = true;
+                    throw abortErr;
+                }
+                throw err;
+            }
+        }
+
+        async function callGeminiChat(systemInstruction, history, externalSignal = null, customTimeoutMs = 6000) {
+            if (!geminiKey || geminiKey.length <= 15) {
+                throw new Error("Gemini API Key tidak disetel atau tidak valid");
+            }
+
+            const timeoutMs = customTimeoutMs || 6000;
+            const controller = new AbortController();
+            let isTimeout = false;
+            const timeoutId = setTimeout(() => {
+                isTimeout = true;
+                controller.abort();
+            }, timeoutMs);
+
+            if (externalSignal) {
+                if (externalSignal.aborted) {
+                    controller.abort();
+                } else {
+                    externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': geminiKey
+                    },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemInstruction }] },
+                        contents: history.slice(-20),
+                        generationConfig: {
+                            maxOutputTokens: 80,
+                            temperature: 0.7
+                        }
+                    })
+                });
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+                if (response.ok && data.candidates && data.candidates[0].content) {
+                    return data.candidates[0].content.parts[0].text || "";
+                } else {
+                    throw new Error(data.error?.message || `HTTP ${response.status}`);
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (isTimeout) {
+                    const timeoutErr = new Error(`Gemini timeout (${timeoutMs / 1000}s)`);
+                    timeoutErr.isTimeout = true;
+                    throw timeoutErr;
+                }
+                if (externalSignal && externalSignal.aborted) {
+                    const abortErr = new Error("User aborted");
+                    abortErr.isUserAbort = true;
+                    throw abortErr;
+                }
                 throw err;
             }
         }
@@ -1759,7 +1946,11 @@
         // ==========================================
         // ELEVENLABS STATE & CONTROLS
         // ==========================================
-        let elevenKey = localStorage.getItem('caretech_eleven_key') || "sk_bb0012a69d96e67a46c636ae06d5c19e4664b4a713742df7";
+        let elevenKey = localStorage.getItem('caretech_eleven_key');
+        if (!elevenKey || elevenKey.includes('sk_bb0012') || elevenKey.includes('sk_83c577') || !elevenKey.startsWith('sk_')) {
+            elevenKey = "sk_d47bb8d496b6d1b40f92c15a12bd098130e7bc5010dad804";
+            localStorage.setItem('caretech_eleven_key', elevenKey);
+        }
         let elevenVoiceId = localStorage.getItem('caretech_eleven_voice') || "EXAVITQu4vr4xnSDxMaL";
         let elevenModelId = localStorage.getItem('caretech_eleven_model') || "eleven_multilingual_v2";
         let currentAudio = null;
@@ -1782,7 +1973,7 @@
             if (modelSelect) modelSelect.value = elevenModelId;
 
             if (voiceSelect) {
-                const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'WQ4h6sgS9p2XXvLsESBT'];
+                const known = ['EXAVITQu4vr4xnSDxMaL', 'pNInz6obpgDQGcFmaJgB', 'JBFqnCBsd6RMkjVDRZzb', 'TrU3igk19A4aIUi2GAA2', 'WAotVoK2Yv2ufjocfYYs'];
                 if (known.includes(elevenVoiceId)) {
                     voiceSelect.value = elevenVoiceId;
                     if (customRow) customRow.style.display = 'none';
@@ -1901,7 +2092,14 @@
                     },
                     body: JSON.stringify({
                         text: testPhrase,
-                        model_id: elevenModelId || "eleven_flash_v2_5"
+                        model_id: elevenModelId || "eleven_multilingual_v2",
+                        language_code: "id",
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.8,
+                            style: 0.0,
+                            use_speaker_boost: true
+                        }
                     })
                 });
 
@@ -1922,8 +2120,11 @@
                 }
             } catch (err) {
                 if (feedback) {
+                    feedback.style.display = 'block';
                     feedback.style.color = '#dc2626';
-                    if (err.message && (err.message.includes('quota') || err.message.includes('credit'))) {
+                    if (err.message && (err.message.includes('paid_plan') || err.message.includes('402') || err.message.includes('library voices') || err.message.includes('Free users cannot use library voices'))) {
+                        feedback.innerHTML = `⚠️ <strong>ElevenLabs Memerlukan Akun Berbayar untuk Voice Library:</strong><br>${err.message}<br><small style="color: #475569; display:block; margin-top:4px;">Suara dari Voice Library (seperti Velora) memerlukan akun berbayar (Starter ke atas) di ElevenLabs. Di akun Free, Anda bisa memilih <strong>Sarah</strong> atau <strong>Adam</strong> (Gratis & sudah disetel ke Bahasa Indonesia lancar).</small>`;
+                    } else if (err.message && (err.message.includes('quota') || err.message.includes('credit'))) {
                         feedback.innerHTML = `⚠️ <strong>Kuota Karakter Bulanan Habis!</strong> (${err.message}).<br>Silakan ganti dengan API Key akun ElevenLabs baru (gratis 10.000 karakter).`;
                     } else {
                         feedback.textContent = '⚠️ Gagal memutar suara ElevenLabs: ' + err.message;
@@ -1939,18 +2140,30 @@
 
         function notifyTtsFailure(errMsg) {
             const isQuota = errMsg && (errMsg.includes('quota') || errMsg.includes('credit') || errMsg.includes('401'));
+            const isPlan = errMsg && (errMsg.includes('paid_plan') || errMsg.includes('402') || errMsg.includes('library voices') || errMsg.includes('Free users cannot use library voices'));
             const banner = document.getElementById('api-status-banner');
             const text = document.getElementById('api-status-text');
-            if (banner && text && isQuota) {
-                banner.style.display = 'flex';
-                banner.style.background = '#fef2f2';
-                banner.style.borderColor = '#ef4444';
-                text.innerHTML = `⚠️ <strong>Kuota Suara ElevenLabs Habis:</strong> Robot otomatis memakai nada bawaan. Buka <a href="javascript:void(0)" onclick="toggleApiKeyModal()" style="color:#b91c1c; font-weight:bold; text-decoration:underline;">Pengaturan ⚙️</a> untuk memasukkan API Key baru (gratis).`;
+            if (banner && text) {
+                if (isPlan) {
+                    banner.style.display = 'flex';
+                    banner.style.background = '#fef2f2';
+                    banner.style.borderColor = '#ef4444';
+                    text.innerHTML = `⚠️ <strong>ElevenLabs Memerlukan Akun Starter/Paid untuk Suara Library:</strong> Robot beralih ke suara alami Indonesia. Ganti pilihan ke Sarah/Adam di <a href="javascript:void(0)" onclick="toggleApiKeyModal()" style="color:#b91c1c; font-weight:bold; text-decoration:underline;">Pengaturan ⚙️</a> jika memakai akun gratis.`;
+                } else if (isQuota) {
+                    banner.style.display = 'flex';
+                    banner.style.background = '#fef2f2';
+                    banner.style.borderColor = '#ef4444';
+                    text.innerHTML = `⚠️ <strong>Kuota Suara ElevenLabs Habis:</strong> Robot otomatis memakai suara alami Indonesia. Buka <a href="javascript:void(0)" onclick="toggleApiKeyModal()" style="color:#b91c1c; font-weight:bold; text-decoration:underline;">Pengaturan ⚙️</a> untuk memasukkan API Key baru.`;
+                }
             }
         }
 
+        let isFirstCurhatButtonPress = true; // Status tombol curhat pertama (langsung memicu pesan tanpa STT)
+
         function clearChat() {
             chatHistory = [];
+            isFirstCurhatButtonPress = true;
+            sendEsp({ type: "reset_first_button" });
             document.getElementById('chat-messages').innerHTML = `
                 <div class="msg-bubble ai">
                     <div class="ai-avatar-mini">🤖</div>
@@ -1974,9 +2187,10 @@
             }
         }
 
-        function sendQuickPrompt(promptText) {
+        function sendQuickPrompt(promptText, source = "Quick Chip / Tombol Cepat") {
+            EsaLogger.startPipeline(source, promptText);
             document.getElementById('chat-input').value = promptText;
-            sendMessage();
+            sendMessage(source);
         }
 
         function addMessageToUI(text, sender) {
@@ -2642,7 +2856,21 @@ Contoh respons ideal (1-2 kalimat pendek):
         function initVoices() {
             if (!('speechSynthesis' in window)) return;
             const voices = window.speechSynthesis.getVoices();
-            idVoice = voices.find(v => v.lang.startsWith('id') || v.lang.includes('ID') || v.lang.toLowerCase().includes('indonesia')) || null;
+            // 1. Cari suara resmi Bahasa Indonesia (id-ID, Indonesian, Gadis, Andika)
+            idVoice = voices.find(v => {
+                const l = (v.lang || '').toLowerCase();
+                const n = (v.name || '').toLowerCase();
+                return l.startsWith('id') || l.includes('indonesia') || n.includes('indonesia') || n.includes('gadis') || n.includes('andika');
+            }) || null;
+
+            // 2. Jika browser tidak punya suara id-ID, cari suara serumpun Bahasa Melayu (ms-MY) yang fonetiknya sangat mirip
+            if (!idVoice) {
+                idVoice = voices.find(v => {
+                    const l = (v.lang || '').toLowerCase();
+                    const n = (v.name || '').toLowerCase();
+                    return l.startsWith('ms') || l.includes('malay') || n.includes('malay');
+                }) || null;
+            }
         }
 
         if ('speechSynthesis' in window) {
@@ -2797,6 +3025,48 @@ Contoh respons ideal (1-2 kalimat pendek):
             }
         }
 
+        function playIndonesianFallbackSpeech(text, onComplete) {
+            // 1. Prioritas Utama Cadangan: Google Indonesian TTS (aksen 100% Bahasa Indonesia alami, bebas aksen bule)
+            if (navigator.onLine && text.length <= 180) {
+                try {
+                    const gttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
+                    EsaLogger.subStep("Memutar suara cadangan Bahasa Indonesia alami (Google Indonesian TTS)...");
+                    currentAudio = new Audio(gttsUrl);
+                    isAiSpeaking = true;
+                    sendEspAction("speaking", { mood: "happy" });
+
+                    let finished = false;
+                    const cleanup = () => {
+                        if (!finished) {
+                            finished = true;
+                            currentAudio = null;
+                            isAiSpeaking = false;
+                            sendEspAction("idle");
+                            EsaLogger.success("Fase 6: Sintesis Suara", "Suara cadangan Bahasa Indonesia selesai diputar");
+                            if (onComplete) onComplete();
+                        }
+                    };
+
+                    currentAudio.onended = cleanup;
+                    currentAudio.onerror = (e) => {
+                        console.warn("Google TTS audio error, fallback ke Web Speech API:", e);
+                        speakWithBrowserSpeech(text, onComplete);
+                    };
+
+                    currentAudio.play().catch(playErr => {
+                        console.warn("Google TTS audio play blocked, fallback ke Web Speech API:", playErr);
+                        speakWithBrowserSpeech(text, onComplete);
+                    });
+                    return;
+                } catch (e) {
+                    console.warn("Inisiasi Google TTS fallback gagal:", e);
+                }
+            }
+
+            // 2. Fallback offline: Web Speech API browser
+            speakWithBrowserSpeech(text, onComplete);
+        }
+
         function speakWithBrowserSpeech(text, onComplete) {
             if (!('speechSynthesis' in window)) {
                 if (onComplete) onComplete();
@@ -2856,6 +3126,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
         async function speakText(text, onComplete, optionalPcmData = null) {
             if (!ttsEnabled) {
+                EsaLogger.subStep("TTS dinonaktifkan oleh pengguna (TTS OFF), melewati sintesis suara");
                 if (onComplete) onComplete();
                 return;
             }
@@ -2865,6 +3136,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             // 1. Jika sudah ada data PCM audio siap pakai (misal hasil decode)
             if (optionalPcmData && isEspConnected() && (speakerOutputMode === 'robot' || speakerOutputMode === 'both')) {
+                EsaLogger.step(6, "Sintesis Suara (TTS)", "Streaming PCM audio siap pakai ke ESP32 MAX98357A");
                 await streamPcmToEsp(optionalPcmData);
                 if (onComplete) onComplete();
                 return;
@@ -2887,10 +3159,15 @@ Contoh respons ideal (1-2 kalimat pendek):
                 return;
             }
 
+            EsaLogger.step(6, "Sintesis Suara (TTS)", `Menyiapkan pengucapan: "${cleanText.substring(0, 45)}..." | Output: ${speakerOutputMode.toUpperCase()}`);
+
             // 2. Putar Suara ElevenLabs jika API Key tersedia
             if (elevenKey && elevenKey.startsWith('sk_')) {
                 try {
                     const voiceId = elevenVoiceId || "EXAVITQu4vr4xnSDxMaL";
+                    const modelId = elevenModelId || "eleven_multilingual_v2";
+                    EsaLogger.subStep(`Memanggil ElevenLabs TTS API (Voice: ${voiceId}, Model: ${modelId}, Lang: id)...`);
+
                     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                         method: 'POST',
                         headers: {
@@ -2900,7 +3177,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                         },
                         body: JSON.stringify({
                             text: cleanText,
-                            model_id: elevenModelId || "eleven_flash_v2_5"
+                            model_id: modelId,
+                            language_code: "id",
+                            voice_settings: {
+                                stability: 0.5,
+                                similarity_boost: 0.8,
+                                style: 0.0,
+                                use_speaker_boost: true
+                            }
                         })
                     });
 
@@ -2910,19 +3194,23 @@ Contoh respons ideal (1-2 kalimat pendek):
                     }
 
                     const audioBlob = await response.blob();
+                    EsaLogger.success("Fase 6: Sintesis Suara", `Audio ElevenLabs diterima (${(audioBlob.size / 1024).toFixed(1)} KB)`);
 
                     // Dekode audio MP3 dari ElevenLabs ke PCM 8kHz untuk speaker MAX98357A robot
                     let pcmForEsp = null;
                     if (isEspConnected() && (speakerOutputMode === 'robot' || speakerOutputMode === 'both')) {
                         try {
+                            EsaLogger.subStep("Mendekode MP3 ke format PCM 8kHz mono untuk speaker robot MAX98357A...");
                             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
                             const audioCtx = new AudioContextClass();
                             const arrayBuf = await audioBlob.arrayBuffer();
                             const decoded = await audioCtx.decodeAudioData(arrayBuf);
                             pcmForEsp = convertAudioBufferToPcm8(decoded);
                             audioCtx.close().catch(() => {});
+                            EsaLogger.subStep(`Dekode PCM selesai: ${pcmForEsp.length} bytes`);
                         } catch (decErr) {
                             console.warn("Gagal dekode audio untuk ESP32:", decErr);
+                            EsaLogger.warn("Fase 6: Sintesis Suara", `Gagal dekode PCM untuk ESP32: ${decErr.message}`);
                         }
                     }
 
@@ -2932,6 +3220,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                     const checkAllComplete = () => {
                         if (laptopDone && espDone) {
+                            EsaLogger.success("Fase 6: Sintesis Suara", "Pemutaran suara selesai");
                             if (onComplete) onComplete();
                         }
                     };
@@ -2961,6 +3250,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                     // Putar suara ElevenLabs langsung di speaker fisik robot MAX98357A!
                     if (pcmForEsp && isEspConnected() && (speakerOutputMode === 'robot' || speakerOutputMode === 'both')) {
+                        EsaLogger.subStep("Streaming buffer PCM ke speaker robot...");
                         await streamPcmToEsp(pcmForEsp);
                         espDone = true;
                         checkAllComplete();
@@ -2972,8 +3262,11 @@ Contoh respons ideal (1-2 kalimat pendek):
                     return;
                 } catch (err) {
                     console.warn("ElevenLabs gagal / dibatasi, beralih ke suara bawaan:", err);
+                    EsaLogger.warn("Fase 6: Sintesis Suara", `ElevenLabs gagal: ${err.message}. Beralih ke Web Speech Synthesis browser.`);
                     notifyTtsFailure(err.message);
                 }
+            } else {
+                EsaLogger.subStep("ElevenLabs API Key belum disetel atau bukan 'sk_', menggunakan Web Speech Synthesis browser.");
             }
 
             // 3. Fallback: Suara Browser di laptop + nada robot di speaker MAX98357A
@@ -2984,7 +3277,9 @@ Contoh respons ideal (1-2 kalimat pendek):
             }
 
             if (speakerOutputMode === 'laptop' || speakerOutputMode === 'both') {
-                speakWithBrowserSpeech(cleanText, onComplete);
+                playIndonesianFallbackSpeech(cleanText, () => {
+                    if (onComplete) onComplete();
+                });
             } else {
                 if (onComplete) onComplete();
             }
@@ -3390,14 +3685,18 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "interrupted") {
                 // Suara robot dipotong karena siswa mulai berbicara atau menekan tombol!
                 stopAllAudioAndSpeech();
+            } else if (msg.type === "first_button_press") {
+                // Tombol push fisik ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                isFirstCurhatButtonPress = false;
+                handleFirstCurhatButtonPress(msg.text || "Halo eca, aku lagi sedih nih");
             } else if (msg.type === "button") {
                 // Tombol BOOT fisik pada robot ESP32 ditekan
                 stopAllAudioAndSpeech();
                 const promptText = msg.text || "Hai ESA! Aku menekan tombol robot fisikmu karena ingin curhat...";
-                sendQuickPrompt(promptText);
+                sendQuickPrompt(promptText, "Tombol Fisik BOOT Robot (ESP32)");
             } else if (msg.type === "chat") {
                 if (msg.text) {
-                    sendQuickPrompt(msg.text);
+                    sendQuickPrompt(msg.text, "Pesan Serial ESP32 (Chat Event)");
                 }
             } else if (msg.type === "rec_status") {
                 // STATUS REKAM DARI MIKROFON INMP441 (Dinamis dengan Smart VAD)
@@ -3408,6 +3707,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                 const robotIcon = document.getElementById('robot-icon');
 
                 if (msg.status === "recording") {
+                    // Fallback jika firmware ESP32 belum di-reflash dan masih mengirim button_curhat pada tombol pertama:
+                    if (msg.context === "button_curhat" && isFirstCurhatButtonPress) {
+                        isFirstCurhatButtonPress = false;
+                        sendEsp({ type: "stop_rec" }); // Hentikan mic ESP32 seketika
+                        handleFirstCurhatButtonPress("Halo eca, aku lagi sedih nih");
+                        return;
+                    }
+
                     isEspRecording = true;
                     if (currentAudio) { try { currentAudio.pause(); currentAudio = null; } catch(e){} }
                     if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
@@ -3681,6 +3988,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                     btn.title = "Sedang mentransfer audio dari robot ke laptop...";
                 }
             } else {
+                // Jika tombol mic robot ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                if (isFirstCurhatButtonPress) {
+                    isFirstCurhatButtonPress = false;
+                    sendEsp({ type: "stop_rec" });
+                    handleFirstCurhatButtonPress("Halo eca, aku lagi sedih nih");
+                    return;
+                }
+
                 // TOGGLE ON: Hidupkan mic robot
                 triggerEspMicCurhat();
             }
@@ -3722,6 +4037,9 @@ Contoh respons ideal (1-2 kalimat pendek):
         async function handleVoiceChatMessage(base64Wav, audioUrl, peak = 0, duration = 3) {
             cancelChatLoading(false);
 
+            EsaLogger.startPipeline("Mikrofon Robot (INMP441)", `Durasi: ${duration}s | Peak: ${peak}`);
+            EsaLogger.step(2, "Transkripsi Suara (STT)", `Mempersiapkan transkripsi suara | Mode STT: ${sttMode.toUpperCase()}`);
+
             const msgId = 'voice-msg-' + Date.now();
             currentActiveVoiceMsgId = msgId;
 
@@ -3738,6 +4056,10 @@ Contoh respons ideal (1-2 kalimat pendek):
                 <div style="font-size: 0.76rem; color: #64748b; margin-top: 4px;">Amplitudo Peak: ${peak} • Durasi: ${duration}s</div>
             `;
             addMessageToUI(voiceHtml, 'user');
+
+            if (peak === 0) {
+                EsaLogger.warn("Fase 2: Transkripsi Suara (STT)", "Amplitudo Peak bernilai 0 (Hening). Sinyal mikrofon INMP441 mungkin tidak terbaca kabelnya.");
+            }
 
             currentChatAbortController = new AbortController();
             const signal = currentChatAbortController.signal;
@@ -3757,6 +4079,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             if (shouldUseTurbo) {
                 try {
+                    EsaLogger.subStep("Mentranskripsi via Whisper Large-V3-Turbo (Lokal Port 8001)...");
                     const textEl = document.getElementById(`${msgId}-text`);
                     if (textEl && !signal.aborted) {
                         textEl.innerHTML = `⏳ <em>Mentranskripsi via Whisper Large-V3-Turbo (Lokal)...</em>`;
@@ -3764,6 +4087,8 @@ Contoh respons ideal (1-2 kalimat pendek):
 
                     const transcription = await transcribeViaTurboServer(audioUrl);
                     if (signal.aborted) return;
+
+                    EsaLogger.success("Fase 2: Transkripsi Suara", "Transkripsi Whisper Turbo selesai", { transcription });
 
                     if (textEl) {
                         if (transcription && transcription.trim().length > 0) {
@@ -3780,10 +4105,12 @@ Contoh respons ideal (1-2 kalimat pendek):
                         showSafetyCard();
                     }
 
+                    EsaLogger.step(3, "Analisis Skenario & Intersepsi Emosi", `Mengecek apakah transkripsi cocok dengan skenario cepat`);
                     if (checkAndTriggerScenario(transcription)) {
                         currentActiveVoiceMsgId = null;
                         return;
                     }
+                    EsaLogger.subStep("Tidak ada skenario cepat yang cocok, melanjutkan ke perumusan respons AI.");
 
                     chatHistory.push({
                         "role": "user",
@@ -3794,6 +4121,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                     return;
                 } catch (turboErr) {
                     console.warn("Turbo server failed or unreachable, fallback ke opsi berikutnya:", turboErr);
+                    EsaLogger.warn("Fase 2: Transkripsi Suara", `Whisper Turbo lokal gagal: ${turboErr.message}. Beralih ke opsi berikutnya.`);
                 }
             }
 
@@ -3803,12 +4131,15 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             if (useClientWhisper) {
                 try {
+                    EsaLogger.subStep(`Mentranskripsi via Client-Side Whisper (${CareTechWhisper.backendUsed.toUpperCase()})...`);
                     const textEl = document.getElementById(`${msgId}-text`);
                     let transcription = await CareTechWhisper.transcribe(audioUrl, (statusMsg) => {
                         if (textEl && !signal.aborted) textEl.innerHTML = `⏳ <em>${statusMsg}</em>`;
                     });
 
                     if (signal.aborted) return;
+
+                    EsaLogger.success("Fase 2: Transkripsi Suara", `Client-side Whisper selesai via ${CareTechWhisper.backendUsed.toUpperCase()}`, { transcription });
 
                     if (textEl) {
                         if (transcription && transcription.trim().length > 0) {
@@ -3825,10 +4156,12 @@ Contoh respons ideal (1-2 kalimat pendek):
                         showSafetyCard();
                     }
 
+                    EsaLogger.step(3, "Analisis Skenario & Intersepsi Emosi", `Mengecek apakah transkripsi cocok dengan skenario cepat`);
                     if (checkAndTriggerScenario(transcription)) {
                         currentActiveVoiceMsgId = null;
                         return;
                     }
+                    EsaLogger.subStep("Tidak ada skenario cepat yang cocok, melanjutkan ke perumusan respons AI.");
 
                     // Tambahkan ke riwayat chat dan teruskan ke pipeline AI CareTech (Ollama / Gemini Teks / Offline)
                     chatHistory.push({
@@ -3840,12 +4173,15 @@ Contoh respons ideal (1-2 kalimat pendek):
                     return;
                 } catch (whisperErr) {
                     console.warn("Client-side Whisper gagal atau belum siap:", whisperErr);
+                    EsaLogger.warn("Fase 2: Transkripsi Suara", `Client-side Whisper gagal: ${whisperErr.message}`);
                     // Jika client-side gagal dan ada koneksi internet serta kunci Gemini, fallback ke Gemini cloud
                     if (geminiKey && geminiKey.length > 15 && navigator.onLine && sttMode !== 'client') {
                         console.log("Mencoba fallback ke Gemini Cloud multimodal...");
+                        EsaLogger.subStep("Beralih ke Gemini Cloud Multimodal Audio...");
                     } else {
                         // Jika offline murni
                         if (signal.aborted) return;
+                        EsaLogger.step(4, "Penyusunan Respon AI (Offline Fallback)", "Whisper tidak tersedia, menyiapkan template balasan audio offline");
                         fallbackResponseTimer = setTimeout(() => {
                             if (signal.aborted) return;
                             const textEl = document.getElementById(`${msgId}-text`);
@@ -3856,6 +4192,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                                 "Aku menyimakmu kawan. Tarik napas rileks ya, mau cerita apa?"
                             ];
                             const reply = voiceResponses[Math.floor(Math.random() * voiceResponses.length)];
+                            EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Template empati suara: "${reply}"`);
                             addMessageToUI(reply, 'ai');
                             chatHistory.push({ "role": "user", "parts": [{ "text": "(Siswa berbicara melalui mikrofon INMP441 robot)" }] });
                             chatHistory.push({ "role": "model", "parts": [{ "text": reply }] });
@@ -3869,6 +4206,15 @@ Contoh respons ideal (1-2 kalimat pendek):
             // Panggil Gemini Multimodal Audio dengan instruksi TRANSKRIPSI & BALASAN
             if (geminiKey && geminiKey.length > 15) {
                 try {
+                    EsaLogger.subStep("Mengirim file suara WAV ke Gemini 3.1 Flash-Lite (Multimodal Audio, Batas: 6s)...");
+                    const audioController = new AbortController();
+                    let isAudioTimeout = false;
+                    const audioTimeoutId = setTimeout(() => { isAudioTimeout = true; audioController.abort(); }, 6000);
+                    if (signal) {
+                        if (signal.aborted) audioController.abort();
+                        else signal.addEventListener('abort', () => audioController.abort(), { once: true });
+                    }
+
                     const systemInstruction = `${getEsaSystemPrompt(sensorContext)}
 
 TUGAS TAMBAHAN KHUSUS REKAMAN SUARA INI:
@@ -3878,7 +4224,7 @@ Kembalikan format JSON valid dengan 2 field:
 
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
                         method: 'POST',
-                        signal: signal,
+                        signal: audioController.signal,
                         headers: {
                             'Content-Type': 'application/json',
                             'x-goog-api-key': geminiKey
@@ -3907,6 +4253,7 @@ Kembalikan format JSON valid dengan 2 field:
                         })
                     });
 
+                    clearTimeout(audioTimeoutId);
                     const data = await response.json();
                     if (response.ok && data.candidates && data.candidates[0].content) {
                         const rawContent = data.candidates[0].content.parts[0].text;
@@ -3923,6 +4270,8 @@ Kembalikan format JSON valid dengan 2 field:
 
                         if (!aiText) aiText = "Aku mendengarkan suaramu kawan. Apa yang sedang kamu rasakan?";
                         aiText = limitAiResponseLength(aiText);
+
+                        EsaLogger.success("Fase 2 & 4: Multimodal Cloud", "Transkripsi & Respon diterima dari Gemini", { transcription, reply: aiText });
 
                         // Periksa potensi risiko darurat pada transkripsi atau balasan
                         if (checkRiskContent(transcription) || checkRiskContent(aiText)) {
@@ -3943,11 +4292,14 @@ Kembalikan format JSON valid dengan 2 field:
                         }
 
                         // Jika hasil transkripsi suara memicu skenario (misal: sedih): tawarkan pelukan 2 detik!
+                        EsaLogger.step(3, "Analisis Skenario & Intersepsi Emosi", `Mengecek apakah transkripsi cocok dengan skenario cepat`);
                         if (checkAndTriggerScenario(transcription)) {
                             currentActiveVoiceMsgId = null;
                             return;
                         }
+                        EsaLogger.subStep("Tidak ada skenario cepat yang cocok, merender respon Gemini.");
 
+                        EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Merender balasan AI ke chat`);
                         addMessageToUI(aiText, 'ai');
                         chatHistory.push({
                             "role": "user",
@@ -3961,20 +4313,28 @@ Kembalikan format JSON valid dengan 2 field:
                         return;
                     }
                 } catch (err) {
-                    if (err.name === 'AbortError' || signal.aborted) return;
-                    console.warn("Gemini voice API call failed:", err);
+                    if (signal.aborted) return;
+                    if (isAudioTimeout) {
+                        EsaLogger.warn("Fase 2: Multimodal Cloud", "Gemini Cloud Multimodal timeout (>6s), beralih ke secondary fallback Whisper...");
+                    } else {
+                        console.warn("Gemini voice API call failed:", err);
+                        EsaLogger.warn("Fase 2: Multimodal Cloud", `Gemini voice API call gagal: ${err.message}`);
+                    }
 
                     // Fallback cerdas: coba Client-Side Whisper jika Gemini gagal!
                     try {
                         const textEl = document.getElementById(`${msgId}-text`);
                         if (textEl) textEl.innerHTML = `⏳ <em>Cloud gagal, mencoba Whisper lokal...</em>`;
+                        EsaLogger.subStep("Mencoba secondary fallback ke Client-Side Whisper...");
                         const whisperFallback = await CareTechWhisper.transcribe(audioUrl);
                         if (whisperFallback && whisperFallback.trim().length > 0) {
+                            EsaLogger.success("Fase 2: Transkripsi Suara", "Secondary fallback Whisper berhasil", { transcription: whisperFallback });
                             if (textEl) {
                                 textEl.innerHTML = `💬 <strong>Transkripsi (${CareTechWhisper.backendUsed.toUpperCase()}):</strong> "${whisperFallback}"`;
                                 textEl.style.fontStyle = "normal";
                             }
                             if (checkRiskContent(whisperFallback)) showSafetyCard();
+                            EsaLogger.step(3, "Analisis Skenario & Intersepsi Emosi", `Mengecek skenario dari fallback whisper`);
                             if (checkAndTriggerScenario(whisperFallback)) {
                                 currentActiveVoiceMsgId = null;
                                 return;
@@ -3988,6 +4348,7 @@ Kembalikan format JSON valid dengan 2 field:
                         }
                     } catch (e2) {
                         console.warn("Whisper secondary fallback failed:", e2);
+                        EsaLogger.warn("Fase 2: Transkripsi Suara", `Secondary fallback Whisper juga gagal: ${e2.message}`);
                     }
                 }
             }
@@ -3995,6 +4356,7 @@ Kembalikan format JSON valid dengan 2 field:
             if (signal.aborted) return;
 
             // Fallback Empatik Bawaan jika offline (Maksimal 1-2 Kalimat Pendek, tanpa emoji)
+            EsaLogger.step(4, "Penyusunan Respon AI (Fallback Offline)", "Menyiapkan respon empati bawaan suara");
             fallbackResponseTimer = setTimeout(() => {
                 if (signal.aborted) return;
                 const textEl = document.getElementById(`${msgId}-text`);
@@ -4071,6 +4433,7 @@ Kembalikan format JSON valid dengan 2 field:
                 sc = (typeof window.CARETECH_SCENARIOS !== 'undefined') ? window.CARETECH_SCENARIOS['sedih_hug'] : null;
             }
             if (sc) {
+                EsaLogger.success("Fase 3: Intersepsi Skenario", `Skenario cocok terdeteksi: "${sc.id}" - ${sc.title}`);
                 initiateScenarioFlow(sc, text);
                 return true;
             }
@@ -4079,6 +4442,25 @@ Kembalikan format JSON valid dengan 2 field:
 
         function setEspSensorsActive(active) {
             sendEsp({ type: "set_sensors", enabled: !!active });
+        }
+
+        function handleFirstCurhatButtonPress(userText = "Halo eca, aku lagi sedih nih") {
+            // 1. Hentikan suara audio/speech yang sedang berjalan dan batalkan status loading
+            stopAllAudioAndSpeech();
+            cancelChatLoading(false);
+
+            // 2. Tampilkan pesan curhat siswa secara langsung tanpa transkripsi/wadah audio
+            addMessageToUI(userText, 'user');
+            chatHistory.push({
+                "role": "user",
+                "parts": [{ "text": userText }]
+            });
+
+            EsaLogger.startPipeline("Tombol Fisik Boneka (Push Button)", userText);
+            EsaLogger.step(1, "Pemicu Pesan Pertama (Tanpa Transkripsi)", "Memicu curhat awal secara instan dengan jawaban siap pakai.");
+
+            // 3. Eksekusi jawaban skenario siap pakai (Dukungan Saat Sedih / sedih_hug)
+            initiateSadnessHugFlow(userText);
         }
 
         function initiateSadnessHugFlow(text) {
@@ -4099,13 +4481,17 @@ Kembalikan format JSON valid dengan 2 field:
             pendingSadnessText = text;
             isWaitingForHug = true;
 
+            EsaLogger.step(3, "Eksekusi Skenario: Tahap 1 (Penawaran Aksi / Pelukan)", `ID: ${scenario.id} | Judul: ${scenario.title}`);
+
             // Aktifkan sensor fisik pada ESP32 (Hanya hidup saat diminta pelukan/input)
+            EsaLogger.subStep("Mengaktifkan sensor sentuh fisik pada robot (set_sensors: true)");
             setEspSensorsActive(true);
 
             const robotIcon = document.getElementById('robot-icon');
 
             const offerMsg = scenario.stage1?.text || "Pasti berat banget ya rasanya... Sini peluk boneka dulu kawan, biar kamu merasa lebih tenang.";
             
+            EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Menampilkan pesan Tahap 1: "${offerMsg}"`);
             addMessageToUI(offerMsg, 'ai');
             chatHistory.push({
                 "role": "model",
@@ -4113,6 +4499,7 @@ Kembalikan format JSON valid dengan 2 field:
             });
 
             // Putar audio Tahap 1 dari ElevenLabs (instan lokal) atau fallback ke speakText
+            EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${scenario.stage1?.audioUrl || 'TTS Dinamis'}`);
             if (window.scenarioEngine && scenario.stage1?.audioUrl) {
                 window.scenarioEngine.playAudio(scenario.stage1.audioUrl);
             } else {
@@ -4124,6 +4511,8 @@ Kembalikan format JSON valid dengan 2 field:
             const cardId = "scenario-card-" + Date.now();
             const actionDesc = scenario.action?.description || "Lakukan interaksi fisik dengan boneka";
             const timeoutSec = Math.round((scenario.action?.timeoutMs || 30000) / 1000);
+
+            EsaLogger.subStep(`Menampilkan kartu countdown interaktif (${timeoutSec} detik) di antarmuka chat`);
 
             const cardHtml = `
                 <div id="${cardId}" class="scenario-action-card" style="margin-top: 0.5rem; padding: 0.95rem; background: #fff1f2; border: 2.5px solid #f43f5e; border-radius: 12px; box-shadow: 4px 4px 0 var(--ink);">
@@ -4173,6 +4562,7 @@ Kembalikan format JSON valid dengan 2 field:
 
         function cancelScenarioFlow(cardId) {
             if (!isWaitingForHug) return;
+            EsaLogger.cancel("Fase 3: Skenario Interaktif", "Interaksi dilewati / di-skip oleh pengguna via tombol Lewati");
             isWaitingForHug = false;
 
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
@@ -4206,6 +4596,8 @@ Kembalikan format JSON valid dengan 2 field:
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
 
             const sc = activeScenario || (typeof window.CARETECH_SCENARIOS !== 'undefined' ? window.CARETECH_SCENARIOS['sedih_hug'] : null);
+            EsaLogger.step(3, "Eksekusi Skenario: Tahap 2 (Sentuhan / Pelukan Berhasil Diterima)", `Durasi sentuhan: ${duration.toFixed(1)}s`);
+
             const robotIcon = document.getElementById('robot-icon');
             if (robotIcon) {
                 robotIcon.textContent = sc?.stage2_success?.robotIcon || "🤗";
@@ -4233,21 +4625,27 @@ Kembalikan format JSON valid dengan 2 field:
             activeScenario = null;
 
             setTimeout(() => {
+                EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Menampilkan pesan Tahap 2 Sukses: "${followUpMsg}"`);
                 addMessageToUI(followUpMsg, 'ai');
                 chatHistory.push({
                     "role": "model",
                     "parts": [{ "text": followUpMsg }]
                 });
 
+                EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${sc?.stage2_success?.audioUrl || 'TTS Dinamis'}`);
                 if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
                     window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
                         sendEspAction(sc?.stage2_success?.robotMood || "idle");
                         if (robotIcon) robotIcon.style.animation = 'none';
+                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
+                        EsaLogger.endPipeline();
                     });
                 } else {
                     speakText(followUpMsg, () => {
                         sendEspAction(sc?.stage2_success?.robotMood || "idle");
                         if (robotIcon) robotIcon.style.animation = 'none';
+                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
+                        EsaLogger.endPipeline();
                     });
                 }
             }, 300);
@@ -4259,6 +4657,8 @@ Kembalikan format JSON valid dengan 2 field:
 
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
+
+            EsaLogger.step(3, "Eksekusi Skenario: Tahap 2 (Timeout / Tidak Merespon)", "Waktu tunggu interaksi fisik berakhir");
 
             const robotIcon = document.getElementById('robot-icon');
             if (robotIcon) robotIcon.textContent = "🤖";
@@ -4280,19 +4680,25 @@ Kembalikan format JSON valid dengan 2 field:
             pendingSadnessText = null;
             activeScenario = null;
 
+            EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Menampilkan pesan Timeout: "${askWhyMsg}"`);
             addMessageToUI(askWhyMsg, 'ai');
             chatHistory.push({
                 "role": "model",
                 "parts": [{ "text": askWhyMsg }]
             });
 
+            EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${sc?.stage2_timeout?.audioUrl || 'TTS Dinamis'}`);
             if (window.scenarioEngine && sc?.stage2_timeout?.audioUrl) {
                 window.scenarioEngine.playAudio(sc.stage2_timeout.audioUrl, () => {
                     sendEspAction(sc?.stage2_timeout?.robotMood || "idle");
+                    EsaLogger.step(7, "Siklus Respon Selesai", "Skenario timeout diselesaikan dengan ramah");
+                    EsaLogger.endPipeline();
                 });
             } else {
                 speakText(askWhyMsg, () => {
                     sendEspAction(sc?.stage2_timeout?.robotMood || "idle");
+                    EsaLogger.step(7, "Siklus Respon Selesai", "Skenario timeout diselesaikan dengan ramah");
+                    EsaLogger.endPipeline();
                 });
             }
         }
@@ -4384,6 +4790,8 @@ Kembalikan format JSON valid dengan 2 field:
         function cancelChatLoading(isUserInitiated = true) {
             if (!isChatLoading && !isWaitingForHug) return;
 
+            EsaLogger.cancel(EsaLogger.currentPhase || "Proses Berjalan", isUserInitiated ? "Pengguna membatalkan balasan (Tombol Batal / Escape)" : "Dibatalkan oleh sistem untuk proses baru");
+
             // 1. Batalkan koneksi fetch aktif jika ada
             if (currentChatAbortController) {
                 try {
@@ -4444,7 +4852,7 @@ Kembalikan format JSON valid dengan 2 field:
         // ==========================================
         // CHAT TURN & AI PIPELINE
         // ==========================================
-        async function sendMessage() {
+        async function sendMessage(source = "Teks Masukan Pengguna (Ketik)") {
             if (isChatLoading) {
                 // Jika tombol Batal diklik saat loading aktif
                 cancelChatLoading(true);
@@ -4457,11 +4865,17 @@ Kembalikan format JSON valid dengan 2 field:
             const text = inputEl.value.trim();
             if (!text) return;
 
+            // Inisiasi EsaLogger jika belum dimulai (misal via tombol Enter atau tombol Kirim)
+            if (!EsaLogger.pipelineStartTime) {
+                EsaLogger.startPipeline(source, text);
+            }
+
             addMessageToUI(text, 'user');
             inputEl.value = '';
 
             // Cek protokol risiko keselamatan secara proaktif
             if (checkRiskContent(text)) {
+                EsaLogger.warn("Fase 1: Input Masuk", "Terdeteksi potensi risiko keselamatan, menampilkan kartu darurat.");
                 showSafetyCard();
             }
 
@@ -4479,9 +4893,11 @@ Kembalikan format JSON valid dengan 2 field:
             }
 
             // INTERSEPTOR SKENARIO HARDCODE (ElevenLabs): Jika pesan cocok dengan kata kunci skenario
+            EsaLogger.step(3, "Analisis Skenario & Intersepsi Emosi", "Mengecek apakah kata kunci cocok dengan skenario cepat");
             if (checkAndTriggerScenario(text)) {
                 return;
             }
+            EsaLogger.subStep("Tidak ada skenario cepat yang cocok, melanjutkan ke perumusan respons AI.");
 
             // Pesan biasa: langsung proses AI
             executeAiChatPipeline(text);
@@ -4494,6 +4910,8 @@ Kembalikan format JSON valid dengan 2 field:
             const signal = currentChatAbortController.signal;
             setLoadingUiState(true);
 
+            EsaLogger.step(4, "Penyusunan Respon AI (LLM)", `Target teks: "${text.substring(0, 45)}..." | Provider: ${aiProvider.toUpperCase()}`);
+
             // Signal physical ESP32 that ESA is thinking
             sendEspAction("thinking");
 
@@ -4501,62 +4919,89 @@ Kembalikan format JSON valid dengan 2 field:
             let sensorContext = "";
             if (latestEspSensor && latestEspSensor.temp !== undefined) {
                 sensorContext = ` (Data sensor lingkungan fisik siswa saat ini: Suhu ${latestEspSensor.temp}°C, Kelembapan ${latestEspSensor.hum}%, Tingkat Cahaya ${latestEspSensor.light}.)`;
+                EsaLogger.subStep("Menginjeksi telemetri sensor lingkungan fisik ke prompt", {
+                    suhu: latestEspSensor.temp + "°C",
+                    kelembapan: latestEspSensor.hum + "%",
+                    cahaya: latestEspSensor.light
+                });
             }
             const systemInstruction = getEsaSystemPrompt(sensorContext) + extraPromptContext;
 
             let aiText = "";
             let generatedSuccess = false;
 
-            // 1. Coba Ollama Local AI (NVIDIA RTX 4050) jika mode 'ollama' atau 'auto' (dan Ollama sudah terdeteksi aktif)
-            if (aiProvider === 'ollama' || (aiProvider === 'auto' && isOllamaOnline)) {
-                try {
-                    aiText = await callOllamaChat(systemInstruction, text, chatHistory, signal);
-                    if (aiText && aiText.trim().length > 0) {
-                        generatedSuccess = true;
-                    }
-                } catch (err) {
-                    if (err.name === 'AbortError' || signal.aborted) return;
-                    console.warn("Ollama AI call failed or offline:", err);
-                    if (aiProvider === 'ollama') {
-                        // Jika user sengaja mengunci ke Ollama tapi belum jalan
-                        addMessageToUI("⚠️ Belum terhubung ke Ollama. Pastikan perintah 'ollama serve' aktif di terminal kawan!", 'ai');
-                        finishChatTurn("");
-                        return;
-                    }
-                }
-            }
+            // Eksekusi LLM Berjenjang Pintar (Batas Waktu 6 Detik):
+            // 1. Coba penyedia utama selama maks 6 detik.
+            // 2. Jika > 6 detik / gagal -> otomatis switch ke penyedia cadangan (maks 6 detik).
+            // 3. Jika > 6 detik / gagal lagi -> coba kembali penyedia utama (maks 6 detik).
+            // 4. Jika masih gagal/habis waktu -> beralih ke Template Empati Offline.
+            const primaryIsGemini = (aiProvider === 'gemini');
+            const providerPlan = primaryIsGemini 
+                ? ['gemini', 'ollama', 'gemini'] 
+                : ['ollama', 'gemini', 'ollama'];
 
-            if (signal.aborted) return;
+            for (let i = 0; i < providerPlan.length; i++) {
+                if (signal.aborted) return;
+                const currentProvider = providerPlan[i];
+                const attemptNum = i + 1;
+                const nextProviderName = (i < providerPlan.length - 1) 
+                    ? (providerPlan[i + 1] === 'gemini' ? 'Gemini Cloud' : 'Ollama Lokal')
+                    : 'Template Empati Offline';
 
-            // 2. Coba Gemini Cloud jika mode 'gemini' atau 'auto' (jika Ollama tidak membalas)
-            if (!generatedSuccess && (aiProvider === 'gemini' || aiProvider === 'auto')) {
-                if (geminiKey && geminiKey.length > 15) {
+                if (currentProvider === 'ollama') {
+                    // Jika Ollama offline dan bukan permintaan khusus awal
+                    if (!isOllamaOnline && aiProvider !== 'ollama' && attemptNum > 1) {
+                        EsaLogger.subStep(`[LLM Percobaan ${attemptNum}] Ollama offline, melompati ke penyedia berikutnya.`);
+                        continue;
+                    }
+
                     try {
-                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`, {
-                            method: 'POST',
-                            signal: signal,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': geminiKey
-                            },
-                            body: JSON.stringify({
-                                system_instruction: { parts: [{ text: systemInstruction }] },
-                                contents: chatHistory.slice(-20),
-                                generationConfig: {
-                                    maxOutputTokens: 80,
-                                    temperature: 0.7
-                                }
-                            })
-                        });
+                        const switchLabel = (attemptNum > 1) ? " (Switch ke Ollama Lokal)" : "";
+                        EsaLogger.step(4, `Penyusunan Respon AI${switchLabel}`, `[Percobaan ${attemptNum}] Mengirim prompt ke Ollama (${ollamaModel}) | Batas Waktu: 6s`);
+                        EsaLogger.subStep(`Menghubungi Ollama di ${ollamaHost}...`);
 
-                        const data = await response.json();
-                        if (response.ok && data.candidates && data.candidates[0].content) {
-                            aiText = data.candidates[0].content.parts[0].text;
+                        aiText = await callOllamaChat(systemInstruction, text, chatHistory, signal, 6000);
+                        if (aiText && aiText.trim().length > 0) {
                             generatedSuccess = true;
+                            EsaLogger.success("Fase 4: Penyusunan Respon AI", `Ollama Lokal (${ollamaModel}) berhasil menyusun balasan`, { reply: aiText });
+                            break;
                         }
                     } catch (err) {
-                        if (err.name === 'AbortError' || signal.aborted) return;
-                        console.warn("Gemini API call failed, falling back:", err);
+                        if (signal.aborted || err.isUserAbort) return;
+                        if (err.isTimeout) {
+                            console.warn(`Ollama melebihi batas waktu 6 detik (Attempt ${attemptNum}), switch ke ${nextProviderName}:`, err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Ollama memakan waktu > 6 detik! Otomatis switch ke ${nextProviderName}...`);
+                        } else {
+                            console.warn("Ollama AI gagal atau offline:", err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Ollama gagal (${err.message}). Beralih ke ${nextProviderName}...`);
+                        }
+                    }
+                } else if (currentProvider === 'gemini') {
+                    if (!geminiKey || geminiKey.length <= 15) {
+                        EsaLogger.subStep(`[LLM Percobaan ${attemptNum}] Gemini Key tidak disetel/valid, melompati ke penyedia berikutnya.`);
+                        continue;
+                    }
+
+                    try {
+                        const switchLabel = (attemptNum > 1) ? " (Switch ke Gemini Cloud)" : "";
+                        EsaLogger.step(4, `Penyusunan Respon AI${switchLabel}`, `[Percobaan ${attemptNum}] Mengirim prompt ke Gemini Cloud API (gemini-3.1-flash-lite) | Batas Waktu: 6s`);
+                        EsaLogger.subStep("Menghubungi Gemini Cloud API...");
+
+                        aiText = await callGeminiChat(systemInstruction, chatHistory, signal, 6000);
+                        if (aiText && aiText.trim().length > 0) {
+                            generatedSuccess = true;
+                            EsaLogger.success("Fase 4: Penyusunan Respon AI", "Gemini Cloud berhasil menyusun balasan", { reply: aiText });
+                            break;
+                        }
+                    } catch (err) {
+                        if (signal.aborted || err.isUserAbort) return;
+                        if (err.isTimeout) {
+                            console.warn(`Gemini Cloud melebihi batas waktu 6 detik (Attempt ${attemptNum}), switch ke ${nextProviderName}:`, err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Gemini Cloud memakan waktu > 6 detik! Otomatis switch ke ${nextProviderName}...`);
+                        } else {
+                            console.warn("Gemini API call gagal:", err);
+                            EsaLogger.warn("Fase 4: Penyusunan Respon AI", `Gemini Cloud gagal (${err.message}). Beralih ke ${nextProviderName}...`);
+                        }
                     }
                 }
             }
@@ -4565,6 +5010,7 @@ Kembalikan format JSON valid dengan 2 field:
 
             // 3. Jika berhasil diproses oleh Ollama atau Gemini
             if (generatedSuccess && aiText) {
+                EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", "Memvalidasi batas panjang & format balasan");
                 aiText = limitAiResponseLength(aiText);
                 if (checkRiskContent(aiText)) {
                     showSafetyCard();
@@ -4574,6 +5020,7 @@ Kembalikan format JSON valid dengan 2 field:
                     "role": "model",
                     "parts": [{ "text": aiText }]
                 });
+                EsaLogger.subStep("Bubble balasan AI dirender di antarmuka obrolan");
                 finishChatTurn(aiText);
                 return;
             }
@@ -4581,9 +5028,11 @@ Kembalikan format JSON valid dengan 2 field:
             if (signal.aborted) return;
 
             // 4. Cadangan Darurat: Template Empati Bawaan (Offline Rule-Based)
+            EsaLogger.step(4, "Penyusunan Respon AI (Fallback Offline)", "Ollama & Gemini tidak tersedia, menyiapkan template empati bawaan");
             fallbackResponseTimer = setTimeout(() => {
                 if (signal.aborted) return;
                 const responseText = generateEmpatheticResponse(text);
+                EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Template empati terpilih: "${responseText}"`);
                 if (checkRiskContent(responseText)) {
                     showSafetyCard();
                 }
@@ -4609,9 +5058,13 @@ Kembalikan format JSON valid dengan 2 field:
             if (replyText) {
                 speakText(replyText, () => {
                     sendEspAction("idle");
+                    EsaLogger.step(7, "Siklus Respon Selesai", "ESA kembali ke mode santai / idle dan siap interaksi berikutnya");
+                    EsaLogger.endPipeline();
                 });
             } else {
                 sendEspAction("idle");
+                EsaLogger.step(7, "Siklus Respon Selesai", "ESA kembali ke mode santai / idle (tanpa suara)");
+                EsaLogger.endPipeline();
             }
         }
 
