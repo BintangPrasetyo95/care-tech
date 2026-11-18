@@ -7,6 +7,9 @@
     <title>CareTech - Posttest (NeuroAdventure)</title>
     <link rel="icon" href="assets/logo-care-tech.png">
     <link rel="stylesheet" href="dashboard.css">
+    <!-- QR Scanner & Case Studies Database -->
+    <script src="js/html5-qrcode.min.js"></script>
+    <script src="cases-data.js"></script>
     <style>
         /* ==========================================================================
            POSTTEST - SIMPLE NEUROADVENTURE EXPLANATION
@@ -225,6 +228,250 @@
         .btn-finish-neuro:active {
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        /* ==========================================================================
+           QR SCANNER & CARDS INTERACTIVE STYLES
+           ========================================================================== */
+        .component-card-interactive {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-action-links {
+            margin-top: 1.1rem;
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-card-action {
+            font-family: var(--imp);
+            font-size: 0.92rem;
+            padding: 0.55rem 0.95rem;
+            border: 2.5px solid var(--ink);
+            border-radius: 10px;
+            box-shadow: 3px 3px 0 var(--ink);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1.2;
+        }
+
+        .btn-card-action:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--ink);
+        }
+
+        .btn-card-action:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--ink);
+        }
+
+        .step-inline-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-weight: 800;
+            color: var(--pink);
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0.12rem 0.45rem;
+            border-radius: 6px;
+            background: rgba(255, 46, 147, 0.1);
+            border: 1.5px dashed var(--pink);
+            transition: all 0.15s ease;
+        }
+
+        .step-inline-link:hover {
+            background: var(--pink);
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        /* Scanner Modal Overlay */
+        .scanner-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
+            animation: fadeInOverlay 0.2s ease-out;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .scanner-modal-card {
+            background: var(--paper-warm, #fffcf4);
+            border: 4px solid var(--ink, #111);
+            border-radius: 20px;
+            box-shadow: 8px 8px 0 var(--ink, #111);
+            width: 100%;
+            max-width: 480px;
+            padding: 1.8rem 1.6rem;
+            position: relative;
+            max-height: 94vh;
+            overflow-y: auto;
+            animation: popInCard 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-sizing: border-box;
+        }
+
+        @keyframes popInCard {
+            from { transform: scale(0.92) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .scanner-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .scanner-modal-title {
+            font-family: var(--imp);
+            font-size: 1.6rem;
+            color: var(--ink);
+            margin: 0.3rem 0 0;
+            line-height: 1.2;
+        }
+
+        .scanner-modal-close {
+            background: var(--pink, #ff2e93);
+            color: #fff;
+            border: 3px solid var(--ink);
+            border-radius: 8px;
+            box-shadow: 2px 2px 0 var(--ink);
+            width: 38px;
+            height: 38px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .scanner-modal-close:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--ink);
+            background: #e0177b;
+        }
+
+        .scanner-instruction {
+            font-family: var(--mk);
+            font-size: 0.98rem;
+            color: #333;
+            margin: 0 0 1rem;
+            line-height: 1.45;
+        }
+
+        .scanner-viewport-wrapper {
+            position: relative;
+            background: #111;
+            border: 3.5px solid var(--ink);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 4px 4px 0 var(--ink);
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qr-reader {
+            border: none !important;
+            width: 100% !important;
+        }
+
+        #qr-reader video {
+            border-radius: 10px;
+            object-fit: cover;
+            width: 100% !important;
+        }
+
+        #qr-reader__scan_region {
+            background: transparent !important;
+        }
+
+        #qr-reader__dashboard_section_csr button {
+            background: var(--sun) !important;
+            border: 2px solid var(--ink) !important;
+            border-radius: 6px !important;
+            font-family: var(--imp) !important;
+            font-size: 0.85rem !important;
+            padding: 0.35rem 0.7rem !important;
+            box-shadow: 2px 2px 0 var(--ink) !important;
+            cursor: pointer !important;
+            margin: 0.3rem !important;
+        }
+
+        .scanner-status-badge {
+            margin-top: 0.6rem;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            background: #ffffff;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            border-radius: 6px;
+            padding: 0.35rem 0.7rem;
+            box-shadow: 2px 2px 0 var(--ink);
+            text-align: center;
+        }
+
+        .scanner-result-box {
+            margin-top: 1.2rem;
+            background: #ffffff;
+            border: 3.5px solid var(--ink);
+            border-radius: 14px;
+            box-shadow: 5px 5px 0 var(--ink);
+            padding: 1.3rem;
+            text-align: center;
+            animation: popInCard 0.25s ease-out;
+        }
+
+        .scanner-result-pill {
+            font-family: var(--mono);
+            font-weight: 800;
+            font-size: 0.82rem;
+            padding: 0.25rem 0.75rem;
+            border: 2px solid var(--ink);
+            border-radius: 999px;
+            box-shadow: 2px 2px 0 var(--ink);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 0.3rem 0 0.5rem;
+        }
+
+        .scanner-modal-footer {
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 2px dashed rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.6rem;
         }
 
         /* Mobile Responsiveness */
@@ -459,7 +706,8 @@
                         <ul class="dropdown-menu">
                             <li><a href="game.html">1. Main Game</a></li>
                             <li><a href="posttest.html" class="active-subitem">2. Posttest (NeuroAdventure) ★</a></li>
-                            <li><a href="bonus-game.html">3. Bonus Game 🎁</a></li>
+                            <li><a href="studi-kasus.html">3. Kartu Kasus &amp; QR 🃏</a></li>
+                            <li><a href="bonus-game.html">4. Bonus Game 🎁</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -530,13 +778,26 @@
                             </p>
                         </div>
 
-                        <!-- Dek Kartu Kasus -->
-                        <div class="component-card">
-                            <div class="component-icon">🃏</div>
-                            <h4 class="component-title">Dek Kartu Kasus (Social Dilemma Cards)</h4>
-                            <p class="component-desc">
-                                Kartu skenario yang memuat studi kasus konflik dunia nyata anak sekolah untuk diselesaikan bersama tim.
-                            </p>
+                        <!-- Dek Kartu Kasus (Interactive with a href & Camera QR Scanner) -->
+                        <div class="component-card component-card-interactive">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+                                    <div class="component-icon" style="margin-bottom: 0;">🃏</div>
+                                    <span class="tape tape-lime" style="font-size: 0.72rem; padding: 0.15rem 0.5rem;">50 KARTU DIGITAL</span>
+                                </div>
+                                <h4 class="component-title">Dek Kartu Kasus (Social Dilemma Cards)</h4>
+                                <p class="component-desc">
+                                    Kartu skenario fisik berisi 50 studi kasus konflik sosial emosional anak sekolah. Dilengkapi QR code untuk membuka pembahasan interaktif di web!
+                                </p>
+                            </div>
+                            <div class="card-action-links">
+                                <a href="studi-kasus.html" class="btn-card-action" style="background: var(--sun); color: var(--ink);">
+                                    <span>📖</span> Katalog 50 Kasus ➔
+                                </a>
+                                <button type="button" class="btn-card-action" onclick="openQrScannerModal()" style="background: var(--pink); color: #ffffff;">
+                                    <span>📷</span> Pindai QR Kamera
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -572,9 +833,12 @@
                     <div class="step-item">
                         <div class="step-badge" style="background: var(--pink); color: #fff;">3</div>
                         <div>
-                            <h4 class="step-title">Ambil Kartu Kasus</h4>
+                            <h4 class="step-title">Ambil Kartu Kasus &amp; Pindai QR Code</h4>
                             <p class="step-desc">
-                                Kalau pion berhenti di petak <strong>KARTU</strong>, ambil 1 kartu kasus yang berisi cerita masalah nyata anak sekolah (misalnya ejekan / perundungan).
+                                Kalau pion berhenti di petak <strong>KARTU</strong>, ambil 1 kartu kasus fisik, lalu 
+                                <span class="step-inline-link" onclick="openQrScannerModal()">📷 Pindai QR Kamera</span> 
+                                atau <a href="studi-kasus.html" class="step-inline-link" style="color: var(--ink); border-color: var(--ink);">🃏 Buka Direktori Kartu</a> 
+                                untuk melihat skenario masalah dan tantangan karakter secara langsung!
                             </p>
                         </div>
                     </div>
@@ -621,10 +885,275 @@
                 </div>
 
             </div>
+
+            <!-- ============================================================
+                 MODAL PEMINDAI QR KAMERA NEUROADVENTURE
+                 ============================================================ -->
+            <div id="qr-scanner-modal" class="scanner-modal-overlay" style="display: none;" onclick="if(event.target === this) closeQrScannerModal()">
+                <div class="scanner-modal-card mk" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
+                    <!-- Header Modal -->
+                    <div class="scanner-modal-header">
+                        <div>
+                            <span class="tape tape-sun" style="font-size: 0.78rem;">LIVE CAMERA SCANNER 📷</span>
+                            <h3 class="scanner-modal-title" id="scanner-title">Pindai QR Kartu Kasus</h3>
+                        </div>
+                        <button type="button" class="scanner-modal-close" onclick="closeQrScannerModal()" title="Tutup Pemindai">✕</button>
+                    </div>
+
+                    <!-- Instruksi -->
+                    <p class="scanner-instruction">
+                        Dekatkan kamera perangkatmu ke <strong>QR Code</strong> pada kartu kasus fisik untuk membuka skenario studi kasus secara otomatis.
+                    </p>
+
+                    <!-- Area Kamera & Viewfinder -->
+                    <div class="scanner-viewport-wrapper">
+                        <div id="qr-reader"></div>
+                    </div>
+                    <div id="scanner-status" class="scanner-status-badge">Menyiapkan kamera... ⏳</div>
+
+                    <!-- Hasil Pemindaian (A HREF Link Card) -->
+                    <div id="scanner-result-container" class="scanner-result-box" style="display: none;">
+                        <span class="tape tape-lime" style="font-size: 0.8rem; margin-bottom: 0.4rem;">KARTU TERDETEKSI! 🎉</span>
+                        <div id="scanned-pill-container"></div>
+                        <h4 id="scanned-case-title" style="margin: 0.4rem 0 0.2rem; font-family: var(--imp); font-size: 1.4rem; color: var(--ink);">Kasus #--</h4>
+                        <p id="scanned-case-desc" style="margin: 0 0 1rem; font-size: 0.95rem; color: #444; font-family: var(--mk); line-height: 1.4;">Mengalihkan dalam sekejap...</p>
+                        
+                        <!-- Anchor Tag Utama yang menghubungkan ke Halaman Kartu -->
+                        <a id="btn-open-scanned-case" href="studi-kasus.html" class="btn btn-finish-neuro" style="width: 100%; justify-content: center; box-sizing: border-box; font-size: 1.15rem; padding: 0.8rem 1.4rem;">
+                            Buka Kartu Kasus Ini Sekarang ➔
+                        </a>
+                    </div>
+
+                    <!-- Footer Opsi Manual -->
+                    <div class="scanner-modal-footer">
+                        <p style="margin: 0; font-size: 0.85rem; color: #555;">Kamera buram atau tidak aktif?</p>
+                        <a href="studi-kasus.html" class="btn btn-small" style="background: #ffffff; text-decoration: none; border: 2.5px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);">
+                            🃏 Buka Katalog Manual
+                        </a>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
     <script>
+        // =========================================================================
+        // NEUROADVENTURE QR CODE SCANNER CONTROLLER (html5-qrcode)
+        // =========================================================================
+        let html5QrScanner = null;
+        let isScannerScanning = false;
+        let autoRedirectTimer = null;
+
+        // Buka Modal Pemindai Kamera
+        async function openQrScannerModal() {
+            const modal = document.getElementById('qr-scanner-modal');
+            const resultBox = document.getElementById('scanner-result-container');
+            const statusBadge = document.getElementById('scanner-status');
+            
+            if (autoRedirectTimer) {
+                clearTimeout(autoRedirectTimer);
+                autoRedirectTimer = null;
+            }
+
+            if (resultBox) resultBox.style.display = 'none';
+            if (statusBadge) {
+                statusBadge.textContent = 'Meminta izin kamera... 📷';
+                statusBadge.style.color = '#111';
+            }
+            if (modal) modal.style.display = 'flex';
+
+            await startCameraScanner();
+        }
+
+        // Tutup Modal & Matikan Kamera
+        async function closeQrScannerModal() {
+            if (autoRedirectTimer) {
+                clearTimeout(autoRedirectTimer);
+                autoRedirectTimer = null;
+            }
+            const modal = document.getElementById('qr-scanner-modal');
+            if (modal) modal.style.display = 'none';
+            await stopCameraScanner();
+        }
+
+        // Inisialisasi & Start Kamera
+        async function startCameraScanner() {
+            if (isScannerScanning) return;
+
+            if (typeof Html5Qrcode === 'undefined') {
+                const statusBadge = document.getElementById('scanner-status');
+                if (statusBadge) {
+                    statusBadge.innerHTML = '⚠️ Modul scanner belum termuat. Silakan gunakan <a href="studi-kasus.html" style="text-decoration:underline; font-weight:bold;">Katalog Manual</a>.';
+                }
+                return;
+            }
+
+            try {
+                if (!html5QrScanner) {
+                    html5QrScanner = new Html5Qrcode("qr-reader");
+                }
+
+                const config = {
+                    fps: 12,
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        const edge = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.75);
+                        return { width: Math.max(edge, 180), height: Math.max(edge, 180) };
+                    },
+                    aspectRatio: 1.0
+                };
+
+                // Prioritaskan kamera belakang (environment)
+                await html5QrScanner.start(
+                    { facingMode: "environment" },
+                    config,
+                    onQrCodeSuccess,
+                    onQrCodeScanError
+                );
+
+                isScannerScanning = true;
+                const statusBadge = document.getElementById('scanner-status');
+                if (statusBadge) statusBadge.textContent = 'Kamera siap! Arahkan ke QR Code kartu 🎯';
+            } catch (err) {
+                console.error("Gagal memulai kamera:", err);
+                const statusBadge = document.getElementById('scanner-status');
+                if (statusBadge) {
+                    const errMsg = (err && err.message) ? err.message : String(err);
+                    statusBadge.innerHTML = `⚠️ Kamera tidak dapat diakses (${errMsg}). Pastikan izin kamera aktif atau gunakan link manual di bawah.`;
+                    statusBadge.style.color = '#b91c1c';
+                }
+            }
+        }
+
+        // Hentikan Stream Kamera
+        async function stopCameraScanner() {
+            if (html5QrScanner && isScannerScanning) {
+                try {
+                    await html5QrScanner.stop();
+                    await html5QrScanner.clear();
+                } catch (e) {
+                    console.warn("Info stop camera:", e);
+                }
+                isScannerScanning = false;
+            }
+        }
+
+        // Suara Beep Sintetis saat QR Terdeteksi (Web Audio API)
+        function playScanBeep() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } catch (e) {
+                // AudioContext autoplay limitation fallback
+            }
+        }
+
+        // Callback Saat QR Berhasil Terdeteksi
+        function onQrCodeSuccess(decodedText, decodedResult) {
+            console.log("QR Sukses Dipindai:", decodedText);
+
+            // Suara & Haptik
+            playScanBeep();
+            if (navigator.vibrate) navigator.vibrate(150);
+
+            // Ekstrak Case ID atau parameter
+            let caseId = null;
+            let targetHref = 'studi-kasus.html';
+
+            try {
+                const trimmed = decodedText.trim();
+                if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                    const parsedUrl = new URL(trimmed);
+                    const idParam = parsedUrl.searchParams.get('id') || parsedUrl.searchParams.get('no') || parsedUrl.searchParams.get('case');
+                    if (idParam) {
+                        caseId = idParam;
+                        targetHref = `studi-kasus.html?id=${encodeURIComponent(idParam)}`;
+                    } else {
+                        targetHref = trimmed;
+                    }
+                } else if (trimmed.includes('id=')) {
+                    const match = trimmed.match(/id=(\d+)/i);
+                    if (match) {
+                        caseId = match[1];
+                        targetHref = `studi-kasus.html?id=${caseId}`;
+                    }
+                } else if (!isNaN(trimmed) && trimmed !== '') {
+                    caseId = trimmed;
+                    targetHref = `studi-kasus.html?id=${caseId}`;
+                } else {
+                    targetHref = `studi-kasus.html?code=${encodeURIComponent(trimmed)}`;
+                }
+            } catch (e) {
+                targetHref = `studi-kasus.html?raw=${encodeURIComponent(decodedText)}`;
+            }
+
+            // Hentikan kamera agar hemat baterai
+            stopCameraScanner();
+
+            // Tampilkan card hasil scan dengan data kasus dari cases-data.js (jika ada)
+            const resultBox = document.getElementById('scanner-result-container');
+            const pillBox = document.getElementById('scanned-pill-container');
+            const titleEl = document.getElementById('scanned-case-title');
+            const descEl = document.getElementById('scanned-case-desc');
+            const linkBtn = document.getElementById('btn-open-scanned-case');
+
+            let caseObj = null;
+            if (caseId && window.getCaseStudyById) {
+                caseObj = window.getCaseStudyById(caseId);
+            }
+
+            if (caseObj) {
+                if (pillBox) {
+                    pillBox.innerHTML = `
+                        <span class="scanner-result-pill" style="background: ${caseObj.categoryColor || '#ffe500'};">
+                            🏷️ ${caseObj.categoryCode || 'SA'} // ${caseObj.categoryIndo || 'SEL'}
+                        </span>
+                    `;
+                }
+                if (titleEl) titleEl.textContent = `Kasus #${String(caseObj.id).padStart(2, '0')}: ${caseObj.title}`;
+                if (descEl) descEl.innerHTML = `<strong>Karakter:</strong> ${caseObj.characterName || 'Nakula'} &bull; Mengalihkan otomatis dalam <strong>1.5 detik</strong>...`;
+            } else {
+                if (pillBox) pillBox.innerHTML = '';
+                if (titleEl) titleEl.textContent = caseId ? `Kasus #${String(caseId).padStart(2, '0')}` : 'Studi Kasus Ditemukan';
+                if (descEl) descEl.innerHTML = `Tautan siap: <code>${targetHref}</code> &bull; Mengalihkan dalam <strong>1.5 detik</strong>...`;
+            }
+
+            if (linkBtn) {
+                linkBtn.href = targetHref;
+            }
+
+            if (resultBox) resultBox.style.display = 'block';
+
+            // Auto redirect setelah 1.5 detik
+            autoRedirectTimer = setTimeout(() => {
+                window.location.href = targetHref;
+            }, 1500);
+        }
+
+        function onQrCodeScanError(errorMessage) {
+            // Normal scan frame miss - no need to spam logs
+        }
+
+        // Auto trigger jika URL mengandung hash #scan atau #scan-qr
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.location.hash === '#scan' || window.location.hash === '#scan-qr') {
+                setTimeout(() => {
+                    openQrScannerModal();
+                }, 400);
+            }
+        });
+
         // Selesai memahami NeuroAdventure & Buka Bonus Game
         function finishNeuroAdventure() {
             localStorage.setItem('caretech_posttest_completed', 'true');

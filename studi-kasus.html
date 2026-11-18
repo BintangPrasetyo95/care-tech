@@ -393,18 +393,23 @@
         <i class="deb cp" style="left:5%;bottom:10%;animation-delay:-0.8s"></i>
     </div>
 
-    <!-- Top Header Brand (Clean, no question navigation) -->
+    <!-- Top Header Brand (Clean, with return navigation) -->
     <header class="case-header-nav">
-        <div class="case-brand">
+        <a href="posttest.html" class="case-brand" title="Kembali ke Posttest NeuroAdventure" style="text-decoration: none;">
             <img src="assets/logo-care-tech.png" alt="CareTech Logo">
             <div>
                 <span class="tape tape-lime" style="font-size: 0.75rem; padding: 0.15rem 0.6rem; margin-bottom: 0.2rem;">HARMONIA // CARETECH</span>
                 <h1>Studi Kasus</h1>
             </div>
-        </div>
+        </a>
 
-        <div class="badge-qr-access">
-            <span>📱</span> Pindai QR Code
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="posttest.html" class="badge-qr-access" style="text-decoration: none;" title="Kembali ke Panduan NeuroAdventure">
+                <span>🎲</span> NeuroAdventure
+            </a>
+            <a href="posttest.html#scan-qr" class="badge-qr-access" style="text-decoration: none; background: var(--pink); color: #fff;" title="Buka Kamera Pemindai QR">
+                <span>📷</span> Scan QR Kamera
+            </a>
         </div>
     </header>
 
@@ -555,6 +560,9 @@
                         <button type="button" class="btn-icon btn-sun" style="width: 100%;" onclick="openSelectedCase()">
                             Buka Kasus Terpilih ➔
                         </button>
+                        <a href="posttest.html#scan-qr" class="btn-icon" style="width: 100%; background: var(--pink); color: #fff; text-decoration: none; margin-top: 0.6rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-sizing: border-box;">
+                            📷 Buka Kamera Pemindai di NeuroAdventure
+                        </a>
                     </div>
                 </div>
             `;
