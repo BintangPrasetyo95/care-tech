@@ -2158,8 +2158,12 @@
             }
         }
 
+        let isFirstCurhatButtonPress = true; // Status tombol curhat pertama (langsung memicu pesan tanpa STT)
+
         function clearChat() {
             chatHistory = [];
+            isFirstCurhatButtonPress = true;
+            sendEsp({ type: "reset_first_button" });
             document.getElementById('chat-messages').innerHTML = `
                 <div class="msg-bubble ai">
                     <div class="ai-avatar-mini">🤖</div>
@@ -3681,6 +3685,10 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "interrupted") {
                 // Suara robot dipotong karena siswa mulai berbicara atau menekan tombol!
                 stopAllAudioAndSpeech();
+            } else if (msg.type === "first_button_press") {
+                // Tombol push fisik ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                isFirstCurhatButtonPress = false;
+                handleFirstCurhatButtonPress(msg.text || "Halo eca, aku lagi sedih nih");
             } else if (msg.type === "button") {
                 // Tombol BOOT fisik pada robot ESP32 ditekan
                 stopAllAudioAndSpeech();
@@ -3699,6 +3707,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                 const robotIcon = document.getElementById('robot-icon');
 
                 if (msg.status === "recording") {
+                    // Fallback jika firmware ESP32 belum di-reflash dan masih mengirim button_curhat pada tombol pertama:
+                    if (msg.context === "button_curhat" && isFirstCurhatButtonPress) {
+                        isFirstCurhatButtonPress = false;
+                        sendEsp({ type: "stop_rec" }); // Hentikan mic ESP32 seketika
+                        handleFirstCurhatButtonPress("Halo eca, aku lagi sedih nih");
+                        return;
+                    }
+
                     isEspRecording = true;
                     if (currentAudio) { try { currentAudio.pause(); currentAudio = null; } catch(e){} }
                     if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
@@ -3972,6 +3988,14 @@ Contoh respons ideal (1-2 kalimat pendek):
                     btn.title = "Sedang mentransfer audio dari robot ke laptop...";
                 }
             } else {
+                // Jika tombol mic robot ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                if (isFirstCurhatButtonPress) {
+                    isFirstCurhatButtonPress = false;
+                    sendEsp({ type: "stop_rec" });
+                    handleFirstCurhatButtonPress("Halo eca, aku lagi sedih nih");
+                    return;
+                }
+
                 // TOGGLE ON: Hidupkan mic robot
                 triggerEspMicCurhat();
             }
@@ -4418,6 +4442,25 @@ Kembalikan format JSON valid dengan 2 field:
 
         function setEspSensorsActive(active) {
             sendEsp({ type: "set_sensors", enabled: !!active });
+        }
+
+        function handleFirstCurhatButtonPress(userText = "Halo eca, aku lagi sedih nih") {
+            // 1. Hentikan suara audio/speech yang sedang berjalan dan batalkan status loading
+            stopAllAudioAndSpeech();
+            cancelChatLoading(false);
+
+            // 2. Tampilkan pesan curhat siswa secara langsung tanpa transkripsi/wadah audio
+            addMessageToUI(userText, 'user');
+            chatHistory.push({
+                "role": "user",
+                "parts": [{ "text": userText }]
+            });
+
+            EsaLogger.startPipeline("Tombol Fisik Boneka (Push Button)", userText);
+            EsaLogger.step(1, "Pemicu Pesan Pertama (Tanpa Transkripsi)", "Memicu curhat awal secara instan dengan jawaban siap pakai.");
+
+            // 3. Eksekusi jawaban skenario siap pakai (Dukungan Saat Sedih / sedih_hug)
+            initiateSadnessHugFlow(userText);
         }
 
         function initiateSadnessHugFlow(text) {

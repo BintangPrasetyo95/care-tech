@@ -188,11 +188,12 @@ String inputBuffer;
 unsigned long lastSoundReportMs = 0;
 const unsigned long SOUND_REPORT_INTERVAL_MS = 250; // Update level mic ke web tiap 250ms
 
-// Debounce Tombol BOOT
+// Debounce Tombol BOOT & Push Button Fisik
 int lastButtonReading = HIGH;
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 60;
 bool buttonPressedSent = false;
+bool isFirstCurhatButtonPress = true; // Status tombol curhat pertama (langsung memicu pesan tanpa STT)
 
 // Microphone VAD (Voice Activity Detection)
 unsigned long lastMicCheckMs = 0;
@@ -1014,6 +1015,10 @@ void handleLine(String line) {
   } else if (type == "stop_rec") {
     // Selesai rekam manual via web chat
     currentState = STATE_IDLE;
+  } else if (type == "reset_first_button") {
+    // Reset status tombol pertama (agar demo curhat pertama dapat dipicu kembali)
+    isFirstCurhatButtonPress = true;
+    sendStatus("status", "Status first_button_press berhasil di-reset ke true");
   } else if (type == "start_rec") {
     // Merekam curhat suara siswa dari mikrofon INMP441 (Sistem Toggle ON/OFF)
     stopSpeakerAudio(); // Pastikan speaker mati saat rekam dimulai
@@ -1395,8 +1400,18 @@ void checkCurhatButton() {
 
       playRobotChime(2);
 
-      // Otomatis picu rekam suara curhat langsung dari robot! (Sistem Toggle ON/OFF)
-      recordAndStreamAudio(15, "button_curhat", false);
+      // Pemicu khusus tombol push pertama: langsung kirim pesan teks tanpa rekam mic & tanpa delay STT!
+      if (isFirstCurhatButtonPress) {
+        isFirstCurhatButtonPress = false;
+        JsonDocument btnDoc;
+        btnDoc["type"]    = "first_button_press";
+        btnDoc["text"]    = "Halo eca, aku lagi sedih nih";
+        btnDoc["context"] = "first_curhat";
+        sendDoc(btnDoc);
+      } else {
+        // Otomatis picu rekam suara curhat langsung dari robot! (Sistem Toggle ON/OFF Push-to-Talk)
+        recordAndStreamAudio(15, "button_curhat", false);
+      }
     } else if (reading == HIGH) {
       buttonPressedSent = false;
     }
