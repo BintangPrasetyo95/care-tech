@@ -787,9 +787,9 @@
                     <!-- Chat Messages Stream -->
                     <div class="chat-messages-stream" id="chat-messages">
                         <!-- Initial Message -->
-                        <div class="msg-bubble ai">
+                        <div class="msg-bubble ai" id="initial-ai-bubble">
                             <div class="ai-avatar-mini">🤖</div>
-                            <div>
+                            <div id="initial-ai-greeting">
                                 <strong>Halo Kawan! Aku ESA. 📦✨</strong><br>
                                 Robot kawan curhatmu yang siap mendengarkan. Apa yang sedang kamu rasakan hari ini?
                             </div>
@@ -2346,6 +2346,47 @@
 
         let isFirstCurhatButtonPress = true; // Status tombol curhat pertama (langsung memicu pesan tanpa STT)
 
+        // ----------------------------------------------------
+        // PERSONALISASI PROFIL SISWA & JURNAL EMOSI CARETECH
+        // ----------------------------------------------------
+        function getStudentProfile() {
+            const name = localStorage.getItem('caretech_student_name') || 'Zuruki';
+            const className = 'Kelas V-A // Harmonia';
+            let latestMoodInfo = '';
+            let rawLatestFeeling = '';
+            try {
+                const reflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+                if (Array.isArray(reflections) && reflections.length > 0) {
+                    const latest = reflections[reflections.length - 1];
+                    if (latest && latest.feeling) {
+                        rawLatestFeeling = latest.feeling;
+                        latestMoodInfo = ` (Catatan emosi terbaru siswa di jurnal harian: sedang merasa "${latest.feeling}"${latest.feeling_notes ? `, dengan catatan: "${latest.feeling_notes}"` : ''}.)`;
+                    }
+                }
+            } catch (e) {
+                console.warn('Gagal membaca catatan jurnal:', e);
+            }
+            return { name, className, latestMoodInfo, rawLatestFeeling };
+        }
+
+        function initPersonalizedGreeting() {
+            const profile = getStudentProfile();
+            const name = profile.name;
+            const greetingEl = document.getElementById('initial-ai-greeting');
+            if (greetingEl) {
+                let noteHtml = "";
+                if (profile.rawLatestFeeling) {
+                    noteHtml = `<br><span style="font-size: 0.88rem; color: #475569; display: inline-block; margin-top: 4px;">(Aku membaca catatan jurnalmu: kamu sempat merasa <strong>${profile.rawLatestFeeling}</strong>. Ceritakan apa saja dengan santai di sini ya!)</span>`;
+                }
+                greetingEl.innerHTML = `
+                    <strong>Halo ${name}! Aku ESA. 📦✨</strong><br>
+                    Robot kawan curhatmu yang siap mendengarkan. Apa yang sedang kamu rasakan hari ini?${noteHtml}
+                `;
+            }
+            const nameDropdowns = document.querySelectorAll('.dropdown-student-name');
+            nameDropdowns.forEach(el => el.textContent = name);
+        }
+
         function clearChat() {
             chatHistory = [];
             isFirstCurhatButtonPress = true;
@@ -2354,12 +2395,13 @@
             const avatarHtml = isConn
                 ? `<div class="ai-avatar-mini eca-connected"><img src="${ECA_SPRITES.idle}" class="eca-mini-img" alt="ECA"></div>`
                 : `<div class="ai-avatar-mini">🤖</div>`;
+            const profile = getStudentProfile();
             document.getElementById('chat-messages').innerHTML = `
                 <div class="msg-bubble ai">
                     ${avatarHtml}
                     <div>
                         <strong>Lembar Baru Terbuka! 📄</strong><br>
-                        Obrolan dibersihkan. Ceritakan apa yang sedang kamu rasakan kawan.
+                        Obrolan dibersihkan. Ceritakan apa yang sedang kamu rasakan ${profile.name}.
                     </div>
                 </div>
             `;
@@ -2412,30 +2454,36 @@
         // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
         // ----------------------------------------------------
         function getEsaSystemPrompt(sensorContext = "") {
-            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, tulus, dan bahasa Indonesia sederhana.
+            const profile = getStudentProfile();
+            const studentName = profile.name;
+            const studentClass = profile.className;
+            const moodContext = profile.latestMoodInfo;
+
+            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech.
+Kamu sedang berbicara secara personal dengan siswa bernama ${studentName} (${studentClass}). Bicara hangat, santai, tulus, dan menggunakan bahasa Indonesia yang ramah anak. Panggil dia dengan namanya ("${studentName}") atau panggilan hangat secara natural.
 
 ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 1. Balasanmu WAJIB SANGAT PENDEK & RINGKAS: MAKSIMAL 1 SAMPAI 2 KALIMAT PENDEK SAJA (total maksimal 15-20 kata). Jangan bertele-tele atau membuat kalimat majemuk panjang.
 2. FORMAT: TANPA EMOJI, TANPA FORMAT DAFTAR/BULLET POINTS.
-3. INGAT DAN GUNAKAN cerita user sebelumnya tanpa meminta mengulang cerita yang sudah disebut.
-4. KETIKA USER SEDIH ATAU CURHAT:
+3. INGAT DAN GUNAKAN cerita ${studentName} sebelumnya tanpa meminta mengulang cerita yang sudah disebut.
+4. KETIKA ${studentName.toUpperCase()} SEDIH ATAU CURHAT:
    - JANGAN TERBURU-BURU MEMBERIKAN SOLUSI/SARAN! Orang yang sedih jarang butuh solusi dulu, dia butuh merasa didengar dan tidak sendirian.
-   - AKUI PERASAANNYA TANPA MENILAI: Katakan perasaannya wajar dan dimaklumi (misal: "Wajar kok kalau kamu sedih", "Makasih sudah mau cerita, pasti berat banget rasanya").
-   - BERI RUANG AMAN: Tawarkan kehadiran lewat pertanyaan terbuka ringan tanpa memaksa bercerita (misal: "Aku di sini ya. Mau cerita apa yang bikin sedih?", "Sini aku temenin, nggak perlu cerita kalau belum siap").
+   - AKUI PERASAANNYA TANPA MENILAI: Katakan perasaannya wajar dan dimaklumi (misal: "Wajar kok kalau kamu sedih ${studentName}", "Makasih sudah mau cerita ke aku ${studentName}, pasti berat banget rasanya").
+   - BERI RUANG AMAN: Tawarkan kehadiran lewat pertanyaan terbuka ringan tanpa memaksa bercerita (misal: "Aku di sini ya ${studentName}. Mau cerita apa yang bikin sedih?", "Sini aku temenin ${studentName}, nggak perlu cerita kalau belum siap").
    - HINDARI KATA-KATA TOXIC POSITIVITY: JANGAN PERNAH bilang "jangan sedih", "jangan dipikirin", "semua pasti ada hikmahnya", atau "banyak yang lebih susah".
 5. JIKA MINTA DIHIBUR: Beri 1 lelucon atau tebakan lucu yang sangat pendek.
-6. UNTUK BULLYING: Tegaskan itu bukan salah user dan sarankan lapor ke orang tua atau guru BK. Jangan menilai bentuk fisik tubuh.
+6. UNTUK BULLYING: Tegaskan itu bukan salah ${studentName} dan sarankan lapor ke orang tua atau guru BK. Jangan menilai bentuk fisik tubuh.
 7. BAHAYA / SELF-HARM: Respon singkat peduli dan arahkan segera ke orang dewasa terdekat atau hubungi 129 / 119 ekstensi 8.
 8. KAMU BUKAN PSIKOLOG: Jangan mendiagnosis.
-9. POLITIK / BERITA: Alihkan singkat ke orang tua/guru, lalu tanya kabar user.
+9. POLITIK / BERITA: Alihkan singkat ke orang tua/guru, lalu tanya kabar ${studentName}.
 10. JANGAN MENGARANG FAKTA: Jika tidak tahu, katakan tidak tahu.
 
 Contoh respons ideal (1-2 kalimat pendek):
-- Sedih: "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?"
-- Sedih & berat: "Makasih sudah mau bilang ke aku kawan, pasti berat banget rasanya. Aku dengerin kok, pelan-pelan aja ceritanya."
-- Sedih butuh teman: "Sini, aku temenin kawan. Nggak perlu cerita kalau belum siap, aku ada di sini ya."
-- Bullying: "Itu bukan salahmu kawan, yang terjadi adalah bullying. Yuk cerita ke guru BK atau orang tua ya."
-- Cemas: "Tarik napas perlahan kawan, kamu aman di sini. Hal apa yang paling kamu cemaskan?"` + sensorContext;
+- Sedih: "Aku di sini ya ${studentName}. Mau cerita apa yang bikin kamu sedih?"
+- Sedih & berat: "Makasih sudah mau bilang ke aku ${studentName}, pasti berat banget rasanya. Aku dengerin kok, pelan-pelan aja ceritanya."
+- Sedih butuh teman: "Sini, aku temenin ${studentName}. Nggak perlu cerita kalau belum siap, aku ada di sini ya."
+- Bullying: "Itu bukan salahmu ${studentName}, yang terjadi adalah bullying. Yuk cerita ke guru BK atau orang tua ya."
+- Cemas: "Tarik napas perlahan ${studentName}, kamu aman di sini. Hal apa yang paling kamu cemaskan?"` + moodContext + sensorContext;
         }
 
         // Pemeriksa Risiko Bahaya Diri & Kekerasan Fisik
@@ -2490,62 +2538,64 @@ Contoh respons ideal (1-2 kalimat pendek):
 
         // Built-in Empathetic AI Brain (Respons Offline Terkalibrasi Singkat 1-2 Kalimat)
         function generateEmpatheticResponse(userText) {
+            const profile = getStudentProfile();
+            const name = profile.name;
             const lower = userText.toLowerCase();
 
             // 1. Protokol Risiko / Bahaya / Self-Harm
             if (checkRiskContent(userText)) {
-                return "Kamu sangat berharga kawan. Segera bicara ke orang dewasa terpercaya atau hubungi 129 dan 119 ekstensi 8 ya.";
+                return `Kamu sangat berharga ${name}. Segera bicara ke orang dewasa terpercaya atau hubungi 129 dan 119 ekstensi 8 ya.`;
             }
 
             // 2. Minta Dihibur / Humor Sebelum Menggali Masalah
             if (lower.includes('hibur') || lower.includes('lucu') || lower.includes('tebak') || lower.includes('lawak') || lower.includes('bosan')) {
                 const jokes = [
-                    "Ayam apa yang paling sopan? Ayam k-permisi! Hehe, gimana perasaanmu sekarang kawan?",
-                    "Kucing apa yang paling kuno? Kucing-goro! Semoga bisa bikin kamu tersenyum kawan.",
-                    "Pohon apa yang paling berat dicabut? Pohon mangga! Rileks sejenak kawan, ada yang mau diceritakan?"
+                    `Ayam apa yang paling sopan? Ayam k-permisi! Hehe, gimana perasaanmu sekarang ${name}?`,
+                    `Kucing apa yang paling kuno? Kucing-goro! Semoga bisa bikin ${name} tersenyum ya.`,
+                    `Pohon apa yang paling berat dicabut? Pohon mangga! Rileks sejenak ${name}, ada yang mau diceritakan?`
                 ];
                 return jokes[Math.floor(Math.random() * jokes.length)];
             }
 
             // 3. Bullying & Topik Bentuk Tubuh (Fokus perlakuan & bukan salah user, jangan nilai fisik)
             if (lower.includes('ejek') || lower.includes('bully') || lower.includes('jahil') || lower.includes('dijauhi') || lower.includes('olok') || lower.includes('gendut') || lower.includes('kurus') || lower.includes('jelek')) {
-                return "Itu bukan salahmu kawan dan itu bullying. Yuk ceritakan ke orang tua atau guru BK, mau kubantu caranya?";
+                return `Itu bukan salahmu ${name} dan itu bullying. Yuk ceritakan ke orang tua atau guru BK, mau kubantu caranya?`;
             }
 
             // 4. Pertanyaan Politik, Berita, atau Opini Tokoh (Netral & arahkan ke orang dewasa)
             if (lower.includes('politik') || lower.includes('presiden') || lower.includes('pemilu') || lower.includes('menteri') || lower.includes('dpr') || lower.includes('partai')) {
-                return "Topik itu sebaiknya ditanyakan ke orang tua atau gurumu ya. Bagaimana kabarmu hari ini kawan?";
+                return `Topik itu sebaiknya ditanyakan ke orang tua atau gurumu ya. Bagaimana kabarmu hari ini ${name}?`;
             }
 
             // 5. Sedih / Menangis / Kecewa
             if (lower.includes('sedih') || lower.includes('nangis') || lower.includes('kecewa') || lower.includes('patah') || lower.includes('down')) {
                 const warmSadness = [
-                    "Aku di sini ya kawan. Mau cerita apa yang bikin kamu sedih?",
-                    "Makasih sudah mau bilang ke aku kawan. Pasti berat banget rasanya, kamu tidak sendirian ya.",
-                    "Aku dengerin kok kawan, pelan-pelan aja ceritanya ya.",
-                    "Sini, aku temenin kawan. Nggak perlu buru-buru cerita kalau belum siap, aku ada di sini."
+                    `Aku di sini ya ${name}. Mau cerita apa yang bikin kamu sedih?`,
+                    `Makasih sudah mau bilang ke aku ${name}. Pasti berat banget rasanya, kamu tidak sendirian ya.`,
+                    `Aku dengerin kok ${name}, pelan-pelan aja ceritanya ya.`,
+                    `Sini, aku temenin ${name}. Nggak perlu buru-buru cerita kalau belum siap, aku ada di sini.`
                 ];
                 return warmSadness[Math.floor(Math.random() * warmSadness.length)];
             }
 
             // 6. Marah / Kesal / Jengkel
             if (lower.includes('marah') || lower.includes('kesal') || lower.includes('jengkel') || lower.includes('benci') || lower.includes('emosi')) {
-                return "Wajar merasa kesal kawan. Tarik napas perlahan ya, apa yang bikin kamu marah?";
+                return `Wajar merasa kesal ${name}. Tarik napas perlahan ya, apa yang bikin kamu marah?`;
             }
 
             // 7. Takut / Cemas / Panik / Overthinking
             if (lower.includes('takut') || lower.includes('cemas') || lower.includes('panik') || lower.includes('gugup') || lower.includes('overthinking')) {
-                return "Kamu aman di sini kawan. Tarik napas perlahan ya, apa yang paling kamu cemaskan?";
+                return `Kamu aman di sini ${name}. Tarik napas perlahan ya, apa yang paling kamu cemaskan?`;
             }
 
             // 8. Tugas / Sekolah / Lelah / Capek
             if (lower.includes('tugas') || lower.includes('sekolah') || lower.includes('capek') || lower.includes('lelah') || lower.includes('pusing')) {
-                return "Pasti melelahkan ya kawan. Istirahat sejenak, bagian mana yang terasa paling berat?";
+                return `Pasti melelahkan ya ${name}. Istirahat sejenak, bagian mana yang terasa paling berat?`;
             }
 
             // 9. Senang / Bahagia / Seru / Gembira
             if (lower.includes('senang') || lower.includes('seru') || lower.includes('bahagia') || lower.includes('gembira') || lower.includes('asik') || lower.includes('berhasil')) {
-                return "Hore, aku ikut senang mendengarnya kawan! Apa momen paling seru tadi?";
+                return `Hore, aku ikut senang mendengarnya ${name}! Apa momen paling seru tadi?`;
             }
 
             // 10. Sensor Suhu Fisik Ruangan
@@ -2558,7 +2608,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             }
 
             // Default warm companion reply
-            return "Aku di sini mendengarkanmu kawan. Apa yang sedang kamu rasakan?";
+            return `Aku di sini mendengarkanmu ${name}. Apa yang sedang kamu rasakan?`;
         }
 
         // ==========================================
@@ -5452,6 +5502,7 @@ Kembalikan format JSON valid dengan 2 field:
         updateSttUi();
         checkOllamaStatus(true);
         checkTurboServerStatus(true);
+        initPersonalizedGreeting();
         document.addEventListener('DOMContentLoaded', () => {
             updateProviderUi();
             updateApiStatusIndicator();
@@ -5459,6 +5510,7 @@ Kembalikan format JSON valid dengan 2 field:
             updateSttUi();
             checkOllamaStatus(true);
             checkTurboServerStatus(true);
+            initPersonalizedGreeting();
             const inputEl = document.getElementById('chat-input');
             if (inputEl) {
                 inputEl.addEventListener('input', () => {
