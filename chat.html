@@ -3916,14 +3916,21 @@ Contoh respons ideal (1-2 kalimat pendek):
             }, delayMs);
         }
 
+        let isProcessingHug = false;
+
         function confirmSpontaneousHug(sensorLabel = "Sensor Boneka", duration = 1.5) {
             const now = Date.now();
-            if (isWaitingForHug || isAiSpeaking || !isTouchAndFsrEnabled) return;
+            if (isWaitingForHug || isProcessingHug || isAiSpeaking || !isTouchAndFsrEnabled) return;
             if (now - lastSpontaneousHugTime < 8000) {
                 console.log("[HUG COOLDOWN] Pelukan spontan diabaikan (cooldown 8 detik).");
                 return;
             }
             lastSpontaneousHugTime = now;
+
+            // Kunci proses seketika agar tidak ada pemicuan ganda/speaker tabrakan
+            isProcessingHug = true;
+            isAiSpeaking = true;
+            lockTouchAndFsrSensors();
 
             console.log(`[HUG CONFIRMED] Pelukan fisik spontan terkonfirmasi via ${sensorLabel}!`);
 
@@ -3950,16 +3957,18 @@ Contoh respons ideal (1-2 kalimat pendek):
             const hardcodedAudioUrl = "assets/audio/hardcoded/sedih_stage2_hugged.mp3";
             sendEspAction("comforted");
 
+            const onSpontaneousHugComplete = () => {
+                sendEspAction("idle");
+                setRobotAvatar("idle", "none");
+                isAiSpeaking = false;
+                isProcessingHug = false;
+                scheduleSensorActivation(500);
+            };
+
             if (window.scenarioEngine && typeof window.scenarioEngine.playAudio === 'function') {
-                window.scenarioEngine.playAudio(hardcodedAudioUrl, () => {
-                    sendEspAction("idle");
-                    setRobotAvatar("idle", "none");
-                });
+                window.scenarioEngine.playAudio(hardcodedAudioUrl, onSpontaneousHugComplete);
             } else {
-                speakText(confirmMsg, () => {
-                    sendEspAction("idle");
-                    setRobotAvatar("idle", "none");
-                });
+                speakText(confirmMsg, onSpontaneousHugComplete);
             }
         }
 
@@ -4011,9 +4020,11 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "touch") {
                 const now = Date.now();
 
-                // 1. Guard Lockout Suara: Sensor sentuh & FSR HANYA boleh aktif 0.5 detik SETELAH suara selesai
-                if (isAiSpeaking || !isTouchAndFsrEnabled) {
-                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (suara masih berputar atau dalam masa jeda 0.5s setelah suara).");
+                // 1. Guard Lockout Suara & Anti-Reentrancy:
+                // Sensor sentuh & FSR HANYA boleh aktif 0.5 detik SETELAH suara selesai,
+                // dan TIDAK boleh memicu jika sedang memproses pelukan (mencegah pesan ganda & tabrakan speaker)
+                if (isAiSpeaking || isProcessingHug || !isTouchAndFsrEnabled) {
+                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (suara masih berputar, sedang memproses pelukan, atau dalam masa jeda 0.5s).");
                     return;
                 }
 
@@ -5027,8 +5038,13 @@ Kembalikan format JSON valid dengan 2 field:
         }
 
         function onHugReceived(duration = 2.0) {
-            if (!isWaitingForHug) return;
+            if (!isWaitingForHug || isProcessingHug) return;
+            isProcessingHug = true;
             isWaitingForHug = false;
+
+            // Kunci sensor seketika dan tandai AI sedang bicara agar event susulan tidak memicu confirmSpontaneousHug!
+            isAiSpeaking = true;
+            lockTouchAndFsrSensors();
 
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
@@ -5067,20 +5083,21 @@ Kembalikan format JSON valid dengan 2 field:
                 });
 
                 EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${sc?.stage2_success?.audioUrl || 'TTS Dinamis'}`);
+                
+                const onHugAudioFinished = () => {
+                    sendEspAction(sc?.stage2_success?.robotMood || "idle");
+                    setRobotAvatar("idle", "none");
+                    isAiSpeaking = false;
+                    isProcessingHug = false;
+                    scheduleSensorActivation(500);
+                    EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
+                    EsaLogger.endPipeline();
+                };
+
                 if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
-                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
-                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        setRobotAvatar("idle", "none");
-                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
-                        EsaLogger.endPipeline();
-                    });
+                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, onHugAudioFinished);
                 } else {
-                    speakText(followUpMsg, () => {
-                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        setRobotAvatar("idle", "none");
-                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
-                        EsaLogger.endPipeline();
-                    });
+                    speakText(followUpMsg, onHugAudioFinished);
                 }
             }, 300);
         }

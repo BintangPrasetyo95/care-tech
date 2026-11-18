@@ -218,6 +218,7 @@ int fsr2Smoothed = 0;
 // Sensor Sentuh Digital Tambahan State (TTP223 - Skenario B)
 bool digitalTouch1Active = false;
 bool digitalTouch2Active = false;
+bool digitalTouchReported = false; // Latch hysteresis agar 1 kali pelukan fisik HANYA lapor 1 event ke chat
 unsigned long lastDigitalTouchReportMs = 0;
 
 // Pelacakan Pelukan / Sentuhan Tahan 2 Detik (Comfort Hug)
@@ -1050,6 +1051,7 @@ void handleLine(String line) {
       fsr2Pressed = false;
       digitalTouch1Active = false;
       digitalTouch2Active = false;
+      digitalTouchReported = false;
       hugTouchStartMs = 0;
       hugHold2sFired = false;
       touchSpamLocked = false;
@@ -1250,12 +1252,14 @@ void checkDigitalTouchSensors() {
   bool anyTouched = (t1 || t2);
 
   if (anyTouched) {
-    if ((!digitalTouch1Active && t1) || (!digitalTouch2Active && t2)) {
-      if (millis() - lastDigitalTouchReportMs > 400) {
+    // Hysteresis Latch: Hanya picu TEPAT 1 KALI per pelukan sampai anak melepas tangannya
+    if (!digitalTouchReported) {
+      if (millis() - lastDigitalTouchReportMs > 800) {
         if (!registerTouchAndCheckSpam()) {
           return;
         }
         lastDigitalTouchReportMs = millis();
+        digitalTouchReported = true; // Kunci latch agar tidak memicu duplikat event saat masih dipeluk
 
         // Output khusus langsung ke Serial Monitor
         Serial.print(">>> [PELUKAN TOUCH] ");
@@ -1280,6 +1284,8 @@ void checkDigitalTouchSensors() {
       }
     }
   } else {
+    // Saat dilepas total, buka kunci latch untuk pelukan berikutnya
+    digitalTouchReported = false;
     if (digitalTouch1Active || digitalTouch2Active) {
       if (millis() - lastDigitalTouchReportMs > 300) {
         Serial.println(">>> [PELUKAN SELESAI] Pelukan Boneka Dilepas.");
@@ -1298,7 +1304,7 @@ void checkDigitalTouchSensors() {
 // PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
 // ==========================================
 void updateHugHoldTracker(bool isTouched) {
-  if (currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
+  if (!sensorsEnabled || currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
     hugTouchStartMs = 0;
     hugHold2sFired = false;
     return;

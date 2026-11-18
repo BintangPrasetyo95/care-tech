@@ -215,6 +215,14 @@
                 return;
             }
 
+            // Kunci sensor dan tandai AI sedang bersuara SECARA SINKRON sebelum operasi asinkron/decode apapun!
+            if (typeof window !== 'undefined') {
+                window.isAiSpeaking = true;
+                if (typeof window.lockTouchAndFsrSensors === 'function') {
+                    window.lockTouchAndFsrSensors();
+                }
+            }
+
             // Hentikan pemutaran sebelumnya jika ada
             this.stopAudio();
 
@@ -244,10 +252,6 @@
             const espConnected = (typeof window !== 'undefined' && typeof window.isEspConnected === 'function') ? window.isEspConnected() : false;
 
             if (typeof window !== 'undefined') {
-                window.isAiSpeaking = true;
-                if (typeof window.lockTouchAndFsrSensors === 'function') {
-                    window.lockTouchAndFsrSensors();
-                }
                 if (window.EsaLogger && window.EsaLogger.currentPhase) {
                     window.EsaLogger.subStep(`[ScenarioEngine] Memutar audio: ${audioUrl.split('/').pop()} (Speaker Mode: ${speakerMode})`);
                 }
