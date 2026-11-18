@@ -110,6 +110,18 @@ tiles = {
     'caf_plat_2_0': (0,0,0,0), 'caf_plat_2_1': (0,0,0,0), 'caf_plat_2_2': (0,0,0,0), 'caf_plat_2_3': (0,0,0,0),
     'caf_plat_3_0': (0,0,0,0), 'caf_plat_3_1': (0,0,0,0), 'caf_plat_3_2': (0,0,0,0), 'caf_plat_3_3': (0,0,0,0),
     'caf_plat_4_0': (0,0,0,0), 'caf_plat_4_1': (0,0,0,0), 'caf_plat_4_2': (0,0,0,0), 'caf_plat_4_3': (0,0,0,0),
+    'hoop_top': (0,0,0,0), 'hoop_mid': (0,0,0,0), 'hoop_base': (0,0,0,0),
+    'hoop_top_r': (0,0,0,0), 'hoop_mid_r': (0,0,0,0), 'hoop_base_r': (0,0,0,0),
+    'basketball': (0,0,0,0),
+    'lamp_top': (0,0,0,0), 'lamp_base': (0,0,0,0),
+    'plant1_0_0': (0,0,0,0), 'plant1_0_1': (0,0,0,0),
+    'plant1_1_0': (0,0,0,0), 'plant1_1_1': (0,0,0,0),
+    'plant2_0_0': (0,0,0,0), 'plant2_0_1': (0,0,0,0),
+    'plant2_1_0': (0,0,0,0), 'plant2_1_1': (0,0,0,0),
+    'plant3_0_0': (0,0,0,0), 'plant3_0_1': (0,0,0,0),
+    'plant3_1_0': (0,0,0,0), 'plant3_1_1': (0,0,0,0),
+    'comm_board_0': (0,0,0,0), 'comm_board_1': (0,0,0,0),
+    'comm_board_small': (0,0,0,0),
 }
 
 tile_names = list(tiles.keys())
@@ -149,6 +161,15 @@ try:
     sink_img = Image.open('assets/sprites/new assets/sink.png').convert('RGBA')
     trash_can_img = Image.open('assets/sprites/new assets/trash-can.png')
     caf_plat_sheet = Image.open('assets/sprites/cafetaria_platform_sprites.png')
+    hoop_sheet = Image.open('assets/sprites/new assets/basketball_hoop.png').convert('RGBA')
+    hoop_sheet_r = hoop_sheet.transpose(Image.FLIP_LEFT_RIGHT)
+    ball_img = Image.open('assets/sprites/new assets/basket_ball.png').convert('RGBA')
+    lamp_sheet = Image.open('assets/sprites/new assets/lamp_post.png').convert('RGBA')
+    plant1_sheet = Image.open('assets/sprites/new assets/plant_1.png').convert('RGBA')
+    plant2_sheet = Image.open('assets/sprites/new assets/plant_2.png').convert('RGBA')
+    plant3_sheet = Image.open('assets/sprites/new assets/plant_3.png').convert('RGBA')
+    comm_board_sheet = Image.open('assets/sprites/new assets/community_board.png').convert('RGBA')
+    comm_board_s_img = Image.open('assets/sprites/new assets/community_board_small.png').convert('RGBA')
     custom_tiles = {
         'school_wall_tl': school_fw.crop((1*64, 0*64, 2*64, 1*64)),
         'school_wall_t': school_fw.crop((2*64, 0*64, 3*64, 1*64)),
@@ -303,6 +324,30 @@ try:
         'caf_plat_4_1': caf_plat_sheet.crop((1*64, 4*64, 2*64, 5*64)),
         'caf_plat_4_2': caf_plat_sheet.crop((2*64, 4*64, 3*64, 5*64)),
         'caf_plat_4_3': caf_plat_sheet.crop((3*64, 4*64, 4*64, 5*64)),
+        'hoop_top': hoop_sheet.crop((0, 0, 64, 64)),
+        'hoop_mid': hoop_sheet.crop((0, 64, 64, 128)),
+        'hoop_base': hoop_sheet.crop((0, 128, 64, 192)),
+        'hoop_top_r': hoop_sheet_r.crop((0, 0, 64, 64)),
+        'hoop_mid_r': hoop_sheet_r.crop((0, 64, 64, 128)),
+        'hoop_base_r': hoop_sheet_r.crop((0, 128, 64, 192)),
+        'basketball': ball_img,
+        'lamp_top': lamp_sheet.crop((0, 0, 64, 64)),
+        'lamp_base': lamp_sheet.crop((0, 64, 64, 128)),
+        'plant1_0_0': plant1_sheet.crop((0, 0, 64, 64)),
+        'plant1_0_1': plant1_sheet.crop((64, 0, 128, 64)),
+        'plant1_1_0': plant1_sheet.crop((0, 64, 64, 128)),
+        'plant1_1_1': plant1_sheet.crop((64, 64, 128, 128)),
+        'plant2_0_0': plant2_sheet.crop((0, 0, 64, 64)),
+        'plant2_0_1': plant2_sheet.crop((64, 0, 128, 64)),
+        'plant2_1_0': plant2_sheet.crop((0, 64, 64, 128)),
+        'plant2_1_1': plant2_sheet.crop((64, 64, 128, 128)),
+        'plant3_0_0': plant3_sheet.crop((0, 0, 64, 64)),
+        'plant3_0_1': plant3_sheet.crop((64, 0, 128, 64)),
+        'plant3_1_0': plant3_sheet.crop((0, 64, 64, 128)),
+        'plant3_1_1': plant3_sheet.crop((64, 64, 128, 128)),
+        'comm_board_0': comm_board_sheet.crop((0, 0, 64, 64)),
+        'comm_board_1': comm_board_sheet.crop((64, 0, 128, 64)),
+        'comm_board_small': comm_board_s_img,
     }
 except Exception as e:
     import traceback
