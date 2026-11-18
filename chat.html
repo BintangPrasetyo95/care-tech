@@ -141,6 +141,38 @@
             font-size: 1.7rem;
             transform: rotate(-3deg);
             animation: robotWobble 4s ease-in-out infinite;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .esa-bot-avatar.eca-connected {
+            width: 58px;
+            height: 58px;
+            background: #fffbeb !important;
+            border-color: #16a34a !important;
+            box-shadow: 0 0 16px rgba(22, 163, 74, 0.5), 3px 3px 0 var(--ink) !important;
+            padding: 0;
+            overflow: visible !important;
+            position: relative;
+            margin-top: 10px;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+
+        .esa-bot-avatar img.eca-avatar-img {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            height: 100%;
+            width: auto;
+            max-width: none;
+            transform: translateX(-50%) scale(1.42);
+            transform-origin: bottom center;
+            object-fit: contain;
+            image-rendering: pixelated;
+            display: block;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.32)) drop-shadow(0 1px 2px rgba(0,0,0,0.45));
         }
 
         @keyframes robotWobble {
@@ -212,6 +244,36 @@
             flex-shrink: 0;
             box-shadow: 2px 2px 0 var(--ink);
             transform: rotate(-3deg);
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .ai-avatar-mini.eca-connected {
+            width: 46px !important;
+            height: 46px !important;
+            background: #fffbeb !important;
+            border-color: #16a34a !important;
+            box-shadow: 0 0 10px rgba(22, 163, 74, 0.4), 2.5px 2.5px 0 var(--ink) !important;
+            padding: 0;
+            overflow: visible !important;
+            position: relative;
+            margin-top: 6px;
+        }
+
+        .ai-avatar-mini img.eca-mini-img {
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            height: 100%;
+            width: auto;
+            max-width: none;
+            transform: translateX(-50%) scale(1.32);
+            transform-origin: bottom center;
+            object-fit: contain;
+            image-rendering: pixelated;
+            display: block;
+            pointer-events: none;
+            filter: drop-shadow(0 3px 5px rgba(0,0,0,0.26)) drop-shadow(0 1px 1px rgba(0,0,0,0.35));
         }
 
         .curhat-chips-bar {
@@ -382,6 +444,18 @@
                 font-size: 1.45rem;
             }
 
+            .esa-bot-avatar.eca-connected {
+                width: 50px !important;
+                height: 50px !important;
+                margin-top: 6px;
+            }
+
+            .ai-avatar-mini.eca-connected {
+                width: 40px !important;
+                height: 40px !important;
+                margin-top: 5px;
+            }
+
             .chat-messages-stream {
                 padding: 0.85rem 0.7rem !important;
                 gap: 0.8rem;
@@ -473,6 +547,18 @@
                 width: 28px;
                 height: 28px;
                 font-size: 1rem;
+            }
+
+            .esa-bot-avatar.eca-connected {
+                width: 44px !important;
+                height: 44px !important;
+                margin-top: 5px;
+            }
+
+            .ai-avatar-mini.eca-connected {
+                width: 36px !important;
+                height: 36px !important;
+                margin-top: 4px;
             }
 
             .curhat-chips-bar {
@@ -1213,6 +1299,106 @@
     </div>
 
     <script>
+        // ==========================================
+        // ROBOT FISIK ESP32 & ECA SPRITE CORE STATE
+        // ==========================================
+        let espPort = null;
+        let espWriter = null;
+        let espWs = null;
+        let espConnectionType = null; // 'serial' | 'ws' | null
+        let espKeepReading = false;
+        let latestEspSensor = null;
+        let isEspRecording = false;
+        let espRecTimer = null;
+        let espRecSeconds = 0;
+
+        function isEspConnected() {
+            return (espPort !== null && espWriter !== null) || (espWs !== null && espWs.readyState === WebSocket.OPEN);
+        }
+
+        // ==========================================
+        // ECA DETAILED SPRITE ASSET MANAGER & STATE
+        // ==========================================
+        const ECA_SPRITES = {
+            idle: 'assets/sprites/characters/detailed/eca/eca.png',
+            neutral: 'assets/sprites/characters/detailed/eca/eca.png',
+            thinking: 'assets/sprites/characters/detailed/eca/eca_thinking.png',
+            speaking: 'assets/sprites/characters/detailed/eca/eca_excited.png',
+            excited: 'assets/sprites/characters/detailed/eca/eca_excited.png',
+            happy: 'assets/sprites/characters/detailed/eca/eca_excited.png',
+            comforted: 'assets/sprites/characters/detailed/eca/eca_excited.png',
+            sad: 'assets/sprites/characters/detailed/eca/eca_panic.png',
+            panic: 'assets/sprites/characters/detailed/eca/eca_panic.png',
+            worried: 'assets/sprites/characters/detailed/eca/eca_panic.png',
+            confused: 'assets/sprites/characters/detailed/eca/eca_confused.png',
+            timeout: 'assets/sprites/characters/detailed/eca/eca_confused.png'
+        };
+
+        // Preload sprites so there is no flicker or blank frame when swapping emotions
+        Object.values(ECA_SPRITES).forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+
+        let currentEcaState = 'idle';
+
+        // Emoji to ECA emotion mapping
+        const EMOJI_TO_ECA_MAP = {
+            '🤖': 'idle',
+            '🤗': 'excited',
+            '🥰': 'excited',
+            '🤝': 'excited',
+            '👂': 'thinking',
+            '⏳': 'thinking',
+            '🎙️': 'speaking',
+            '🗣️': 'speaking',
+            '⚠️': 'confused',
+            '❌': 'confused',
+            '🤔': 'confused',
+            '🥺': 'sad'
+        };
+
+        function getEcaSpriteUrl(emotionOrEmoji) {
+            if (ECA_SPRITES[emotionOrEmoji]) return ECA_SPRITES[emotionOrEmoji];
+            if (EMOJI_TO_ECA_MAP[emotionOrEmoji]) return ECA_SPRITES[EMOJI_TO_ECA_MAP[emotionOrEmoji]];
+            return ECA_SPRITES.idle;
+        }
+
+        function setRobotAvatar(emotionOrEmoji = 'idle', customAnimation = null) {
+            const robotIcon = document.getElementById('robot-icon');
+            if (!robotIcon) return;
+
+            const connected = typeof isEspConnected === 'function' && isEspConnected();
+            if (connected) {
+                const spriteUrl = getEcaSpriteUrl(emotionOrEmoji);
+                currentEcaState = ECA_SPRITES[emotionOrEmoji] ? emotionOrEmoji : (EMOJI_TO_ECA_MAP[emotionOrEmoji] || 'idle');
+                robotIcon.classList.add('eca-connected');
+                robotIcon.title = `ECA Robot Fisik Aktif (${currentEcaState})`;
+                robotIcon.innerHTML = `<img src="${spriteUrl}" alt="ECA ${currentEcaState}" class="eca-avatar-img">`;
+            } else {
+                currentEcaState = 'idle';
+                robotIcon.classList.remove('eca-connected');
+                robotIcon.title = "ESA Teman Curhat";
+                let emoji = emotionOrEmoji;
+                if (emotionOrEmoji === 'idle' || emotionOrEmoji === 'neutral') emoji = '🤖';
+                else if (emotionOrEmoji === 'thinking') emoji = '⏳';
+                else if (emotionOrEmoji === 'speaking') emoji = '🗣️';
+                else if (emotionOrEmoji === 'excited' || emotionOrEmoji === 'happy' || emotionOrEmoji === 'comforted') emoji = '🤗';
+                else if (emotionOrEmoji === 'sad' || emotionOrEmoji === 'panic' || emotionOrEmoji === 'worried') emoji = '🥺';
+                else if (emotionOrEmoji === 'confused' || emotionOrEmoji === 'timeout') emoji = '🤔';
+
+                robotIcon.innerHTML = emoji;
+            }
+
+            if (customAnimation !== null) {
+                robotIcon.style.animation = customAnimation;
+            }
+        }
+
+        window.setRobotAvatar = setRobotAvatar;
+        window.updateEcaAvatar = setRobotAvatar;
+        window.getEcaSpriteUrl = getEcaSpriteUrl;
+
         // ==========================================
         // ESA PIPELINE PROGRESS LOGGER
         // Menampilkan tahapan penyusunan kata secara terstruktur di Console (F12)
@@ -2164,9 +2350,13 @@
             chatHistory = [];
             isFirstCurhatButtonPress = true;
             sendEsp({ type: "reset_first_button" });
+            const isConn = typeof isEspConnected === 'function' && isEspConnected();
+            const avatarHtml = isConn
+                ? `<div class="ai-avatar-mini eca-connected"><img src="${ECA_SPRITES.idle}" class="eca-mini-img" alt="ECA"></div>`
+                : `<div class="ai-avatar-mini">🤖</div>`;
             document.getElementById('chat-messages').innerHTML = `
                 <div class="msg-bubble ai">
-                    <div class="ai-avatar-mini">🤖</div>
+                    ${avatarHtml}
                     <div>
                         <strong>Lembar Baru Terbuka! 📄</strong><br>
                         Obrolan dibersihkan. Ceritakan apa yang sedang kamu rasakan kawan.
@@ -2202,8 +2392,12 @@
             formattedText = formattedText.replace(/\n/g, '<br>');
 
             if (sender === 'ai') {
+                const isConn = typeof isEspConnected === 'function' && isEspConnected();
+                const avatarHtml = isConn
+                    ? `<div class="ai-avatar-mini eca-connected"><img src="${getEcaSpriteUrl(currentEcaState)}" class="eca-mini-img" alt="ECA"></div>`
+                    : `<div class="ai-avatar-mini">🤖</div>`;
                 msgDiv.innerHTML = `
-                    <div class="ai-avatar-mini">🤖</div>
+                    ${avatarHtml}
                     <div>${formattedText}</div>
                 `;
             } else {
@@ -2911,11 +3105,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                 try { window.speechSynthesis.cancel(); } catch(e){}
             }
 
-            const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon && robotIcon.textContent !== "🥰") {
-                robotIcon.textContent = "🤖";
-                robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
-            }
+            setRobotAvatar("idle", "robotWobble 4s ease-in-out infinite");
         }
 
         // Mengubah AudioBuffer hasil decode menjadi PCM 8-bit mono 8000 Hz
@@ -3311,20 +3501,8 @@ Contoh respons ideal (1-2 kalimat pendek):
 
         // ==========================================
         // ROBOT FISIK ESP32 (DUAL MODE: NIRKABEL WIFI & USB SERIAL)
+        // (State variabel espPort, espWs, dan isEspConnected telah diinisialisasi di atas)
         // ==========================================
-        let espPort = null;
-        let espWriter = null;
-        let espWs = null;
-        let espConnectionType = null; // 'serial' | 'ws' | null
-        let espKeepReading = false;
-        let latestEspSensor = null;
-        let isEspRecording = false;
-        let espRecTimer = null;
-        let espRecSeconds = 0;
-
-        function isEspConnected() {
-            return (espPort !== null && espWriter !== null) || (espWs !== null && espWs.readyState === WebSocket.OPEN);
-        }
 
         function handleEspConnectBtn() {
             if (isEspConnected()) {
@@ -3420,6 +3598,24 @@ Contoh respons ideal (1-2 kalimat pendek):
                     sendEspAction("happy");
                     setEspSensorsActive(true);
                     playLaptopRobotChime('happy');
+
+                    // Transformasi avatar bubble obrolan ke detailed sprite ECA
+                    document.querySelectorAll('.ai-avatar-mini').forEach(el => {
+                        el.classList.add('eca-connected');
+                        el.innerHTML = `<img src="${ECA_SPRITES.idle}" class="eca-mini-img" alt="ECA">`;
+                    });
+
+                    const headerBadge = document.querySelector('.chat-header-scrapbook .tape');
+                    if (headerBadge && (!window.getActiveChatRole || window.getActiveChatRole() !== 'guardian')) {
+                        headerBadge.className = 'tape tape-lime';
+                        headerBadge.innerHTML = '🤖 ROBOT FISIK AKTIF // ECA MODE';
+                    }
+
+                    setTimeout(() => {
+                        if (isEspConnected() && currentEcaState === "happy") {
+                            setRobotAvatar("idle");
+                        }
+                    }, 2500);
                 };
 
                 ws.onmessage = (event) => {
@@ -3503,6 +3699,24 @@ Contoh respons ideal (1-2 kalimat pendek):
             sendEspAction("happy");
             setEspSensorsActive(true);
             playLaptopRobotChime('happy');
+
+            // Transformasi avatar bubble obrolan ke detailed sprite ECA
+            document.querySelectorAll('.ai-avatar-mini').forEach(el => {
+                el.classList.add('eca-connected');
+                el.innerHTML = `<img src="${ECA_SPRITES.idle}" class="eca-mini-img" alt="ECA">`;
+            });
+
+            const headerBadge = document.querySelector('.chat-header-scrapbook .tape');
+            if (headerBadge && (!window.getActiveChatRole || window.getActiveChatRole() !== 'guardian')) {
+                headerBadge.className = 'tape tape-lime';
+                headerBadge.innerHTML = '🤖 ROBOT FISIK AKTIF // ECA MODE';
+            }
+
+            setTimeout(() => {
+                if (isEspConnected() && currentEcaState === "happy") {
+                    setRobotAvatar("idle");
+                }
+            }, 2500);
             readEspLoop();
         }
 
@@ -3545,6 +3759,19 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             speakerOutputMode = 'laptop';
             updateSpeakerUi();
+
+            // Kembalikan visual avatar ke emoji browser standar
+            setRobotAvatar("idle");
+            document.querySelectorAll('.ai-avatar-mini').forEach(el => {
+                el.classList.remove('eca-connected');
+                el.innerHTML = '🤖';
+            });
+
+            const headerBadge = document.querySelector('.chat-header-scrapbook .tape');
+            if (headerBadge && (!window.getActiveChatRole || window.getActiveChatRole() !== 'guardian')) {
+                headerBadge.className = 'tape tape-lime';
+                headerBadge.textContent = 'ONLINE & SIAP MENDENGARKAN';
+            }
 
             if (wasConnected) {
                 addMessageToUI("🔌 **Koneksi ESP32 dilepas.** ESA tetap aktif menemanimu di browser.", "ai");
@@ -3599,6 +3826,10 @@ Contoh respons ideal (1-2 kalimat pendek):
 
         function sendEspAction(state, extra = {}) {
             sendEsp({ type: "action", state: state, ...extra });
+            if (typeof isEspConnected === 'function' && isEspConnected()) {
+                const targetState = (extra && extra.mood && ECA_SPRITES[extra.mood]) ? extra.mood : state;
+                setRobotAvatar(targetState);
+            }
         }
 
         // Expose ESP32 hardware bridge functions to global window for ScenarioEngine
@@ -3649,11 +3880,7 @@ Contoh respons ideal (1-2 kalimat pendek):
 
             console.log(`[HUG CONFIRMED] Pelukan fisik spontan terkonfirmasi via ${sensorLabel}!`);
 
-            const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) {
-                robotIcon.textContent = "🤗";
-                robotIcon.style.animation = 'robotWobble 0.6s infinite';
-            }
+            setRobotAvatar("excited", "robotWobble 0.6s infinite");
 
             // Tampilkan badge konfirmasi pelukan fisik di UI chat
             const hugConfirmHtml = `
@@ -3679,18 +3906,12 @@ Contoh respons ideal (1-2 kalimat pendek):
             if (window.scenarioEngine && typeof window.scenarioEngine.playAudio === 'function') {
                 window.scenarioEngine.playAudio(hardcodedAudioUrl, () => {
                     sendEspAction("idle");
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤖";
-                        robotIcon.style.animation = 'none';
-                    }
+                    setRobotAvatar("idle", "none");
                 });
             } else {
                 speakText(confirmMsg, () => {
                     sendEspAction("idle");
-                    if (robotIcon) {
-                        robotIcon.textContent = "🤖";
-                        robotIcon.style.animation = 'none';
-                    }
+                    setRobotAvatar("idle", "none");
                 });
             }
         }
@@ -3802,13 +4023,10 @@ Contoh respons ideal (1-2 kalimat pendek):
                 confirmSpontaneousHug(sensorLabel, msg.duration || 1.5);
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
-                const robotIcon = document.getElementById('robot-icon');
-                if (robotIcon) {
-                    robotIcon.textContent = "👂";
-                    setTimeout(() => {
-                        if (robotIcon.textContent === "👂") robotIcon.textContent = "🤖";
-                    }, 2200);
-                }
+                setRobotAvatar("thinking");
+                setTimeout(() => {
+                    if (currentEcaState === "thinking") setRobotAvatar("idle");
+                }, 2200);
             } else if (msg.type === "interrupted") {
                 // Suara robot dipotong karena siswa mulai berbicara atau menekan tombol!
                 stopAllAudioAndSpeech();
@@ -3831,7 +4049,6 @@ Contoh respons ideal (1-2 kalimat pendek):
                 const micBtn = document.getElementById('btn-mic-test');
                 const modalMicBtn = document.getElementById('btn-modal-mic-test');
                 const modalFeedback = document.getElementById('mic-test-feedback');
-                const robotIcon = document.getElementById('robot-icon');
 
                 if (msg.status === "recording") {
                     // Fallback jika firmware ESP32 belum di-reflash dan masih mengirim button_curhat pada tombol pertama:
@@ -3879,7 +4096,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                         modalFeedback.style.color = '#dc2626';
                         modalFeedback.innerHTML = `🎙️ <strong>Sedang Merekam dari INMP441...</strong><br>Bicaralah sekarang! Klik tombol untuk mematikan mic.`;
                     }
-                    if (robotIcon) robotIcon.textContent = "🎙️";
+                    setRobotAvatar("speaking");
                 } else if (msg.status === "transferring") {
                     isEspRecording = false;
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
@@ -3901,7 +4118,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                         modalMicBtn.style.background = "var(--sun)";
                         modalMicBtn.disabled = true;
                     }
-                    if (robotIcon) robotIcon.textContent = "⏳";
+                    setRobotAvatar("thinking");
                 } else if (msg.status === "done") {
                     isEspRecording = false;
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
@@ -3925,7 +4142,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                         modalMicBtn.style.background = "var(--pink)";
                         modalMicBtn.disabled = false;
                     }
-                    if (robotIcon) robotIcon.textContent = "🤖";
+                    setRobotAvatar("idle");
                 } else if (msg.status === "error") {
                     isEspRecording = false;
                     if (espRecTimer) { clearInterval(espRecTimer); espRecTimer = null; }
@@ -3945,7 +4162,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                         modalMicBtn.style.background = "var(--pink)";
                         modalMicBtn.disabled = false;
                     }
-                    if (robotIcon) robotIcon.textContent = "🤖";
+                    setRobotAvatar("idle");
                     if (modalFeedback) {
                         modalFeedback.style.display = 'block';
                         modalFeedback.style.color = '#dc2626';
@@ -4613,8 +4830,6 @@ Kembalikan format JSON valid dengan 2 field:
             // Kunci sensor fisik pada robot selama robot berbicara
             lockTouchAndFsrSensors();
 
-            const robotIcon = document.getElementById('robot-icon');
-
             const offerMsg = scenario.stage1?.text || "Pasti berat banget ya rasanya... Sini peluk boneka dulu kawan, biar kamu merasa lebih tenang.";
             
             EsaLogger.step(5, "Render Antarmuka & Validasi Kalimat", `Menampilkan pesan Tahap 1: "${offerMsg}"`);
@@ -4738,8 +4953,7 @@ Kembalikan format JSON valid dengan 2 field:
                 card.style.borderColor = "#cbd5e1";
             }
 
-            const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) robotIcon.textContent = "🤖";
+            setRobotAvatar("idle");
 
             if (window.scenarioEngine) window.scenarioEngine.stopAudio();
             sendEspAction("idle");
@@ -4757,11 +4971,7 @@ Kembalikan format JSON valid dengan 2 field:
             const sc = activeScenario || (typeof window.CARETECH_SCENARIOS !== 'undefined' ? window.CARETECH_SCENARIOS['sedih_hug'] : null);
             EsaLogger.step(3, "Eksekusi Skenario: Tahap 2 (Sentuhan / Pelukan Berhasil Diterima)", `Durasi sentuhan: ${duration.toFixed(1)}s`);
 
-            const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) {
-                robotIcon.textContent = sc?.stage2_success?.robotIcon || "🤗";
-                robotIcon.style.animation = 'robotWobble 0.6s infinite';
-            }
+            setRobotAvatar("excited", "robotWobble 0.6s infinite");
 
             // Ganti kartu countdown dengan konfirmasi hangat
             const scenarioCards = document.querySelectorAll('[id^="scenario-card-"], [id^="hug-card-"]');
@@ -4795,14 +5005,14 @@ Kembalikan format JSON valid dengan 2 field:
                 if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
                     window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
                         sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        if (robotIcon) robotIcon.style.animation = 'none';
+                        setRobotAvatar("idle", "none");
                         EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
                         EsaLogger.endPipeline();
                     });
                 } else {
                     speakText(followUpMsg, () => {
                         sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        if (robotIcon) robotIcon.style.animation = 'none';
+                        setRobotAvatar("idle", "none");
                         EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
                         EsaLogger.endPipeline();
                     });
@@ -4819,8 +5029,10 @@ Kembalikan format JSON valid dengan 2 field:
 
             EsaLogger.step(3, "Eksekusi Skenario: Tahap 2 (Timeout / Tidak Merespon)", "Waktu tunggu interaksi fisik berakhir");
 
-            const robotIcon = document.getElementById('robot-icon');
-            if (robotIcon) robotIcon.textContent = "🤖";
+            setRobotAvatar("confused");
+            setTimeout(() => {
+                if (currentEcaState === "confused") setRobotAvatar("idle");
+            }, 3000);
 
             const card = document.getElementById(cardId);
             if (card) {
@@ -4905,7 +5117,6 @@ Kembalikan format JSON valid dengan 2 field:
             const btn = document.getElementById('btn-send');
             const espMicBtn = document.getElementById('btn-esp-mic');
             const typingIndicator = document.getElementById('typing-indicator');
-            const robotIcon = document.getElementById('robot-icon');
 
             if (isLoading) {
                 if (btn) {
@@ -4916,7 +5127,7 @@ Kembalikan format JSON valid dengan 2 field:
                     btn.title = "Klik untuk membatalkan balasan ESA (atau tekan Esc)";
                 }
                 if (typingIndicator) typingIndicator.style.display = 'block';
-                if (robotIcon) robotIcon.style.animation = 'robotWobble 0.6s infinite';
+                setRobotAvatar("thinking", "robotWobble 0.6s infinite");
 
                 if (espMicBtn && isEspConnected()) {
                     espMicBtn.innerHTML = "🤖 ESA berpikir...";
@@ -4934,7 +5145,7 @@ Kembalikan format JSON valid dengan 2 field:
                     btn.title = "";
                 }
                 if (typingIndicator) typingIndicator.style.display = 'none';
-                if (robotIcon) robotIcon.style.animation = 'robotWobble 4s ease-in-out infinite';
+                setRobotAvatar("idle", "robotWobble 4s ease-in-out infinite");
 
                 if (espMicBtn && isEspConnected()) {
                     espMicBtn.innerHTML = "🎙️ Mic Robot: OFF";
