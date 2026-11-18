@@ -79,6 +79,107 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
+/**
+ * Global sidebar toggle handler for mobile
+ */
+if (typeof window.toggleSidebar !== 'function') {
+    window.toggleSidebar = function () {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar) sidebar.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    };
+}
+
+/**
+ * Render dedicated Guardian sidebar without student game menus
+ */
+function renderGuardianSidebar() {
+    const sidebar = document.querySelector('nav.sidebar');
+    if (!sidebar) return;
+
+    const currentPath = window.location.pathname.split('/').pop() || '';
+    const isGuardianHome = currentPath === 'guardian.html' || currentPath === '';
+    const isPenilaian = currentPath === 'penilaian.html';
+    const isJurnal = currentPath === 'jurnal.html';
+    const isChat = currentPath === 'chat.html';
+    const isModul = currentPath === 'modul.html';
+    const isVideo = currentPath === 'video.html';
+
+    sidebar.innerHTML = `
+        <div class="sidebar-header">
+            <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
+            <h2>CareTech</h2>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
+        </div>
+        
+        <div class="sidebar-section">
+            <span class="section-title">Menu Wali Murid</span>
+            <ul class="sidebar-menu">
+                <li class="menu-item ${isGuardianHome ? 'active' : ''}">
+                    <a href="guardian.html">
+                        <span class="icon">🏠</span>
+                        <span class="text">Beranda Wali</span>
+                    </a>
+                </li>
+                <li class="menu-item ${isPenilaian ? 'active' : ''}">
+                    <a href="penilaian.html">
+                        <span class="icon">📊</span>
+                        <span class="text">Rapor Penilaian</span>
+                    </a>
+                </li>
+                <li class="menu-item ${isJurnal ? 'active' : ''}">
+                    <a href="jurnal.html">
+                        <span class="icon">📓</span>
+                        <span class="text">Jurnal Perasaan Anak</span>
+                    </a>
+                </li>
+                <li class="menu-item ${isChat ? 'active' : ''}">
+                    <a href="chat.html?role=guardian">
+                        <span class="icon">🤖</span>
+                        <span class="text">Konsultasi ESA AI</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <span class="section-title">Informasi &amp; Edukasi</span>
+            <ul class="sidebar-menu">
+                <li class="menu-item ${isModul ? 'active' : ''}">
+                    <a href="modul.html">
+                        <span class="icon">📚</span>
+                        <span class="text">Modul Anti-Bullying</span>
+                    </a>
+                </li>
+                <li class="menu-item ${isVideo ? 'active' : ''}">
+                    <a href="video.html">
+                        <span class="icon">🎬</span>
+                        <span class="text">Video Edukasi</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section" style="margin-top: 0.8rem;">
+            <span class="section-title">Peran</span>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="javascript:void(0)" onclick="switchDemoRole('student')" title="Beralih ke tampilan akun siswa">
+                        <span class="icon">🎒</span>
+                        <span class="text">Tinjau Mode Siswa</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer Sticker -->
+        <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+            <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
+        </div>
+    `;
+}
+
 // Synchronize profile information & role in the dropdown
 document.addEventListener('DOMContentLoaded', function () {
     const role = localStorage.getItem('caretech_user_role') || 'student';
@@ -143,12 +244,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // If logged in as guardian, ensure sidebar "Beranda" points back to guardian.html
+    // If logged in as guardian, render guardian sidebar and helper elements
     if (role === 'guardian') {
-        const homeNavLinks = document.querySelectorAll('.sidebar-menu a[href="dashboard.html"]');
-        homeNavLinks.forEach(link => {
-            link.setAttribute('href', 'guardian.html');
-        });
+        renderGuardianSidebar();
 
         // Show a helpful preview & return banner on non-guardian pages
         const isGuardianPage = window.location.pathname.endsWith('guardian.html');
