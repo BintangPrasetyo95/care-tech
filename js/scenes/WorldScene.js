@@ -3233,10 +3233,34 @@ class WorldScene extends Phaser.Scene {
       "caf_plat_4_0": 169,
       "caf_plat_4_1": 170,
       "caf_plat_4_2": 171,
-      "caf_plat_4_3": 172
+      "caf_plat_4_3": 172,
+      "hoop_top": 173,
+      "hoop_mid": 174,
+      "hoop_base": 175,
+      "hoop_top_r": 176,
+      "hoop_mid_r": 177,
+      "hoop_base_r": 178,
+      "basketball": 179,
+      "lamp_top": 180,
+      "lamp_base": 181,
+      "plant1_0_0": 182,
+      "plant1_0_1": 183,
+      "plant1_1_0": 184,
+      "plant1_1_1": 185,
+      "plant2_0_0": 186,
+      "plant2_0_1": 187,
+      "plant2_1_0": 188,
+      "plant2_1_1": 189,
+      "plant3_0_0": 190,
+      "plant3_0_1": 191,
+      "plant3_1_0": 192,
+      "plant3_1_1": 193,
+      "comm_board_0": 194,
+      "comm_board_1": 195,
+      "comm_board_small": 196
     };
 
-    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can'];
+    const solidTiles = ['gw_t', 'gw_b', 'gw_l', 'gw_r', 'gw_lt', 'gw_lb', 'gw_rt', 'gw_rb', 'school_wall_tl', 'school_wall_t', 'school_wall_tr', 'school_wall_l', 'school_wall_c', 'school_wall_r', 'school_wall_bl', 'school_wall_b', 'school_wall_br', 'school_wall_itl', 'school_wall_itr', 'school_wall_ibl', 'school_wall_ibr', 'bench_1_0', 'bench_1_1', 'bench_1_2', 'desk', 'board', 'table', 'chair', 'bookshelf', 'bookshelf_b', 'tc_1_1', 'lib_tc_0_1', 'lib_tc_1_1', 'lib_tc_2_1', 'lib_desk_1_0', 'lib_desk_1_1', 'lib_desk_1_2', 'lib_desk_0_0', 'lib_desk_0_2', 'caf_srv_0_0', 'caf_srv_0_1', 'caf_srv_0_2', 'caf_srv_0_3', 'caf_srv_0_4', 'caf_srv_0_5', 'caf_srv_1_0', 'caf_srv_1_1', 'caf_srv_1_2', 'caf_srv_1_3', 'caf_srv_1_4', 'caf_srv_1_5', 'fountain_0_0', 'fountain_1_0', 'fountain_0_1', 'fountain_1_1', 'water_0_0', 'water_1_0', 'water_2_0', 'water_3_0', 'water_0_1', 'water_1_1', 'water_2_1', 'water_3_1', 'water_0_2', 'water_1_2', 'water_2_2', 'water_3_2', 'water_0_3', 'water_1_3', 'water_2_3', 'water_3_3', 'water_0_4', 'water_1_4', 'water_2_4', 'water_3_4', 'planter_h_1_0', 'planter_h_1_1', 'planter_h_1_2', 'planter_v_0', 'planter_v_1', 'planter_v_2', 'canteen_tc_0_0', 'canteen_tc_0_1', 'canteen_tc_1_0', 'canteen_tc_1_1', 'canteen_tc_2_0', 'canteen_tc_2_1', 'sink', 'trash_can', 'comm_board_0', 'comm_board_1', 'comm_board_small'];
 
     // Populate the layers using the 2D array
     for (let r = 0; r < H; r++) {
@@ -3295,6 +3319,10 @@ class WorldScene extends Phaser.Scene {
               targetLayer.putTileAt(objId, c, r);
             } else if (objName.startsWith('tree_2_') || objName === 'tree') {
               trunkLayer.putTileAt(objId, c, r);
+            } else if (objName.startsWith('hoop_base') || objName === 'lamp_base') {
+              trunkLayer.putTileAt(objId, c, r);
+            } else if (objName === 'basketball' || objName.startsWith('comm_board') || objName.startsWith('plant1_1') || objName.startsWith('plant2_1') || objName.startsWith('plant3_1')) {
+              midLayer2.putTileAt(objId, c, r);
             } else {
               objectLayersTransparent[i].putTileAt(objId, c, r);
               objectLayers[i].putTileAt(objId, c, r);
@@ -3304,7 +3332,7 @@ class WorldScene extends Phaser.Scene {
           // If it's a solid object OR a tall object that needs to be in front
           if (groundName.startsWith('water') || groundName.startsWith('fountain')) {
             midLayer2.putTileAt(groundId, c, r);
-          } else if (groundName.startsWith('bench_1') || groundName.startsWith('planter') || groundName.startsWith('lib_tc') || groundName.startsWith('lib_desk_0') || groundName.startsWith('canteen_tc') || groundName === 'sink' || groundName === 'trash_can') {
+          } else if (groundName.startsWith('bench_1') || groundName.startsWith('planter') || groundName.startsWith('lib_tc') || groundName.startsWith('lib_desk_0') || groundName.startsWith('canteen_tc') || groundName === 'sink' || groundName === 'trash_can' || groundName === 'basketball' || groundName.startsWith('comm_board') || groundName.startsWith('plant1_1') || groundName.startsWith('plant2_1') || groundName.startsWith('plant3_1')) {
             midLayer2.putTileAt(groundId, c, r);
           } else if (groundName.startsWith('lib_desk_1')) {
             bottomWallLayer.putTileAt(groundId, c, r);
@@ -3312,7 +3340,7 @@ class WorldScene extends Phaser.Scene {
             const targetRow = (groundName === 'bookshelf_t') ? (r + 1) : r;
             const targetLayer = bookshelfLayersByRow[targetRow] || bookshelfLayersByRow[r] || midLayer;
             targetLayer.putTileAt(groundId, c, r);
-          } else if (groundName.startsWith('tree_2_') || groundName === 'tree') {
+          } else if (groundName.startsWith('tree_2_') || groundName === 'tree' || groundName.startsWith('hoop_base') || groundName === 'lamp_base') {
             trunkLayer.putTileAt(groundId, c, r);
           } else if (groundName === 'gw_t' || groundName === 'gw_lt' || groundName === 'gw_rt' || groundName === 'gw_l' || groundName === 'gw_r') {
             midLayer.putTileAt(groundId, c, r);
@@ -3343,6 +3371,24 @@ class WorldScene extends Phaser.Scene {
           this.treeColliders.add(hitbox);
         }
 
+        // Basketball hoop base & lamp post base get a 40% centered hitbox
+        if (cell.includes('hoop_base') || cell.includes('hoop_base_r') || cell.includes('lamp_base')) {
+          const hitbox = this.add.rectangle(c * TILE + TILE / 2, r * TILE + TILE / 2, TILE * 0.4, TILE * 0.4);
+          hitbox.setVisible(false);
+          this.physics.add.existing(hitbox, true);
+          this.treeColliders.add(hitbox);
+        }
+
+        // Bush bases get a 50% centered hitbox
+        if (cell.includes('plant1_1_0') || cell.includes('plant1_1_1') ||
+            cell.includes('plant2_1_0') || cell.includes('plant2_1_1') ||
+            cell.includes('plant3_1_0') || cell.includes('plant3_1_1')) {
+          const hitbox = this.add.rectangle(c * TILE + TILE / 2, r * TILE + TILE / 2, TILE * 0.5, TILE * 0.5);
+          hitbox.setVisible(false);
+          this.physics.add.existing(hitbox, true);
+          this.treeColliders.add(hitbox);
+        }
+
         // Record tree canopy bounds for behind-tree detection
         if (cell.includes('tree_0_0')) {
           this.treeCanopies.push({
@@ -3358,6 +3404,14 @@ class WorldScene extends Phaser.Scene {
             maxX: (c + 1) * TILE + 10,
             minY: (r - 1) * TILE - 20,
             maxY: r * TILE + 36
+          });
+        }
+        if (cell.includes('hoop_top') || cell.includes('hoop_top_r')) {
+          this.treeCanopies.push({
+            minX: c * TILE - 8,
+            maxX: (c + 1) * TILE + 8,
+            minY: r * TILE - 10,
+            maxY: (r + 2) * TILE + 10
           });
         }
 
@@ -3534,10 +3588,89 @@ class WorldScene extends Phaser.Scene {
         putObj(r + 2, c, 'tree_2_0'); putObj(r + 2, c + 1, 'tree_2_1'); putObj(r + 2, c + 2, 'tree_2_2');
       };
 
+      const putBasketballHoop = (r, c, facingRight = true) => {
+        if (r + 2 >= m.length || c >= m[0].length) return;
+        const top = facingRight ? 'hoop_top' : 'hoop_top_r';
+        const mid = facingRight ? 'hoop_mid' : 'hoop_mid_r';
+        const base = facingRight ? 'hoop_base' : 'hoop_base_r';
+        putObj(r, c, top);
+        putObj(r + 1, c, mid);
+        putObj(r + 2, c, base);
+      };
+
+      const putLamp = (r, c) => {
+        if (r + 1 >= m.length || c >= m[0].length) return;
+        putObj(r, c, 'lamp_top');
+        putObj(r + 1, c, 'lamp_base');
+      };
+
+      const putBenchH = (r, c) => {
+        if (r + 1 >= m.length || c + 2 >= m[0].length) return;
+        putObj(r, c, 'bench_0_0');
+        putObj(r, c + 1, 'bench_0_1');
+        putObj(r, c + 2, 'bench_0_2');
+        putObj(r + 1, c, 'bench_1_0');
+        putObj(r + 1, c + 1, 'bench_1_1');
+        putObj(r + 1, c + 2, 'bench_1_2');
+      };
+
+      const putPlant = (r, c, type = 1) => {
+        if (r + 1 >= m.length || c + 1 >= m[0].length) return;
+        const prefix = `plant${type}`;
+        putObj(r, c, `${prefix}_0_0`);
+        putObj(r, c + 1, `${prefix}_0_1`);
+        putObj(r + 1, c, `${prefix}_1_0`);
+        putObj(r + 1, c + 1, `${prefix}_1_1`);
+      };
+
       // Top tree row
       for (const c of [2, 6, 10, 14, 18]) putBigTree(0, c);
       // Bottom-right tree row
       for (const c of [24, 28, 32, 36]) putBigTree(18, c);
+
+      // Bottom-left trees around South Spawn
+      for (const c of [2, 6, 10, 14]) putBigTree(16, c);
+
+      // Courtyard park trees (East lawn)
+      putBigTree(3, 26);
+      putBigTree(3, 31);
+      putBigTree(10, 26);
+      putBigTree(10, 31);
+
+      // ── Playground & Basketball Court (rows 5 to 13, cols 8 to 19) ──
+      // Hoops
+      putBasketballHoop(5, 8, true);   // West hoop (facing East)
+      putBasketballHoop(5, 19, false); // East hoop (facing West)
+      // Basketball on the court
+      putObj(10, 14, 'basketball');
+
+      // Sideline spectator bench & trash can (North sideline)
+      putBenchH(3, 13);
+      putObj(4, 11, 'trash_can');
+      putLamp(3, 17);
+
+      // Sideline bench & court lamp (South sideline)
+      putBenchH(13, 13);
+      putLamp(13, 9);
+
+      // Court decorative bushes
+      putPlant(3, 6, 1);
+      putPlant(13, 6, 2);
+
+      // ── South Spawn (from Garden: col 21-22, row 21-22) ──
+      // Path lighting & welcoming greenery
+      putLamp(19, 19);
+      putLamp(19, 24);
+      putPlant(19, 16, 2);
+      putPlant(19, 26, 3);
+
+      // ── Courtyard Park (East side) ──
+      putBenchH(6, 33);
+      putObj(2, 23, 'comm_board_0');
+      putObj(2, 24, 'comm_board_1');
+      putObj(3, 25, 'trash_can');
+      putPlant(6, 29, 1);
+      putPlant(13, 34, 3);
 
       // Horizontal planters (right side, 3-wide)
       for (const c of [24, 28, 32, 36]) {
@@ -3611,7 +3744,60 @@ class WorldScene extends Phaser.Scene {
         }
       };
 
+      const putPlant = (r, c, type = 1) => {
+        if (r + 1 >= m.length || c + 1 >= m[0].length) return;
+        const prefix = `plant${type}`;
+        putObj(r, c, `${prefix}_0_0`);
+        putObj(r, c + 1, `${prefix}_0_1`);
+        putObj(r + 1, c, `${prefix}_1_0`);
+        putObj(r + 1, c + 1, `${prefix}_1_1`);
+      };
+
+      const putLamp = (r, c) => {
+        if (r + 1 >= m.length || c >= m[0].length) return;
+        putObj(r, c, 'lamp_top');
+        putObj(r + 1, c, 'lamp_base');
+      };
+
+      const putBenchH = (r, c) => {
+        if (r + 1 >= m.length || c + 2 >= m[0].length) return;
+        putObj(r, c, 'bench_0_0');
+        putObj(r, c + 1, 'bench_0_1');
+        putObj(r, c + 2, 'bench_0_2');
+        putObj(r + 1, c, 'bench_1_0');
+        putObj(r + 1, c + 1, 'bench_1_1');
+        putObj(r + 1, c + 2, 'bench_1_2');
+      };
+
+      // ── Big Trees around Garden Spawn (spawn at 14, 1.5) ──
+      // Trees on left meadow
+      putBigTree(1, 2);
+      putBigTree(1, 7);
+      putBigTree(6, 2);
       putBigTree(13, 2);
+
+      // Trees on right lawn
+      putBigTree(1, 18);
+      putBigTree(1, 23);
+      putBigTree(4, 23);
+
+      // ── Garden Amenities & Park Recreation around Spawn ──
+      // Path lighting welcoming the player at spawn
+      putLamp(1, 12);
+      putLamp(1, 17);
+
+      // West garden seating & park
+      putBenchH(4, 4);
+      putObj(5, 7, 'trash_can');
+      putPlant(4, 8, 1);
+      putObj(1, 10, 'planter_v_0');
+      putObj(2, 10, 'planter_v_1');
+      putObj(3, 10, 'planter_v_2');
+
+      // East garden notice board & shrub
+      putObj(1, 18, 'comm_board_0');
+      putObj(1, 19, 'comm_board_1');
+      putPlant(4, 18, 2);
 
       return m;
     }
