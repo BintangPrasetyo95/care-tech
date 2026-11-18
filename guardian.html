@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareTech - Portal Wali Murid (Cardboard Cosmos)</title>
+    <link rel="icon" href="assets/logo-care-tech.png">
+    <link rel="stylesheet" href="dashboard.css">
+    <!-- Chart.js for Mood Radar -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ==========================================================================
+           GUARDIAN PORTAL - CARDBOARD COSMOS THEME
+           ========================================================================== */
+        
+        .guardian-hero-card {
+            background: var(--paper-warm, #fffdf8) !important;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 8px 8px 0 var(--ink);
+            padding: 2.2rem 2rem;
+            position: relative;
+        }
+
+        .child-profile-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-bottom: 1.6rem;
+            border-bottom: 3.5px dashed var(--ink);
+            padding-bottom: 1.4rem;
+        }
+
+        .child-info-block {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+        }
+
+        .child-avatar-ring {
+            width: 82px;
+            height: 82px;
+            border: 4px solid var(--ink);
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 4px 4px 0 var(--ink);
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
+
+        .child-avatar-ring:hover {
+            transform: scale(1.06) rotate(-3deg);
+        }
+
+        .child-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #ffffff;
+            border: 3px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            padding: 0.5rem 1.1rem;
+            font-family: var(--mono);
+            font-weight: 800;
+            font-size: 0.95rem;
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+
+        .status-dot-active {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid var(--ink);
+            display: inline-block;
+            box-shadow: 0 0 0 2px #bbf7d0;
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.85; }
+        }
+
+        /* 3-Column Metrics Row */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border: 3.5px solid var(--ink);
+            border-radius: 16px;
+            box-shadow: 5px 5px 0 var(--ink);
+            padding: 1.3rem 1.2rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .metric-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--ink);
+        }
+
+        .metric-number {
+            font-size: 2.2rem;
+            line-height: 1.1;
+            margin: 0.6rem 0 0.2rem;
+            font-family: var(--imp);
+            color: var(--ink);
+        }
+
+        /* Chart Wrappers */
+        .chart-box-card {
+            background: #ffffff;
+            border: 4px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 1.8rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .chart-wrapper-guardian {
+            position: relative;
+            height: 260px;
+            width: 100%;
+            background: #fffdf5;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 4px 4px 0 var(--ink);
+            box-sizing: border-box;
+            margin-top: 1rem;
+        }
+
+        /* Teacher Notes Cards */
+        .teacher-note-card {
+            background: var(--paper-warm);
+            border: 3.5px solid var(--ink);
+            border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+            padding: 1.4rem;
+            box-shadow: 5px 5px 0 var(--ink);
+            position: relative;
+            margin-bottom: 1.2rem;
+            transform: rotate(-0.5deg);
+        }
+
+        .teacher-note-card:nth-child(even) {
+            transform: rotate(0.6deg);
+            background: #fffbef;
+        }
+
+        /* Toolkit Step Cards */
+        .toolkit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.2rem;
+        }
+
+        .toolkit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: #ffffff;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+
+        .toolkit-num {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--sun);
+            border: 2.5px solid var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--imp);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        /* Sticker Cheer Modal */
+        .sticker-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .sticker-modal-overlay.show {
+            display: flex;
+        }
+
+        .sticker-modal-box {
+            background: var(--paper-warm);
+            border: 4px solid var(--ink);
+            border-radius: 20px;
+            box-shadow: 10px 10px 0 var(--ink);
+            padding: 2rem;
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            animation: popModal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popModal {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .sticker-options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin: 1.4rem 0;
+        }
+
+        .sticker-option-btn {
+            background: #ffffff;
+            border: 3px solid var(--ink);
+            border-radius: 12px;
+            box-shadow: 3px 3px 0 var(--ink);
+            padding: 0.9rem;
+            font-family: var(--mono);
+            font-weight: 800;
+            font-size: 0.88rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .sticker-option-btn:hover {
+            background: var(--sun);
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--ink);
+        }
+
+        .sticker-option-btn .sticker-emoji {
+            font-size: 1.8rem;
+        }
+
+        /* Toast notification */
+        .toast-bubble {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--lime);
+            color: var(--ink);
+            border: 3.5px solid var(--ink);
+            border-radius: 14px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 1rem 1.4rem;
+            font-family: var(--mono);
+            font-weight: 800;
+            font-size: 0.95rem;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast-bubble.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .child-info-block {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.8rem;
+            }
+            .child-profile-strip {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .sticker-options-grid {
+                grid-template-columns: 1fr;
+            }
+            .guardian-hero-card {
+                padding: 1.5rem 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Space & Paper Junk Background Decorations -->
+    <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;" aria-hidden="true">
+        <b class="star" style="top:10%;left:22%"></b>
+        <b class="star" style="top:32%;right:8%;color:var(--cy);animation-delay:-0.5s"></b>
+        <b class="star" style="top:68%;left:18%;color:var(--pink);animation-delay:-1.2s"></b>
+        <b class="star" style="top:85%;right:25%;color:var(--lime);animation-delay:-0.8s"></b>
+    </div>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation (Cardboard Binder Rail) -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo-care-tech.png" alt="CareTech Logo" class="sidebar-logo">
+                <h2>CareTech</h2>
+                <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Menu">✕</button>
+            </div>
+            
+            <div class="sidebar-section">
+                <span class="section-title">Menu Wali Murid</span>
+                <ul class="sidebar-menu">
+                    <li class="menu-item active">
+                        <a href="guardian.html">
+                            <span class="icon">🏠</span>
+                            <span class="text">Beranda Wali</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="penilaian.html">
+                            <span class="icon">📊</span>
+                            <span class="text">Rapor Penilaian</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="jurnal.html">
+                            <span class="icon">📓</span>
+                            <span class="text">Jurnal Perasaan Anak</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="chat.html?role=guardian">
+                            <span class="icon">🤖</span>
+                            <span class="text">Konsultasi ESA AI</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="section-title">Informasi &amp; Edukasi</span>
+                <ul class="sidebar-menu">
+                    <li class="menu-item">
+                        <a href="modul.html">
+                            <span class="icon">📚</span>
+                            <span class="text">Modul Anti-Bullying</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="video.html">
+                            <span class="icon">🎬</span>
+                            <span class="text">Video Edukasi</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section" style="margin-top: 0.8rem;">
+                <span class="section-title">Peran</span>
+                <ul class="sidebar-menu">
+                    <li class="menu-item">
+                        <a href="javascript:void(0)" onclick="switchDemoRole('student')" title="Beralih ke tampilan akun siswa">
+                            <span class="icon">🎒</span>
+                            <span class="text">Tinjau Mode Siswa</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Sidebar Footer Sticker -->
+            <div style="margin-top: auto; padding-top: 1.5rem; text-align: center;">
+                <p class="tape tape-white" style="font-size: 0.85rem; margin-bottom: 0;">By Carelix, 2026</p>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="greeting">
+                    <span class="tape tape-pink" style="margin-bottom: 0.4rem; font-size: 0.85rem;">PORTAL WALI MURID // HARMONIA SCHOOL</span>
+                    <h1 id="guardian-welcome-title">Selamat Datang, Bpk. Hendra!</h1>
+                    <p>Memantau dan mendampingi tumbuh kembang anak dengan cinta &amp; pemahaman.</p>
+                </div>
+                <div class="user-profile">
+                    <button type="button" class="avatar-btn" onclick="toggleProfileDropdown(event)" aria-expanded="false" aria-haspopup="true" title="Menu Profil & Keluar">
+                        <img class="avatar" src="./assets/profile.jpg" alt="Profile">
+                    </button>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <span class="tape tape-pink dropdown-tape">AKUN WALI MURID</span>
+                            <div class="dropdown-student-name">Bpk. Hendra Wijaya</div>
+                            <div class="dropdown-student-meta">Wali dari Zuruki (Kelas V-A)</div>
+                        </div>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="index.html" class="profile-dropdown-item logout-item" onclick="handleLogout(event)">
+                            <span>🚪</span>
+                            <span>Keluar / Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-grid" style="display: flex; flex-direction: column; gap: 1.8rem;">
+                
+                <!-- 1. Hero Snapshot Card: Anak Terhubung -->
+                <div class="dashboard-card wide-card guardian-hero-card">
+                    <div class="child-profile-strip">
+                        <div class="child-info-block">
+                            <img src="./assets/profile.jpg" class="child-avatar-ring" alt="Foto Zuruki">
+                            <div>
+                                <span class="tape tape-lime" style="font-size: 0.8rem; margin-bottom: 0.3rem;">ANAK TERHUBUNG</span>
+                                <h2 style="margin: 0.2rem 0; font-size: 2.1rem; color: var(--ink);">Zuruki</h2>
+                                <p style="font-family: var(--mono); font-weight: bold; color: #444; margin: 0; font-size: 0.95rem;">
+                                    NISN: 00892026 // Harmonia Elementary // Kelas V-A
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Live Status & Cheer Action -->
+                        <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                            <div class="child-badge-pill" id="child-live-status-pill">
+                                <span class="status-dot-active"></span>
+                                <span>Refleksi Hari Ini:</span>
+                                <strong id="child-live-mood-text" style="color: #15803d;">😃 Ceria &amp; Bahagia</strong>
+                            </div>
+                            <button type="button" class="btn btn-small" style="background: var(--pink); color: #ffffff;" onclick="openStickerModal()">
+                                💌 Kirim Stiker Semangat
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ringkasan Cepat Perkembangan Belajar & Karakter -->
+                    <div class="metric-cards-grid">
+                        <div class="metric-card" style="background: #fffde6;">
+                            <span class="tape tape-sun" style="font-size: 0.75rem;">NILAI POSTTEST</span>
+                            <div class="metric-number">95 / 100</div>
+                            <p style="font-family: var(--mono); font-size: 0.85rem; color: #444; margin: 0; font-weight: bold;">
+                                NeuroAdventure (+15 pts dari Pretest 80) 📈
+                            </p>
+                        </div>
+
+                        <div class="metric-card" style="background: #e6fffa;">
+                            <span class="tape tape-lime" style="font-size: 0.75rem;">KETUNTASAN MODUL</span>
+                            <div class="metric-number">1 / 3 Modul</div>
+                            <p style="font-family: var(--mono); font-size: 0.85rem; color: #444; margin: 0; font-weight: bold;">
+                                Modul 01: Mengenali Emosi Selesai ✓
+                            </p>
+                        </div>
+
+                        <div class="metric-card" style="background: #ffe6f2;">
+                            <span class="tape tape-pink" style="font-size: 0.75rem;">POIN HARMONI RPG</span>
+                            <div class="metric-number">850 Pts</div>
+                            <p style="font-family: var(--mono); font-size: 0.85rem; color: #444; margin: 0; font-weight: bold;">
+                                7 dari 10 Misi Karakter Terselesaikan 🎮
+                            </p>
+                        </div>
+
+                        <div class="metric-card" style="background: #e6f9ff;">
+                            <span class="tape tape-cyan" style="font-size: 0.75rem;">STATUS SOSIO-EMOSI</span>
+                            <div class="metric-number" style="font-size: 1.8rem; color: #0284c7;">Aman &amp; Sehat</div>
+                            <p style="font-family: var(--mono); font-size: 0.85rem; color: #444; margin: 0; font-weight: bold;">
+                                Tidak ada laporan insiden perundungan
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Switch & Deep Links Bar -->
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <a href="penilaian.html" class="btn btn-small" style="background: var(--lime);">
+                            📊 Buka Rapor &amp; Rekap Nilai Lengkap
+                        </a>
+                        <a href="chat.html?role=guardian" class="btn btn-small" style="background: var(--sun);">
+                            🤖 Konsultasi Pola Asuh dengan ESA AI
+                        </a>
+                        <button type="button" class="btn btn-small" style="background: #ffffff; border-style: dashed;" onclick="switchDemoRole('student')">
+                            🔁 Tinjau sebagai Akun Siswa (Zuruki)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Dual Column: Radar Mood & Catatan Surat Guru -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.8rem;">
+                    
+                    <!-- Left: Radar Mood & Emosi Mingguan -->
+                    <div class="dashboard-card chart-box-card" style="background: #ffffff !important; margin: 0;">
+                        <span class="tape tape-cyan" style="margin-bottom: 0.6rem;">RADAR MOOD MINGGUAN</span>
+                        <h2 style="font-size: 1.9rem; margin-bottom: 0.3rem;">Kondisi Emosi Zuruki</h2>
+                        <p style="font-family: var(--mono); color: #555; font-size: 0.9rem; margin-bottom: 0.8rem;">
+                            Grafik rekam jejak perasaan yang diisi Zuruki saat check-in refleksi harian.
+                        </p>
+
+                        <div class="chart-wrapper-guardian">
+                            <canvas id="guardianMoodChart"></canvas>
+                        </div>
+
+                        <!-- Mood Legend Bar -->
+                        <div style="margin-top: 1rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 0.4rem; font-family: var(--mono); font-size: 0.82rem; font-weight: bold;">
+                            <span>😃 4: Happy</span>
+                            <span>😐 3: Normal</span>
+                            <span>😔 2: Sad</span>
+                            <span>😠 1: Mad</span>
+                        </div>
+
+                        <!-- Insight Card -->
+                        <div style="margin-top: 1.2rem; background: #fffde6; border: 2.5px solid var(--ink); border-radius: 10px; padding: 0.9rem 1rem; font-family: var(--mono); font-size: 0.88rem; line-height: 1.5; box-shadow: 3px 3px 0 var(--ink);">
+                            💡 <strong>Catatan Pengamatan:</strong> Zuruki menunjukkan emosi yang dominan stabil dan ceria minggu ini. Saat mencatat perasaan sedikit sedih pada hari Selasa, anak bercerita bahwa ia kehilangan pensil gambar, namun suasana hatinya lekas membaik setelah dibantu teman sekelasnya.
+                        </div>
+                    </div>
+
+                    <!-- Right: Catatan Kolaborasi Guru & BK -->
+                    <div class="dashboard-card chart-box-card" style="background: var(--paper-warm) !important; margin: 0;">
+                        <span class="tape tape-pink" style="margin-bottom: 0.6rem;">SURAT RESMI DARI GURU</span>
+                        <h2 style="font-size: 1.9rem; margin-bottom: 0.3rem;">Catatan Khusus Orang Tua</h2>
+                        <p style="font-family: var(--mono); color: #555; font-size: 0.9rem; margin-bottom: 1.2rem;">
+                            Bimbingan, apresiasi, dan rekomendasi aktivitas dari pendidik di sekolah.
+                        </p>
+
+                        <!-- Note 1: Dari Guru Wali Kelas -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span class="tape tape-sun" style="font-size: 0.75rem; margin: 0;">WALI KELAS V-A</span>
+                                <span style="font-family: var(--mono); font-weight: bold; font-size: 0.8rem; color: #666;">Minggu Ini</span>
+                            </div>
+                            <p style="font-family: var(--mk); font-size: 1.05rem; line-height: 1.7; color: #222; margin: 0;">
+                                "Perkembangan empati Zuruki sangat membanggakan di kelas! Pada simulasi peran modul anti-bullying, Zuruki dengan berani membela dan menemani teman yang dijauhi. Di rumah, Ayah/Bunda bisa memberikan apresiasi hangat dan mengajak Zuruki terus berani menjadi kawan pelindung (upstander)."
+                            </p>
+                            <div style="margin-top: 0.8rem; text-align: right; font-family: var(--mono); font-weight: 800; font-size: 0.85rem; color: #444;">
+                                — Ibu Guru Rina, S.Pd.
+                            </div>
+                        </div>
+
+                        <!-- Note 2: Dari Guru Bimbingan Konseling -->
+                        <div class="teacher-note-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span class="tape tape-lime" style="font-size: 0.75rem; margin: 0;">GURU BK HARMONIA</span>
+                                <span style="font-family: var(--mono); font-weight: bold; font-size: 0.8rem; color: #666;">Evaluasi Karakter</span>
+                            </div>
+                            <p style="font-family: var(--mk); font-size: 1.05rem; line-height: 1.7; color: #222; margin: 0;">
+                                "Zuruki memiliki kepekaan rasa yang tinggi. Kami menyarankan Ayah/Bunda untuk terus melatih komunikasi asertif di rumah: biarkan Zuruki bebas menceritakan apa yang dirasakannya tanpa takut disalahkan."
+                            </p>
+                            <div style="margin-top: 0.8rem; text-align: right; font-family: var(--mono); font-weight: 800; font-size: 0.85rem; color: #444;">
+                                — Pak Guru Dimas, S.Pd. (Konselor BK)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Bottom Row: Parenting Anti-Bullying Toolkit & AI Consultation Banner -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.8rem;">
+                    
+                    <!-- Parenting Guide Card -->
+                    <div class="dashboard-card chart-box-card" style="background: #ffffff !important; margin: 0;">
+                        <span class="tape tape-lime" style="margin-bottom: 0.6rem;">PANDUAN ORANG TUA</span>
+                        <h2 style="font-size: 1.9rem; margin-bottom: 0.3rem;">3 Langkah Cegah Bullying di Rumah</h2>
+                        <p style="font-family: var(--mono); color: #555; font-size: 0.9rem;">
+                            Tips praktis mendampingi anak dalam menghadapi dinamika sosial teman sebaya.
+                        </p>
+
+                        <div class="toolkit-list">
+                            <div class="toolkit-item">
+                                <div class="toolkit-num">1</div>
+                                <div>
+                                    <h4 style="margin: 0 0 0.3rem; font-size: 1.05rem;">Dengarkan Tanpa Menghakimi</h4>
+                                    <p style="margin: 0; font-family: var(--mono); font-size: 0.85rem; color: #444; line-height: 1.5;">
+                                        Tanyakan <em>"Bagaimana perasaanmu di sekolah hari ini?"</em> alih-alih langsung menanyakan nilai. Biarkan anak merasa rumah adalah zona teraman untuk bercerita.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="toolkit-item">
+                                <div class="toolkit-num">2</div>
+                                <div>
+                                    <h4 style="margin: 0 0 0.3rem; font-size: 1.05rem;">Kenali Tanda-tanda Perubahan Sikap</h4>
+                                    <p style="margin: 0; font-family: var(--mono); font-size: 0.85rem; color: #444; line-height: 1.5;">
+                                        Perhatikan bila anak mendadak enggan ke sekolah, mengeluh sakit perut di pagi hari, atau barang pribadi sering rusak/hilang.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="toolkit-item">
+                                <div class="toolkit-num">3</div>
+                                <div>
+                                    <h4 style="margin: 0 0 0.3rem; font-size: 1.05rem;">Bangun Kolaborasi Bersama Sekolah</h4>
+                                    <p style="margin: 0; font-family: var(--mono); font-size: 0.85rem; color: #444; line-height: 1.5;">
+                                        Jangan ragu menghubungi wali kelas atau konselor BK jika anak menceritakan tindakan perundungan fisik, verbal, atau siber di sekitarnya.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.4rem;">
+                            <a href="assets/module/2%20Modul%20Pembelajaran%20Pencegahan%20dan%20Penanganan%20Perundungan.pdf" target="_blank" class="btn btn-small" style="background: var(--sun);">
+                                📄 Baca Modul Anti-Bullying Sekolah (PDF)
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- ESA AI Consultation Card for Parents -->
+                    <div class="dashboard-card chart-box-card" style="background: #fffbef !important; margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <span class="tape tape-pink" style="margin-bottom: 0.6rem;">ASISTEN KELUARGA AI</span>
+                            <h2 style="font-size: 1.9rem; margin-bottom: 0.3rem;">Konsultasi dengan ESA AI</h2>
+                            <p style="font-family: var(--mono); color: #555; font-size: 0.9rem; margin-bottom: 1.4rem;">
+                                Dapatkan rekomendasi respon komunikasi positif dan panduan menangani konflik anak kapan saja.
+                            </p>
+
+                            <div style="display: flex; align-items: center; gap: 1.2rem; background: #ffffff; border: 3px solid var(--ink); border-radius: 14px; padding: 1.2rem; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 1.4rem;">
+                                <div style="font-size: 2.5rem; background: var(--paper-warm); border: 2px solid var(--ink); border-radius: 12px; width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 2px 2px 0 var(--ink);">
+                                    🤖
+                                </div>
+                                <div style="font-family: var(--mono); font-size: 0.88rem; line-height: 1.5; color: #333;">
+                                    <em>"Halo Bpk. Hendra! Saya siap membantu Ayah/Bunda memikirkan kalimat terbaik saat mengobrol dengan Zuruki tentang pertemanan di sekolah."</em>
+                                </div>
+                            </div>
+
+                            <!-- Fast Query Chips -->
+                            <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.4rem;">
+                                <a href="chat.html?role=guardian&q=tips-bicara" class="chip-tag" style="background: #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 0.5rem 0.8rem; font-family: var(--mono); font-size: 0.82rem; font-weight: bold; text-decoration: none; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); display: block;">
+                                    💬 Tips bicara saat anak enggan menceritakan harinya
+                                </a>
+                                <a href="chat.html?role=guardian&q=kenali-tanda" class="chip-tag" style="background: #ffffff; border: 2px solid var(--ink); border-radius: 8px; padding: 0.5rem 0.8rem; font-family: var(--mono); font-size: 0.82rem; font-weight: bold; text-decoration: none; color: var(--ink); box-shadow: 2px 2px 0 var(--ink); display: block;">
+                                    🛡️ Cara menguatkan anak saat temannya mengejek
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <a href="chat.html?role=guardian" class="btn btn-small" style="background: var(--pink); color: #ffffff; width: 100%; text-align: center; font-size: 1.15rem; padding: 0.85rem;">
+                                Mulai Percakapan dengan ESA 🚀
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Sticker Cheer Modal Overlay -->
+    <div class="sticker-modal-overlay" id="sticker-modal">
+        <div class="sticker-modal-box">
+            <span class="tape tape-pink" style="margin-bottom: 0.5rem;">KIRIM APRESIASI</span>
+            <h2 style="margin: 0.3rem 0; font-size: 1.8rem;">Pilih Stiker Semangat untuk Zuruki</h2>
+            <p style="font-family: var(--mono); font-size: 0.88rem; color: #555; margin-bottom: 1.2rem;">
+                Stiker pilihan Ayah/Bunda akan langsung ditempelkan pada papan refleksi harian Zuruki!
+            </p>
+
+            <div class="sticker-options-grid">
+                <button type="button" class="sticker-option-btn" onclick="sendSticker('🌟', 'Ayah & Bunda Sangat Bangga Padamu!')">
+                    <span class="sticker-emoji">🌟</span>
+                    <span>Ayah &amp; Bunda Bangga!</span>
+                </button>
+                <button type="button" class="sticker-option-btn" onclick="sendSticker('❤️', 'Terima Kasih Sudah Menjadi Anak yang Baik & Hebat!')">
+                    <span class="sticker-emoji">❤️</span>
+                    <span>Anak Hebat &amp; Baik</span>
+                </button>
+                <button type="button" class="sticker-option-btn" onclick="sendSticker('🛡️', 'Kamu Kawan yang Berani & Pelindung Teman!')">
+                    <span class="sticker-emoji">🛡️</span>
+                    <span>Kawan yang Berani</span>
+                </button>
+                <button type="button" class="sticker-option-btn" onclick="sendSticker('🥪', 'Selamat Belajar! Jangan Lupa Makan & Ceria Selalu')">
+                    <span class="sticker-emoji">🥪</span>
+                    <span>Semangat &amp; Sehat Selalu</span>
+                </button>
+            </div>
+
+            <div style="text-align: right; margin-top: 1rem;">
+                <button type="button" class="btn btn-small" style="background: #d4d4d8;" onclick="closeStickerModal()">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-bubble" id="toast-bubble">
+        <span>🎉</span>
+        <span id="toast-text">Stiker semangat berhasil dikirim ke Zuruki!</span>
+    </div>
+
+    <script>
+        // Toggle mobile sidebar
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
+
+        // Initialize Mood Chart with Retro Theme
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check session role
+            const role = localStorage.getItem('caretech_user_role');
+            if (role !== 'guardian') {
+                // If accessed directly without guardian role, ensure default guardian session for demonstration
+                localStorage.setItem('caretech_user_role', 'guardian');
+                localStorage.setItem('caretech_user_name', 'Bpk. Hendra Wijaya');
+                localStorage.setItem('caretech_student_name', 'Zuruki');
+            }
+
+            // Sync live mood from reflection if present
+            try {
+                const reflections = JSON.parse(localStorage.getItem('caretech_reflections') || '[]');
+                if (reflections.length > 0) {
+                    const last = reflections[reflections.length - 1];
+                    const moodPill = document.getElementById('child-live-mood-text');
+                    if (moodPill && last.feeling) {
+                        const feelingMap = {
+                            'senang': '😃 Ceria & Bahagia',
+                            'biasa': '😐 Tenang & Santai',
+                            'sedih': '😔 Butuh Teman Bicara',
+                            'marah': '😠 Perlu Pendinginan Emosi'
+                        };
+                        moodPill.textContent = feelingMap[last.feeling] || '😃 Ceria & Siap Belajar';
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not parse reflections", e);
+            }
+
+            // Setup Chart.js
+            Chart.defaults.font.family = "'Courier New', Courier, monospace";
+            const ctx = document.getElementById('guardianMoodChart').getContext('2d');
+            const moodLabels = {
+                1: '😠 Mad',
+                2: '😔 Sad',
+                3: '😐 Normal',
+                4: '😃 Happy'
+            };
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Hari Ini'],
+                    datasets: [{
+                        label: 'Skala Mood',
+                        data: [4, 2, 3, 4, 4, 3, 4],
+                        backgroundColor: 'rgba(255, 46, 147, 0.2)',
+                        borderColor: '#000000',
+                        borderWidth: 3.5,
+                        tension: 0.35,
+                        fill: true,
+                        pointBackgroundColor: '#ffe500',
+                        pointBorderColor: '#000000',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0.5,
+                            max: 4.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function (val) {
+                                    return moodLabels[val] || '';
+                                },
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.08)',
+                                lineWidth: 2
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+
+        // Sticker Modal Handlers
+        function openStickerModal() {
+            document.getElementById('sticker-modal').classList.add('show');
+        }
+
+        function closeStickerModal() {
+            document.getElementById('sticker-modal').classList.remove('show');
+        }
+
+        function sendSticker(emoji, message) {
+            localStorage.setItem('caretech_parent_cheer', JSON.stringify({
+                emoji: emoji,
+                message: message,
+                sentAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+            }));
+
+            closeStickerModal();
+            showToast(`Stiker ${emoji} "${message}" berhasil dikirim ke Zuruki!`);
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast-bubble');
+            const toastText = document.getElementById('toast-text');
+            if (toast && toastText) {
+                toastText.textContent = text;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3500);
+            }
+        }
+    </script>
+    <script src="dropdown.js"></script>
+</body>
+</html>

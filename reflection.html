@@ -120,6 +120,11 @@
     </div>
 
     <script>
+        // If accessed while in guardian role, redirect to guardian portal
+        if (localStorage.getItem('caretech_user_role') === 'guardian') {
+            window.location.href = 'guardian.html';
+        }
+
         const questions = document.querySelectorAll('.question-block');
         const btnPrev = document.getElementById('btn-prev');
         const btnNext = document.getElementById('btn-next');
