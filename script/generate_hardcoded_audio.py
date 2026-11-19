@@ -22,6 +22,7 @@ DEFAULT_CONFIG_PATH = os.path.join("assets", "audio", "hardcoded", "scenarios.js
 DEFAULT_OUTPUT_DIR = os.path.join("assets", "audio", "hardcoded")
 DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah (Free Tier: ramah, lembut, tenang, gratis di API)
 DEFAULT_MODEL_ID = "eleven_multilingual_v2" # Model terbaik & alami untuk Bahasa Indonesia
+DEFAULT_API_KEY = "sk_6bf348af5b95631e7017e724ee91a242730fcb73fa6b59f4"
 
 
 def clean_tts_text(text: str) -> str:
@@ -183,7 +184,7 @@ def process_scenarios(config_path: str, output_dir: str, api_key: str, voice_id:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate audio skenario CareTech dengan ElevenLabs")
-    parser.add_argument("--api-key", default=os.getenv("ELEVENLABS_API_KEY", ""), help="ElevenLabs API Key (sk_...)")
+    parser.add_argument("--api-key", default=os.getenv("ELEVENLABS_API_KEY", DEFAULT_API_KEY), help="ElevenLabs API Key (sk_...)")
     parser.add_argument("--voice-id", default=DEFAULT_VOICE_ID, help=f"ElevenLabs Voice ID (default: {DEFAULT_VOICE_ID})")
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID, help=f"ElevenLabs Model ID (default: {DEFAULT_MODEL_ID})")
     parser.add_argument("--language-code", default="id", help="Kode bahasa ISO (default: id / Bahasa Indonesia)")
