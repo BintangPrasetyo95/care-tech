@@ -2460,16 +2460,36 @@
         }
 
         // ----------------------------------------------------
-        // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA
+        // SYSTEM PROMPT RESMI ESA & PROTOKOL KEAMANAN SISWA / WALI
         // ----------------------------------------------------
-        function getEsaSystemPrompt(sensorContext = "") {
-            const profile = getStudentProfile();
-            const studentName = profile.name;
-            const studentClass = profile.className;
-            const moodContext = profile.latestMoodInfo;
+        function getActiveChatRole() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryRole = urlParams.get('role');
+            if (queryRole === 'guardian') {
+                localStorage.setItem('caretech_user_role', 'guardian');
+                localStorage.setItem('caretech_user_name', 'Bpk. Hendra Wijaya');
+                localStorage.setItem('caretech_student_name', 'Zuruki');
+            }
+            return localStorage.getItem('caretech_user_role') || 'student';
+        }
 
-            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech.
-Kamu sedang berbicara secara personal dengan siswa bernama ${studentName} (${studentClass}). Bicara hangat, santai, tulus, dan menggunakan bahasa Indonesia yang ramah anak. Panggil dia dengan namanya ("${studentName}") atau panggilan hangat secara natural.
+        function getEsaSystemPrompt(sensorContext = "") {
+            const role = getActiveChatRole();
+            if (role === 'guardian') {
+                return `Kamu ESA, asisten kecerdasan buatan ramah keluarga dan pendamping pola asuh dari CareTech. Kamu sedang mendampingi orang tua/wali murid (Bpk. Hendra, wali dari siswa Zuruki kelas 5 SD di Harmonia School). Bicara santun, hangat, empatik, suportif, dan solutif dalam bahasa Indonesia yang bersahabat.
+
+ATURAN UTAMA KONSULTASI WALI:
+1. Berikan respon yang hangat, menenangkan, dan solutif (maksimal 2-4 kalimat atau poin praktis sederhana).
+2. FOKUS TOPIK: Membantu orang tua mendengarkan anak tanpa menghakimi, mengenali tanda-tanda perundungan (bullying) di sekolah, merespons anak yang tertutup atau enggan cerita, dan mengarahkan kerja sama positif dengan Guru Wali Kelas (Ibu Rina) atau Guru BK (Pak Dimas).
+3. JIKA ORANG TUA KHAWATIR ATAU CURHAT TENTANG ANAK:
+   - Apresiasi kepedulian Ayah/Bunda terhadap perkembangan anak.
+   - Sarankan teknik komunikasi terbuka (pertanyaan terbuka, mendengar aktif tanpa langsung menasihati atau menyalahkan).
+   - Jangan menyalahkan pola asuh orang tua; kuatkan rasa percaya diri mereka dalam mendampingi anak.
+4. JIKA ADA INDIKASI BULLYING DI SEKOLAH:
+   - Beri rasa aman, sarankan orang tua mencatat kronologi secara tenang dan segera berkoordinasi dengan sekolah secara konstruktif.` + sensorContext;
+            }
+
+            return `Kamu ESA, robot teman curhat untuk anak dan remaja Indonesia dari CareTech. Bicara hangat, santai, tulus, dan bahasa Indonesia sederhana.
 
 ATURAN UTAMA (WAJIB DIPATUHI - KALIMAT SANGAT PENDEK):
 1. Balasanmu WAJIB SANGAT PENDEK & RINGKAS: MAKSIMAL 1 SAMPAI 2 KALIMAT PENDEK SAJA (total maksimal 15-20 kata). Jangan bertele-tele atau membuat kalimat majemuk panjang.
@@ -2550,6 +2570,27 @@ Contoh respons ideal (1-2 kalimat pendek):
             const profile = getStudentProfile();
             const name = profile.name;
             const lower = userText.toLowerCase();
+            const role = getActiveChatRole();
+
+            // Respons Khusus Mode Wali Murid (Konsultasi Pola Asuh & Pencegahan Bullying)
+            if (role === 'guardian') {
+                if (lower.includes('bicara') || lower.includes('tertutup') || lower.includes('curhat') || lower.includes('diam') || lower.includes('cerita')) {
+                    return "Untuk membuka obrolan dengan anak, Ayah/Bunda bisa mulai dari obrolan ringan tanpa menghakimi, misalnya bertanya 'Momen apa yang paling bikin kamu tersenyum hari ini?' lalu dengarkan ceritanya dengan sabar.";
+                }
+                if (lower.includes('tanda') || lower.includes('bully') || lower.includes('ejek') || lower.includes('dijauhi') || lower.includes('perundungan')) {
+                    return "Tanda anak mengalami bullying biasanya terlihat dari perubahan sikap mendadak, enggan ke sekolah, atau barang pribadi sering rusak. Tetap berikan rasa aman dan yakinkan bahwa itu bukan kesalahannya.";
+                }
+                if (lower.includes('lapor') || lower.includes('sekolah') || lower.includes('bk') || lower.includes('guru')) {
+                    return "Ayah/Bunda dapat segera berkoordinasi dengan Ibu Guru Rina (Wali Kelas) atau Pak Guru Dimas (BK). Sampaikan catatan fakta kejadian secara tenang agar pihak sekolah dapat mengambil langkah perlindungan terbaik.";
+                }
+                if (lower.includes('percaya diri') || lower.includes('minder') || lower.includes('takut') || lower.includes('berani')) {
+                    return "Apresiasi setiap usaha dan keberanian kecil Zuruki setiap hari. Kehadiran dan rasa percaya dari orang tua adalah pondasi paling kuat bagi rasa percaya diri anak.";
+                }
+                if (lower.includes('suasana') || lower.includes('rumah') || lower.includes('makan') || lower.includes('nyaman')) {
+                    return "Jadikan momen makan malam atau santai sore sebagai waktu bebas gawai. Luangkan 15 menit mendengarkan cerita anak tentang harinya dengan penuh perhatian.";
+                }
+                return "Saya siap mendampingi Ayah/Bunda. Apakah ada situasi pertemanan atau perubahan perilaku Zuruki yang ingin kita diskusikan bersama?";
+            }
 
             // 1. Protokol Risiko / Bahaya / Self-Harm
             if (checkRiskContent(userText)) {
@@ -3655,7 +3696,7 @@ Contoh respons ideal (1-2 kalimat pendek):
                     closeEspConnectModal();
                     addMessageToUI(`📶 **Robot Fisik ESP32 Terhubung secara Nirkabel!** (${wsUrl})<br>Mikrofon INMP441 & Speaker MAX98357A siap bekerja bebas kabel.`, "ai");
                     sendEspAction("happy");
-                    setEspSensorsActive(true);
+                    setEspSensorsActive(false); // Dorman: hanya aktif saat dipanggil oleh skenario
                     playLaptopRobotChime('happy');
 
                     // Transformasi avatar bubble obrolan ke detailed sprite ECA
@@ -3756,7 +3797,7 @@ Contoh respons ideal (1-2 kalimat pendek):
             closeEspConnectModal();
             addMessageToUI("🔌 **Robot Fisik ESP32 Terhubung via USB Serial!** Mikrofon INMP441 & Speaker MAX98357A siap bekerja.", "ai");
             sendEspAction("happy");
-            setEspSensorsActive(true);
+            setEspSensorsActive(false); // Dorman: hanya aktif saat dipanggil oleh skenario
             playLaptopRobotChime('happy');
 
             // Transformasi avatar bubble obrolan ke detailed sprite ECA
@@ -3916,63 +3957,26 @@ Contoh respons ideal (1-2 kalimat pendek):
         function scheduleSensorActivation(delayMs = 500, onActivated = null) {
             if (sensorActivationTimer) {
                 clearTimeout(sensorActivationTimer);
+                sensorActivationTimer = null;
+            }
+            // Sensor fisik HANYA diaktifkan jika secara spesifik dipanggil oleh skenario (onActivated callback disediakan)!
+            if (typeof onActivated !== 'function') {
+                return;
             }
             sensorActivationTimer = setTimeout(() => {
                 isTouchAndFsrEnabled = true;
                 setEspSensorsActive(true);
                 sensorActivationTimer = null;
-                console.log(`[SENSOR UNLOCKED] ${delayMs}ms setelah suara berakhir: Touch Sensor & FSR KINI AKTIF!`);
-                if (typeof onActivated === 'function') {
-                    onActivated();
-                }
+                console.log(`[SENSOR UNLOCKED] ${delayMs}ms setelah suara berakhir: Touch Sensor & FSR KINI AKTIF (Skenario menunggu respon fisik)!`);
+                onActivated();
             }, delayMs);
         }
 
+        let isProcessingHug = false;
+
         function confirmSpontaneousHug(sensorLabel = "Sensor Boneka", duration = 1.5) {
-            const now = Date.now();
-            if (isWaitingForHug || isAiSpeaking || !isTouchAndFsrEnabled) return;
-            if (now - lastSpontaneousHugTime < 8000) {
-                console.log("[HUG COOLDOWN] Pelukan spontan diabaikan (cooldown 8 detik).");
-                return;
-            }
-            lastSpontaneousHugTime = now;
-
-            console.log(`[HUG CONFIRMED] Pelukan fisik spontan terkonfirmasi via ${sensorLabel}!`);
-
-            setRobotAvatar("excited", "robotWobble 0.6s infinite");
-
-            // Tampilkan badge konfirmasi pelukan fisik di UI chat
-            const hugConfirmHtml = `
-                <div style="margin: 0.5rem auto; text-align: center;">
-                    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 0.35rem 0.9rem; background: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #15803d; box-shadow: 2px 2px 0 var(--ink);">
-                        🤗 Pelukan Terkonfirmasi! (${sensorLabel})
-                    </span>
-                </div>
-            `;
-            addMessageToUI(hugConfirmHtml, 'system');
-
-            // Gunakan pesan dan audio hardcoded resmi Sarah ElevenLabs: sedih_stage2_hugged.mp3
-            const confirmMsg = "Terima kasih pelukannya... Rasanya hangat sekali. Kalau kamu mau cerita, aku siap mendengarkan ya.";
-            addMessageToUI(confirmMsg, 'ai');
-            chatHistory.push({
-                "role": "model",
-                "parts": [{ "text": confirmMsg }]
-            });
-
-            const hardcodedAudioUrl = "assets/audio/hardcoded/sedih_stage2_hugged.mp3";
-            sendEspAction("comforted");
-
-            if (window.scenarioEngine && typeof window.scenarioEngine.playAudio === 'function') {
-                window.scenarioEngine.playAudio(hardcodedAudioUrl, () => {
-                    sendEspAction("idle");
-                    setRobotAvatar("idle", "none");
-                });
-            } else {
-                speakText(confirmMsg, () => {
-                    sendEspAction("idle");
-                    setRobotAvatar("idle", "none");
-                });
-            }
+            // Sesuai aturan: Pelukan atau tekanan fisik TIDAK AKAN tertrigger dan masuk ke pesan chat HTML kecuali dipanggil!
+            console.log(`[HUG IGNORED] Pelukan fisik (${sensorLabel}) diabaikan karena tidak sedang dipanggil.`);
         }
 
         window.lockTouchAndFsrSensors = lockTouchAndFsrSensors;
@@ -4023,9 +4027,11 @@ Contoh respons ideal (1-2 kalimat pendek):
             } else if (msg.type === "touch") {
                 const now = Date.now();
 
-                // 1. Guard Lockout Suara: Sensor sentuh & FSR HANYA boleh aktif 0.5 detik SETELAH suara selesai
-                if (isAiSpeaking || !isTouchAndFsrEnabled) {
-                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (suara masih berputar atau dalam masa jeda 0.5s setelah suara).");
+                // 1. Guard On-Demand & Anti-Reentrancy:
+                // Sensor sentuh & FSR HANYA boleh aktif dan diproses jika SEDANG DIPANGGIL (isWaitingForHug === true)!
+                // Di luar skenario aktif / jika tidak dipanggil, pelukan atau tekanan fisik sama sekali TIDAK AKAN tertrigger ke chat.
+                if (!isWaitingForHug || isAiSpeaking || isProcessingHug || !isTouchAndFsrEnabled) {
+                    console.log("[TOUCH/FSR GUARD] Sentuhan diabaikan (tidak sedang dipanggil / tidak menunggu pelukan).");
                     return;
                 }
 
@@ -4062,24 +4068,9 @@ Contoh respons ideal (1-2 kalimat pendek):
                     }
                 }
 
-                // Identifikasi sensor fisik yang terpicu
-                let sensorLabel = "Sensor Fisik Boneka";
-                if (msg.sensor === "fsr1" || msg.part === "left_hand") {
-                    sensorLabel = "Genggaman Tangan Kiri (FSR 1)";
-                } else if (msg.sensor === "fsr2" || msg.part === "right_hand") {
-                    sensorLabel = "Genggaman Tangan Kanan (FSR 2)";
-                } else if (msg.target === "hug" || msg.action === "hug" || msg.action === "hug_hold_2s") {
-                    sensorLabel = "Sensor Pelukan Tubuh (TTP223)";
-                }
-
-                // 2. Sensor Tekanan Fisik FSR402 atau Modul Touch Sensor Digital disentuh saat skenario aktif
-                if (isWaitingForHug) {
-                    onHugReceived(msg.duration || 2.0);
-                    return;
-                }
-
-                // 3. Di luar skenario aktif: Konfirmasi pelukan fisik spontan dengan suara ElevenLabs hardcoded!
-                confirmSpontaneousHug(sensorLabel, msg.duration || 1.5);
+                // 2. Eksekusi konfirmasi pelukan resmi skenario (Tahap 2) SAAT DIPANGGIL
+                onHugReceived(msg.duration || 2.0);
+                return;
             } else if (msg.type === "voice_detected") {
                 // Mikrofon INMP441 mendeteksi suara siswa di dekat robot
                 setRobotAvatar("thinking");
@@ -4087,14 +4078,26 @@ Contoh respons ideal (1-2 kalimat pendek):
                     if (currentEcaState === "thinking") setRobotAvatar("idle");
                 }, 2200);
             } else if (msg.type === "interrupted") {
-                // Suara robot dipotong karena siswa mulai berbicara atau menekan tombol!
+                // Jangan potong suara robot jika sedang bicara!
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'interrupted' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 stopAllAudioAndSpeech();
             } else if (msg.type === "first_button_press") {
-                // Tombol push fisik ditekan untuk PERTAMA KALI: picu pesan curhat langsung tanpa delay STT
+                // Tombol push fisik ditekan untuk PERTAMA KALI: TOLAK jika robot masih bersuara
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'first_button_press' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 isFirstCurhatButtonPress = false;
                 handleFirstCurhatButtonPress(msg.text || "Halo eca, aku lagi sedih nih");
             } else if (msg.type === "button") {
-                // Tombol BOOT fisik pada robot ESP32 ditekan
+                // Tombol BOOT fisik pada robot ESP32 ditekan: TOLAK jika robot masih bersuara
+                if (isAiSpeaking) {
+                    console.log("[BUTTON LOCKOUT] Event 'button' diabaikan karena suara robot belum selesai.");
+                    return;
+                }
                 stopAllAudioAndSpeech();
                 const promptText = msg.text || "Hai ESA! Aku menekan tombol robot fisikmu karena ingin curhat...";
                 sendQuickPrompt(promptText, "Tombol Fisik BOOT Robot (ESP32)");
@@ -4103,6 +4106,12 @@ Contoh respons ideal (1-2 kalimat pendek):
                     sendQuickPrompt(msg.text, "Pesan Serial ESP32 (Chat Event)");
                 }
             } else if (msg.type === "rec_status") {
+                // STATUS REKAM DARI MIKROFON INMP441 (Dinamis dengan Smart VAD)
+                if (msg.status === "recording" && isAiSpeaking) {
+                    console.warn("[BUTTON LOCKOUT] Perekaman mic ditolak karena suara robot belum selesai.");
+                    sendEsp({ type: "stop_rec" }); // Hentikan mic ESP32 seketika
+                    return;
+                }
                 // STATUS REKAM DARI MIKROFON INMP441 (Dinamis dengan Smart VAD)
                 const espMicBtn = document.getElementById('btn-esp-mic');
                 const micBtn = document.getElementById('btn-mic-test');
@@ -4354,7 +4363,8 @@ Contoh respons ideal (1-2 kalimat pendek):
                     btn.style.color = "#3730a3";
                     btn.textContent = "Bangunkan Sensor ✋";
                 }
-                addMessageToUI(`✨ <em>[Mode Siaga] Masa uji coba selesai. Sensor tetap aktif menerima sentuhan fisikmu saat standby!</em>`, 'system');
+                setEspSensorsActive(false);
+                addMessageToUI(`✨ <em>[Mode Siaga] Masa uji coba selesai. Sensor kembali ke mode dorman (hanya aktif saat dipanggil oleh skenario).</em>`, 'system');
             }, seconds * 1000);
         }
 
@@ -5021,8 +5031,13 @@ Kembalikan format JSON valid dengan 2 field:
         }
 
         function onHugReceived(duration = 2.0) {
-            if (!isWaitingForHug) return;
+            if (!isWaitingForHug || isProcessingHug) return;
+            isProcessingHug = true;
             isWaitingForHug = false;
+
+            // Kunci sensor seketika dan tandai AI sedang bicara agar event susulan tidak memicu confirmSpontaneousHug!
+            isAiSpeaking = true;
+            lockTouchAndFsrSensors();
 
             if (hugWaitingTimer) clearTimeout(hugWaitingTimer);
             if (hugCountdownInterval) clearInterval(hugCountdownInterval);
@@ -5061,20 +5076,21 @@ Kembalikan format JSON valid dengan 2 field:
                 });
 
                 EsaLogger.step(6, "Sintesis Suara (TTS)", `Memutar MP3 hardcoded Sarah ElevenLabs: ${sc?.stage2_success?.audioUrl || 'TTS Dinamis'}`);
+                
+                const onHugAudioFinished = () => {
+                    sendEspAction(sc?.stage2_success?.robotMood || "idle");
+                    setRobotAvatar("idle", "none");
+                    isAiSpeaking = false;
+                    isProcessingHug = false;
+                    lockTouchAndFsrSensors(); // Pastikan sensor fisik terkunci/dorman setelah pelukan selesai (hanya aktif saat dipanggil)
+                    EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
+                    EsaLogger.endPipeline();
+                };
+
                 if (window.scenarioEngine && sc?.stage2_success?.audioUrl) {
-                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, () => {
-                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        setRobotAvatar("idle", "none");
-                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
-                        EsaLogger.endPipeline();
-                    });
+                    window.scenarioEngine.playAudio(sc.stage2_success.audioUrl, onHugAudioFinished);
                 } else {
-                    speakText(followUpMsg, () => {
-                        sendEspAction(sc?.stage2_success?.robotMood || "idle");
-                        setRobotAvatar("idle", "none");
-                        EsaLogger.step(7, "Siklus Respon Selesai", "Skenario pelukan berhasil diselesaikan");
-                        EsaLogger.endPipeline();
-                    });
+                    speakText(followUpMsg, onHugAudioFinished);
                 }
             }, 300);
         }
@@ -5532,6 +5548,70 @@ Kembalikan format JSON valid dengan 2 field:
                     cancelChatLoading(true);
                 }
             });
+
+            // Adapt Chat UI for Guardian Role if active
+            const currentRole = getActiveChatRole();
+            if (currentRole === 'guardian') {
+                const headerBadge = document.querySelector('.chat-header-scrapbook .tape');
+                if (headerBadge) {
+                    headerBadge.className = 'tape tape-pink';
+                    headerBadge.textContent = 'MODE WALI MURID // KONSULTASI POLA ASUH';
+                }
+                const headerTitle = document.querySelector('.chat-header-scrapbook h3');
+                if (headerTitle) {
+                    headerTitle.textContent = 'ESA (CareTech Family Companion)';
+                }
+                const initialBubble = document.querySelector('#chat-messages .msg-bubble.ai div:not(.ai-avatar-mini)');
+                if (initialBubble) {
+                    initialBubble.innerHTML = `<strong>Halo Bpk. Hendra! Saya ESA. 📦✨</strong><br>Asisten AI ramah keluarga dari CareTech. Ada yang ingin Ayah/Bunda diskusikan seputar pendampingan karakter atau situasi perundungan yang dihadapi anak di sekolah?`;
+                }
+                const chipsBar = document.querySelector('.curhat-chips-bar');
+                if (chipsBar) {
+                    chipsBar.innerHTML = `
+                        <span style="font-family: var(--imp); font-size: 1.05rem; font-weight: 800; color: #333; align-self: center; margin-right: 0.3rem; flex-shrink: 0;">⚡ TOPIK WALI:</span>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana tips mengajak anak berbicara saat ia tampak murung dan tertutup?')">
+                            💡 Tips bicara dengan anak
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana cara mengenali tanda-tanda anak mengalami bullying di sekolah?')">
+                            🛡️ Tanda bullying di sekolah
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Kapan waktu yang tepat bagi orang tua melapor ke Guru BK sekolah?')">
+                            🤝 Kapan lapor ke Guru BK?
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana cara menumbuhkan rasa percaya diri anak dalam pergaulan?')">
+                            ❤️ Menguatkan rasa percaya diri
+                        </div>
+                        <div class="chip-tag" onclick="sendQuickPrompt('Bagaimana menciptakan suasana bercerita yang nyaman di rumah?')">
+                            🥪 Suasana nyaman di rumah
+                        </div>
+                    `;
+                }
+                const inputArea = document.getElementById('chat-input');
+                if (inputArea) {
+                    inputArea.placeholder = 'Tuliskan pertanyaan atau hal yang ingin dikonsultasikan seputar anak... (Tekan Enter)';
+                }
+            }
+
+            // Handle URL Query auto-prompt (e.g. from guardian.html fast chips)
+            const chatUrlParams = new URLSearchParams(window.location.search);
+            const qParam = chatUrlParams.get('q');
+            if (qParam) {
+                let promptText = '';
+                if (qParam === 'tips-bicara') {
+                    promptText = 'Bagaimana tips mengajak anak berbicara saat ia tampak murung dan tertutup?';
+                } else if (qParam === 'kenali-tanda') {
+                    promptText = 'Bagaimana cara mengenali tanda-tanda anak mengalami bullying di sekolah?';
+                } else {
+                    promptText = qParam;
+                }
+                setTimeout(() => {
+                    const chatInput = document.getElementById('chat-input');
+                    if (chatInput) {
+                        chatInput.value = promptText;
+                        sendMessage();
+                    }
+                }, 600);
+            }
         });
     </script>
     <script src="dropdown.js"></script>

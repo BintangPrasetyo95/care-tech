@@ -201,8 +201,8 @@ int soundLevel = 0;
 unsigned long lastVoiceNoticeMs = 0;
 
 // Sensor Tekanan FSR402 State, Filtering & Timing
-// Sensor Aktif saat Menunggu Input (Standby / Idle) & Saat Diminta Chat
-bool sensorsEnabled        = true;  // Default: AKTIF saat menunggu input (Idle/Standby)
+// Sensor HANYA Aktif On-Demand Saat Dipanggil Skenario Chat (Default Dorman)
+bool sensorsEnabled        = false; // Default: Dorman / Nonaktif sampai dipanggil oleh skenario chat
 const int FSR_NOISE_FLOOR  = 2800;  // Ambang batas lepas/idle: di bawah 2800 dianggap lepas / tidak tertekan
 const int FSR_TOUCH_THRESH = 3500;  // Ambang batas tertekan: di atas 3500 dianggap tertekan nyata
 unsigned long lastFsrCheckMs = 0;
@@ -218,6 +218,7 @@ int fsr2Smoothed = 0;
 // Sensor Sentuh Digital Tambahan State (TTP223 - Skenario B)
 bool digitalTouch1Active = false;
 bool digitalTouch2Active = false;
+bool digitalTouchReported = false; // Latch hysteresis agar 1 kali pelukan fisik HANYA lapor 1 event ke chat
 unsigned long lastDigitalTouchReportMs = 0;
 
 // Pelacakan Pelukan / Sentuhan Tahan 2 Detik (Comfort Hug)
@@ -1050,6 +1051,7 @@ void handleLine(String line) {
       fsr2Pressed = false;
       digitalTouch1Active = false;
       digitalTouch2Active = false;
+      digitalTouchReported = false;
       hugTouchStartMs = 0;
       hugHold2sFired = false;
       touchSpamLocked = false;
@@ -1250,12 +1252,14 @@ void checkDigitalTouchSensors() {
   bool anyTouched = (t1 || t2);
 
   if (anyTouched) {
-    if ((!digitalTouch1Active && t1) || (!digitalTouch2Active && t2)) {
-      if (millis() - lastDigitalTouchReportMs > 400) {
+    // Hysteresis Latch: Hanya picu TEPAT 1 KALI per pelukan sampai anak melepas tangannya
+    if (!digitalTouchReported) {
+      if (millis() - lastDigitalTouchReportMs > 800) {
         if (!registerTouchAndCheckSpam()) {
           return;
         }
         lastDigitalTouchReportMs = millis();
+        digitalTouchReported = true; // Kunci latch agar tidak memicu duplikat event saat masih dipeluk
 
         // Output khusus langsung ke Serial Monitor
         Serial.print(">>> [PELUKAN TOUCH] ");
@@ -1280,6 +1284,8 @@ void checkDigitalTouchSensors() {
       }
     }
   } else {
+    // Saat dilepas total, buka kunci latch untuk pelukan berikutnya
+    digitalTouchReported = false;
     if (digitalTouch1Active || digitalTouch2Active) {
       if (millis() - lastDigitalTouchReportMs > 300) {
         Serial.println(">>> [PELUKAN SELESAI] Pelukan Boneka Dilepas.");
@@ -1298,7 +1304,7 @@ void checkDigitalTouchSensors() {
 // PELACAKAN PELUKAN / SENTUHAN 2 DETIK (COMFORT HUG)
 // ==========================================
 void updateHugHoldTracker(bool isTouched) {
-  if (currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
+  if (!sensorsEnabled || currentState == STATE_SPEAKING || (millis() - lastSpeechEndMs < SENSOR_SPEECH_COOLDOWN_MS)) {
     hugTouchStartMs = 0;
     hugHold2sFired = false;
     return;
@@ -1378,6 +1384,20 @@ void updateLedAnimation() {
 void checkCurhatButton() {
   int reading = isAnyButtonPressed() ? LOW : HIGH;
 
+  // =========================================================================
+  // PROTEKSI SUARA: Push button TIDAK BISA DITEKAN sampai suara selesai!
+  // =========================================================================
+  if (currentState == STATE_SPEAKING) {
+    // Sinkronkan state agar saat suara selesai, tombol tidak auto-trigger jika anak sedang menahan tombol
+    if (reading == LOW) {
+      buttonPressedSent = true;
+    } else {
+      buttonPressedSent = false;
+    }
+    lastButtonReading = reading;
+    return; // Kunci total tombol selama robot berbicara (audio tidak terpotong)
+  }
+
   if (reading != lastButtonReading) {
     lastDebounceTime = millis();
   }
@@ -1385,15 +1405,6 @@ void checkCurhatButton() {
   if ((millis() - lastDebounceTime) > debounceDelay) {
     if (reading == LOW && !buttonPressedSent) {
       buttonPressedSent = true;
-
-      // Jika robot sedang bicara, langsung potong suara speaker seketika!
-      if (currentState == STATE_SPEAKING) {
-        stopSpeakerAudio();
-        JsonDocument intDoc;
-        intDoc["type"]   = "interrupted";
-        intDoc["reason"] = "button_press";
-        sendDoc(intDoc);
-      }
 
       playRobotChime(2);
 
